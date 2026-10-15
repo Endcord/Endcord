@@ -38,7 +38,12 @@ QUIT = threading.Event()
 LOADER_JS = """const { join } = require('path');
 const appData = process.env.APPDATA || (process.platform === 'darwin' ? join(process.env.HOME, 'Library/Application Support') : join(process.env.HOME, '.config'));
 const patcherPath = join(appData, 'Endcord', 'dist', 'patcher.js');
-require(patcherPath);
+try {
+    require(patcherPath);
+} catch (e) {
+    console.error('[Endcord] ' + e);
+    require(join(__dirname, '..', '_app.asar'));
+}
 """
 LOADER_PKG = '{\n  "name": "discord",\n  "main": "index.js"\n}\n'
 
@@ -256,7 +261,12 @@ if [ "$mode" = patch ]; then
 const { join } = require('path');
 const appData = process.env.APPDATA || (process.platform === 'darwin' ? join(process.env.HOME, 'Library/Application Support') : join(process.env.HOME, '.config'));
 const patcherPath = join(appData, 'Endcord', 'dist', 'patcher.js');
-require(patcherPath);
+try {
+    require(patcherPath);
+} catch (e) {
+    console.error('[Endcord] ' + e);
+    require(join(__dirname, '..', '_app.asar'));
+}
 EOF
 else
   rm -rf "$app"
@@ -317,6 +327,35 @@ def close_discord():
     time.sleep(1)
 
 
+def grant_flatpak(root):
+    app_id = None
+    if "com.discordapp.DiscordCanary" in root:
+        app_id = "com.discordapp.DiscordCanary"
+    elif "com.discordapp.DiscordPTB" in root:
+        app_id = "com.discordapp.DiscordPTB"
+    elif "com.discordapp.DiscordDevelopment" in root:
+        app_id = "com.discordapp.DiscordDevelopment"
+    elif "com.discordapp.Discord" in root:
+        app_id = "com.discordapp.Discord"
+    if not app_id or not shutil.which("flatpak"):
+        return None
+    target = os.path.join(HOME, ".config", "Endcord")
+    os.makedirs(os.path.join(target, "dist"), exist_ok=True)
+    if os.path.abspath(DIST_DIR) != os.path.abspath(os.path.join(target, "dist")):
+        for name in FILES:
+            src = os.path.join(DIST_DIR, name)
+            if os.path.isfile(src):
+                shutil.copy2(src, os.path.join(target, "dist", name))
+    result = subprocess.run(
+        ["flatpak", "override", "--user", "--filesystem=" + target, app_id],
+        capture_output=True, text=True,
+    )
+    if result.returncode != 0:
+        err = (result.stderr or result.stdout or "exit %s" % result.returncode).strip()
+        return "Flatpak permission failed for %s: %s" % (app_id, err)
+    return "Flatpak %s can read %s" % (app_id, target)
+
+
 def launch_client(root, proc):
     for name in (proc, proc.lower(), "Discord", "discord"):
         exe = os.path.join(root, name)
@@ -369,6 +408,9 @@ def do_action(action, roots, relaunch):
                 else:
                     apply_res("patch", res)
                     log("Patched %s → %s/app" % (c["name"], res))
+                    granted = grant_flatpak(c["root"])
+                    if granted:
+                        log(granted)
             except Exception as e:
                 log("ERROR %s: %s" % (c["name"], e))
 

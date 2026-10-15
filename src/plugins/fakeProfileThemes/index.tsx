@@ -20,7 +20,7 @@ import { useAwaiter } from "@utils/react";
 import definePlugin, { OptionType } from "@utils/types";
 import { findComponentByCodeLazy } from "@webpack";
 import { Button, ColorPicker, Forms, React, Text, UserProfileStore, UserStore, useState } from "@webpack/common";
-import virtualMerge from "virtual-merge";
+import { safeRecordMerge } from "@utils/safeRecordMerge";
 
 interface Colors {
     primary: number;
@@ -212,7 +212,7 @@ export default definePlugin({
             if (settings.store.nitroFirst && user.themeColors) return user;
             const colors = decode(user.bio);
             if (colors) {
-                return virtualMerge(user, {
+                return safeRecordMerge(user, {
                     premiumType: 2,
                     themeColors: colors
                 });

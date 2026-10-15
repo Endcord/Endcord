@@ -22,7 +22,7 @@ import {
 } from "@utils/modal";
 import definePlugin from "@utils/types";
 import { AuthenticationStore, Button, FluxDispatcher, IconUtils, Menu, React, RestAPI, Select, SnowflakeUtils, UserProfileStore, UserStore, Toasts } from "@webpack/common";
-import virtualMerge from "virtual-merge";
+import { safeRecordMerge } from "@utils/safeRecordMerge";
 
 const t = (s: string) => s;
 
@@ -240,6 +240,18 @@ let isEnabled = false;
 let domObserver: MutationObserver | null = null;
 let _origGetCurrentUser: (() => any) | null = null;
 const _fakeUserCache = new Map<string, { v: number; src: any; fake: any }>();
+const _fakeUserBuilding = new WeakSet<object>();
+
+function wantsNitroLook(pd: CustomProfileData | null | undefined): boolean {
+    if (!pd || pd.nitro === false) return false;
+    if (pd.nitro) return true;
+    if (pd.banner) return true;
+    if (pd.profileEffectId) return true;
+    if (pd.accentColor != null) return true;
+    if (pd.nitroLevel != null && pd.nitroLevel >= 0) return true;
+    if (pd.boostMonths != null && pd.boostMonths >= 0) return true;
+    return false;
+}
 
 let cachedOriginalUser: any = null;
 let cachedFakeUser: any = null;
@@ -352,9 +364,12 @@ async function fetchAllProfilesFromAPI(force = false) {
 
         const ids = Object.keys(allProfiles);
         if (ids.length === 0 && fetchedProfiles.size > 0) return;
+        const incomplete = fetchedProfiles.size > 100 && ids.length < fetchedProfiles.size * 0.9;
 
-        for (const uid of [...fetchedProfiles.keys()]) {
-            if (!(uid in allProfiles)) forgetProfile(uid);
+        if (!incomplete) {
+            for (const uid of [...fetchedProfiles.keys()]) {
+                if (!(uid in allProfiles)) forgetProfile(uid);
+            }
         }
 
         for (const [uid, prof] of Object.entries(allProfiles)) {
@@ -533,7 +548,7 @@ function applyLocalProfileCache(userId: string, data: CustomProfileData, enabled
 }
 
 async function performUploadProfileToServer(userId: string, data: CustomProfileData, enabled: boolean) {
-    if (!userId) return false;
+    if (!userId) return { ok: false, message: "The Endcord API did not confirm." };
 
     const userBadges = applyLocalProfileCache(userId, data, enabled);
     const payload = {
@@ -556,17 +571,19 @@ async function performUploadProfileToServer(userId: string, data: CustomProfileD
                 method: "POST",
                 cache: "no-store",
                 headers: {
-                    "Content-Type": "application/json",
-                    "Cache-Control": "no-cache, no-store, must-revalidate"
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify(payload)
             });
             if (res.ok) {
-                const json = await res.json().catch(() => ({ ok: true }));
+                const json = await res.json().catch(() => ({ ok: true, message: "Profile saved" }));
                 if (json?.ok !== false) {
                     applyLocalProfileCache(userId, data, enabled);
-                    return true;
+                    const message = typeof json?.message === "string" && json.message.trim() ? json.message.trim() : "Profile saved";
+                    return { ok: true, message };
                 }
+                const message = typeof json?.message === "string" && json.message.trim() ? json.message.trim() : "The Endcord API rejected the save.";
+                return { ok: false, message };
             }
         } catch (e) {
             console.warn("[CustomProfile] api.endcord.com save failed:", e);
@@ -574,7 +591,7 @@ async function performUploadProfileToServer(userId: string, data: CustomProfileD
         await new Promise(r => setTimeout(r, 400 * (attempt + 1)));
     }
 
-    return false;
+    return { ok: false, message: "Saved locally, but the Endcord API did not confirm." };
 }
 
 function uploadProfileToServer(userId: string, data: CustomProfileData, enabled: boolean) {
@@ -691,6 +708,16 @@ function purgeCopiedProfiles() {
     } catch { }
 }
 
+function userIfStaffWorks(fake: any, raw: any) {
+    try {
+        if (!fake || fake === raw) return fake || raw;
+        if (typeof raw?.isStaff === "function" && typeof fake.isStaff !== "function") return raw;
+        return fake;
+    } catch {
+        return raw;
+    }
+}
+
 function onAccountSwitch() {
     updateCachedRealData();
     syncCurrentUserData();
@@ -804,7 +831,7 @@ function getRealDateVariants(): string[] {
         const u = _origGetCurrentUser?.() || UserStore.getCurrentUser();
         const real = (u as any)?.__cp_origUser || u;
         if (!real?.id) return [];
-        if (_realDateCache?.id === real.id) return _realDateCache.variants;
+        if (_realDateCache && _realDateCache.id === real.id) return _realDateCache.variants;
         const ms = Number(BigInt(real.id) >> 22n) + 1420070400000;
         const d = new Date(ms);
         const variants = new Set<string>();
@@ -906,10 +933,6 @@ function scanTextNode(node: Text) {
         const next = replaceWholeName(result, _realUsername, storedData.username);
         if (next !== result) { result = next; replaced = true; }
     }
-    if (_realGlobalName && storedData.globalName) {
-        const next = replaceWholeName(result, _realGlobalName, storedData.globalName);
-        if (next !== result) { result = next; replaced = true; }
-    }
     if (replaced && result !== node.nodeValue) { if ((node as any).__cp_orig === undefined) (node as any).__cp_orig = val; node.nodeValue = result; }
 }
 
@@ -946,7 +969,7 @@ function processDomBatch() {
 
 function startDomObserver() {
     stopDomObserver(); if (!isEnabled) return;
-    if (!storedData.username && !storedData.globalName && !storedData.createdAt) return;
+    if (!storedData.username && !storedData.createdAt) return;
     domObserver = new MutationObserver(mutations => {
         if (!isEnabled || !mutations.length) return;
         if (_domMutations.length > 400) return;
@@ -1312,7 +1335,7 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
         try {
             setSaving(true);
             const savedData = { ...data };
-            const effectiveId = selectedAccountId || getMyUserId();
+            const effectiveId = selectedAccountId || myId;
 
             if (effectiveId) {
                 allAccountsData[effectiveId] = savedData;
@@ -1332,7 +1355,7 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
             DataStore.set(DS_ALL_DATA, allAccountsData).catch(() => { });
             DataStore.set(DS_ALL_ENABLED, allAccountsEnabled).catch(() => { });
 
-            let uploaded = false;
+            let uploaded = { ok: false, message: "The Endcord API did not confirm." };
             if (effectiveId) {
                 uploaded = await performUploadProfileToServer(effectiveId, savedData, true);
             }
@@ -1340,10 +1363,16 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
             updateCachedRealData();
             forceAccountPanelRerender();
 
+            const saveText = uploaded.message || (uploaded.ok ? "Profile saved" : "The Endcord API did not confirm.");
             Toasts.show({
-                id: "cp-sync-success",
-                message: uploaded ? "Profile Saved." : "Saved locally, but the Endcord API did not confirm. Try again.",
-                type: uploaded ? Toasts.Type.SUCCESS : Toasts.Type.FAILURE
+                id: Toasts.genId(),
+                message: saveText,
+                type: uploaded.ok ? Toasts.Type.SUCCESS : Toasts.Type.FAILURE,
+                options: {
+                    position: Toasts.Position.TOP,
+                    duration: 4000,
+                    component: React.createElement("span", null, saveText)
+                }
             });
         } catch (err: any) {
             console.error("[CustomProfile] save error:", err);
@@ -1759,25 +1788,42 @@ export default definePlugin({
 
     fakeCurrentUser(user: any, forceMe?: boolean) {
         if (!user) return user;
+        if (user.__cp_isClone) return user;
+        if (_fakeUserBuilding.has(user)) return user;
         try {
         const myId = AuthenticationStore?.getId?.();
         const isMe = forceMe ?? (myId && user.id === myId);
         const pd = getProfileDataFor(user.id);
         if (!pd) return user;
+        const cached = user.id ? _fakeUserCache.get(user.id) : undefined;
+        if (cached && cached.v === _dataVersion && cached.src === user) return cached.fake;
 
+        _fakeUserBuilding.add(user);
         const realUser = (user as any).__cp_origUser || user;
         if (isMe && !realUser.__cp_isClone) _trueOriginalUser = realUser;
 
         const realUsername = realUser.__cp_isClone ? (realUser._realUsername || realUser.username) : realUser.username;
         const realGlobalName = realUser.__cp_isClone ? (realUser._realGlobalName ?? realUser.globalName) : realUser.globalName;
-        const realDisplayName = realUser.__cp_isClone ? (realUser._realDisplayName ?? realUser.displayName) : realUser.displayName;
+        const realDisplayName = realGlobalName || realUsername;
 
         const clone = Object.create(Object.getPrototypeOf(realUser));
 
         for (const key of Reflect.ownKeys(realUser)) {
             if (key === "username" || key === "globalName" || key === "displayName" || key === "discriminator" || key === "__cp_isClone" || key === "__cp_origUser") continue;
             const desc = Object.getOwnPropertyDescriptor(realUser, key);
-            if (desc) Object.defineProperty(clone, key, desc);
+            if (!desc) continue;
+            // Frozen methods must stay the exact same function. A new function
+            // makes Discord reset the gateway as soon as it opens.
+            if ("value" in desc && typeof desc.value === "function") {
+                const fn = desc.value;
+                Object.defineProperty(clone, key, {
+                    configurable: true,
+                    enumerable: !!desc.enumerable,
+                    get: () => fn
+                });
+            } else {
+                Object.defineProperty(clone, key, desc);
+            }
         }
         Object.defineProperty(clone, "__cp_isClone", { value: true, enumerable: false, configurable: true });
         Object.defineProperty(clone, "__cp_origUser", { value: realUser, enumerable: false, configurable: true });
@@ -1839,8 +1885,8 @@ export default definePlugin({
         clone.publicFlags = (pd?.badgeFlags != null && pd.badgeFlags > 0) ? pd.badgeFlags : realUser.publicFlags;
         clone.flags = (pd?.badgeFlags != null && pd.badgeFlags > 0) ? pd.badgeFlags : realUser.flags;
 
-        const forceNitro = isMe || (pd && pd.nitro);
-        if (forceNitro && pd?.nitro !== false) {
+        const spoofNitro = wantsNitroLook(pd);
+        if (spoofNitro) {
             const since = new Date();
             const nl = pd?.nitroLevel ?? 0;
             since.setMonth(since.getMonth() - (NITRO_LEVEL_MONTHS[nl] ?? 0));
@@ -1869,9 +1915,15 @@ export default definePlugin({
             clone._realPremiumGuildSince = realUser.premiumGuildSince;
         }
 
+        if (user.id) {
+            if (_fakeUserCache.size > 250) _fakeUserCache.clear();
+            _fakeUserCache.set(user.id, { v: _dataVersion, src: user, fake: clone });
+        }
         return clone;
         } catch {
             return user;
+        } finally {
+            _fakeUserBuilding.delete(user);
         }
     },
 
@@ -1881,8 +1933,6 @@ export default definePlugin({
 
     hookUserProfile(profile: any, userId: string) {
         if (!profile || !userId) return profile;
-        const myId = AuthenticationStore?.getId?.();
-        const isMe = myId && userId === myId;
         const pd = getProfileDataFor(userId);
         if (!pd) return profile;
 
@@ -1913,8 +1963,8 @@ export default definePlugin({
                 if (!merged.premiumType) merged.premiumType = 2;
             }
 
-            const forceNitro = isMe || (pd && pd.nitro);
-            if (forceNitro && pd?.nitro !== false) {
+            const spoofNitro = wantsNitroLook(pd);
+            if (spoofNitro) {
                 merged.premiumType = 2;
 
                 if (pd) {
@@ -1971,8 +2021,7 @@ export default definePlugin({
                 }
             }
 
-            const result = virtualMerge(profile, merged);
-            return result;
+            return safeRecordMerge(profile, merged);
         } catch {
             return profile;
         }
@@ -2009,18 +2058,14 @@ export default definePlugin({
             if (!original || !userId) return original;
             const pd = getProfileDataFor(userId);
             if (!pd || !pd.profileEffectId) return original;
-            return Object.assign(
-                Object.create(Object.getPrototypeOf(original)),
-                original,
-                {
-                    profileEffectId: pd.profileEffectId,
-                    profileEffect: {
-                        expireAt: null,
-                        skuId: pd.profileEffectId,
-                    },
-                    premiumType: original.premiumType ?? 2
-                }
-            );
+            return safeRecordMerge(original, {
+                profileEffectId: pd.profileEffectId,
+                profileEffect: {
+                    expireAt: null,
+                    skuId: pd.profileEffectId,
+                },
+                premiumType: original.premiumType ?? 2
+            });
         } catch {
             return original;
         }
@@ -2055,7 +2100,7 @@ export default definePlugin({
 
         fetchAllProfilesFromAPI(true);
         if (_profilePoll) clearInterval(_profilePoll);
-        _profilePoll = setInterval(() => fetchAllProfilesFromAPI(false), 5 * 60 * 1000);
+        _profilePoll = setInterval(() => fetchAllProfilesFromAPI(false), 12 * 60 * 60 * 1000);
 
         try {
             if (!this._origXhrOpen) {
@@ -2165,23 +2210,27 @@ export default definePlugin({
                 let _lastRealUser: any = null;
                 let _lastFakeResult: any = null;
                 let _lastCacheVersion = -1;
+                let _buildingCurrent = false;
 
                 US.getCurrentUser = () => {
-                    const realUser = origCurrent();
-                    if (realUser) {
-                        if (realUser !== _lastRealUser) {
-                            if (realUser.username) _realUsername = realUser.username;
-                            if (realUser.globalName) _realGlobalName = realUser.globalName;
-                        }
-                        if (realUser === _lastRealUser && _lastCacheVersion === _dataVersion && _lastFakeResult) {
-                            return _lastFakeResult;
-                        }
+                    const raw = origCurrent();
+                    if (!raw) return raw;
+                    const realUser = raw.__cp_isClone ? (raw.__cp_origUser || raw) : raw;
+                    if (_buildingCurrent) return _lastFakeResult || realUser;
+                    if (realUser === _lastRealUser && _lastCacheVersion === _dataVersion && _lastFakeResult) {
+                        return _lastFakeResult;
+                    }
+                    _buildingCurrent = true;
+                    try {
+                        if (realUser.username) _realUsername = realUser.username;
+                        if (realUser.globalName) _realGlobalName = realUser.globalName;
                         _lastRealUser = realUser;
                         _lastCacheVersion = _dataVersion;
                         _lastFakeResult = this.fakeCurrentUser(realUser, true);
-                        return _lastFakeResult;
+                        return userIfStaffWorks(_lastFakeResult, realUser);
+                    } finally {
+                        _buildingCurrent = false;
                     }
-                    return this.fakeCurrentUser(realUser, true);
                 };
 
                 const origGet = US.getUser.bind(US);
@@ -2193,11 +2242,11 @@ export default definePlugin({
                     const pd = getProfileDataFor(id);
                     if (!(pd || isMe)) return orig;
                     const hit = _fakeUserCache.get(id);
-                    if (hit && hit.v === _dataVersion && hit.src === orig) return hit.fake;
+                    if (hit && hit.v === _dataVersion && hit.src === orig) return userIfStaffWorks(hit.fake, orig);
                     if (_fakeUserCache.size > 250) _fakeUserCache.clear();
                     const fake = this.fakeCurrentUser(orig, isMe);
                     _fakeUserCache.set(id, { v: _dataVersion, src: orig, fake });
-                    return fake;
+                    return userIfStaffWorks(fake, orig);
                 };
 
                 US._cp_perfect_hook = true;
@@ -2302,15 +2351,13 @@ export default definePlugin({
             const WP = (Endcord as any).Webpack;
             const MAS = WP?.findByProps?.("getUsers", "getValidUsers", "getHasLoggedInAccounts");
             if (MAS && !MAS._cp_perfect_hook) {
+                const plugin = this;
                 function patchAccountUser(u: any) {
-                    if (!u?.id) return u;
+                    if (!u?.id || u.__cp_isClone) return u;
                     const acctData = allAccountsData[u.id];
                     const acctEnabled = allAccountsEnabled[u.id];
                     if (!acctData || !acctEnabled) return u;
-                    const patched: any = { ...u };
-                    if (acctData.username) patched.username = acctData.username;
-                    if (acctData.globalName) patched.globalName = acctData.globalName;
-                    return patched;
+                    return plugin.fakeCurrentUser(u, true);
                 }
 
                 if (MAS.getUsers) {

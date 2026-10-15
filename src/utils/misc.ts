@@ -4,7 +4,17 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { DevsById } from "./constants";
+import type { User } from "@endcord/discord-types";
+import { ChannelStore, GuildMemberStore, IconUtils } from "@webpack/common";
+
+import { CONTRIB_ROLE_ID, DevsById, ENDCORD_GUILD_ID, KNOWN_ISSUES_CHANNEL_ID, SUPPORT_CHANNEL_ID } from "./constants";
+
+const GUILD_ID = ENDCORD_GUILD_ID;
+const SUPPORT_CHANNEL_IDS = [SUPPORT_CHANNEL_ID];
+const KNOWN_ISSUES_CHANNEL_IDS = [KNOWN_ISSUES_CHANNEL_ID];
+const EQUICORD_HELPERS = CONTRIB_ROLE_ID;
+const VencordDevsById = DevsById;
+const EquicordDevsById = DevsById;
 
 /**
  * Calls .join(" ") on the arguments

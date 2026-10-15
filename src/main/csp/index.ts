@@ -56,6 +56,7 @@ export const CspPolicies: PolicyMap = {
     "ws.audioscrobbler.com": ConnectSrc, // Last.fm API
     "translate-pa.googleapis.com": ConnectSrc, // Google Translate API
     "*.endcord.com": ImageSrc, // VenCloud (endcord.com) and Badges (badges.endcord.com)
+    "endcord.com": ConnectSrc, // apex host; *.endcord.com does not cover it
     "api.endcord.com": ConnectSrc, // CustomProfile + badge sync
     "manti.vendicated.dev": ImageSrc, // ReviewDB API
     "decor.fieryflames.dev": ConnectSrc, // Decor API

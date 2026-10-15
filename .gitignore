@@ -1,10 +1,12 @@
 dist
 node_modules
+worker/
 
 *.exe
 endcord_installer
 
 .idea
+.cursor/
 .DS_Store
 
 yarn.lock

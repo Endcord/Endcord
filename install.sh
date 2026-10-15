@@ -65,7 +65,36 @@ if [ "$ok" != 1 ]; then
     exit 1
 fi
 
+HOST_DIST="$HOME/.config/Endcord/dist"
+if [ "$DIST_DIR" != "$HOST_DIST" ]; then
+    mkdir -p "$HOST_DIST"
+    cp -f "$DIST_DIR/patcher.js" "$DIST_DIR/preload.js" "$DIST_DIR/renderer.js" "$DIST_DIR/renderer.css" "$HOST_DIST/"
+fi
+if [ ! -s "$HOME/.config/Endcord/dist/patcher.js" ]; then
+    echo "patcher.js is missing from $HOME/.config/Endcord/dist"
+    exit 1
+fi
+
 echo "Found Endcord files."
+
+grant_flatpak() {
+    root="$1"
+    id=""
+    case "$root" in
+        *com.discordapp.DiscordCanary*) id=com.discordapp.DiscordCanary ;;
+        *com.discordapp.DiscordPTB*) id=com.discordapp.DiscordPTB ;;
+        *com.discordapp.DiscordDevelopment*) id=com.discordapp.DiscordDevelopment ;;
+        *com.discordapp.Discord*) id=com.discordapp.Discord ;;
+    esac
+    [ -n "$id" ] || return 0
+    command -v flatpak >/dev/null 2>&1 || return 0
+    if flatpak override --user --filesystem="$HOME/.config/Endcord" "$id"; then
+        echo "Flatpak $id can now read $HOME/.config/Endcord"
+    else
+        echo "Could not allow Flatpak $id to read Endcord."
+        echo "Run: flatpak override --user --filesystem=$HOME/.config/Endcord $id"
+    fi
+}
 
 is_discord() {
     [ -f "$1/resources/app.asar" ] || [ -f "$1/resources/_app.asar" ] || [ -f "$1/resources/app/index.js" ]
@@ -185,7 +214,12 @@ write_loader() {
 const { join } = require('path');
 const appData = process.env.APPDATA || (process.platform === 'darwin' ? join(process.env.HOME, 'Library/Application Support') : join(process.env.HOME, '.config'));
 const patcherPath = join(appData, 'Endcord', 'dist', 'patcher.js');
-require(patcherPath);
+try {
+    require(patcherPath);
+} catch (e) {
+    console.error('[Endcord] ' + e);
+    require(join(__dirname, '..', '_app.asar'));
+}
 EOF
 }
 
@@ -250,10 +284,16 @@ cat > \"\$app/index.js\" <<'ENDJS'
 const { join } = require('path');
 const appData = process.env.APPDATA || (process.platform === 'darwin' ? join(process.env.HOME, 'Library/Application Support') : join(process.env.HOME, '.config'));
 const patcherPath = join(appData, 'Endcord', 'dist', 'patcher.js');
-require(patcherPath);
+try {
+    require(patcherPath);
+} catch (e) {
+    console.error('[Endcord] ' + e);
+    require(join(__dirname, '..', '_app.asar'));
+}
 ENDJS
 "
             echo "Patched $root"
+            grant_flatpak "$root"
             ;;
     esac
 }

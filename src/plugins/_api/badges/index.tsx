@@ -21,7 +21,11 @@ import { fetchAllEndcordProfiles, onEndcordProfile, queueEndcordProfile } from "
 let DonorBadges = {} as Record<string, Array<Record<"tooltip" | "badge", string>>>;
 
 onEndcordProfile((uid, prof) => {
-    if (!uid || !prof) return;
+    if (!uid) return;
+    if (!prof) {
+        delete DonorBadges[uid];
+        return;
+    }
     const list = Array.isArray(prof) ? prof : (prof.badges || []);
     if (Array.isArray(list) && list.length > 0) DonorBadges[uid] = list;
     else delete DonorBadges[uid];
@@ -35,7 +39,13 @@ async function loadBadges(noCache = false) {
     for (const [uid, p] of Object.entries(resJson)) {
         data[uid] = Array.isArray(p) ? p : ((p as any)?.badges || []);
     }
-    if (Object.keys(data).length > 0 || noCache) {
+    const incoming = Object.keys(data).length;
+    const current = Object.keys(DonorBadges).length;
+    if (current > 100 && incoming > 0 && incoming < current * 0.9) {
+        for (const [uid, list] of Object.entries(data)) {
+            if (Array.isArray(list) && list.length > 0) DonorBadges[uid] = list;
+        }
+    } else if (incoming > 0 || noCache) {
         DonorBadges = data;
     }
 }
@@ -130,7 +140,7 @@ export default definePlugin({
         await loadBadges();
 
         clearInterval(intervalId);
-        intervalId = setInterval(loadBadges, 5 * 60 * 1000);
+        intervalId = setInterval(loadBadges, 12 * 60 * 60 * 1000);
     },
 
     async stop() {

@@ -38,7 +38,7 @@ export function queueEndcordProfile(_userId: string) {
     // Profiles come from the shared directory fetch. Do not request each user.
 }
 
-const DIRECTORY_MS = 5 * 60 * 1000;
+const DIRECTORY_MS = 12 * 60 * 60 * 1000;
 const BACKOFF_MS = 30 * 60 * 1000;
 let allInflight: Promise<Record<string, any> | null> | null = null;
 let directoryCache: Record<string, any> | null = null;
@@ -68,9 +68,20 @@ export async function fetchAllEndcordProfiles(): Promise<Record<string, any> | n
                 return directoryCache;
             }
             const now = Date.now();
+            const previousIds = directoryCache ? Object.keys(directoryCache) : [];
+            const nextIds = Object.keys(allProfiles);
+            const incomplete = previousIds.length > 100 && nextIds.length < previousIds.length * 0.9;
             for (const [uid, prof] of Object.entries(allProfiles)) {
                 fetchedAt.set(uid, now);
                 emitProfile(uid, prof);
+            }
+            if (!incomplete) {
+                for (const uid of previousIds) {
+                    if (!Object.prototype.hasOwnProperty.call(allProfiles, uid)) {
+                        fetchedAt.delete(uid);
+                        emitProfile(uid, null);
+                    }
+                }
             }
             directoryCache = allProfiles;
             return allProfiles;

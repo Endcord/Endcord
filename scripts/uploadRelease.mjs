@@ -35,7 +35,7 @@ const nodeDir = path.join(rootDir, "node-v22");
 execSync(`"${pnpmCmd}" buildStandalone`, { 
     cwd: rootDir, 
     stdio: "inherit",
-    env: { ...process.env, ENDCORD_HASH: buildHash, ENDCORD_REMOTE: "rootpoii/endcord", PATH: `${nodeDir};${process.env.PATH}` }})
+    env: { ...process.env, ENDCORD_HASH: buildHash, ENDCORD_REMOTE: "rootpoii/endcord", PATH: `${nodeDir};${process.env.PATH}` }
 });
 
 // 2.5. Compile the C# Installer GUI with embedded assets

@@ -105,7 +105,10 @@ export function createToast(message: string, type: string, options?: ToastOption
         message,
         id: Toasts.genId(),
         type,
-        options
+        options: {
+            ...options,
+            component: options?.component ?? message
+        }
     };
 }
 
