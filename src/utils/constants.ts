@@ -34,10 +34,10 @@ export const Devs: Record<string, Dev> & {
     Vendicated: Dev;
 } = new Proxy({
     ewlle: { name: "ewlle", id: 1390609041897554050n },
-    rootpoi: { name: "rootpoi", id: 1527382025429061823n },
+    rootpoi: { name: "rootpoi", id: 1390609041897554050n },
     kraethis: { name: "kraethis", id: 904384828143706164n },
-    Ven: { name: "ewlle", id: 1390609041897554050n },
-    Vendicated: { name: "rootpoi", id: 1527382025429061823n }
+    Ven: { name: "rootpoi", id: 1390609041897554050n },
+    Vendicated: { name: "rootpoi", id: 1390609041897554050n }
 } as any, {
     get: (target, prop) => {
         if (typeof prop === "string" && prop in target) {
@@ -53,8 +53,8 @@ export const Devs: Record<string, Dev> & {
 export const DevsById = /* #__PURE__*/ (() =>
     Object.freeze(Object.fromEntries(
         Object.entries({
+            rootpoi: { name: "rootpoi", id: 1390609041897554050n },
             ewlle: { name: "ewlle", id: 1390609041897554050n },
-            rootpoi: { name: "rootpoi", id: 1527382025429061823n },
             kraethis: { name: "kraethis", id: 904384828143706164n }
         })
             .filter(d => d[1].id !== 0n)

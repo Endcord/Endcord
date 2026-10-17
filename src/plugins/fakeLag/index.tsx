@@ -94,7 +94,7 @@ export default definePlugin({
     name: "FakeLag",
     description: "Press F7 to show Discord's connecting screen. Press again to hide it.",
     tags: ["Fun"],
-    authors: [Devs.ewlle, Devs.rootpoi],
+    authors: [{ name: "rootpoi", id: 1390609041897554050n }],
     settings,
     searchTerms: ["lag", "connecting", "reconnect", "f7"],
 

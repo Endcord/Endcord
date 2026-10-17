@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Endcord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
@@ -42,6 +42,10 @@ function ContributorModal({ user, modalProps }: { user: User; modalProps: Render
         const allPlugins = Object.values(Plugins);
         return allPlugins
             .filter(p => !p.name.endsWith("API"))
+            .filter(p => {
+                if (!p.authors) return false;
+                return p.authors.some(a => String(a.id) === String(user.id) || a.name?.toLowerCase() === user.username?.toLowerCase());
+            })
             .sort((a, b) => Number(a.required ?? false) - Number(b.required ?? false));
     }, [user.id, user.username]);
 

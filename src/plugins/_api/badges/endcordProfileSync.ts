@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-export const ENDCORD_API = "https://api.endcord.com";
+export const ENDCORD_API = "";
 
 type ProfileListener = (userId: string, prof: any) => void;
 const listeners = new Set<ProfileListener>();
@@ -14,90 +14,18 @@ export function onEndcordProfile(listener: ProfileListener) {
     return () => { listeners.delete(listener); };
 }
 
-function emitProfile(userId: string, prof: any) {
-    for (const listener of listeners) {
-        try { listener(userId, prof); } catch {}
-    }
+export function markProfileFresh(_userId: string) {
+    // Local-only mode: no remote profile directory sync
 }
 
-const fetchedAt = new Map<string, number>();
-
-// One shared list per open window. 10s polling burned the 5M daily cap in about two hours.
-
-export function markProfileFresh(userId: string) {
-    if (userId) fetchedAt.set(userId, Date.now());
-}
-
-export async function fetchEndcordProfile(userId: string, _force = false): Promise<any | null> {
-    if (!userId) return null;
-    const all = await fetchAllEndcordProfiles();
-    return all?.[userId] ?? null;
+export async function fetchEndcordProfile(_userId: string, _force = false): Promise<any | null> {
+    return null;
 }
 
 export function queueEndcordProfile(_userId: string) {
-    // Profiles come from the shared directory fetch. Do not request each user.
-}
-
-const DIRECTORY_MS = 12 * 60 * 60 * 1000;
-const BACKOFF_MS = 30 * 60 * 1000;
-let allInflight: Promise<Record<string, any> | null> | null = null;
-let directoryCache: Record<string, any> | null = null;
-let directoryNextAt = 0;
-
-function windowHidden() {
-    return typeof document !== "undefined" && document.hidden;
+    // Local-only mode: no remote profile directory sync
 }
 
 export async function fetchAllEndcordProfiles(): Promise<Record<string, any> | null> {
-    if (allInflight) return allInflight;
-    if (Date.now() < directoryNextAt) return directoryCache;
-    // A minimized client must not spend the daily quota.
-    if (windowHidden()) return directoryCache;
-
-    directoryNextAt = Date.now() + DIRECTORY_MS;
-    allInflight = (async () => {
-        try {
-            const res = await fetch(`${ENDCORD_API}/profiles`);
-            if (!res.ok) {
-                directoryNextAt = Date.now() + (res.status === 429 || res.status === 503 ? BACKOFF_MS : 15 * 60 * 1000);
-                return directoryCache;
-            }
-            const allProfiles = await res.json();
-            if (!allProfiles || typeof allProfiles !== "object" || Array.isArray(allProfiles)) {
-                directoryNextAt = Date.now() + 15 * 60 * 1000;
-                return directoryCache;
-            }
-            const now = Date.now();
-            const previousIds = directoryCache ? Object.keys(directoryCache) : [];
-            const nextIds = Object.keys(allProfiles);
-            const incomplete = previousIds.length > 100 && nextIds.length < previousIds.length * 0.9;
-            for (const [uid, prof] of Object.entries(allProfiles)) {
-                fetchedAt.set(uid, now);
-                emitProfile(uid, prof);
-            }
-            if (!incomplete) {
-                for (const uid of previousIds) {
-                    if (!Object.prototype.hasOwnProperty.call(allProfiles, uid)) {
-                        fetchedAt.delete(uid);
-                        emitProfile(uid, null);
-                    }
-                }
-            }
-            directoryCache = allProfiles;
-            return allProfiles;
-        } catch {
-            directoryNextAt = Date.now() + 15 * 60 * 1000;
-            return directoryCache;
-        }
-    })().finally(() => {
-        allInflight = null;
-    });
-
-    return allInflight;
-}
-
-if (typeof document !== "undefined") {
-    document.addEventListener("visibilitychange", () => {
-        if (!document.hidden) void fetchAllEndcordProfiles();
-    });
+    return null;
 }

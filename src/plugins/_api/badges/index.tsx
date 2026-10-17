@@ -8,49 +8,13 @@ import "./fixDiscordBadgePadding.css";
 
 import { _getBadges, BadgePosition, BadgeUserArgs, ProfileBadge } from "@api/Badges";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { Flex } from "@components/Flex";
 import { Devs } from "@utils/constants";
 import { copyWithToast } from "@utils/discord";
 import { Logger } from "@utils/Logger";
-import { Margins } from "@utils/margins";
 import definePlugin from "@utils/types";
-import { ContextMenuApi, Forms, Menu, Modal, openModal, Toasts, UserStore } from "@webpack/common";
-
-import { fetchAllEndcordProfiles, onEndcordProfile, queueEndcordProfile } from "./endcordProfileSync";
+import { ContextMenuApi, Menu } from "@webpack/common";
 
 let DonorBadges = {} as Record<string, Array<Record<"tooltip" | "badge", string>>>;
-
-onEndcordProfile((uid, prof) => {
-    if (!uid) return;
-    if (!prof) {
-        delete DonorBadges[uid];
-        return;
-    }
-    const list = Array.isArray(prof) ? prof : (prof.badges || []);
-    if (Array.isArray(list) && list.length > 0) DonorBadges[uid] = list;
-    else delete DonorBadges[uid];
-});
-
-async function loadBadges(noCache = false) {
-    const resJson = await fetchAllEndcordProfiles();
-    if (!resJson) return;
-
-    const data: Record<string, any> = {};
-    for (const [uid, p] of Object.entries(resJson)) {
-        data[uid] = Array.isArray(p) ? p : ((p as any)?.badges || []);
-    }
-    const incoming = Object.keys(data).length;
-    const current = Object.keys(DonorBadges).length;
-    if (current > 100 && incoming > 0 && incoming < current * 0.9) {
-        for (const [uid, list] of Object.entries(data)) {
-            if (Array.isArray(list) && list.length > 0) DonorBadges[uid] = list;
-        }
-    } else if (incoming > 0 || noCache) {
-        DonorBadges = data;
-    }
-}
-
-let intervalId: any;
 
 function BadgeContextMenu({ badge }: { badge: Omit<ProfileBadge, "id"> & BadgeUserArgs; }) {
     return (
@@ -110,8 +74,8 @@ export default definePlugin({
         {
             find: "getLegacyUsername(){",
             replacement: {
-                match: /getBadges\(\)\{(.{0,100}?)return\[(.{0,200}?)\]\}/,
-                replace: "getBadges(){$1return $self.getFinalBadges(this, [$2])}"
+                match: /getBadges\(\)\{.{0,100}?return\[/,
+                replace: "$&...$self.getBadges(this),"
             }
         }
     ],
@@ -125,28 +89,6 @@ export default definePlugin({
         DonorBadges = val;
     },
 
-    toolboxActions: {
-        async "Refetch Badges"() {
-            await loadBadges(true);
-            Toasts.show({
-                id: Toasts.genId(),
-                message: "Successfully refetched badges!",
-                type: Toasts.Type.SUCCESS
-            });
-        }
-    },
-
-    async start() {
-        await loadBadges();
-
-        clearInterval(intervalId);
-        intervalId = setInterval(loadBadges, 12 * 60 * 60 * 1000);
-    },
-
-    async stop() {
-        clearInterval(intervalId);
-    },
-
     getBadges(profile: { userId: string; guildId: string; }) {
         if (!profile) return [];
 
@@ -158,39 +100,15 @@ export default definePlugin({
         }
     },
 
-    getFinalBadges(profile: any, allBadges: any[]) {
-        if (!profile) return allBadges;
-        const userId = profile.id || profile.userId || profile.user?.id;
-        if (!userId) return allBadges;
-        queueEndcordProfile(userId);
-
-        const customBadges = DonorBadges[userId];
-        const hasCustom = customBadges && Array.isArray(customBadges) && customBadges.length > 0;
-
-        if (hasCustom) {
-            const list = this.getDonorBadges(userId);
-            const seen = new Set<string>();
-            return list.filter(b => {
-                const key = b.iconSrc || b.description;
-                if (!key || seen.has(key)) return false;
-                seen.add(key);
-                return true;
-            });
-        }
-
-        return allBadges;
-    },
-
     renderBadgeComponent: ErrorBoundary.wrap((badge: ProfileBadge & BadgeUserArgs) => {
         const Component = badge.component!;
         return <Component {...badge} />;
     }, { noop: true }),
 
-
     getBadgeMouseEventHandlers(badge: ProfileBadge & BadgeUserArgs) {
         const handlers = {} as Record<string, (e: React.MouseEvent) => void>;
 
-        if (!badge) return handlers; // sanity check
+        if (!badge) return handlers;
 
         const { onClick, onContextMenu } = badge;
 
@@ -201,7 +119,6 @@ export default definePlugin({
     },
 
     getDonorBadges(userId: string) {
-        if (userId) queueEndcordProfile(userId);
         const userBadges = DonorBadges[userId];
         if (!userBadges) return [];
 
@@ -209,7 +126,7 @@ export default definePlugin({
         return list.map((badge: any, idx: number) => ({
             id: `endcord_donor_badge_${idx}`,
             iconSrc: badge.badge || badge.icon || badge.iconSrc,
-            description: badge.tooltip || badge.description || "Endcord Supporter",
+            description: badge.tooltip || badge.description || "Custom Badge",
             position: BadgePosition.START,
             props: {
                 style: {

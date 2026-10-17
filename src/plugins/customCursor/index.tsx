@@ -148,7 +148,7 @@ export default definePlugin({
     name: "CustomCursor",
     description: "Replace Discord's cursor with a custom image or a built-in style.",
     tags: ["Appearance", "Customisation", "Fun"],
-    authors: [Devs.ewlle, Devs.rootpoi],
+    authors: [{ name: "rootpoi", id: 1390609041897554050n }],
     settings,
     searchTerms: ["cursor", "imlec", "mouse", "pointer"],
 

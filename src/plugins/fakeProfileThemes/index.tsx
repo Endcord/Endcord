@@ -215,7 +215,7 @@ export default definePlugin({
                 return safeRecordMerge(user, {
                     premiumType: 2,
                     themeColors: colors
-                });
+                }, `fpt:${colors[0]}:${colors[1]}`);
             }
         }
         return user;

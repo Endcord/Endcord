@@ -91,3 +91,36 @@
     flex-direction: column;
     gap: 1.25em;
 }
+
+.vc-plugins-stats-bar {
+    display: flex;
+    gap: 12px;
+    margin-top: 14px;
+    margin-bottom: 4px;
+}
+
+.vc-plugins-stat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--background-secondary);
+    border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 13px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.vc-plugins-stat-label {
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.vc-plugins-stat-val {
+    font-weight: 700;
+    color: var(--text-normal);
+}
+
+.vc-plugins-stat-val-enabled {
+    color: var(--status-positive, #23a55a);
+}

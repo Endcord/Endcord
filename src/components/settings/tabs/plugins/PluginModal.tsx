@@ -70,31 +70,42 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
     const pluginSettings = useSettings([`plugins.${plugin.name}.*`]).plugins[plugin.name];
     const hasSettings = hasAnyVisibleSettings(plugin);
 
-    const customAuthors = useMemo(() => [
-        Devs.ewlle,
-        Devs.rootpoi,
-        Devs.kraethis
-    ], []);
+    const customAuthors = useMemo(() => {
+        if (plugin.authors && plugin.authors.length > 0) return plugin.authors;
+        return [
+            Devs.ewlle,
+            Devs.rootpoi,
+            Devs.kraethis
+        ];
+    }, [plugin.authors]);
 
     // avoid layout shift by showing dummy users while loading users
     const fallbackAuthors = useMemo(() => [makeDummyUser({ username: "Loading...", id: "-1465912127305809920" })], []);
     const [authors, setAuthors] = useState<Partial<User>[]>([]);
 
     useEffect(() => {
+        let active = true;
         (async () => {
+            const list: Partial<User>[] = [];
             for (const user of customAuthors.slice(0, 6)) {
                 try {
-                    const author = user.id
-                        ? await UserUtils.getUser(String(user.id))
-                            .catch(() => makeDummyUser({ username: user.name }))
+                    const idStr = user.id ? String(user.id) : undefined;
+                    const cached = idStr ? UserStore.getUser(idStr) : null;
+                    if (cached) {
+                        list.push(cached);
+                        continue;
+                    }
+                    const author = idStr
+                        ? await UserUtils.getUser(idStr).catch(() => makeDummyUser({ username: user.name, id: idStr }))
                         : makeDummyUser({ username: user.name });
-
-                    setAuthors(a => [...a, author]);
-                } catch (e) {
-                    continue;
+                    list.push(author);
+                } catch {
+                    list.push(makeDummyUser({ username: user.name, id: user.id ? String(user.id) : undefined }));
                 }
             }
+            if (active) setAuthors(list);
         })();
+        return () => { active = false; };
     }, [customAuthors]);
 
     function renderSettings() {

@@ -35,6 +35,10 @@ if ($cert) {
 
 Start-Sleep -Seconds 2
 
+if (-not (Test-Path "$desktopDir\Endcord-site") -and (Test-Path "$HOME\OneDrive\Desktop\Endcord-site")) {
+    $desktopDir = "$HOME\OneDrive\Desktop"
+}
+
 Write-Host "4. Copying EndcordInstaller.exe to Desktop & Endcord-site..."
 if (Test-Path $desktopDir) {
     Copy-Item "$rootDir\EndcordInstaller.exe" "$desktopDir\EndcordInstaller.exe" -Force
@@ -65,6 +69,11 @@ if (Test-Path "$rootDir\linux\gui.py") {
         New-Item -ItemType Directory -Force -Path "$desktopDir\Endcord-site\linux" | Out-Null
         Copy-Item "$rootDir\linux\gui.py" "$desktopDir\Endcord-site\linux\gui.py" -Force
     }
+}
+
+Write-Host "6. Copying dist files to Endcord-site\dist..."
+if (Test-Path "$desktopDir\Endcord-site\dist") {
+    Copy-Item "$rootDir\dist\*" "$desktopDir\Endcord-site\dist\" -Recurse -Force
 }
 
 Write-Host "EXE BUILT SUCCESSFULLY."

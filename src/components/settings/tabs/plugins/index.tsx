@@ -46,6 +46,7 @@ const POPULAR_PLUGIN_ORDER = [
     "PlatformIndicators",
     "RelationshipNotifier",
     "SilentTyping",
+    "FakeMute",
 ] as const;
 
 const POPULAR_PLUGINS = new Set<string>(POPULAR_PLUGIN_ORDER);
@@ -174,6 +175,8 @@ function PluginSettings() {
         []
     );
 
+    const enabledCount = useMemo(() => sortedPlugins.filter(p => isPluginEnabled(p.name)).length, [settings]);
+
     const hasUserPlugins = useMemo(() => !IS_STANDALONE && Object.values(PluginMeta).some(m => m.userPlugin), []);
 
     const [searchValue, setSearchValue] = useState({ value: "", tags: [] as PluginTag[], status: SearchStatus.ALL });
@@ -281,6 +284,17 @@ function PluginSettings() {
             <ReloadRequiredCard required={changes.hasChanges} />
 
             <UIElementsButton />
+
+            <div className={cl("stats-bar")}>
+                <div className={cl("stat-badge")}>
+                    <span className={cl("stat-label")}>Total Plugins:</span>
+                    <span className={cl("stat-val")}>{sortedPlugins.length}</span>
+                </div>
+                <div className={cl("stat-badge")}>
+                    <span className={cl("stat-label")}>Enabled Plugins:</span>
+                    <span className={classes(cl("stat-val"), cl("stat-val-enabled"))}>{enabledCount}</span>
+                </div>
+            </div>
 
             <HeadingTertiary className={classes(Margins.top20, Margins.bottom8)}>
                 Filters

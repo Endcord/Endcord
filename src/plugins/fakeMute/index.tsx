@@ -11,63 +11,74 @@ import definePlugin, { IconComponent } from "@utils/types";
 import { findByPropsLazy } from "@webpack";
 import { MediaEngineStore, React, useState } from "@webpack/common";
 
-const VoiceActionsStore = findByPropsLazy("toggleSelfMute");
+const VoiceActions = findByPropsLazy("toggleSelfMute");
 
 let fakeMuteActive = false;
 
-/**
- * Patch all active WebRTC connections so setSelfMute is a no-op.
- * This means Discord will NEVER actually mute the local microphone stream,
- * even though gateway sends self_mute: true.
- */
-function patchConnections() {
+function getConnections(engine: any): any[] {
+    if (!engine?.connections) return [];
+    if (Array.isArray(engine.connections)) return engine.connections;
+    if (engine.connections instanceof Set) return Array.from(engine.connections);
+    if (engine.connections instanceof Map) return Array.from(engine.connections.values());
+    if (typeof engine.connections === "object") return Object.values(engine.connections);
+    return [];
+}
+
+function patchConnection(conn: any) {
+    if (!conn) return;
     try {
-        const engine = (MediaEngineStore as any).getMediaEngine?.();
-        if (!engine) return;
-        for (const conn of engine.connections ?? []) {
-            if (!conn?.setSelfMute) continue;
-            if (!conn.__fakeMuteOriginal) {
-                conn.__fakeMuteOriginal = conn.setSelfMute.bind(conn);
-                conn.setSelfMute = () => { /* blocked by FakeMute */ };
-            }
+        const proto = Object.getPrototypeOf(conn);
+        if (proto && typeof proto.setSelfMute === "function" && !proto.__fakeMuteHooked) {
+            proto.__fakeMuteHooked = true;
+            const origSetSelfMute = proto.setSelfMute;
+            proto.setSelfMute = function (mute: boolean, ...args: any[]) {
+                if (fakeMuteActive && mute) return;
+                return origSetSelfMute.call(this, mute, ...args);
+            };
+        }
+        if (typeof conn.setSelfMute === "function" && !conn.__fakeMuteOriginal) {
+            conn.__fakeMuteOriginal = conn.setSelfMute;
+            conn.setSelfMute = function (mute: boolean, ...args: any[]) {
+                if (fakeMuteActive && mute) return;
+                return conn.__fakeMuteOriginal.call(this, mute, ...args);
+            };
         }
     } catch { }
 }
 
-/**
- * Restore all patched WebRTC connections.
- */
-function unpatchConnections() {
+function hookEngine(engine: any) {
+    if (!engine || engine.__fakeMuteEngineHooked) return;
+    engine.__fakeMuteEngineHooked = true;
+    if (typeof engine.connect === "function") {
+        const origConnect = engine.connect.bind(engine);
+        engine.connect = function (...args: any[]) {
+            const conn = origConnect(...args);
+            if (conn) patchConnection(conn);
+            return conn;
+        };
+    }
+}
+
+function ensurePatched() {
     try {
         const engine = (MediaEngineStore as any).getMediaEngine?.();
         if (!engine) return;
-        for (const conn of engine.connections ?? []) {
-            if (!conn?.__fakeMuteOriginal) continue;
-            conn.setSelfMute = conn.__fakeMuteOriginal;
-            delete conn.__fakeMuteOriginal;
+        hookEngine(engine);
+        for (const conn of getConnections(engine)) {
+            patchConnection(conn);
         }
     } catch { }
 }
 
 function setFakeMute(value: boolean) {
     fakeMuteActive = value;
+    ensurePatched();
 
-    if (value) {
-        // First: block the WebRTC engine from muting the local mic stream.
-        // Then: send the gateway voice state update (self_mute: true).
-        // Result: Discord server + others see you as muted; your local mic is unaffected.
-        patchConnections();
-        const isMuted = (MediaEngineStore as any).isSelfMute?.() ?? false;
-        if (!isMuted) {
-            VoiceActionsStore.toggleSelfMute();
-        }
-    } else {
-        // Remove patch first so the upcoming toggleSelfMute actually works.
-        unpatchConnections();
-        const isMuted = (MediaEngineStore as any).isSelfMute?.() ?? false;
-        if (isMuted) {
-            VoiceActionsStore.toggleSelfMute();
-        }
+    const isMuted = (MediaEngineStore as any).isSelfMute?.() ?? false;
+    if (value && !isMuted) {
+        VoiceActions.toggleSelfMute();
+    } else if (!value && isMuted) {
+        VoiceActions.toggleSelfMute();
     }
 }
 
@@ -119,7 +130,7 @@ export default definePlugin({
     name: "FakeMute",
     description: "Appear muted to others in voice channels while keeping your microphone active. Toggle from user panel or chat bar.",
     authors: [EndcordDevs.ewlle, EndcordDevs.rootpoi, EndcordDevs.kraethis],
-    tags: ["Voice", "Utility"],
+    tags: ["Voice", "Utility", "Popular"],
     dependencies: ["ChatInputButtonAPI", "UserAreaAPI"],
 
     userAreaButton: {
@@ -134,7 +145,5 @@ export default definePlugin({
 
     stop() {
         if (fakeMuteActive) setFakeMute(false);
-        // Safety: always clean up patches even if state was inconsistent
-        unpatchConnections();
     },
 });

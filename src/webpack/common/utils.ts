@@ -103,13 +103,14 @@ const ToastsExports = mapMangledModuleLazy(".currentToastMap.has(", {
 export function createToast(message: string, type: string, options?: ToastOptions): ToastData {
     return {
         message,
+        content: message,
         id: Toasts.genId(),
         type,
         options: {
             ...options,
             component: options?.component ?? message
         }
-    };
+    } as any;
 }
 
 export const Toasts = {

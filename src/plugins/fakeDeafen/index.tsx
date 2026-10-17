@@ -8,66 +8,74 @@ import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
 import { UserAreaButton, UserAreaRenderProps } from "@api/UserArea";
 import { Devs } from "@utils/constants";
 import definePlugin, { IconComponent } from "@utils/types";
-import { findByPropsLazy } from "@webpack";
-import { MediaEngineStore, React, useState } from "@webpack/common";
-
-const VoiceActions = findByPropsLazy("toggleSelfDeaf", "selectVoiceChannel");
+import { MediaEngineStore, React, useState, VoiceActions } from "@webpack/common";
 
 let fakeDeafActive = false;
 
-/**
- * Patch all active WebRTC connections so setSelfDeaf is a no-op.
- * This means Discord will NEVER actually cut local audio output,
- * even though gateway sends self_deaf: true.
- */
-function patchConnections() {
+function getConnections(engine: any): any[] {
+    if (!engine?.connections) return [];
+    if (Array.isArray(engine.connections)) return engine.connections;
+    if (engine.connections instanceof Set) return Array.from(engine.connections);
+    if (engine.connections instanceof Map) return Array.from(engine.connections.values());
+    if (typeof engine.connections === "object") return Object.values(engine.connections);
+    return [];
+}
+
+function patchConnection(conn: any) {
+    if (!conn) return;
     try {
-        const engine = (MediaEngineStore as any).getMediaEngine?.();
-        if (!engine) return;
-        for (const conn of engine.connections ?? []) {
-            if (!conn?.setSelfDeaf) continue;
-            if (!conn.__fakeDeafOriginal) {
-                conn.__fakeDeafOriginal = conn.setSelfDeaf.bind(conn);
-                conn.setSelfDeaf = () => { /* blocked by FakeDeafen */ };
-            }
+        const proto = Object.getPrototypeOf(conn);
+        if (proto && typeof proto.setSelfDeaf === "function" && !proto.__fakeDeafHooked) {
+            proto.__fakeDeafHooked = true;
+            const origSetSelfDeaf = proto.setSelfDeaf;
+            proto.setSelfDeaf = function (deaf: boolean, ...args: any[]) {
+                if (fakeDeafActive && deaf) return;
+                return origSetSelfDeaf.call(this, deaf, ...args);
+            };
+        }
+        if (typeof conn.setSelfDeaf === "function" && !conn.__fakeDeafOriginal) {
+            conn.__fakeDeafOriginal = conn.setSelfDeaf;
+            conn.setSelfDeaf = function (deaf: boolean, ...args: any[]) {
+                if (fakeDeafActive && deaf) return;
+                return conn.__fakeDeafOriginal.call(this, deaf, ...args);
+            };
         }
     } catch { }
 }
 
-/**
- * Restore all patched WebRTC connections.
- */
-function unpatchConnections() {
+function hookEngine(engine: any) {
+    if (!engine || engine.__fakeDeafEngineHooked) return;
+    engine.__fakeDeafEngineHooked = true;
+    if (typeof engine.connect === "function") {
+        const origConnect = engine.connect.bind(engine);
+        engine.connect = function (...args: any[]) {
+            const conn = origConnect(...args);
+            if (conn) patchConnection(conn);
+            return conn;
+        };
+    }
+}
+
+function ensurePatched() {
     try {
         const engine = (MediaEngineStore as any).getMediaEngine?.();
         if (!engine) return;
-        for (const conn of engine.connections ?? []) {
-            if (!conn?.__fakeDeafOriginal) continue;
-            conn.setSelfDeaf = conn.__fakeDeafOriginal;
-            delete conn.__fakeDeafOriginal;
+        hookEngine(engine);
+        for (const conn of getConnections(engine)) {
+            patchConnection(conn);
         }
     } catch { }
 }
 
 function setFakeDeaf(value: boolean) {
     fakeDeafActive = value;
+    ensurePatched();
 
-    if (value) {
-        // First: block the WebRTC engine from applying the deafen locally.
-        // Then: send the gateway voice state update (self_deaf: true).
-        // Result: Discord server + others see you as deafened; your local audio is unaffected.
-        patchConnections();
-        const isDeaf = (MediaEngineStore as any).isSelfDeaf?.() ?? false;
-        if (!isDeaf) {
-            VoiceActions.toggleSelfDeaf();
-        }
-    } else {
-        // Remove patch first so the upcoming toggleSelfDeaf actually works.
-        unpatchConnections();
-        const isDeaf = (MediaEngineStore as any).isSelfDeaf?.() ?? false;
-        if (isDeaf) {
-            VoiceActions.toggleSelfDeaf();
-        }
+    const isDeaf = (MediaEngineStore as any).isSelfDeaf?.() ?? false;
+    if (value && !isDeaf) {
+        VoiceActions?.toggleSelfDeaf?.();
+    } else if (!value && isDeaf) {
+        VoiceActions?.toggleSelfDeaf?.();
     }
 }
 
@@ -138,7 +146,5 @@ export default definePlugin({
 
     stop() {
         if (fakeDeafActive) setFakeDeaf(false);
-        // Safety: always clean up patches even if state was inconsistent
-        unpatchConnections();
     },
 });

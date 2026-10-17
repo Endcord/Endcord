@@ -1,0 +1,12 @@
+/*
+ * Endcord, a Discord client mod
+ * Copyright (c) 2026 Vendicated and contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.ec-motion-active {
+    filter: blur(var(--ec-motion-blur, 0px)) !important;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    will-change: filter;
+}

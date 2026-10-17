@@ -8,7 +8,6 @@ import "./styles.css";
 
 import { BadgePosition, ProfileBadge } from "@api/Badges";
 import BadgeAPIPlugin from "../_api/badges";
-import { ENDCORD_API, fetchAllEndcordProfiles, markProfileFresh, onEndcordProfile, queueEndcordProfile } from "../_api/badges/endcordProfileSync";
 import { addHeaderBarButton, HeaderBarButton, removeHeaderBarButton } from "@api/HeaderBar";
 import { DataStore } from "@api/index";
 import { EndcordDevs } from "@utils/constants";
@@ -21,7 +20,7 @@ import {
     openModal
 } from "@utils/modal";
 import definePlugin from "@utils/types";
-import { AuthenticationStore, Button, FluxDispatcher, IconUtils, Menu, React, RestAPI, Select, SnowflakeUtils, UserProfileStore, UserStore, Toasts } from "@webpack/common";
+import { AuthenticationStore, Button, FluxDispatcher, IconUtils, React, RestAPI, Select, showToast, SnowflakeUtils, Toasts, UserProfileStore, UserStore } from "@webpack/common";
 import { safeRecordMerge } from "@utils/safeRecordMerge";
 
 const t = (s: string) => s;
@@ -265,11 +264,6 @@ let allPresetsData: Record<string, SavedPreset[]> = {};
 
 const LS_PRESETS = "EndcordCP_presets";
 
-const fetchedProfiles = new Map<string, any>();
-let _lastGlobalFetchTime = 0;
-let _isFetchingAll = false;
-let _profilePoll: ReturnType<typeof setInterval> | null = null;
-
 function hasAnyCustomData(pd: CustomProfileData | null | undefined): boolean {
     if (!pd) return false;
     if (pd.username) return true;
@@ -301,13 +295,11 @@ function hasCustomBadgesConfigured(pd: CustomProfileData | null | undefined): bo
     return false;
 }
 
-function rememberProfile(userId: string, prof: any, badges?: any[]) {
+function rememberProfile(userId: string, badges?: any[]) {
     if (!userId) return;
-    const bList = badges ?? (Array.isArray(prof) ? prof : (prof?.badges || []));
-    fetchedProfiles.set(userId, prof);
     if (BadgeAPIPlugin?.DonorBadges) {
-        if (Array.isArray(bList) && bList.length > 0) {
-            BadgeAPIPlugin.DonorBadges[userId] = bList;
+        if (Array.isArray(badges) && badges.length > 0) {
+            BadgeAPIPlugin.DonorBadges[userId] = badges;
         } else {
             delete BadgeAPIPlugin.DonorBadges[userId];
         }
@@ -315,123 +307,25 @@ function rememberProfile(userId: string, prof: any, badges?: any[]) {
 }
 
 function forgetProfile(userId: string) {
-    fetchedProfiles.delete(userId);
+    if (!userId) return;
     if (BadgeAPIPlugin?.DonorBadges) {
         delete BadgeAPIPlugin.DonorBadges[userId];
     }
 }
 
-function toRemoteProfile(data: CustomProfileData, badges: any[], enabled: boolean) {
-    const username = data.username || "";
-    const globalName = data.globalName || "";
-    const customName = globalName || username;
-    return {
-        ...data,
-        enabled,
-        username: username || undefined,
-        globalName: customName || undefined,
-        customName: customName || undefined,
-        clanTag: data.oldName || "",
-        badges,
-        customProfile: data
-    };
-}
-
-function ingestRemoteProfile(uid: string, prof: any) {
-    if (!uid || !prof) return;
-    const bList = Array.isArray(prof) ? prof : (prof.badges || []);
-    const profData = prof.customProfile || prof;
-    if ((bList && bList.length > 0) || hasAnyCustomData(profData) || prof.username || prof.globalName || prof.customName) {
-        rememberProfile(uid, prof, bList);
-        try {
-            const user = UserStore?.getUser?.(uid);
-            if (user) FluxDispatcher?.dispatch?.({ type: "USER_UPDATE", user });
-        } catch {}
-    }
-}
-
-onEndcordProfile((uid, prof) => ingestRemoteProfile(uid, prof));
-
-async function fetchAllProfilesFromAPI(force = false) {
-    const now = Date.now();
-    if (!force && (now - _lastGlobalFetchTime < 600_000 || _isFetchingAll)) return;
-    _isFetchingAll = true;
-    _lastGlobalFetchTime = now;
-
-    try {
-        const allProfiles = await fetchAllEndcordProfiles();
-        if (!allProfiles) return;
-
-        const ids = Object.keys(allProfiles);
-        if (ids.length === 0 && fetchedProfiles.size > 0) return;
-        const incomplete = fetchedProfiles.size > 100 && ids.length < fetchedProfiles.size * 0.9;
-
-        if (!incomplete) {
-            for (const uid of [...fetchedProfiles.keys()]) {
-                if (!(uid in allProfiles)) forgetProfile(uid);
-            }
-        }
-
-        for (const [uid, prof] of Object.entries(allProfiles)) {
-            if (!prof) forgetProfile(uid);
-            else ingestRemoteProfile(uid, prof);
-        }
-    } catch {
-        // Keep the last good cache if the API is briefly unreachable.
-    } finally {
-        _isFetchingAll = false;
-    }
-}
-
-function triggerBackgroundFetch(userId: string) {
-    if (!userId) return;
-    queueEndcordProfile(userId);
-}
-
 function getProfileDataFor(userId: string | null | undefined): CustomProfileData | null {
     if (!userId) return null;
-    const myId = AuthenticationStore?.getId?.();
+    let myId = _cachedMyId;
+    if (!myId) {
+        try { myId = AuthenticationStore?.getId?.() || null; if (myId) _cachedMyId = myId; } catch { }
+    }
     if (myId && userId === myId) {
-        return isEnabled ? storedData : null;
+        return isEnabled && hasAnyCustomData(storedData) ? storedData : null;
     }
-
-    // Trigger background fetch to keep badges and profiles in real-time sync
-    triggerBackgroundFetch(userId);
-
-    if (fetchedProfiles.has(userId)) {
-        const entry = fetchedProfiles.get(userId);
-        if (!entry) return null;
-        if (Array.isArray(entry)) {
-            if (entry.length === 0) return null;
-            return { customBadgeIds: [] } as any;
-        }
-        if (entry.enabled === false) return null;
-        const data = entry.customProfile || entry.data || entry;
-        const merged: CustomProfileData = {
-            ...data,
-            username: entry.username || data.username,
-            globalName: entry.globalName || entry.customName || data.globalName,
-            oldName: entry.clanTag || data.oldName,
-            avatar: entry.avatar || data.avatar,
-            banner: entry.banner || data.banner,
-            bio: entry.bio || data.bio,
-            pronouns: entry.pronouns || data.pronouns,
-            accentColor: entry.accentColor ?? data.accentColor,
-            accentColor2: entry.accentColor2 ?? data.accentColor2,
-            profileEffectId: entry.profileEffectId || data.profileEffectId,
-            decorationAsset: entry.decorationAsset || data.decorationAsset,
-            badgeFlags: entry.badgeFlags ?? data.badgeFlags,
-            nitroLevel: entry.nitroLevel ?? data.nitroLevel,
-            boostMonths: entry.boostMonths ?? data.boostMonths,
-            nitro: entry.nitro ?? data.nitro
-        };
-        const hasBadgesInEntry = Array.isArray(entry.badges) && entry.badges.length > 0;
-        if (!hasAnyCustomData(merged) && !hasBadgesInEntry) {
-            return null;
-        }
-        return merged;
+    if (allAccountsEnabled[userId] && allAccountsData[userId]) {
+        const d = allAccountsData[userId];
+        return hasAnyCustomData(d) ? d : null;
     }
-
     return null;
 }
 
@@ -497,7 +391,6 @@ function buildUserBadgesArray(data: CustomProfileData, enabled: boolean): any[] 
     pushBadge(userBadges, FLAG.ACTIVE_DEVELOPER, f);
 
     // === Special / Custom Badges ===
-    // Old Username -> Quest -> Last Meadow -> Orbs -> Gifting (Patron -> Champion -> Luminary -> Icon -> Hero -> Legendary)
     const specialOrder = [
         "oldname", "quest", "meadow", "orbs",
         "gift_patron", "gift_champion", "gift_luminary", "gift_icon", "gift_hero", "gift_legendary"
@@ -526,88 +419,15 @@ function buildUserBadgesArray(data: CustomProfileData, enabled: boolean): any[] 
     return userBadges;
 }
 
-
-let _uploadTimer: any = null;
-
-let _pendingUpload: { userId: string; data: CustomProfileData; enabled: boolean } | null = null;
-let _uploadQueue: Promise<void> = Promise.resolve();
-
 function applyLocalProfileCache(userId: string, data: CustomProfileData, enabled: boolean) {
+    if (!userId) return [];
     const userBadges = buildUserBadgesArray(data, enabled);
-    if (!enabled && userBadges.length === 0 && !hasAnyCustomData(data)) {
+    if (!enabled || (userBadges.length === 0 && !hasAnyCustomData(data))) {
         forgetProfile(userId);
     } else {
-        rememberProfile(userId, toRemoteProfile(data, userBadges, enabled), userBadges);
-        markProfileFresh(userId);
+        rememberProfile(userId, userBadges);
     }
-    try {
-        const user = UserStore?.getUser?.(userId);
-        if (user) FluxDispatcher?.dispatch?.({ type: "USER_UPDATE", user });
-    } catch {}
     return userBadges;
-}
-
-async function performUploadProfileToServer(userId: string, data: CustomProfileData, enabled: boolean) {
-    if (!userId) return { ok: false, message: "The Endcord API did not confirm." };
-
-    const userBadges = applyLocalProfileCache(userId, data, enabled);
-    const payload = {
-        userId,
-        badges: userBadges,
-        customProfile: {
-            ...data,
-            username: data.username || "",
-            globalName: data.globalName || "",
-            customName: data.globalName || data.username || "",
-            clanTag: data.oldName || ""
-        },
-        clanTag: data.oldName || "",
-        username: data.username || ""
-    };
-
-    for (let attempt = 0; attempt < 3; attempt++) {
-        try {
-            const res = await fetch(`${ENDCORD_API}/profile/save`, {
-                method: "POST",
-                cache: "no-store",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(payload)
-            });
-            if (res.ok) {
-                const json = await res.json().catch(() => ({ ok: true, message: "Profile saved" }));
-                if (json?.ok !== false) {
-                    applyLocalProfileCache(userId, data, enabled);
-                    const message = typeof json?.message === "string" && json.message.trim() ? json.message.trim() : "Profile saved";
-                    return { ok: true, message };
-                }
-                const message = typeof json?.message === "string" && json.message.trim() ? json.message.trim() : "The Endcord API rejected the save.";
-                return { ok: false, message };
-            }
-        } catch (e) {
-            console.warn("[CustomProfile] api.endcord.com save failed:", e);
-        }
-        await new Promise(r => setTimeout(r, 400 * (attempt + 1)));
-    }
-
-    return { ok: false, message: "Saved locally, but the Endcord API did not confirm." };
-}
-
-function uploadProfileToServer(userId: string, data: CustomProfileData, enabled: boolean) {
-    applyLocalProfileCache(userId, data, enabled);
-    _pendingUpload = { userId, data, enabled };
-    if (_uploadTimer) clearTimeout(_uploadTimer);
-
-    _uploadTimer = setTimeout(() => {
-        const item = _pendingUpload;
-        _pendingUpload = null;
-        if (!item) return;
-
-        _uploadQueue = _uploadQueue.then(async () => {
-            await performUploadProfileToServer(item.userId, item.data, item.enabled);
-        }).catch(() => {});
-    }, 400);
 }
 
 function saveDataSync(userId: string, data: CustomProfileData, enabled: boolean) {
@@ -759,7 +579,6 @@ function injectHideStyle() {
 function removeHideStyle() {
     document.getElementById(HIDE_STYLE_ID)?.remove();
 }
-if (isEnabled) injectHideStyle();
 
 let _avatarPatchApplied = false;
 function applyAvatarPatchEarly() {
@@ -813,6 +632,9 @@ async function loadData() {
             savePresetsSync();
         }
         purgeCopiedProfiles();
+        for (const [uid, data] of Object.entries(allAccountsData)) {
+            applyLocalProfileCache(uid, data, !!allAccountsEnabled[uid]);
+        }
     } catch (err) { }
 }
 
@@ -1282,9 +1104,12 @@ function forceAccountPanelRerender() {
         cachedOriginalUser = null;
         _dataVersion++;
         _fakeUserCache.clear();
-        const real = _origGetCurrentUser?.();
-        const user = real && !real.__cp_isClone ? real : (real?.__cp_origUser || null);
-        if (user) FluxDispatcher.dispatch({ type: "USER_UPDATE", user });
+        try { (UserStore as any)?.emitChange?.(); } catch { }
+        try { (UserProfileStore as any)?.emitChange?.(); } catch { }
+        try {
+            const MAS = (window as any).Endcord?.Webpack?.findByProps?.("getUsers", "getValidUsers");
+            MAS?.emitChange?.();
+        } catch { }
         if (isEnabled) startDomObserver();
         else stopDomObserver();
     } catch { }
@@ -1355,32 +1180,15 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
             DataStore.set(DS_ALL_DATA, allAccountsData).catch(() => { });
             DataStore.set(DS_ALL_ENABLED, allAccountsEnabled).catch(() => { });
 
-            let uploaded = { ok: false, message: "The Endcord API did not confirm." };
-            if (effectiveId) {
-                uploaded = await performUploadProfileToServer(effectiveId, savedData, true);
-            }
-
             updateCachedRealData();
             forceAccountPanelRerender();
 
-            const saveText = uploaded.message || (uploaded.ok ? "Profile saved" : "The Endcord API did not confirm.");
-            Toasts.show({
-                id: Toasts.genId(),
-                message: saveText,
-                type: uploaded.ok ? Toasts.Type.SUCCESS : Toasts.Type.FAILURE,
-                options: {
-                    position: Toasts.Position.TOP,
-                    duration: 4000,
-                    component: React.createElement("span", null, saveText)
-                }
+            showToast("Profile Saved", Toasts.Type.SUCCESS, {
+                component: React.createElement("span", { style: { color: "var(--text-normal, #ffffff)", fontWeight: "600", fontSize: "14px" } }, "Profile Saved")
             });
         } catch (err: any) {
             console.error("[CustomProfile] save error:", err);
-            Toasts.show({
-                id: "cp-save-debug-err",
-                message: `Save error: ${err.message || err}`,
-                type: Toasts.Type.FAILURE
-            });
+            showToast(`Save error: ${err?.message || err}`, Toasts.Type.FAILURE);
         } finally {
             setSaving(false);
             rootProps.onClose();
@@ -1406,13 +1214,10 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
             stopDomObserver();
 
             // Immediately clear custom badges from memory so native Discord badges show instantly
-            fetchedProfiles.delete(selectedAccountId);
             try {
                 if (BadgeAPIPlugin && BadgeAPIPlugin.DonorBadges) {
                     delete BadgeAPIPlugin.DonorBadges[selectedAccountId];
                 }
-                const user = UserStore.getUser(selectedAccountId);
-                if (user) FluxDispatcher.dispatch({ type: "USER_UPDATE", user });
             } catch {}
 
             saveDataSync(selectedAccountId, {}, false);
@@ -1423,26 +1228,15 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
             DataStore.set(DS_KEY, {}).catch(() => { });
             DataStore.set(DS_ENABLED, false).catch(() => { });
 
-            // Sync the reset to D1 server
-            if (selectedAccountId) {
-                await performUploadProfileToServer(selectedAccountId, {} as any, false);
-            }
-
             updateCachedRealData();
             forceAccountPanelRerender();
 
-            Toasts.show({
-                id: "cp-reset-success",
-                message: "Profile reset.",
-                type: Toasts.Type.SUCCESS
+            showToast("Profile Reset", Toasts.Type.SUCCESS, {
+                component: React.createElement("span", { style: { color: "var(--text-normal, #ffffff)", fontWeight: "600", fontSize: "14px" } }, "Profile Reset")
             });
         } catch (err: any) {
             console.error("[CustomProfile] reset error:", err);
-            Toasts.show({
-                id: "cp-reset-error",
-                message: `Reset error: ${err.message || err}`,
-                type: Toasts.Type.FAILURE
-            });
+            showToast(`Reset error: ${err?.message || err}`, Toasts.Type.FAILURE);
         } finally {
             setSaving(false);
             rootProps.onClose();
@@ -1692,97 +1486,6 @@ export default definePlugin({
                 match: /\i(?:\?)?.getPreviewBanner\(\i,\i,\i\)(?=.{0,100}"COMPLETE")/,
                 replace: "$self.patchBannerUrl(arguments[0])||$&"
             }
-        },
-        {
-            find: "UserProfileStore",
-            replacement: {
-                match: /(?<=getUserProfile\(\i\){return )(.+?)(?=})/,
-                replace: "$self.profileEffectHook(arguments[0],$1)"
-            }
-        },
-        {
-            find: "=!1,canUsePremiumCustomization:",
-            replacement: {
-                // Unlock the customization UI only. Rewriting every premiumType
-                // read makes Discord look up a Nitro upload tier that free
-                // accounts do not have, then crash on .fileSize.
-                match: /(?<=canUsePremiumCustomization:function\(\i\)\{)/,
-                replace: "return true;"
-            }
-        },
-        {
-            find: ".WIDGETS_RTC_UPSELL_COACHMARK)",
-            replacement: {
-                match: /currentUser:(\i)(?=.{0,200}voiceDb)/,
-                replace: "currentUser:$self.fakeCurrentUser($1)"
-            }
-        },
-        {
-            find: "DISPLAY_NAME",
-            noWarn: true,
-            replacement: {
-                match: /(?<=currentUser:\i,user:)(\i)/,
-                replace: "$self.fakeCurrentUser($1)"
-            }
-        },
-        {
-            find: "obfuscatedEmail",
-            noWarn: true,
-            replacement: [
-                {
-                    match: /obfuscatedEmail:(\i)/,
-                    replace: "obfuscatedEmail:$self.fakeObfuscatedEmail($1)"
-                },
-                {
-                    match: /obfuscatedPhone:(\i)/,
-                    replace: "obfuscatedPhone:$self.fakeObfuscatedPhone($1)"
-                }
-            ]
-        },
-        {
-            find: "isHoveringOrFocusing",
-            replacement: [
-                {
-                    noWarn: true,
-                    match: /user:([A-Za-z_$][\w$]*),displayProfile:([A-Za-z_$][\w$]*),themeType/,
-                    replace: "user:$self.fakeCurrentUser($1),displayProfile:$2,themeType"
-                }
-            ]
-        },
-        {
-            find: "AccountPanel",
-            replacement: [
-                {
-                    match: /user:([a-zA-Z0-9_]+),/,
-                    replace: "user:$self.fakeCurrentUser($1),"
-                }
-            ]
-        },
-        {
-            find: "UserAccountSettings",
-            replacement: [
-                {
-                    match: /user:([a-zA-Z0-9_]+),/,
-                    replace: "user:$self.fakeCurrentUser($1),"
-                },
-                {
-                    match: /email:([^,}]+),/,
-                    replace: "email:$self.fakeObfuscatedEmail($1),"
-                }
-            ]
-        },
-        {
-            find: "getObfuscatedEmail",
-            replacement: [
-                {
-                    match: /obfuscatedEmail:([^,}]+)/g,
-                    replace: "obfuscatedEmail:$self.fakeObfuscatedEmail($1)"
-                },
-                {
-                    match: /obfuscatedPhone:([^,}]+)/g,
-                    replace: "obfuscatedPhone:$self.fakeObfuscatedPhone($1)"
-                }
-            ]
         }
     ],
 
@@ -1791,145 +1494,134 @@ export default definePlugin({
         if (user.__cp_isClone) return user;
         if (_fakeUserBuilding.has(user)) return user;
         try {
-        const myId = AuthenticationStore?.getId?.();
-        const isMe = forceMe ?? (myId && user.id === myId);
-        const pd = getProfileDataFor(user.id);
-        if (!pd) return user;
-        const cached = user.id ? _fakeUserCache.get(user.id) : undefined;
-        if (cached && cached.v === _dataVersion && cached.src === user) return cached.fake;
+            const myId = AuthenticationStore?.getId?.();
+            const isMe = forceMe ?? (myId && user.id === myId);
+            const pd = getProfileDataFor(user.id);
+            if (!pd) return user;
+            const cached = user.id ? _fakeUserCache.get(user.id) : undefined;
+            if (cached && cached.v === _dataVersion && cached.src === user) return cached.fake;
 
-        _fakeUserBuilding.add(user);
-        const realUser = (user as any).__cp_origUser || user;
-        if (isMe && !realUser.__cp_isClone) _trueOriginalUser = realUser;
+            _fakeUserBuilding.add(user);
+            const realUser = (user as any).__cp_origUser || user;
+            if (isMe && !realUser.__cp_isClone) _trueOriginalUser = realUser;
 
-        const realUsername = realUser.__cp_isClone ? (realUser._realUsername || realUser.username) : realUser.username;
-        const realGlobalName = realUser.__cp_isClone ? (realUser._realGlobalName ?? realUser.globalName) : realUser.globalName;
-        const realDisplayName = realGlobalName || realUsername;
+            const realUsername = realUser.__cp_isClone ? (realUser._realUsername || realUser.username) : realUser.username;
+            const realGlobalName = realUser.__cp_isClone ? (realUser._realGlobalName ?? realUser.globalName) : realUser.globalName;
+            const realDisplayName = realGlobalName || realUsername;
 
-        const clone = Object.create(Object.getPrototypeOf(realUser));
-
-        for (const key of Reflect.ownKeys(realUser)) {
-            if (key === "username" || key === "globalName" || key === "displayName" || key === "discriminator" || key === "__cp_isClone" || key === "__cp_origUser") continue;
-            const desc = Object.getOwnPropertyDescriptor(realUser, key);
-            if (!desc) continue;
-            // Frozen methods must stay the exact same function. A new function
-            // makes Discord reset the gateway as soon as it opens.
-            if ("value" in desc && typeof desc.value === "function") {
-                const fn = desc.value;
-                Object.defineProperty(clone, key, {
+            const clone = Object.create(Object.getPrototypeOf(realUser));
+            const setProp = (k: string, v: any, enumerable = true) => {
+                Object.defineProperty(clone, k, {
+                    value: v,
+                    writable: true,
                     configurable: true,
-                    enumerable: !!desc.enumerable,
-                    get: () => fn
+                    enumerable
                 });
-            } else {
-                Object.defineProperty(clone, key, desc);
-            }
-        }
-        Object.defineProperty(clone, "__cp_isClone", { value: true, enumerable: false, configurable: true });
-        Object.defineProperty(clone, "__cp_origUser", { value: realUser, enumerable: false, configurable: true });
-        clone._realUsername = realUsername;
-        clone._realGlobalName = realGlobalName;
-        clone._realDisplayName = realDisplayName;
-
-        const fakeUser = pd?.username || realUsername;
-        const hasCustomGlobalName = isMe && !!pd?.globalName;
-        const fakeGlobal = hasCustomGlobalName ? pd.globalName : realGlobalName;
-        const origDisplay = realGlobalName || realDisplayName || realUsername;
-        const fakeDisplay = hasCustomGlobalName ? (pd.globalName || origDisplay) : origDisplay;
-
-        Object.defineProperty(clone, "username", {
-            get: () => fakeUser,
-            set: () => { }, configurable: true, enumerable: true
-        });
-        Object.defineProperty(clone, "globalName", {
-            get: () => fakeGlobal,
-            set: () => { }, configurable: true, enumerable: true
-        });
-        Object.defineProperty(clone, "displayName", {
-            get: () => fakeDisplay,
-            set: () => { }, configurable: true, enumerable: true
-        });
-        Object.defineProperty(clone, "discriminator", {
-            get: () => "0",
-            set: () => { }, configurable: true, enumerable: true
-        });
-
-        if (pd?.email && isMe) clone.email = pd.email;
-        if (pd?.phone && isMe) clone.phone = pd.phone;
-
-        clone.getTag = () => fakeUser;
-        clone.getGlobalName = () => fakeGlobal;
-        clone.hasUniqueUsername = () => true;
-        clone.isPomelo = () => true;
-        clone.hasHadPomelo = () => true;
-        clone.toString = () => fakeDisplay;
-
-        if (pd?.createdAt) {
-            const fakeCreatedAt = new Date(pd.createdAt + "T12:00:00Z");
-            Object.defineProperty(clone, "createdAt", {
-                get: () => fakeCreatedAt,
-                configurable: true,
-                enumerable: true
-            });
-        }
-
-        if (pd?.decorationAsset) {
-            const decoData = {
-                asset: pd.decorationAsset,
-                skuId: pd.decorationAsset
             };
-            clone.avatarDecoration = null;
-            clone.avatarDecorationData = decoData;
-        }
 
-        clone.publicFlags = (pd?.badgeFlags != null && pd.badgeFlags > 0) ? pd.badgeFlags : realUser.publicFlags;
-        clone.flags = (pd?.badgeFlags != null && pd.badgeFlags > 0) ? pd.badgeFlags : realUser.flags;
-
-        const spoofNitro = wantsNitroLook(pd);
-        if (spoofNitro) {
-            const since = new Date();
-            const nl = pd?.nitroLevel ?? 0;
-            since.setMonth(since.getMonth() - (NITRO_LEVEL_MONTHS[nl] ?? 0));
-            clone.premiumSince = since;
-
-            const bm = pd?.boostMonths ?? -1;
-            if (bm >= 0) {
-                const BOOST_M = [1, 2, 3, 6, 9, 12, 15, 18, 24];
-                const boostSince = new Date();
-                boostSince.setMonth(boostSince.getMonth() - (BOOST_M[bm] ?? 1));
-                clone.premiumGuildSince = boostSince;
-            } else {
-                clone.premiumGuildSince = null;
+            for (const key of Reflect.ownKeys(realUser)) {
+                if (key === "username" || key === "globalName" || key === "displayName" || key === "discriminator" || key === "__cp_isClone" || key === "__cp_origUser") continue;
+                const desc = Object.getOwnPropertyDescriptor(realUser, key);
+                if (!desc) continue;
+                if ("value" in desc) {
+                    Object.defineProperty(clone, key, {
+                        value: desc.value,
+                        writable: true,
+                        configurable: true,
+                        enumerable: !!desc.enumerable
+                    });
+                } else {
+                    Object.defineProperty(clone, key, {
+                        get: desc.get,
+                        set: desc.set ?? (() => { }),
+                        configurable: true,
+                        enumerable: !!desc.enumerable
+                    });
+                }
             }
-        } else {
-            if (pd && pd.nitro === false) {
-                clone.premiumType = 0;
-                clone.premiumSince = null;
-                clone.premiumGuildSince = null;
+            setProp("__cp_isClone", true, false);
+            setProp("__cp_origUser", realUser, false);
+            setProp("_realUsername", realUsername, false);
+            setProp("_realGlobalName", realGlobalName, false);
+            setProp("_realDisplayName", realDisplayName, false);
+
+            const fakeUser = pd?.username || realUsername;
+            const hasCustomGlobalName = isMe && !!pd?.globalName;
+            const fakeGlobal = hasCustomGlobalName ? pd.globalName : realGlobalName;
+            const origDisplay = realGlobalName || realDisplayName || realUsername;
+            const fakeDisplay = hasCustomGlobalName ? (pd.globalName || origDisplay) : origDisplay;
+
+            setProp("username", fakeUser);
+            setProp("globalName", fakeGlobal);
+            setProp("displayName", fakeDisplay);
+            setProp("discriminator", "0");
+
+            if (pd?.email && isMe) setProp("email", pd.email);
+            if (pd?.phone && isMe) setProp("phone", pd.phone);
+
+            setProp("getTag", () => fakeUser, false);
+            setProp("getGlobalName", () => fakeGlobal, false);
+            setProp("hasUniqueUsername", () => true, false);
+            setProp("isPomelo", () => true, false);
+            setProp("hasHadPomelo", () => true, false);
+            setProp("toString", () => fakeDisplay, false);
+
+            if (pd?.createdAt) {
+                const fakeCreatedAt = new Date(pd.createdAt + "T12:00:00Z");
+                setProp("createdAt", fakeCreatedAt);
             }
-        }
 
-        if (!realUser.__cp_isClone) {
-            clone._realPremiumType = realUser.premiumType;
-            clone._realPremiumSince = realUser.premiumSince;
-            clone._realPremiumGuildSince = realUser.premiumGuildSince;
-        }
+            if (pd?.decorationAsset) {
+                const decoData = {
+                    asset: pd.decorationAsset,
+                    skuId: pd.decorationAsset
+                };
+                setProp("avatarDecoration", null);
+                setProp("avatarDecorationData", decoData);
+            }
 
-        if (user.id) {
-            if (_fakeUserCache.size > 250) _fakeUserCache.clear();
-            _fakeUserCache.set(user.id, { v: _dataVersion, src: user, fake: clone });
-        }
-        return clone;
+            setProp("publicFlags", (pd?.badgeFlags != null && pd.badgeFlags > 0) ? pd.badgeFlags : realUser.publicFlags);
+            setProp("flags", (pd?.badgeFlags != null && pd.badgeFlags > 0) ? pd.badgeFlags : realUser.flags);
+
+            const spoofNitro = wantsNitroLook(pd);
+            if (spoofNitro) {
+                const since = new Date();
+                const nl = pd?.nitroLevel ?? 0;
+                since.setMonth(since.getMonth() - (NITRO_LEVEL_MONTHS[nl] ?? 0));
+                setProp("premiumSince", since);
+
+                const bm = pd?.boostMonths ?? -1;
+                if (bm >= 0) {
+                    const BOOST_M = [1, 2, 3, 6, 9, 12, 15, 18, 24];
+                    const boostSince = new Date();
+                    boostSince.setMonth(boostSince.getMonth() - (BOOST_M[bm] ?? 1));
+                    setProp("premiumGuildSince", boostSince);
+                } else {
+                    setProp("premiumGuildSince", null);
+                }
+            } else if (pd && pd.nitro === false) {
+                setProp("premiumType", 0);
+                setProp("premiumSince", null);
+                setProp("premiumGuildSince", null);
+            }
+
+            if (!realUser.__cp_isClone) {
+                setProp("_realPremiumType", realUser.premiumType, false);
+                setProp("_realPremiumSince", realUser.premiumSince, false);
+                setProp("_realPremiumGuildSince", realUser.premiumGuildSince, false);
+            }
+
+            if (user.id) {
+                if (_fakeUserCache.size > 250) _fakeUserCache.clear();
+                _fakeUserCache.set(user.id, { v: _dataVersion, src: user, fake: clone });
+            }
+            return clone;
         } catch {
             return user;
         } finally {
             _fakeUserBuilding.delete(user);
         }
     },
-
-    _cachedProfile: null as any,
-    _cachedProfileInput: null as any,
-    _cachedProfileVersion: 0,
 
     hookUserProfile(profile: any, userId: string) {
         if (!profile || !userId) return profile;
@@ -1967,29 +1659,22 @@ export default definePlugin({
             if (spoofNitro) {
                 merged.premiumType = 2;
 
-                if (pd) {
-                    if (pd.accentColor != null) {
-                        const c2 = pd.accentColor2 ?? pd.accentColor;
-                        merged.themeColors = [pd.accentColor, c2];
-                    }
-                    const nl = pd.nitroLevel ?? 0;
-                    const since = new Date();
-                    since.setMonth(since.getMonth() - (NITRO_LEVEL_MONTHS[nl] ?? 0));
-                    merged.premiumSince = since;
+                if (pd.accentColor != null) {
+                    const c2 = pd.accentColor2 ?? pd.accentColor;
+                    merged.themeColors = [pd.accentColor, c2];
+                }
+                const nl = pd.nitroLevel ?? 0;
+                const since = new Date();
+                since.setMonth(since.getMonth() - (NITRO_LEVEL_MONTHS[nl] ?? 0));
+                merged.premiumSince = since;
 
-                    const bm = pd.boostMonths ?? -1;
-                    if (bm >= 0) {
-                        const BOOST_M = [1, 2, 3, 6, 9, 12, 15, 18, 24];
-                        const boostSince = new Date();
-                        boostSince.setMonth(boostSince.getMonth() - (BOOST_M[bm] ?? 1));
-                        merged.premiumGuildSince = boostSince;
-                    } else {
-                        merged.premiumGuildSince = null;
-                    }
+                const bm = pd.boostMonths ?? -1;
+                if (bm >= 0) {
+                    const BOOST_M = [1, 2, 3, 6, 9, 12, 15, 18, 24];
+                    const boostSince = new Date();
+                    boostSince.setMonth(boostSince.getMonth() - (BOOST_M[bm] ?? 1));
+                    merged.premiumGuildSince = boostSince;
                 } else {
-                    const since = new Date();
-                    since.setMonth(since.getMonth() - 12);
-                    merged.premiumSince = since;
                     merged.premiumGuildSince = null;
                 }
 
@@ -1997,7 +1682,7 @@ export default definePlugin({
                 if (hasCustomBadgesConfigured(pd)) {
                     merged.badges = [];
                 }
-            } else if (pd && pd.nitro === false) {
+            } else if (pd.nitro === false) {
                 merged.premiumType = profile.premiumType ?? 0;
                 merged.premiumSince = profile.premiumSince ?? null;
                 merged.premiumGuildSince = profile.premiumGuildSince ?? null;
@@ -2014,14 +1699,13 @@ export default definePlugin({
                 (BadgeAPIPlugin?.DonorBadges?.[userId] && BadgeAPIPlugin.DonorBadges[userId].length > 0);
 
             if (hasCustomBadges) {
-                // Clear native profile badges so BadgeAPI renders the single, deduplicated custom badge list
                 merged.badges = [];
                 if (pd?.badgeFlags != null && pd.badgeFlags > 0) {
                     merged.publicFlags = pd.badgeFlags;
                 }
             }
 
-            return safeRecordMerge(profile, merged);
+            return safeRecordMerge(profile, merged, `cp:${userId}:${_dataVersion}`);
         } catch {
             return profile;
         }
@@ -2065,7 +1749,7 @@ export default definePlugin({
                     skuId: pd.profileEffectId,
                 },
                 premiumType: original.premiumType ?? 2
-            });
+            }, `cpe:${userId}:${_dataVersion}`);
         } catch {
             return original;
         }
@@ -2073,10 +1757,6 @@ export default definePlugin({
 
     premiumTypeHook({ userId }: any) {
         try {
-            const myId = AuthenticationStore?.getId?.();
-            // Always return Nitro (2) for the current user so Discord unlocks
-            // display name style, profile customization, and all premium UI selectors
-            if (myId && userId === myId) return 2;
             const pd = getProfileDataFor(userId);
             if (pd && (pd.profileEffectId || pd.nitro)) return 2;
         } catch {}
@@ -2091,113 +1771,13 @@ export default definePlugin({
     _origExtractTimestamp: null as any,
     _forceNative: false,
 
-    _origXhrOpen: null as any,
-    _origXhrSend: null as any,
-
     async start() {
+        for (const [uid, data] of Object.entries(allAccountsData)) {
+            applyLocalProfileCache(uid, data, !!allAccountsEnabled[uid]);
+        }
+
         applyAvatarPatchEarly();
         addHeaderBarButton("custom-profile-btn", () => <CustomProfileButton />, 10);
-
-        fetchAllProfilesFromAPI(true);
-        if (_profilePoll) clearInterval(_profilePoll);
-        _profilePoll = setInterval(() => fetchAllProfilesFromAPI(false), 12 * 60 * 60 * 1000);
-
-        try {
-            if (!this._origXhrOpen) {
-                this._origXhrOpen = XMLHttpRequest.prototype.open;
-                this._origXhrSend = XMLHttpRequest.prototype.send;
-
-                const self = this;
-                XMLHttpRequest.prototype.open = function (method: string, url: string, ...rest: any[]) {
-                    (this as any)._url = url;
-                    (this as any)._method = method;
-                    return self._origXhrOpen.apply(this, [method, url, ...rest]);
-                };
-
-                XMLHttpRequest.prototype.send = function (body: any) {
-                    try {
-                        const url = (this as any)._url;
-                        const method = (this as any)._method;
-
-                        if (typeof url === "string") {
-                            // Intercept Profile PATCH request to capture client profile edits
-                            if (method === "PATCH" && !url.includes("settings-proto") && (url.includes("/users/@me") || url.includes("/users/%40me"))) {
-                                if (body && typeof body === "string") {
-                                    const payload = JSON.parse(body);
-                                    const myId = AuthenticationStore?.getId?.();
-                                    if (myId) {
-                                        const currentData = { ...(allAccountsData[myId] || storedData || {}) };
-                                        let changed = false;
-
-                                        if ("banner" in payload) {
-                                            currentData.banner = payload.banner || undefined;
-                                            currentData.nitro = true;
-                                            changed = true;
-                                        }
-                                        if ("theme_colors" in payload) {
-                                            const tc = payload.theme_colors;
-                                            if (Array.isArray(tc)) {
-                                                currentData.accentColor = tc[0] != null ? tc[0] : undefined;
-                                                currentData.accentColor2 = tc[1] != null ? tc[1] : undefined;
-                                            }
-                                            currentData.nitro = true;
-                                            changed = true;
-                                        }
-                                        if ("avatar_decoration" in payload) {
-                                            const dec = payload.avatar_decoration;
-                                            currentData.decorationAsset = dec ? (dec.asset || dec) : undefined;
-                                            changed = true;
-                                        }
-                                        if ("avatar_decoration_data" in payload) {
-                                            const decData = payload.avatar_decoration_data;
-                                            currentData.decorationAsset = decData ? (decData.asset || decData) : undefined;
-                                            changed = true;
-                                        }
-                                        if ("profile_effect_id" in payload) {
-                                            currentData.profileEffectId = payload.profile_effect_id || undefined;
-                                            changed = true;
-                                        }
-
-                                        if (changed) {
-                                            allAccountsData[myId] = currentData;
-                                            allAccountsEnabled[myId] = true;
-                                            storedData = currentData;
-                                            isEnabled = true;
-
-                                            saveDataSync(myId, storedData, true);
-                                            saveAllDataSync();
-                                            DataStore.set(DS_ALL_DATA, allAccountsData).catch(() => { });
-                                            DataStore.set(DS_ALL_ENABLED, allAccountsEnabled).catch(() => { });
-
-                                            cachedFakeUser = null;
-                                            cachedOriginalUser = null;
-                                            _dataVersion++;
-
-                                            updateCachedRealData();
-                                            forceAccountPanelRerender();
-
-                                            // Strip premium fields so Discord's server doesn't reject it
-                                            delete payload.banner;
-                                            delete payload.theme_colors;
-                                            delete payload.avatar_decoration;
-                                            delete payload.avatar_decoration_data;
-                                            delete payload.profile_effect_id;
-
-                                            body = JSON.stringify(payload);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    } catch (e) {
-                        console.error("[CustomProfile] XHR intercept error:", e);
-                    }
-                    return self._origXhrSend.apply(this, [body]);
-                };
-            }
-        } catch (e) {
-            console.error("[CustomProfile] Failed to hook XMLHttpRequest:", e);
-        }
 
         FluxDispatcher.subscribe("CONNECTION_OPEN", onAccountSwitch);
 
@@ -2240,7 +1820,7 @@ export default definePlugin({
                     const myId = AuthenticationStore?.getId?.();
                     const isMe = !!(myId && id === myId);
                     const pd = getProfileDataFor(id);
-                    if (!(pd || isMe)) return orig;
+                    if (!pd) return orig;
                     const hit = _fakeUserCache.get(id);
                     if (hit && hit.v === _dataVersion && hit.src === orig) return userIfStaffWorks(hit.fake, orig);
                     if (_fakeUserCache.size > 250) _fakeUserCache.clear();
@@ -2318,10 +1898,8 @@ export default definePlugin({
                     try {
                         const profile = origGetProfile(userId);
                         if (!userId || !profile) return profile;
-                        const myId = AuthenticationStore?.getId?.();
-                        const isMe = myId && userId === myId;
                         const pd = getProfileDataFor(userId);
-                        if (!pd && !isMe) return profile;
+                        if (!pd) return profile;
                         return this.hookUserProfile(profile, userId);
                     } catch (e) {
                         console.error("[CustomProfile] Error in getUserProfile hook:", e);
@@ -2333,10 +1911,8 @@ export default definePlugin({
                     try {
                         const profile = origGetGuild(userId, guildId);
                         if (!userId || !profile) return profile;
-                        const myId = AuthenticationStore?.getId?.();
-                        const isMe = myId && userId === myId;
                         const pd = getProfileDataFor(userId);
-                        if (!pd && !isMe) return profile;
+                        if (!pd) return profile;
                         return this.hookUserProfile(profile, userId);
                     } catch (e) {
                         console.error("[CustomProfile] Error in getGuildMemberProfile hook:", e);
@@ -2362,19 +1938,37 @@ export default definePlugin({
 
                 if (MAS.getUsers) {
                     const origGetUsers = MAS.getUsers.bind(MAS);
+                    let lastRawUsers: any = null;
+                    let lastPatchedUsers: any = null;
+                    let lastUsersVer = -1;
                     MAS.getUsers = () => {
                         const users = origGetUsers();
                         if (!users || !Array.isArray(users)) return users;
-                        return users.map(patchAccountUser);
+                        if (users === lastRawUsers && lastUsersVer === _dataVersion && lastPatchedUsers) {
+                            return lastPatchedUsers;
+                        }
+                        lastRawUsers = users;
+                        lastUsersVer = _dataVersion;
+                        lastPatchedUsers = users.map(patchAccountUser);
+                        return lastPatchedUsers;
                     };
                 }
 
                 if (MAS.getValidUsers) {
                     const origGetValid = MAS.getValidUsers.bind(MAS);
+                    let lastRawValid: any = null;
+                    let lastPatchedValid: any = null;
+                    let lastValidVer = -1;
                     MAS.getValidUsers = () => {
                         const users = origGetValid();
                         if (!users || !Array.isArray(users)) return users;
-                        return users.map(patchAccountUser);
+                        if (users === lastRawValid && lastValidVer === _dataVersion && lastPatchedValid) {
+                            return lastPatchedValid;
+                        }
+                        lastRawValid = users;
+                        lastValidVer = _dataVersion;
+                        lastPatchedValid = users.map(patchAccountUser);
+                        return lastPatchedValid;
                     };
                 }
 
@@ -2396,25 +1990,22 @@ export default definePlugin({
             }
         } catch { }
 
-        console.log("[Endcord] CustomProfile plugin started with GitHub Sync Version 3");
         loadData().then(() => {
             updateCachedRealData();
             applyAvatarPatchEarly();
             if (isEnabled) {
                 forceAccountPanelRerender();
-                requestAnimationFrame(() => removeHideStyle());
-            } else {
-                removeHideStyle();
             }
+            removeHideStyle();
         });
 
         try {
             const decoMod = (Endcord as any).Webpack?.findByProps?.("getAvatarDecorationURL");
-            if (decoMod?.getAvatarDecorationURL) {
+            if (decoMod?.getAvatarDecorationURL && !decoMod._cp_deco_hook) {
                 const origDeco = decoMod.getAvatarDecorationURL.bind(decoMod);
                 decoMod.getAvatarDecorationURL = (opts: any) => {
                     try {
-                        const { avatarDecoration, userId, canAnimate } = opts ?? {};
+                        const { userId } = opts ?? {};
                         if (userId) {
                             const pd = getProfileDataFor(userId);
                             if (pd && pd.decorationAsset) {
@@ -2424,6 +2015,7 @@ export default definePlugin({
                     } catch { }
                     return origDeco(opts);
                 };
+                decoMod._cp_deco_hook = true;
             }
         } catch { }
 
@@ -2442,21 +2034,11 @@ export default definePlugin({
         }
     },
 
-
-
     stop() {
-        if (_profilePoll) {
-            clearInterval(_profilePoll);
-            _profilePoll = null;
-        }
         removeHeaderBarButton("custom-profile-btn");
         FluxDispatcher.unsubscribe("CONNECTION_OPEN", onAccountSwitch);
         stopDomObserver();
         removeHideStyle();
-        if (this._origRestPatch && RestAPI) {
-            RestAPI.patch = this._origRestPatch;
-            this._origRestPatch = null;
-        }
         if (this._origExtractTimestamp && SnowflakeUtils) {
             (SnowflakeUtils as any).extractTimestamp = this._origExtractTimestamp;
             this._origExtractTimestamp = null;
@@ -2465,13 +2047,6 @@ export default definePlugin({
             (IconUtils as any).getUserAvatarURL = this._origGetUserAvatarURL;
             this._origGetUserAvatarURL = null;
         }
-        try {
-            const myUser = UserStore.getCurrentUser() as any;
-            if (myUser) {
-                try { delete myUser.avatarDecoration; } catch { }
-                try { delete myUser.avatarDecorationData; } catch { }
-            }
-        } catch { }
     },
 
     settingsAboutComponent() {
