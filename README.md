@@ -2,7 +2,7 @@
 
 Endcord is a desktop client mod for Discord. It loads with the official app and adds plugins, themes, and a settings panel inside Discord.
 
-Endcord is a fork of [Vencord](https://github.com/Vendicated/Vencord) and [Equicord](https://github.com/Equicord/Equicord).
+Endcord is a fork of [Equicord](https://github.com/Equicord/Equicord) which is fork of [Vencord](https://github.com/Vendicated/Vencord).
 
 [Website](https://endcord.com) · [Download](https://endcord.com/download) · [Discord](https://discord.gg/endcord)
 
