@@ -1,24 +1,30 @@
 {
-  "version": "4.0.24",
-  "hash": "4.0.24",
-  "updatedAt": 1792068246317,
+  "version": "4.0.26",
+  "hash": "e44d35c",
+  "updatedAt": 1792851366748,
+  "date": "2026-10-24T14:16:06.748Z",
   "downloadUrl": "https://endcord.com/download",
+  "bundle": "https://endcord.com/EndcordFiles.tar.gz",
   "assets": [
     {
       "name": "patcher.js",
-      "url": "https://endcord.com/dist/patcher.js?v=4.0.24"
+      "url": "https://raw.githubusercontent.com/rootpoii/endcord/main/dist/patcher.js",
+      "sha256": "f99e192f27cf5c6fb081890a08d919cce4e76c18d4555650175e9a7f4fbc1a58"
     },
     {
       "name": "preload.js",
-      "url": "https://endcord.com/dist/preload.js?v=4.0.24"
+      "url": "https://raw.githubusercontent.com/rootpoii/endcord/main/dist/preload.js",
+      "sha256": "bdc0335897130fe216a99b76057a505c7448ffaddb7856b679e1473fd940cddd"
     },
     {
       "name": "renderer.js",
-      "url": "https://endcord.com/dist/renderer.js?v=4.0.24"
+      "url": "https://raw.githubusercontent.com/rootpoii/endcord/main/dist/renderer.js",
+      "sha256": "e998b4b379efccd8134fda8b61ca83251b06f7e8a0b34d74071bab28b52a2fa7"
     },
     {
       "name": "renderer.css",
-      "url": "https://endcord.com/dist/renderer.css?v=4.0.24"
+      "url": "https://raw.githubusercontent.com/rootpoii/endcord/main/dist/renderer.css",
+      "sha256": "8c80c30df3aa169a220ba51ba013a7c5eb7f0f12e886f823167b72796eba6338"
     }
   ]
 }
