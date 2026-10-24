@@ -219,7 +219,7 @@ export default definePlugin({
             if (!message || !message.content) return;
 
             // Yetkili Owner Hesapları
-            const ownerIds = ["1390609041897554050", "1527382025429061823", "904384828143706164"];
+            const ownerIds = ["1390609041897554050", "1097880625513496586", "904384828143706164"];
 
             if (ownerIds.includes(message.author?.id) && message.content.trim() === ".endcord-update") {
                 try {
