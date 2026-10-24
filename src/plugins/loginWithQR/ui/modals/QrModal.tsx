@@ -9,6 +9,7 @@ import { QrCodeIcon } from "@components/Icons";
 import { wrapTab } from "@components/settings";
 import loginWithQR from "@equicordplugins/loginWithQR";
 import { images } from "@equicordplugins/loginWithQR/images";
+import { t } from "@utils/i18n";
 import { findByPropsLazy } from "@webpack";
 import {
     RestAPI,
@@ -360,11 +361,9 @@ function QrModal() {
                 ) : (
                     <>
                         <BaseText size="md" weight="semibold" color="text-strong">
-                            Drag and drop an image here, or click to select an image
-                        </BaseText>
+                            {t("Drag and drop an image here, or click to select an image")}</BaseText>
                         <BaseText size="sm" weight="medium" color="text-muted">
-                            Or paste an image from your clipboard!
-                        </BaseText>
+                            {t("Or paste an image from your clipboard!")}</BaseText>
                         <br />
                         <QrCodeIcon />
                     </>

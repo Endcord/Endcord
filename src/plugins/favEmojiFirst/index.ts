@@ -23,7 +23,7 @@ interface EmojiAutocompleteState {
 
 export default definePlugin({
     name: "FavoriteEmojiFirst",
-    authors: [Devs.Aria, Devs.Ven],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     description: "Puts your favorite emoji first in the emoji autocomplete.",
     tags: ["Emotes", "Customisation"],
     patches: [

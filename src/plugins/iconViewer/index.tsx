@@ -8,7 +8,7 @@ import "./styles.css";
 
 import { NotesIcon } from "@components/Icons";
 import SettingsPlugin from "@plugins/_core/settings";
-import { EndcordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
 import { removeFromArray } from "@utils/misc";
 import definePlugin, { StartAt } from "@utils/types";
 import { SettingsRouter } from "@webpack/common";
@@ -20,7 +20,7 @@ export default definePlugin({
     name: "IconViewer",
     description: "Adds a new tab to settings to preview all icons.",
     tags: ["Developers"],
-    authors: [EndcordDevs.iamme],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     dependencies: ["Settings", "ConcatenatedModules"],
     startAt: StartAt.WebpackReady,
     toolboxActions: {

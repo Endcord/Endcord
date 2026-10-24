@@ -6,6 +6,7 @@
 
 import { BaseText } from "@components/BaseText";
 import { Card } from "@components/Card";
+import { t } from "@utils/i18n";
 import { Button, useEffect, useState } from "@webpack/common";
 
 const HeadphonesIcon = (props: any) => (
@@ -68,7 +69,7 @@ export default function SongLinker({ url, onResolved }: SongLinkerProps) {
                         }
                     </div>
                 </div>
-            </Card> : <BaseText>Loading song link...</BaseText>
+            </Card> : <BaseText>{t("Loading song link...")}</BaseText>
         }
     </BaseText >;
 }

@@ -12,7 +12,7 @@ export default definePlugin({
     name: "NoProfileThemes",
     description: "Completely removes Nitro profile themes from everyone but yourself",
     tags: ["Appearance"],
-    authors: [Devs.TheKodeToad],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     patches: [
         {
             find: "hasThemeColors(){",

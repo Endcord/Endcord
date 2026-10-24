@@ -11,11 +11,12 @@ import { UserAreaButton, UserAreaRenderProps } from "@api/UserArea";
 import { Button } from "@components/Button";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Switch } from "@components/Switch";
-import { debounce } from "@shared/debounce";
-import { Devs, EquicordDevs, IS_MAC } from "@utils/constants";
-import { classNameFactory } from "@utils/css";
-import definePlugin, { makeRange, OptionType } from "@utils/types";
 import type { Channel, VoiceState } from "@endcord/discord-types";
+import { debounce } from "@shared/debounce";
+import { Devs, IS_MAC } from "@utils/constants";
+import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
+import definePlugin, { makeRange, OptionType } from "@utils/types";
 import { findByCodeLazy, findByPropsLazy } from "@webpack";
 import { ChannelActions, ChannelRouter, ChannelStore, ContextMenuApi, FluxDispatcher, GuildStore, MediaEngineStore, Menu, PermissionsBits, PermissionStore, React, RelationshipStore, SelectedChannelStore, Toasts, useEffect, UserStore, useState, VoiceActions, VoiceStateStore } from "@webpack/common";
 
@@ -111,7 +112,7 @@ function RandomVoiceKeybindSettings() {
 
     return (
         <div className={cl("record")}>
-            <div className={cl("keybind")}>Keybind</div>
+            <div className={cl("keybind")}>{t("Keybind")}</div>
             <Switch checked={keybindEnabled} onChange={value => { settings.store.keybindEnabled = value; }} />
             {keybindEnabled && (
                 <div className={cl("recording")}>
@@ -119,8 +120,7 @@ function RandomVoiceKeybindSettings() {
                         {isListening ? "Recording..." : formatKeybind(keybind)}
                     </Button>
                     <Button type="button" variant="secondary" onClick={() => { settings.store.keybind = DEFAULT_KEYBIND; }} disabled={isListening}>
-                        Reset
-                    </Button>
+                        {t("Reset")}</Button>
                 </div>
             )}
         </div>
@@ -679,18 +679,18 @@ function RandomVoiceMenu({ onClose }: { onClose(): void; }) {
 
     return (
         <Menu.Menu navId="random-voice" onClose={onClose} aria-label="Random Voice">
-            <Menu.MenuItem id="random-voice-servers" label="Servers">
+            <Menu.MenuItem id="random-voice-servers" label={t("Servers")}>
                 <>
                     <Menu.MenuCheckboxItem
                         id="random-voice-select-all-servers"
-                        label="Select All"
+                        label={t("Select All")}
                         checked={selectedServerIds.length === allServerIds.length}
                         disabled={selectedServerIds.length === allServerIds.length}
                         action={selectAllServers}
                     />
                     <Menu.MenuCheckboxItem
                         id="random-voice-reset-servers"
-                        label="Reset"
+                        label={t("Reset")}
                         checked={selectedServerIds.length === 0}
                         disabled={!selectedServerIds.length}
                         action={resetServers}
@@ -708,7 +708,7 @@ function RandomVoiceMenu({ onClose }: { onClose(): void; }) {
                 </>
             </Menu.MenuItem>
 
-            <Menu.MenuItem id="random-voice-state-filters" label="State Filters">
+            <Menu.MenuItem id="random-voice-state-filters" label={t("State Filters")}>
                 <>
                     {stateFilters.map(({ key, label }) => (
                         <Menu.MenuCheckboxItem
@@ -722,14 +722,14 @@ function RandomVoiceMenu({ onClose }: { onClose(): void; }) {
                     <Menu.MenuSeparator />
                     <Menu.MenuCheckboxItem
                         id="random-voice-include-states"
-                        label="Include Filters"
+                        label={t("Include Filters")}
                         checked={settings.store.includeStates}
                         disabled={settings.store.avoidStates || !hasStateFilters(settings.store)}
                         action={() => toggle("includeStates")}
                     />
                     <Menu.MenuCheckboxItem
                         id="random-voice-avoid-states"
-                        label="Avoid Filters"
+                        label={t("Avoid Filters")}
                         checked={settings.store.avoidStates}
                         disabled={settings.store.includeStates || !hasStateFilters(settings.store)}
                         action={() => toggle("avoidStates")}
@@ -778,7 +778,7 @@ function RandomVoiceMenu({ onClose }: { onClose(): void; }) {
 
             <Menu.MenuSeparator />
 
-            <Menu.MenuItem id="random-voice-self-settings" label="Join Settings">
+            <Menu.MenuItem id="random-voice-self-settings" label={t("Join Settings")}>
                 <>
                     {selfSettings.map(({ key, label }) => (
                         <Menu.MenuCheckboxItem
@@ -831,7 +831,7 @@ function renderOperationGroup({
                     />
                 )}
             />
-            <Menu.MenuItem id={`random-voice-operation-${operationKey}`} label="Parameters">
+            <Menu.MenuItem id={`random-voice-operation-${operationKey}`} label={t("Parameters")}>
                 <>
                     {operationOptions.map(option => (
                         <Menu.MenuRadioItem
@@ -854,7 +854,7 @@ export default definePlugin({
     description: "Adds a button near mute to join a random voice channel.",
     dependencies: ["UserAreaAPI"],
     tags: ["Fun", "Voice"],
-    authors: [EquicordDevs.xijexo, EquicordDevs.omaw, Devs.thororen],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
 
     userAreaButton: {

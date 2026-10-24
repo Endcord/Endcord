@@ -35,7 +35,7 @@ export default definePlugin({
     description: "Enhances the command system with miscellaneous improvements.",
     dependencies: ["CommandsAPI"],
     tags: ["Appearance", "Commands", "Shortcuts"],
-    authors: [Devs.ewlle, Devs.rootpoi, Devs.kraethis],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     patches: [
         {

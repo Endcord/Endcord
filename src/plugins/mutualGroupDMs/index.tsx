@@ -11,6 +11,7 @@ import ErrorBoundary from "@components/ErrorBoundary";
 import { Channel, User } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { isNonNullish } from "@utils/guards";
+import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import definePlugin from "@utils/types";
 import { findByPropsLazy, findCssClassesLazy } from "@webpack";
@@ -64,7 +65,7 @@ function renderClickableGDMs(mutualDms: Channel[], onClose: () => void) {
             </Avatar>
             <div className={MutualsListClasses.details}>
                 <div className={MutualsListClasses.name}>{getGroupDMName(c)}</div>
-                <Text variant="text-xs/medium">{c.recipients.length + 1} Members</Text>
+                <Text variant="text-xs/medium">{c.recipients.length + 1}{" "}{t("Members")}</Text>
             </div>
         </Clickable>
     ));
@@ -76,7 +77,7 @@ export default definePlugin({
     name: "MutualGroupDMs",
     description: "Shows mutual group dms in profiles",
     tags: ["Friends", "Appearance"],
-    authors: [Devs.amia],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
 
     patches: [
         // User Profile Modal
@@ -181,7 +182,7 @@ export default definePlugin({
                     : (
                         <div className={ProfileListClasses.empty}>
                             <div className={ProfileListClasses.textContainer}>
-                                <BaseText tag="h3" size="md" weight="medium" style={{ color: "var(--text-strong)" }}>You don't have any group chats in common</BaseText>
+                                <BaseText tag="h3" size="md" weight="medium" style={{ color: "var(--text-strong)" }}>{t("You don't have any group chats in common")}</BaseText>
                             </div>
                         </div>
                     )
@@ -199,7 +200,7 @@ export default definePlugin({
                 {hasDivider && Divider}
                 <ExpandableList
                     listClassName={listStyle}
-                    header={"Mutual Groups"}
+                    header={t("Mutual Groups")}
                     isLoading={false}
                     items={renderClickableGDMs(mutualGDms, () => { })}
                 />

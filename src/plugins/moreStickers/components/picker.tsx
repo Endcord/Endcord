@@ -8,6 +8,7 @@ import { PickerContent, PickerContentHeader, PickerContentRow, PickerContentRowG
 import { sendSticker } from "@equicordplugins/moreStickers/upload";
 import { clPicker, FFmpegStateContext } from "@equicordplugins/moreStickers/utils";
 import { debounce } from "@shared/debounce";
+import { t } from "@utils/i18n";
 import { Modal,openModal, React, TextInput } from "@webpack/common";
 import { JSX } from "react";
 
@@ -70,7 +71,7 @@ export const PickerSidebar = ({ packMetas, onPackSelect }: SidebarProps) => {
                     onClick={() => {
                         openModal(modalProps => {
                             return (
-                                <Modal size="lg" title="Stickers+" {...modalProps}>
+                                <Modal size="lg" title={t("Stickers+")} {...modalProps}>
                                     <Packs />
                                 </Modal>
                             );
@@ -96,7 +97,7 @@ function PickerContentRowGrid({
     isHovered = false
 }: PickerContentRowGrid) {
     if (FFmpegStateContext === undefined) {
-        return <div>FFmpegStateContext is undefined</div>;
+        return <div>{t("FFmpegStateContext is undefined")}</div>;
     }
 
     const ffmpegState = React.useContext(FFmpegStateContext);
@@ -443,7 +444,7 @@ export const PickerHeader = ({ onQueryChange }: PickerHeaderProps) => {
                         <TextInput
                             style={{ height: "30px", border: "none" }}
 
-                            placeholder="Search stickers"
+                            placeholder={t("Search stickers")}
                             autoFocus={true}
                             value={query}
 

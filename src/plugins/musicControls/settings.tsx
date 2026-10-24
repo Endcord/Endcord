@@ -10,6 +10,7 @@ import { ButtonCompat } from "@components/Button";
 import { HeadingSecondary } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
 import { SettingsSection } from "@components/settings/tabs/plugins/components/Common";
+import { t } from "@utils/i18n";
 import { makeRange, OptionType } from "@utils/types";
 import { MaskedLink, Select, showToast, TextInput, Toasts } from "@webpack/common";
 
@@ -30,9 +31,9 @@ export function toggleHoverControls(value: boolean) {
 function InstallInstructions() {
     return (
         <section>
-            <HeadingSecondary>How to install</HeadingSecondary>
+            <HeadingSecondary>{t("How to install")}</HeadingSecondary>
             <Paragraph>
-                Install <MaskedLink href="https://github.com/Inrixia/TidaLuna#installation">TidaLuna</MaskedLink> from here, then go to TidalLuna settings &rarr; Plugin stores &rarr; Install <code>@vmohammad/api</code>
+                {t("Install")}{" "}<MaskedLink href="https://github.com/Inrixia/TidaLuna#installation">{t("TidaLuna")}</MaskedLink> {" "}{t("from here, then go to TidalLuna settings → Plugin stores → Install")}{" "}<code>{t("@vmohammad/api")}</code>
             </Paragraph>
         </section>
     );
@@ -41,7 +42,7 @@ function InstallInstructions() {
 function LyricsProviderSettings() {
     return (
         <>
-            <SettingsSection id="lyrics-provider" name="Lyrics Provider" description="Where lyrics are fetched from.">
+            <SettingsSection id="lyrics-provider" name="Lyrics Provider" description={t("Where lyrics are fetched from.")}>
                 <Select
                     options={[
                         { value: Provider.Lrclib, label: "LRCLIB", default: true },
@@ -50,7 +51,7 @@ function LyricsProviderSettings() {
                     isSelected={v => v === settings.store.lyricsProvider}
                     select={v => { settings.store.lyricsProvider = v as Provider; }}
                     serialize={v => v}
-                    placeholder="Select a lyrics provider"
+                    placeholder={t("Select a lyrics provider")}
                 />
             </SettingsSection>
 
@@ -58,7 +59,7 @@ function LyricsProviderSettings() {
                 <SettingsSection
                     id="spotify-lyrics-provider"
                     name="Spotify Lyrics API Base URL"
-                    description="Custom instance base URL (for example: http://localhost:8080)."
+                    description={t("Custom instance base URL (for example: http://localhost:8080).")}
                 >
                     <TextInput
                         type="text"
@@ -94,7 +95,7 @@ export const settings = definePluginSettings({
         type: OptionType.SELECT,
         options: [
             { value: "above", label: "Above Player(s)" },
-            { value: "below", label: "Below  Player(s)", default: true },
+            { value: "below", label: "Below Player(s)", default: true },
         ],
     },
     lyricsProvider: {
@@ -165,15 +166,14 @@ export const settings = definePluginSettings({
                     showToast("Lyrics cache purged", Toasts.Type.SUCCESS);
                 }}
             >
-                Purge Cache
-            </ButtonCompat>
+                {t("Purge Cache")}</ButtonCompat>
         ),
     },
     spotifySectionTitle: {
         type: OptionType.COMPONENT,
         component: () => (
             <section>
-                <HeadingSecondary>Spotify</HeadingSecondary>
+                <HeadingSecondary>{t("Spotify")}</HeadingSecondary>
             </section>
         )
     },
@@ -202,7 +202,7 @@ export const settings = definePluginSettings({
         type: OptionType.COMPONENT,
         component: () => (
             <section>
-                <HeadingSecondary>Tidal</HeadingSecondary>
+                <HeadingSecondary>{t("Tidal")}</HeadingSecondary>
             </section>
         )
     },

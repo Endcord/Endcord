@@ -12,6 +12,7 @@ import { Icon } from "@endcord/discord-types";
 import { iconsModule } from "@endcordplugins/_core/concatenatedModules";
 import { IconsDef } from "@plugins/iconViewer/types";
 import { debounce } from "@shared/debounce";
+import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import { classes } from "@utils/misc";
 import { useIntersection } from "@utils/react";
@@ -107,7 +108,7 @@ function IconsTab() {
         <SettingsTab>
             <div className={classes(Margins.top16, "vc-icon-tab-search-bar-grid")}>
                 <TextInput autoFocus value={searchInput} placeholder={`Search ${Object.keys(icons).length} icons...`} onChange={onSearch} />
-                <TooltipContainer text="Search by function context">
+                <TooltipContainer text={t("Search by function context")}>
                     <Button
                         size="small"
                         aria-label="Search by function context"
@@ -115,8 +116,7 @@ function IconsTab() {
                         variant={searchByFunction ? "positive" : "primary"}
                         onClick={() => setSearchByFunction(!searchByFunction)}
                     >
-                        Func
-                    </Button>
+                        {t("Func")}</Button>
                 </TooltipContainer>
             </div>
             <div className="vc-icons-tab-grid-container">

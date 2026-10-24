@@ -6,7 +6,7 @@
 
 import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
 import { UserAreaButton, UserAreaRenderProps } from "@api/UserArea";
-import { EndcordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
 import definePlugin, { IconComponent } from "@utils/types";
 import { findByPropsLazy } from "@webpack";
 import { MediaEngineStore, React, useState } from "@webpack/common";
@@ -129,8 +129,8 @@ const FakeMuteButton: ChatBarButtonFactory = () => {
 export default definePlugin({
     name: "FakeMute",
     description: "Appear muted to others in voice channels while keeping your microphone active. Toggle from user panel or chat bar.",
-    authors: [EndcordDevs.ewlle, EndcordDevs.rootpoi, EndcordDevs.kraethis],
-    tags: ["Voice", "Utility", "Popular"],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    tags: ["Voice", "Utility"],
     dependencies: ["ChatInputButtonAPI", "UserAreaAPI"],
 
     userAreaButton: {

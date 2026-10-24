@@ -11,7 +11,8 @@ import { Card } from "@components/Card";
 import { HeadingSecondary, HeadingTertiary } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
 import { debounce } from "@shared/debounce";
-import { EquicordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import { classes } from "@utils/misc";
 import definePlugin, { OptionType } from "@utils/types";
@@ -134,13 +135,13 @@ function GoogleFontSearch({ onSelect }: { onSelect: (font: GoogleFontMetadata) =
 
     return (
         <section>
-            <HeadingSecondary>Search Google Fonts</HeadingSecondary>
-            <Paragraph className={Margins.bottom8}>Click on any font to apply it.</Paragraph>
+            <HeadingSecondary>{t("Search Google Fonts")}</HeadingSecondary>
+            <Paragraph className={Margins.bottom8}>{t("Click on any font to apply it.")}</Paragraph>
 
             <TextInput
                 value={query}
                 onChange={e => handleSearch(e)}
-                placeholder="Search fonts..."
+                placeholder={t("Search fonts...")}
                 disabled={loading}
             />
 
@@ -154,7 +155,7 @@ function GoogleFontSearch({ onSelect }: { onSelect: (font: GoogleFontMetadata) =
                         >
                             <div className="eq-googlefonts-preview" style={{ fontFamily: font.family }}>
                                 <HeadingTertiary>{font.displayName}</HeadingTertiary>
-                                <Paragraph>The quick brown fox jumps over the lazy dog</Paragraph>
+                                <Paragraph>{t("The quick brown fox jumps over the lazy dog")}</Paragraph>
                             </div>
                             {font.authors?.length && (
                                 <Paragraph className={Margins.top8} style={{ opacity: 0.7 }}>
@@ -200,7 +201,7 @@ export default definePlugin({
     name: "FontLoader",
     description: "Loads any font from Google Fonts",
     tags: ["Appearance", "Customisation"],
-    authors: [EquicordDevs.vmohammad],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
 
     async start() {

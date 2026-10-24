@@ -8,6 +8,7 @@ import { BaseText } from "@components/BaseText";
 import { fetchOrgRepos, fetchReposByUserId, fetchReposByUsername, fetchUserInfo, fetchUserOrgs } from "@equicordplugins/githubRepos/githubApi";
 import { GitHubRepo, RepoGroup, RepoSortMode } from "@equicordplugins/githubRepos/types";
 import { buildRepoGroups, PERSONAL_GROUP_KEY, sortGroups } from "@equicordplugins/githubRepos/utils";
+import { t } from "@utils/i18n";
 import { React, useEffect, UserProfileStore, useState } from "@webpack/common";
 
 import { cl, settings } from "..";
@@ -73,12 +74,11 @@ export function ProfileTabComponent({ id }: { id: string, theme: string; }) {
 
     if (loading) return;
     <BaseText size="xs" weight="semibold" className={cl("loading")} >
-        Loading repositories...
-    </BaseText>;
+        {t("Loading repositories...")}</BaseText>;
 
     if (error) return;
     <BaseText size="xs" weight="semibold" className={cl("error")}>
-        Error: {error}
+        {t("Error:")}{" "}{error}
     </BaseText>;
 
     if (!groups.length) return null;

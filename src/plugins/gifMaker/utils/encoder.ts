@@ -4,14 +4,13 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { CAPTIONS } from "@plugins/gifMaker/captions";
+import { measureTextLines } from "@plugins/gifMaker/captions/caption";
+import type { GifMakerOptions } from "@plugins/gifMaker/types";
 import { sleep } from "@utils/misc";
 import type { PluginNative } from "@utils/types";
 import { applyPalette, GIFEncoder, quantize } from "gifenc";
 import { decompressFrames, parseGIF } from "gifuct-js";
-
-import { CAPTIONS } from "../captions";
-import { measureTextLines } from "../captions/caption";
-import type { GifMakerOptions } from "../types";
 
 const MAX_FRAMES = 200;
 const INTERNAL_FPS = 30;

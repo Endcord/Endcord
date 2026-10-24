@@ -11,12 +11,13 @@ import { isPluginEnabled } from "@api/PluginManager";
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { EyeIcon } from "@components/Icons";
+import { Channel, Message } from "@endcord/discord-types";
 import pinDms from "@plugins/pinDms";
 import { isPinned } from "@plugins/pinDms/data";
-import { EquicordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
-import { Channel, Message } from "@endcord/discord-types";
 import { ChannelStore, Clickable, FluxDispatcher, Menu, Tooltip } from "@webpack/common";
 
 interface UserContextProps {
@@ -63,7 +64,7 @@ const messageCtxPatch: NavContextMenuPatchCallback = (children, { message }: { m
     group.splice(group.findIndex(c => c?.props?.id === "copy-text") + 1, 0, (
         <Menu.MenuItem
             id="vc-hidemessages"
-            label="Hide"
+            label={t("Hide")}
             icon={EyeIcon}
             leadingAccessory={{ type: "icon", icon: EyeIcon }}
             action={() => hideMessage(message.id, message.channel_id)}
@@ -104,7 +105,7 @@ export default definePlugin({
     description: "Temporarily hide messages and DMs until you restart.",
     dependencies: ["MessagePopoverAPI"],
     tags: ["Chat", "Utility"],
-    authors: [EquicordDevs.yash],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     patches: [
         {
             find: '"dm-quick-launcher"===',

@@ -10,6 +10,7 @@ import { blockUser, deleteReview, deleteReviewVote, reportReview, unblockUser, v
 import { settings } from "@plugins/reviewDB/settings";
 import { canBlockReviewAuthor, canDeleteReview, canReportReview, cl, showToast } from "@plugins/reviewDB/utils";
 import { openUserProfile } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import { findCssClassesLazy } from "@webpack";
 import { ConfirmModal, IconUtils, openModal as openEndcordModal, Parser, Timestamp, useEffect, useState } from "@webpack/common";
@@ -45,10 +46,10 @@ export default function ReviewComponent({ review, refetch, profileId }: { review
         openEndcordModal(props => (
             <ConfirmModal
                 {...props}
-                title="Are you sure?"
-                subtitle="Do you really want to delete this review?"
-                confirmText="Delete"
-                cancelText="Nevermind"
+                title={t("Are you sure?")}
+                subtitle={t("Do you really want to delete this review?")}
+                confirmText={t("Delete")}
+                cancelText={t("Nevermind")}
                 onConfirm={async () => {
                     if (!(await getToken())) {
                         return showToast("You must be logged in to delete reviews.");
@@ -64,10 +65,10 @@ export default function ReviewComponent({ review, refetch, profileId }: { review
         openEndcordModal(props => (
             <ConfirmModal
                 {...props}
-                title="Are you sure?"
-                subtitle="Do you really want to report this review?"
-                confirmText="Report"
-                cancelText="Nevermind"
+                title={t("Are you sure?")}
+                subtitle={t("Do you really want to report this review?")}
+                confirmText={t("Report")}
+                cancelText={t("Nevermind")}
                 onConfirm={async () => {
                     if (!(await getToken())) {
                         return showToast("You must be logged in to report reviews.");
@@ -87,10 +88,10 @@ export default function ReviewComponent({ review, refetch, profileId }: { review
         openEndcordModal(props => (
             <ConfirmModal
                 {...props}
-                title="Are you sure?"
-                subtitle="Do you really want to block this user? They will be unable to leave further reviews on your profile. You can unblock users in the plugin settings."
-                confirmText="Block"
-                cancelText="Nevermind"
+                title={t("Are you sure?")}
+                subtitle={t("Do you really want to block this user? They will be unable to leave further reviews on your profile. You can unblock users in the plugin settings.")}
+                confirmText={t("Block")}
+                cancelText={t("Nevermind")}
                 onConfirm={async () => {
                     if (!(await getToken())) {
                         return showToast("You must be logged in to block users.");
@@ -192,15 +193,14 @@ export default function ReviewComponent({ review, refetch, profileId }: { review
                         className={classes(BotTagClasses.botTagVerified, BotTagClasses.botTagRegular, BotTagClasses.px, BotTagClasses.rem)}
                         style={{ marginLeft: "4px" }}>
                         <span className={BotTagClasses.botText}>
-                            System
-                        </span>
+                            {t("System")}</span>
                     </span>
                 )}
             </div>
             {isAuthorBlocked && (
                 <ReviewBadge
                     name="You have blocked this user"
-                    description="You have blocked this user"
+                    description={t("You have blocked this user")}
                     icon="/assets/aaee57e0090991557b66.svg"
                     type={0}
                     onClick={() => openBlockModal()}
@@ -220,7 +220,7 @@ export default function ReviewComponent({ review, refetch, profileId }: { review
                         <>
                             {Parser.parseGuildEventDescription(review.comment.substring(0, 200))}...
                             <br />
-                            <a onClick={() => setShowAll(true)}>Read more</a>]
+                            <a onClick={() => setShowAll(true)}>{t("Read more")}</a>]
                         </>
                     )
                     : Parser.parseGuildEventDescription(review.comment)}

@@ -13,6 +13,7 @@ import { buildExtraRoleContextMenuItems } from "@plugins/betterRoleContext";
 import { cl, getGuildPermissionSpecMap, loadGetGuildPermissionSpecMap } from "@plugins/permissionsViewer/utils";
 import { copyToClipboard } from "@utils/clipboard";
 import { getIntlMessage, getUniqueUsername } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { findByCodeLazy } from "@webpack";
 import { ContextMenuApi, FluxDispatcher, GuildMemberStore, GuildRoleStore, i18n, Menu, Modal, openModalLazy, PermissionsBits, ScrollerThin, Text, Tooltip, useEffect, useMemo, useRef, UserStore, useState, useStateFromStores } from "@webpack/common";
 
@@ -69,7 +70,7 @@ function RolesAndUsersPermissionsComponent({ permissions, guild, modalProps, hea
         >
             {!selectedItem && (
                 <div className={cl("modal-no-perms")}>
-                    <Text variant="heading-lg/normal">No permissions to display!</Text>
+                    <Text variant="heading-lg/normal">{t("No permissions to display!")}</Text>
                 </div>
             )}
 
@@ -135,8 +136,7 @@ function RolesAndUsersPermissionsComponent({ permissions, guild, modalProps, hea
                                                         ? (user != null && getUniqueUsername(user)) ?? "Unknown User"
                                                         : (
                                                             <Flex gap="0.2em">
-                                                                @owner
-                                                                <OwnerCrownIcon height={18} width={18} aria-hidden="true" />
+                                                                {t("@owner")}<OwnerCrownIcon height={18} width={18} aria-hidden="true" />
                                                             </Flex>
                                                         )
                                             }

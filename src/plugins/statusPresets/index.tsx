@@ -21,7 +21,8 @@ import "./style.css";
 import { definePluginSettings } from "@api/Settings";
 import { getUserSettingLazy } from "@api/UserSettings";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { EquicordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import { proxyLazy } from "@utils/lazy";
 import { useForceUpdater } from "@utils/react";
 import definePlugin, { OptionType, StartAt } from "@utils/types";
@@ -99,7 +100,7 @@ const StatusSubMenuComponent = () => {
                     >
                         <Menu.MenuItem
                             id={"status-presets-delete-" + index}
-                            label="Delete Preset"
+                            label={t("Delete Preset")}
                             action={() => {
                                 const newPresets = JSON.parse(JSON.stringify(settings.store.StatusPresets));
                                 delete newPresets[status.text];
@@ -127,7 +128,7 @@ export default definePlugin({
     name: "StatusPresets",
     description: "Allows you to remember your statuses and set them later",
     tags: ["Activity", "Utility"],
-    authors: [EquicordDevs.iamme],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     dependencies: ["UserSettingsAPI"],
     patches: [
@@ -141,7 +142,7 @@ export default definePlugin({
         {
             find: "#{intl::STATUS_MENU_LABEL}",
             replacement: {
-                match: /(popoutContainerRef:\i,forceOpen:\i.{0,25}\}\))(?=\])/,
+                match: /(popoutContainerRef:\i,scrollerRef:\i.{0,50}\}\))(?=\])/,
                 replace: "$1,$self.render()"
             }
         },
@@ -165,7 +166,7 @@ export default definePlugin({
                         action="PRESS_SET_STATUS"
                         onClick={openCustomStatusModalLazy}
                         icon={() => <div />}
-                        label="Set Custom Status"
+                        label={t("Set Custom Status")}
                         renderSubmenu={StatusSubMenuComponent}
                     />
                     :
@@ -176,7 +177,7 @@ export default definePlugin({
                         icon={() => status.emoji != null ? (
                             <EmojiComponent emoji={status.emoji} animate={false} hideTooltip={false} />
                         ) : null}
-                        label="Edit Custom Status"
+                        label={t("Edit Custom Status")}
                         renderSubmenu={StatusSubMenuComponent}
                     />
                 }

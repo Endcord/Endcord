@@ -6,12 +6,13 @@
 
 import { addContextMenuPatch, NavContextMenuPatchCallback, removeContextMenuPatch } from "@api/ContextMenu";
 import { updateMessage } from "@api/MessageUpdater";
+import { openLogModal } from "@plugins/messageLoggerEnhanced/components/LogsModal";
+import { deleteMessageIDB } from "@plugins/messageLoggerEnhanced/db";
+import { settings } from "@plugins/messageLoggerEnhanced/index";
+import { t } from "@utils/i18n";
 import { findStoreLazy } from "@webpack";
 import { FluxDispatcher, Menu, MessageActions, React, Toasts, UserStore } from "@webpack/common";
 
-import { openLogModal } from "../components/LogsModal";
-import { deleteMessageIDB } from "../db";
-import { settings } from "../index";
 import { addToXAndRemoveFromOpposite, ListType, removeFromX } from ".";
 
 const SortedGuildStore = findStoreLazy("SortedGuildStore");
@@ -106,12 +107,12 @@ export const contextMenuPath: NavContextMenuPatchCallback = (children, props) =>
             <Menu.MenuSeparator />,
             <Menu.MenuItem
                 id="message-logger"
-                label="Message Logger"
+                label={t("Message Logger")}
             >
 
                 <Menu.MenuItem
                     id="open-logs"
-                    label="Open Logs"
+                    label={t("Open Logs")}
                     action={() => openLogModal()}
                 />
 
@@ -152,7 +153,7 @@ export const contextMenuPath: NavContextMenuPatchCallback = (children, props) =>
                             <Menu.MenuSeparator />
                             <Menu.MenuItem
                                 id="hide-from-message-loggers"
-                                label="Delete Message (Hide From Message Loggers)"
+                                label={t("Delete Message (Hide From Message Loggers)")}
                                 color="danger"
 
                                 action={async () => {

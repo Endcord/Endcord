@@ -7,6 +7,7 @@
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { Guild } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import definePlugin from "@utils/types";
 import { Menu } from "@webpack/common";
 
@@ -18,7 +19,7 @@ const Patch: NavContextMenuPatchCallback = (children, { guild }: { guild: Guild;
     group?.push(
         <Menu.MenuItem
             id="vc-server-info"
-            label="Server Info"
+            label={t("Server Info")}
             action={() => openGuildInfoModal(guild)}
         />
     );
@@ -28,7 +29,7 @@ export default definePlugin({
     name: "ServerInfo",
     description: "Allows you to view info about a server",
     tags: ["Servers", "Utility"],
-    authors: [Devs.Ven, Devs.Nuckyz],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     dependencies: ["DynamicImageModalAPI"],
     searchTerms: ["guild", "info", "ServerProfile"],
 

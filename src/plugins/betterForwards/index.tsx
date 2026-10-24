@@ -10,11 +10,12 @@ import ErrorBoundary from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
 import { InfoIcon } from "@components/Icons";
 import { Margins } from "@components/margins";
-import { Devs, EquicordDevs } from "@utils/constants";
+import { Message } from "@endcord/discord-types";
+import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import { sendMessage } from "@utils/discord";
+import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
-import { Message } from "@endcord/discord-types";
 import { proxyLazyWebpack } from "@webpack";
 import { ChannelActionCreators, ChannelStore, Checkbox, React, Tooltip, useMemo, useState } from "@webpack/common";
 import { Dispatch, MouseEvent, ReactNode, SetStateAction } from "react";
@@ -93,7 +94,7 @@ export default definePlugin({
     description: "Message forward utilities including NSFW bypass and UI improvements.",
     tags: ["Chat", "Utility"],
     searchTerms: ["selfForward", "betterForwardMeta"],
-    authors: [Devs.thororen, Devs.sadan, Devs.nin0dev, EquicordDevs.VillainsRule, Devs.Davri],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     managedStyle,
     patches: [
@@ -263,9 +264,9 @@ export default definePlugin({
                     {message && message.embeds.length + message.attachments.length > 0 && (
                         <Flex className={Margins.top16}>
                             <Checkbox value={!hasOpts} onChange={() => setOpts(!hasOpts ? defaultOpts : {})} size={20}>
-                                <BaseText size="sm">Forward everything</BaseText>
+                                <BaseText size="sm">{t("Forward everything")}</BaseText>
                             </Checkbox>
-                            <Tooltip text="Message text will not be forwarded when this option is disabled">
+                            <Tooltip text={t("Message text will not be forwarded when this option is disabled")}>
                                 {props => <InfoIcon {...props} color="var(--text-muted)" width={20} height={20} />}
                             </Tooltip>
                         </Flex>

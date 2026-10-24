@@ -13,7 +13,7 @@ function isTokiPona(text: string) {
 }
 
 function isSitelen(text: string) {
-    const dictionary = /(?:󱤀|󱤁|󱤂|󱤃|󱤄|󱤅|󱤆|󱤇|󱤈|󱤉|󱤊|󱤋|󱤌|󱤍|󱤎|󱤏|󱤐|󱤑|󱤒|󱤓|󱤔|󱤕|󱤖|󱤗|󱤘|󱤙|󱤚|󱤛|󱤜|󱤝|󱤞|󱤟|󱤠|󱤡|󱤢|󱤣|󱤤|󱤥|󱤦|󱤧|󱤨|󱤩|󱤪|󱤫|󱤬|󱤭|󱤮|󱤯|󱤰|󱤱|󱤲|󱤳|󱤴|󱤵|󱤶|󱤷|󱤸|󱤹|󱤺|󱤻|󱤼|󱤽|󱤾|󱤿|󱥀|󱥁|󱥂|󱥃|󱥄|󱥅|󱥆|󱥇|󱥈|󱥉|󱥊|󱥋|󱥌|󱥍|󱥎|󱥏|󱥐|󱥑|󱥒|󱥓|󱥔|󱥕|󱥖|󱥗|󱥘|󱥙|󱥚|󱥛|󱥜|󱥝|󱥞|󱥟|󱥠|󱥡|󱥢|󱥣|󱥤|󱥥|󱥦|󱥧|󱥨|󱥩|󱥪|󱥫|󱥬|󱥭|󱥮|󱥯|󱥰|󱥱|󱥲|󱥳|󱥴|󱥵|󱥶|󱥷|󱦠|󱦡|󱦢|󱦣|󱥸|󱥹|󱥺|󱥻|󱥼|󱥽|󱥾|󱥿|󱦀|󱦁|󱦂|󱦃|󱦄|󱦅|󱦆|󱦇|󱦈|󱦐|󱦑|󱦒|󱦓|󱦔|󱦕|󱦖|󱦗|󱦘|󱦙|󱦚|󱦛|󱦜|󱦝)/gm;
+    const dictionary = /(?:\uDB86\uDD00|\uDB86\uDD01|\uDB86\uDD02|\uDB86\uDD03|\uDB86\uDD04|\uDB86\uDD05|\uDB86\uDD06|\uDB86\uDD07|\uDB86\uDD08|\uDB86\uDD09|\uDB86\uDD0A|\uDB86\uDD0B|\uDB86\uDD0C|\uDB86\uDD0D|\uDB86\uDD0E|\uDB86\uDD0F|\uDB86\uDD10|\uDB86\uDD11|\uDB86\uDD12|\uDB86\uDD13|\uDB86\uDD14|\uDB86\uDD15|\uDB86\uDD16|\uDB86\uDD17|\uDB86\uDD18|\uDB86\uDD19|\uDB86\uDD1A|\uDB86\uDD1B|\uDB86\uDD1C|\uDB86\uDD1D|\uDB86\uDD1E|\uDB86\uDD1F|\uDB86\uDD20|\uDB86\uDD21|\uDB86\uDD22|\uDB86\uDD23|\uDB86\uDD24|\uDB86\uDD25|\uDB86\uDD26|\uDB86\uDD27|\uDB86\uDD28|\uDB86\uDD29|\uDB86\uDD2A|\uDB86\uDD2B|\uDB86\uDD2C|\uDB86\uDD2D|\uDB86\uDD2E|\uDB86\uDD2F|\uDB86\uDD30|\uDB86\uDD31|\uDB86\uDD32|\uDB86\uDD33|\uDB86\uDD34|\uDB86\uDD35|\uDB86\uDD36|\uDB86\uDD37|\uDB86\uDD38|\uDB86\uDD39|\uDB86\uDD3A|\uDB86\uDD3B|\uDB86\uDD3C|\uDB86\uDD3D|\uDB86\uDD3E|\uDB86\uDD3F|\uDB86\uDD40|\uDB86\uDD41|\uDB86\uDD42|\uDB86\uDD43|\uDB86\uDD44|\uDB86\uDD45|\uDB86\uDD46|\uDB86\uDD47|\uDB86\uDD48|\uDB86\uDD49|\uDB86\uDD4A|\uDB86\uDD4B|\uDB86\uDD4C|\uDB86\uDD4D|\uDB86\uDD4E|\uDB86\uDD4F|\uDB86\uDD50|\uDB86\uDD51|\uDB86\uDD52|\uDB86\uDD53|\uDB86\uDD54|\uDB86\uDD55|\uDB86\uDD56|\uDB86\uDD57|\uDB86\uDD58|\uDB86\uDD59|\uDB86\uDD5A|\uDB86\uDD5B|\uDB86\uDD5C|\uDB86\uDD5D|\uDB86\uDD5E|\uDB86\uDD5F|\uDB86\uDD60|\uDB86\uDD61|\uDB86\uDD62|\uDB86\uDD63|\uDB86\uDD64|\uDB86\uDD65|\uDB86\uDD66|\uDB86\uDD67|\uDB86\uDD68|\uDB86\uDD69|\uDB86\uDD6A|\uDB86\uDD6B|\uDB86\uDD6C|\uDB86\uDD6D|\uDB86\uDD6E|\uDB86\uDD6F|\uDB86\uDD70|\uDB86\uDD71|\uDB86\uDD72|\uDB86\uDD73|\uDB86\uDD74|\uDB86\uDD75|\uDB86\uDD76|\uDB86\uDD77|\uDB86\uDDA0|\uDB86\uDDA1|\uDB86\uDDA2|\uDB86\uDDA3|\uDB86\uDD78|\uDB86\uDD79|\uDB86\uDD7A|\uDB86\uDD7B|\uDB86\uDD7C|\uDB86\uDD7D|\uDB86\uDD7E|\uDB86\uDD7F|\uDB86\uDD80|\uDB86\uDD81|\uDB86\uDD82|\uDB86\uDD83|\uDB86\uDD84|\uDB86\uDD85|\uDB86\uDD86|\uDB86\uDD87|\uDB86\uDD88|\uDB86\uDD90|\uDB86\uDD91|\uDB86\uDD92|\uDB86\uDD93|\uDB86\uDD94|\uDB86\uDD95|\uDB86\uDD96|\uDB86\uDD97|\uDB86\uDD98|\uDB86\uDD99|\uDB86\uDD9A|\uDB86\uDD9B|\uDB86\uDD9C|\uDB86\uDD9D)/gm;
 
     return dictionary.test(text);
 }
@@ -86,13 +86,20 @@ async function translateSitelen(message: string) {
 async function google(target: string, text: string) {
     if (!text) return { src: "", text: "" };
     try {
-        const res = await fetch(`https://translate.googleapis.com/translate_a/single?${new URLSearchParams({ client: "gtx", sl: "auto", tl: target, dt: "t", dj: "1", source: "input", q: text })}`);
+        const res = await fetch("https://translate-pa.googleapis.com/v1/translate?" + new URLSearchParams({
+            "params.client": "gtx",
+            "dataTypes": "TRANSLATION",
+            "key": "AIzaSyDLEeFI5OtFBwYBIoK_jj5m32rZK5CkCXA", // some google API key
+            "query.sourceLanguage": "auto",
+            "query.targetLanguage": target,
+            "query.text": text,
+        }));
         if (!res.ok) throw new Error(`Request failed with status ${res.status}`);
         const translate = await res.json();
 
         return {
-            src: translate.src,
-            text: translate.sentences?.map(s => s.trans).filter(Boolean).join("\n")
+            src: translate.sourceLanguage,
+            text: translate.translation
         };
     } catch (error) {
         console.error("[TranslatePlus] Google Translate request failed:", error);

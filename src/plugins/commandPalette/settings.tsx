@@ -9,6 +9,7 @@ import { BaseText } from "@components/BaseText";
 import { Button } from "@components/Button";
 import { IS_MAC } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import { OptionType } from "@utils/types";
 import { useEffect, useState } from "@webpack/common";
 
@@ -61,7 +62,7 @@ function HotkeyRecorder() {
 
     return (
         <div className={cl("hotkey-setting")}>
-            <BaseText size="md" weight="semibold">Open palette hotkey</BaseText>
+            <BaseText size="md" weight="semibold">{t("Open palette hotkey")}</BaseText>
             <Button variant="secondary" onClick={() => setRecording(true)}>
                 {recording ? "Press keys..." : formatCombo(hotkey)}
             </Button>

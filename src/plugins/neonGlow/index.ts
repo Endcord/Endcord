@@ -1,6 +1,6 @@
 /*
- * Endcord, a vaporwave-inspired Discord client mod
- * Copyright (c) 2026 unfamiliardev
+ * Endcord, a Discord client mod
+ * Copyright (c) 2026 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -13,7 +13,7 @@ import style from "./style.css?managed";
 export default definePlugin({
     name: "NeonGlow",
     description: "Adds a neon glow to avatars, links and buttons when you hover them.",
-    authors: [Devs.ewlle, Devs.rootpoi, Devs.kraethis],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     start: () => enableStyle(style),
     stop: () => disableStyle(style),
 });

@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { User } from "@endcord/discord-types";
 import { copyToClipboard } from "@utils/clipboard";
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
-import { User } from "@endcord/discord-types";
 import { findByCodeLazy } from "@webpack";
 import { Toasts } from "@webpack/common";
 
@@ -22,9 +22,9 @@ const getMetadataFromApi: (activity: any, userId: string) => Promise<any> = find
 
 export default definePlugin({
     name: "CopyStatusUrls",
-    description: "Copy the users status url when you right-click it",
+    description: "Copy a user's status URL when you right-click it",
     tags: ["Activity", "Utility"],
-    authors: [Devs.ewlle, Devs.rootpoi, Devs.kraethis],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
 
     patches: [
         {

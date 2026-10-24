@@ -26,7 +26,7 @@ export default definePlugin({
     name: "PinIcon",
     description: "Adds a pin icon to pinned messages",
     tags: ["Appearance", "Chat"],
-    authors: [Devs.ewlle, Devs.rootpoi, Devs.kraethis],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     patches: [
         {
             find: "isUnsupported})",

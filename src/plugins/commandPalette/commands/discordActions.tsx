@@ -6,11 +6,10 @@
 
 import { getUserSettingLazy } from "@api/UserSettings";
 import type { Theme } from "@endcord/discord-types";
+import type { PaletteCommand } from "@plugins/commandPalette/api/types";
+import { CircleIcon, HeadphonesIcon, MicIcon, MoonIcon } from "@plugins/commandPalette/ui/icons";
 import { findByCodeLazy } from "@webpack";
 import { showToast, ThemeStore, Toasts, VoiceActions } from "@webpack/common";
-
-import type { PaletteCommand } from "../api/types";
-import { CircleIcon, HeadphonesIcon, MicIcon, MoonIcon } from "../ui/icons";
 
 const SECTION = "Discord";
 

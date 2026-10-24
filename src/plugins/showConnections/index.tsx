@@ -144,7 +144,7 @@ export default definePlugin({
     name: "ShowConnections",
     description: "Show connected accounts in user popouts",
     tags: ["Friends", "Appearance"],
-    authors: [Devs.TheKodeToad],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
 
     patches: [
@@ -152,7 +152,7 @@ export default definePlugin({
             // Same find as ReviewDB
             find: '"UserProfilePopout");',
             replacement: {
-                match: /userId:\i\.id,guild:\i\}\)(?=])/,
+                match: /userId:\i\.id,guild:\i\}\)(?=(?:,Endcord\.Plugins\.plugins\[[^\]]+\]\.\w+\(arguments\[0\]\))*])/,
                 replace: "$&,$self.profilePopoutComponent(arguments[0])"
             }
         }

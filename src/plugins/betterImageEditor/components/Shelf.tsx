@@ -5,10 +5,10 @@
  */
 
 import { DeleteIcon, SearchIcon } from "@components/Icons";
+import { Entry, getFile, Group, Kind } from "@plugins/betterImageEditor/library";
 import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import { React, useCallback, useEffect, useRef, useState } from "@webpack/common";
-
-import { Entry, getFile, Group, Kind } from "../library";
 
 export const cl = classNameFactory("vc-bie-");
 
@@ -87,7 +87,7 @@ export function Shelf({ kind, group, entries, thumbs, activeId, wornId, onGroup,
                     aria-selected={group === "original"}
                     className={cl("tab", { on: group === "original" })}
                     onClick={() => onGroup("original")}
-                >Originals</button>
+                >{t("Originals")}</button>
                 <button
                     type="button"
                     role="tab"
@@ -98,8 +98,7 @@ export function Shelf({ kind, group, entries, thumbs, activeId, wornId, onGroup,
 
                 {onPutBack && (
                     <button type="button" className={cl("action")} onClick={onPutBack}>
-                        Put back the last one
-                    </button>
+                        {t("Put back the last one")}</button>
                 )}
 
             </div>
@@ -114,7 +113,7 @@ export function Shelf({ kind, group, entries, thumbs, activeId, wornId, onGroup,
                         <input
                             type="text"
                             value={filter}
-                            placeholder="Search"
+                            placeholder={t("Search")}
                             aria-label="Search saved pictures"
                             onChange={event => setFilter(event.currentTarget.value)}
                         />
@@ -156,7 +155,7 @@ You are wearing this` : entry.name}
                             type="button"
                             className={cl("remove")}
                             aria-label={`Remove ${entry.name}`}
-                            title="Remove. Hold Shift to skip the confirmation"
+                            title={t("Remove. Hold Shift to skip the confirmation")}
                             onClick={event => onForget(entry, event.shiftKey)}
                         >
                             <DeleteIcon width={10} height={10} />

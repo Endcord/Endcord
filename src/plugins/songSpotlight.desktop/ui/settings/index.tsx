@@ -8,6 +8,7 @@ import { BaseText } from "@components/BaseText";
 import { Button } from "@components/Button";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
+import { RenderModalProps } from "@endcord/discord-types";
 import { apiConstants, deleteData, getData, saveData } from "@equicordplugins/songSpotlight.desktop/lib/api";
 import { presentOAuth2Modal } from "@equicordplugins/songSpotlight.desktop/lib/oauth2";
 import { useAuthorizationStore } from "@equicordplugins/songSpotlight.desktop/lib/stores/AuthorizationStore";
@@ -16,12 +17,28 @@ import { cl } from "@equicordplugins/songSpotlight.desktop/lib/utils";
 import { Native } from "@equicordplugins/songSpotlight.desktop/service";
 import { Spinner } from "@equicordplugins/songSpotlight.desktop/ui/common";
 import SongList from "@equicordplugins/songSpotlight.desktop/ui/settings/SongList";
-import { UserData, UserDataSchema } from "@song-spotlight/api/structs";
+import type { UserData } from "@song-spotlight/api/structs";
 import { sid } from "@song-spotlight/api/util";
 import { readClipboard } from "@utils/clipboard";
 import { copyWithToast } from "@utils/discord";
-import { RenderModalProps } from "@endcord/discord-types";
+import { t } from "@utils/i18n";
 import { Alerts, Modal,openModal, Parser, showToast, Toasts, useCallback, useEffect, useMemo, useRef, useState } from "@webpack/common";
+
+// Shape check for clipboard imports. Each song is still validated by Native.validateSong afterwards, so this
+// only needs to reject malformed JSON. It replaces the zod schema from @song-spotlight/api/structs, which pulled
+// ~450 KB of zod into every startup for this one button.
+function parseUserData(json: unknown, limit: number): UserData | null {
+    if (!Array.isArray(json) || json.length > limit) return null;
+
+    const songs: UserData = [];
+    for (const song of json) {
+        if (!song || typeof song !== "object") return null;
+        const { service, type, id } = song as Record<string, unknown>;
+        if (typeof service !== "string" || typeof type !== "string" || typeof id !== "string") return null;
+        songs.push({ service, type, id } as UserData[number]);
+    }
+    return songs;
+}
 
 interface ImportButtonProps {
     overwrite: boolean;
@@ -42,8 +59,8 @@ function ImportButton({ overwrite, pending, setPending, onImport }: ImportButton
             return showToast("No JSON in clipboard!", Toasts.Type.FAILURE);
         }
 
-        const { error, data } = UserDataSchema.max(apiConstants.songLimit).safeParse(json);
-        if (error) {
+        const data = parseUserData(json, apiConstants.songLimit);
+        if (!data) {
             setPending(false);
             return showToast("Invalid Song Spotlight data in clipboard!", Toasts.Type.FAILURE);
         }
@@ -65,18 +82,17 @@ function ImportButton({ overwrite, pending, setPending, onImport }: ImportButton
             onClick={async () => {
                 if (overwrite) {
                     Alerts.show({
-                        title: "Are you sure?",
-                        body: "This will overwrite your current songs.",
+                        title: t("Are you sure?"),
+                        body: t("This will overwrite your current songs."),
                         onConfirm: checkClipboard,
-                        confirmText: "Continue",
-                        cancelText: "Nevermind",
+                        confirmText: t("Continue"),
+                        cancelText: t("Nevermind"),
                     });
                 } else checkClipboard();
             }}
             disabled={pending}
         >
-            Import from clipboard
-        </Button>
+            {t("Import from clipboard")}</Button>
     );
 }
 
@@ -106,22 +122,21 @@ export default function Settings({ templateData }: SettingsProps) {
         if (isAuthorized() && !localData) getData().then(() => setPending(false));
     }, [isAuthorized()]);
 
-    if (!isAuthorized()) return <Button onClick={() => presentOAuth2Modal()}>Sign in to Song Spotlight</Button>;
+    if (!isAuthorized()) return <Button onClick={() => presentOAuth2Modal()}>{t("Sign in to Song Spotlight")}</Button>;
 
     return (
         <Flex flexDirection="column" gap="20px">
             <BaseText size="md" weight="normal">
-                You can also view your songs via the {Parser.parse("</songspotlight:1468320979938971802>")} command!
-            </BaseText>
+                {t("You can also view your songs via the")}{" "}{Parser.parse("</songspotlight:1468320979938971802>")}{" "}{t("command!")}</BaseText>
             {localData
                 ? (
                     <Flex flexDirection="column" gap="12px">
                         <Flex flexDirection="column" gap={0}>
-                            <BaseText size="lg" weight="semibold">Songs</BaseText>
+                            <BaseText size="lg" weight="semibold">{t("Songs")}</BaseText>
                             {self?.at
                                 && (
                                     <BaseText size="xs" weight="normal" className={cl("sub")}>
-                                        Last updated <b>{Intl.DateTimeFormat().format(new Date(self.at))}</b>
+                                        {t("Last updated")}{" "}<b>{Intl.DateTimeFormat().format(new Date(self.at))}</b>
                                     </BaseText>
                                 )}
                         </Flex>
@@ -138,8 +153,7 @@ export default function Settings({ templateData }: SettingsProps) {
                                     onClick={() => copyWithToast(JSON.stringify(localData))}
                                     disabled={pending}
                                 >
-                                    Copy to clipboard
-                                </Button>
+                                    {t("Copy to clipboard")}</Button>
                                 <ImportButton
                                     overwrite={!!localData[0]}
                                     pending={pending}
@@ -160,14 +174,13 @@ export default function Settings({ templateData }: SettingsProps) {
                                 }}
                                 disabled={isSame || pending}
                             >
-                                Save
-                            </Button>
+                                {t("Save")}</Button>
                         </Flex>
                     </Flex>
                 )
                 : <Spinner type={Spinner.Type.WANDERING_CUBES} />}
             <Flex flexDirection="column" gap="12px">
-                <BaseText size="lg" weight="semibold">Authorization</BaseText>
+                <BaseText size="lg" weight="semibold">{t("Authorization")}</BaseText>
                 <div className={cl("twin-buttons")}>
                     <Button
                         variant="dangerPrimary"
@@ -177,14 +190,13 @@ export default function Settings({ templateData }: SettingsProps) {
                         }}
                         disabled={pending}
                     >
-                        Sign out
-                    </Button>
+                        {t("Sign out")}</Button>
                     <Button
                         variant="dangerSecondary"
                         onClick={() =>
                             Alerts.show({
-                                title: "Are you sure?",
-                                body: "This will permanently delete all of your songs.",
+                                title: t("Are you sure?"),
+                                body: t("This will permanently delete all of your songs."),
                                 onConfirm: async () => {
                                     setPending(true);
                                     try {
@@ -197,13 +209,12 @@ export default function Settings({ templateData }: SettingsProps) {
                                     }
                                 },
                                 confirmColor: "danger",
-                                confirmText: "Delete",
-                                cancelText: "Nevermind",
+                                confirmText: t("Delete"),
+                                cancelText: t("Nevermind"),
                             })}
                         disabled={!self?.data[0] || pending}
                     >
-                        Delete songs
-                    </Button>
+                        {t("Delete songs")}</Button>
                 </div>
             </Flex>
         </Flex>
@@ -213,7 +224,7 @@ export default function Settings({ templateData }: SettingsProps) {
 export function SettingsModal({ modalProps, ...props }: SettingsProps & { modalProps: RenderModalProps; }) {
     return (
         <ErrorBoundary>
-            <Modal {...modalProps} size="lg" title="Song Spotlight">
+            <Modal {...modalProps} size="lg" title={t("Song Spotlight")}>
                 <div style={{ marginBottom: "20px" }}>
                     <Settings {...props} />
                 </div>

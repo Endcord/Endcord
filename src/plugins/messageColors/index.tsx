@@ -24,7 +24,7 @@ interface ParsedColorInfo {
 const requiredFirstCharacters = ["r", "h", "#"].flatMap(v => [v, v.toUpperCase()]);
 
 export default definePlugin({
-    authors: [Devs.ewlle, Devs.rootpoi, Devs.kraethis],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     name: "MessageColors",
     description: "Displays color codes like #FF0042 inside of messages",
     tags: ["Appearance", "Chat"],

@@ -13,6 +13,7 @@ import { ImageIcon, LinkIcon, OpenExternalIcon } from "@components/Icons";
 import { SeekBar } from "@equicordplugins/musicControls/spotify/SeekBar";
 import { debounce } from "@shared/debounce";
 import { copyWithToast, openImageModal } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import { ContextMenuApi, FluxDispatcher, Menu, React, useEffect, useState, useStateFromStores } from "@webpack/common";
 
@@ -221,7 +222,7 @@ function AlbumContextMenu({ track }: { track: PlayerState["track"]; }) {
             <Menu.MenuItem
                 key="view-cover"
                 id="view-cover"
-                label="View Album Cover"
+                label={t("View Album Cover")}
                 action={() => track?.imageSrc && openImageModal({ url: track.imageSrc })}
                 icon={ImageIcon}
                 leadingAccessory={{ type: "icon", icon: ImageIcon }}
@@ -229,7 +230,7 @@ function AlbumContextMenu({ track }: { track: PlayerState["track"]; }) {
             <Menu.MenuControlItem
                 id="tdl-volume"
                 key="tdl-volume"
-                label="Volume"
+                label={t("Volume")}
                 control={(props, ref) => (
                     <Menu.MenuSliderControl
                         {...props}
@@ -298,7 +299,7 @@ function Info({ track }: { track: NonNullable<PlayerState["track"]>; }) {
                 </BaseText>
                 {track.artist && (
                     <BaseText size="sm" className={cl("ellipoverflow")}>
-                        by&nbsp;
+                        {t("by")}&nbsp;
                         <span className={cl("artist")} style={{ fontSize: "inherit" }} title={track.artist}>
                             {track.artist}
                         </span>
@@ -306,7 +307,7 @@ function Info({ track }: { track: NonNullable<PlayerState["track"]>; }) {
                 )}
                 {track.album && (
                     <BaseText size="sm" className={cl("ellipoverflow")}>
-                        on&nbsp;
+                        {t("on")}&nbsp;
                         <span
                             id={cl("album-title")}
                             className={cl("album")}

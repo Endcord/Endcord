@@ -6,9 +6,9 @@
 
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
+import { Channel } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
-import { Channel } from "@endcord/discord-types";
 import { findComponentByCodeLazy } from "@webpack";
 import { JoinedThreadsStore, ReadStateStore, UserGuildSettingsStore, useStateFromStores } from "@webpack/common";
 
@@ -29,7 +29,7 @@ const settings = definePluginSettings({
 
 export default definePlugin({
     name: "UnreadCountBadge",
-    authors: [Devs.Joona],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     description: "Shows unread message count badges on channels in the channel list",
     tags: ["Appearance", "Customisation", "Servers"],
     settings,

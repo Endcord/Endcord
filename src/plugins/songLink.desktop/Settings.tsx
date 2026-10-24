@@ -6,6 +6,7 @@
 
 import { FormSwitch } from "@components/FormSwitch";
 import { HeadingTertiary } from "@components/Heading";
+import { t } from "@utils/i18n";
 
 import { settings } from ".";
 import { Providers } from "./Providers";
@@ -39,7 +40,7 @@ export function Settings() {
                     gap: 4
                 }}>
                     <FormSwitch
-                        title="Show if available"
+                        title={t("Show if available")}
                         hideBorder={true}
                         key={`${provider[0]}-visible`}
                         value={blazinglyFastSettings.servicesSettings[provider[0]].enabled}
@@ -48,7 +49,7 @@ export function Settings() {
                     {
                         /* @ts-ignore */
                         provider[1].native && <FormSwitch
-                            title="Open in desktop app"
+                            title={t("Open in desktop app")}
                             hideBorder={true}
                             key={`${provider[0]}-native`}
                             value={blazinglyFastSettings.servicesSettings[provider[0]].openInNative}

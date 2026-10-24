@@ -4,9 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import type { DetailPageSpec } from "@plugins/commandPalette/api/types";
 import { classNameFactory } from "@utils/css";
-
-import type { DetailPageSpec } from "../../api/types";
 
 const cl = classNameFactory("vc-cmdpal-");
 

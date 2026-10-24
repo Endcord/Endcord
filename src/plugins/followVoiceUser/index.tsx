@@ -7,9 +7,10 @@
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { definePluginSettings } from "@api/Settings";
 import { Notice } from "@components/Notice";
-import { EquicordDevs } from "@utils/constants";
-import definePlugin, { OptionType } from "@utils/types";
 import { Channel, User, VoiceState } from "@endcord/discord-types";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
+import definePlugin, { OptionType } from "@utils/types";
 import { findByPropsLazy } from "@webpack";
 import { Menu, React, RelationshipStore, UserStore, VoiceStateStore } from "@webpack/common";
 
@@ -50,7 +51,7 @@ const UserContextMenuPatch: NavContextMenuPatchCallback = (children, { channel, 
         <Menu.MenuSeparator />,
         <Menu.MenuCheckboxItem
             id="fvu-follow-user"
-            label="Follow User"
+            label={t("Follow User")}
             checked={checked}
             action={() => {
                 if (followedUserInfo?.userId === user.id) {
@@ -73,12 +74,11 @@ export default definePlugin({
     name: "FollowVoiceUser",
     description: "Follow a friend in voice chat.",
     tags: ["Voice"],
-    authors: [EquicordDevs.TheArmagan],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     settingsAboutComponent: () => (
         <Notice.Info>
-            This Plugin is used to follow a Friend/Friends into voice chat(s).
-        </Notice.Info>
+            {t("This Plugin is used to follow a Friend/Friends into voice chat(s).")}</Notice.Info>
     ),
     flux: {
         async VOICE_STATE_UPDATES({ voiceStates }: { voiceStates: VoiceState[]; }) {

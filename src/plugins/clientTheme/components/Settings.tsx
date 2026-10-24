@@ -8,6 +8,7 @@ import { ErrorCard } from "@components/ErrorCard";
 import { relativeLuminance } from "@plugins/clientTheme/utils/colorUtils";
 import { createOrUpdateThemeColorVars } from "@plugins/clientTheme/utils/styleUtils";
 import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import { findByCodeLazy, findStoreLazy } from "@webpack";
 import { Button, ColorPicker, Forms, ThemeStore, useStateFromStores } from "@webpack/common";
@@ -67,8 +68,8 @@ export function ThemeSettingsComponent() {
         <div className={cl("settings")}>
             <div className={cl("container")}>
                 <div className={cl("settings-labels")}>
-                    <Forms.FormTitle tag="h3">Theme Color</Forms.FormTitle>
-                    <Forms.FormText>Add a color to your Discord client theme</Forms.FormText>
+                    <Forms.FormTitle tag="h3">{t("Theme Color")}</Forms.FormTitle>
+                    <Forms.FormText>{t("Add a color to your Discord client theme")}</Forms.FormText>
                 </div>
                 <ColorPicker
                     color={parseInt(settings.store.color, 16)}
@@ -79,14 +80,14 @@ export function ThemeSettingsComponent() {
             </div>
             {(contrastWarning || nitroThemeEnabled) && (<>
                 <ErrorCard className={Margins.top8}>
-                    <Forms.FormTitle tag="h2">Your theme won't look good!</Forms.FormTitle>
+                    <Forms.FormTitle tag="h2">{t("Your theme won't look good!")}</Forms.FormTitle>
 
-                    {contrastWarning && <Forms.FormText>{">"} Selected color won't contrast well with text</Forms.FormText>}
-                    {nitroThemeEnabled && <Forms.FormText>{">"} Nitro themes aren't supported</Forms.FormText>}
+                    {contrastWarning && <Forms.FormText>{">"}{" "}{t("Selected color won't contrast well with text")}</Forms.FormText>}
+                    {nitroThemeEnabled && <Forms.FormText>{">"}{" "}{t("Nitro themes aren't supported")}</Forms.FormText>}
 
                     <div className={cl("buttons-container")}>
-                        {(contrastWarning && fixableContrast) && <Button onClick={() => setDiscordTheme(oppositeTheme)} color={Button.Colors.RED}>Switch to {oppositeTheme} mode</Button>}
-                        {(nitroThemeEnabled) && <Button onClick={() => setDiscordTheme(currentTheme)} color={Button.Colors.RED}>Disable Nitro Theme</Button>}
+                        {(contrastWarning && fixableContrast) && <Button onClick={() => setDiscordTheme(oppositeTheme)} color={Button.Colors.RED}>{t("Switch to")}{" "}{oppositeTheme} mode</Button>}
+                        {(nitroThemeEnabled) && <Button onClick={() => setDiscordTheme(currentTheme)} color={Button.Colors.RED}>{t("Disable Nitro Theme")}</Button>}
                     </div>
                 </ErrorCard>
             </>)}
@@ -97,7 +98,6 @@ export function ThemeSettingsComponent() {
 export function ResetThemeColorComponent() {
     return (
         <Button onClick={() => onPickColor(0x313338)}>
-            Reset Theme Color
-        </Button>
+            {t("Reset Theme Color")}</Button>
     );
 }

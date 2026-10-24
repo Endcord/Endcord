@@ -5,9 +5,9 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
-import { EquicordDevs } from "@utils/constants";
-import definePlugin, { OptionType } from "@utils/types";
 import { CodecInfo } from "@endcord/discord-types";
+import { Devs } from "@utils/constants";
+import definePlugin, { OptionType } from "@utils/types";
 
 const settings = definePluginSettings({
     disableAv1Codec: {
@@ -41,7 +41,7 @@ export default definePlugin({
     name: "StreamingCodecDisabler",
     description: "Disable video codecs of your choice for streaming and cameras.",
     tags: ["Utility", "Voice"],
-    authors: [EquicordDevs.davidkra230],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
 
     patches: [

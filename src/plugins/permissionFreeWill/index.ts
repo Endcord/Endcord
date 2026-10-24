@@ -28,7 +28,7 @@ export default definePlugin({
     name: "PermissionFreeWill",
     description: "Disables the client-side restrictions for channel permission management.",
     tags: ["Servers", "Roles"],
-    authors: [Devs.lewisakura],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
 
     patches: [
         // Permission lockout, just set the check to true

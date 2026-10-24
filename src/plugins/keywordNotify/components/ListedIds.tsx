@@ -7,6 +7,7 @@
 import { Button } from "@components/Button";
 import { Flex } from "@components/Flex";
 import { DeleteIcon } from "@components/Icons";
+import { t } from "@utils/i18n";
 import { useForceUpdater } from "@utils/react";
 import { TextInput, useState } from "@webpack/common";
 
@@ -27,7 +28,7 @@ export function ListedIds({ listIds, setListIds }: { listIds: string[]; setListI
             <Flex key={index} flexDirection="row" style={{ marginBottom: "5px" }}>
                 <div style={{ flexGrow: 1 }}>
                     <TextInput
-                        placeholder="ID"
+                        placeholder={t("ID")}
                         spellCheck={false}
                         value={currentValue}
                         onChange={e => onChange(e, index)} />

@@ -18,16 +18,16 @@ import {
     SettingsTab as STab,
     wrapTab,
 } from "@components/settings/tabs/BaseTab";
+import {
+    cl,
+    CLONE_LINK_REGEX,
+    showInstallFinishedAlert,
+} from "@plugins/userpluginInstaller.dev/misc/constants";
 import { classes, isObjectEmpty } from "@utils/misc";
 import { relaunch } from "@utils/native";
 import { Alerts, closeAllModals,NavigationRouter, Toasts, useEffect, useState } from "@webpack/common";
 
 import userpluginInstaller, { Native } from "..";
-import {
-    cl,
-    CLONE_LINK_REGEX,
-    showInstallFinishedAlert,
-} from "../misc/constants";
 
 function UserPluginsTab() {
     const rs = useSettings(["plugins.*"]);

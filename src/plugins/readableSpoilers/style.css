@@ -1,0 +1,13 @@
+/* MallCord ReadableSpoilers — outline unrevealed spoilers */
+[class*="spoilerContent"]:not([class*="spoilerContentHidden"]),
+span[class*="spoilerText"]:not([class*="hidden"]) {
+    /* revealed: leave untouched */
+}
+
+[class*="spoilerContent"],
+[class*="spoilerWarning"] {
+    outline: 1px dashed rgb(1 205 254 / 70%);
+    outline-offset: 1px;
+    border-radius: 4px;
+    box-shadow: 0 0 6px rgb(255 113 206 / 35%);
+}

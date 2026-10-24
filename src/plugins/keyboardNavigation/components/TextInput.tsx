@@ -7,6 +7,7 @@
 import "./style.css";
 
 import { RenderModalProps } from "@endcord/discord-types";
+import { t } from "@utils/i18n";
 import { closeAllModals, Modal,openModal, React, TextInput, useEffect, useState } from "@webpack/common";
 
 interface SimpleTextInputProps {
@@ -35,7 +36,7 @@ export function SimpleTextInput({ modalProps, onSelect, placeholder, info }: Sim
     }, []);
 
     return (
-        <Modal {...modalProps} size="sm" title="Text Input">
+        <Modal {...modalProps} size="sm" title={t("Text Input")}>
             <div className="vc-command-palette-simple-text" onKeyDown={handleKeyDown}>
                 <TextInput
                     value={inputValue}

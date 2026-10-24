@@ -30,7 +30,7 @@ export default definePlugin({
     name: "MessageLatency",
     description: "Displays an indicator for messages that took ≥n seconds to send",
     tags: ["Chat", "Utility"],
-    authors: [Devs.arHSM],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
 
     settings: definePluginSettings({
         latency: {

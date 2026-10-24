@@ -7,12 +7,13 @@
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { HeaderBarButton } from "@api/HeaderBar";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { Devs, EquicordDevs } from "@utils/constants";
-import { classNameFactory } from "@utils/css";
-import { getCurrentChannel } from "@utils/discord";
-import definePlugin from "@utils/types";
 import { Channel, Guild, User } from "@endcord/discord-types";
 import { ChannelType } from "@endcord/discord-types/enums";
+import { Devs } from "@utils/constants";
+import { classNameFactory } from "@utils/css";
+import { getCurrentChannel } from "@utils/discord";
+import { t } from "@utils/i18n";
+import definePlugin from "@utils/types";
 import {
     extractAndLoadChunksLazy,
     findByPropsLazy,
@@ -246,7 +247,7 @@ const createSidebarChatContextMenuItem = (id: string, guildId: string | null) =>
     return (
         <Menu.MenuItem
             id={`vc-sidebar-chat-${id}`}
-            label={"Open Sidebar Chat"}
+            label={t("Open Sidebar Chat")}
             action={() => {
                 FluxDispatcher.dispatch({
                     // @ts-ignore
@@ -271,18 +272,16 @@ const createPopoutChatContextMenuItem = (id: string, label: string, action: () =
     );
 };
 
-const UserContextPatch: NavContextMenuPatchCallback = (children, args: { user: User; }) => {
-    const checks = [
-        args.user,
-        args.user.id !== UserStore.getCurrentUser().id,
-    ];
-    if (checks.some(check => !check)) return;
-    const channelId = ChannelStore.getDMFromUserId?.(args.user.id) ?? null;
+const UserContextPatch: NavContextMenuPatchCallback = (children, args: { user?: User; }) => {
+    // Discord opens user-context for some items without a user
+    const user = args?.user;
+    if (!user || user.id === UserStore.getCurrentUser()?.id) return;
+    const channelId = ChannelStore.getDMFromUserId?.(user.id) ?? null;
     const isOpen = channelId ? isPopoutWindowOpen(channelId) : false;
 
-    children.push(createSidebarChatContextMenuItem(args.user.id, null));
+    children.push(createSidebarChatContextMenuItem(user.id, null));
     children.push(createPopoutChatContextMenuItem(
-        args.user.id,
+        user.id,
         isOpen ? "Close popout chat" : "Popout chat",
         () => {
             if (channelId && isOpen) {
@@ -290,7 +289,7 @@ const UserContextPatch: NavContextMenuPatchCallback = (children, args: { user: U
                 return;
             }
 
-            return openPopoutFromUserMenu(args.user.id);
+            return openPopoutFromUserMenu(user.id);
         }
     ));
 };
@@ -312,7 +311,7 @@ const ChannelContextPatch: NavContextMenuPatchCallback = (children, args: { chan
 
 export default definePlugin({
     name: "SidebarChat",
-    authors: [Devs.Joona, EquicordDevs.justjxke],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     description: "Open a channel or DM as a sidebar or a popout.",
     tags: ["Appearance", "Chat", "Servers"],
     dependencies: ["HeaderBarAPI"],
@@ -326,7 +325,7 @@ export default definePlugin({
                     replace: "$&vc_SidebarChat=$self.renderSidebar(),"
                 },
                 {
-                    match: /(?<=return )null!=\i&&\i\?\(0,\i\.jsx\)\(\i,\{channel:\i\},\i\.id\):\(0,\i\.jsx\)\(\i,\{\}\)(?=\},)/,
+                    match: /(?<=return)\(0,\i\.jsx\)\(\i,\{\}\)(?=\},)/,
                     replace: "[$&,vc_SidebarChat]"
                 },
             ],
@@ -517,7 +516,7 @@ const Header = ({ guild, channel }: { guild: Guild; channel: Channel; }) => {
         <HeaderBar
             toolbar={
                 <>
-                    <HeaderBarButton icon={ArrowsLeftRightIcon} tooltip="Switch channels" onClick={switchChannels} />
+                    <HeaderBarButton icon={ArrowsLeftRightIcon} tooltip={t("Switch channels")} onClick={switchChannels} />
                     <HeaderBarButton
                         key={`${channel.id}-${isPopoutOpen ? "open" : "closed"}`}
                         icon={isPopoutOpen ? XSmallIcon : WindowLaunchIcon}
@@ -525,7 +524,7 @@ const Header = ({ guild, channel }: { guild: Guild; channel: Channel; }) => {
                         selected={isPopoutOpen}
                         onClick={openPopoutClick}
                     />
-                    <HeaderBarButton icon={XSmallIcon} tooltip="Close Sidebar Chat" onClick={closeSidebar} />
+                    <HeaderBarButton icon={XSmallIcon} tooltip={t("Close Sidebar Chat")} onClick={closeSidebar} />
                 </>
             }
         >

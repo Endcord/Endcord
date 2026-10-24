@@ -4,10 +4,11 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { CarouselControlsProps } from "@plugins/betterActivities/types";
+import { cl } from "@plugins/betterActivities/utils";
+import { t } from "@utils/i18n";
 import { React, Tooltip } from "@webpack/common";
 
-import { CarouselControlsProps } from "../types";
-import { cl } from "../utils";
 import { Caret } from "./Caret";
 
 export function CarouselControls({ activities, currentActivity, onActivityChange }: CarouselControlsProps) {
@@ -22,7 +23,7 @@ export function CarouselControls({ activities, currentActivity, onActivityChange
                 justifyContent: "space-between",
             }}
         >
-            <Tooltip text="Left" tooltipClassName={cl("controls-tooltip")}>{({
+            <Tooltip text={t("Left")} tooltipClassName={cl("controls-tooltip")}>{({
                 onMouseEnter,
                 onMouseLeave
             }) => {
@@ -52,7 +53,7 @@ export function CarouselControls({ activities, currentActivity, onActivityChange
                 ))}
             </div>
 
-            <Tooltip text="Right" tooltipClassName={cl("controls-tooltip")}>{({
+            <Tooltip text={t("Right")} tooltipClassName={cl("controls-tooltip")}>{({
                 onMouseEnter,
                 onMouseLeave
             }) => {

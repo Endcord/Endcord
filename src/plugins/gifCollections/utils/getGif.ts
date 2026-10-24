@@ -5,10 +5,10 @@
  */
 
 import { Message } from "@endcord/discord-types";
+import { settings } from "@plugins/gifCollections/settings";
+import { Gif } from "@plugins/gifCollections/types";
 import { MessageStore, SnowflakeUtils } from "@webpack/common";
 
-import { settings } from "../settings";
-import { Gif } from "../types";
 import { cleanUrl } from "./cleanUrl";
 import { isAudio } from "./isAudio";
 import { uuidv4 } from "./uuidv4";

@@ -5,6 +5,7 @@
  */
 
 import { EndcordDevs } from "@utils/constants";
+import { Logger } from "@utils/Logger";
 import definePlugin from "@utils/types";
 import { findLazy } from "@webpack";
 
@@ -83,16 +84,75 @@ export interface AudioPlayerInterface {
 
 export type AudioPlayerInternal = AudioPlayerInterface;
 
-export class AudioProcessor {
-    static process(data: any) { return data; }
+export interface PreprocessAudioData {
+    /** A Discord sound name, a data URI or a URL. Processors may replace it. */
+    audio: string;
+    readonly type: AudioType;
+    /** The volume between 0 and 100. */
+    volume: number;
+    /** The playback speed between 0.0625 and 16. */
+    speed: number;
 }
 
-export type PreprocessAudioData = any;
+/** Changes the sound or volume of Discord's own sounds before they play. */
+export type AudioProcessor = (data: PreprocessAudioData) => void;
+
+const logger = new Logger("AudioPlayerAPI");
+const audioProcessors = new Map<string, AudioProcessor>();
+
+export const addAudioProcessor = (id: string, processor: AudioProcessor) => audioProcessors.set(id, processor);
+export const removeAudioProcessor = (id: string) => audioProcessors.delete(id);
 
 export function identifyAudioType(sound: string): AudioType {
     if (sound.startsWith("http://") || sound.startsWith("https://")) return AudioType.EXTERNAL;
     if (sound.startsWith("data:")) return AudioType.DATA;
     return AudioType.DISCORD;
+}
+
+/** Turns a Discord sound name like "message1" into its asset URL; anything else is returned as is. */
+function resolveSoundSource(sound: string) {
+    if (identifyAudioType(sound) !== AudioType.DISCORD) return sound;
+    try {
+        return findDefaultSounds(`./${sound}.mp3`) as string;
+    } catch {
+        return sound;
+    }
+}
+
+interface DiscordSound {
+    name: string;
+    _volume: number;
+    _playbackRate: number;
+    endcordBaseVolume?: number;
+    endcordVolume?: number;
+}
+
+/** Runs the audio processors on one of Discord's own sounds and returns the source it should load. */
+function resolveDiscordSound(sound: DiscordSound, getAsset: (path: string) => string) {
+    // Discord's volume setter can change _volume too, so only treat it as ours if we set it last
+    if (sound._volume !== sound.endcordVolume) sound.endcordBaseVolume = sound._volume;
+
+    const data: PreprocessAudioData = {
+        audio: sound.name,
+        type: AudioType.DISCORD,
+        volume: (sound.endcordBaseVolume ?? sound._volume) * 100,
+        speed: sound._playbackRate
+    };
+    for (const [id, processor] of audioProcessors) {
+        try {
+            processor(data);
+        } catch (e) {
+            logger.error(`Audio processor of ${id} failed`, e);
+        }
+    }
+
+    sound._volume = sound.endcordVolume = clamp(data.volume, 0, 100) / 100;
+    if (data.audio !== sound.name && identifyAudioType(data.audio) !== AudioType.DISCORD) return data.audio;
+    try {
+        return getAsset(`./${data.audio}.mp3`);
+    } catch {
+        return getAsset(`./${sound.name}.mp3`);
+    }
 }
 
 class AudioPlayer implements AudioPlayerInterface {
@@ -125,7 +185,7 @@ class AudioPlayer implements AudioPlayerInterface {
     private ensureAudio(): HTMLAudioElement {
         if (this.element) return this.element;
 
-        const element = this.element = new Audio(this.audio);
+        const element = this.element = new Audio(resolveSoundSource(this.audio));
         element.volume = this._volume / 100;
         element.playbackRate = this._speed;
         element.onended = () => {
@@ -155,15 +215,15 @@ class AudioPlayer implements AudioPlayerInterface {
         if (value) this.ensureAudio();
     }
 
-    get duration() { return this.element && Promise.resolve(this.element.duration); }
+    get duration(): Promise<number> | null { return this.element ? Promise.resolve(this.element.duration) : null; }
 
-    get time() { return this.element && Promise.resolve(this.element.currentTime); }
+    get time(): Promise<number> | null { return this.element ? Promise.resolve(this.element.currentTime) : null; }
     set time(value: number) { this.ensureAudio().currentTime = value; }
 
-    get paused() { return this.element && Promise.resolve(this.element.paused); }
+    get paused(): Promise<boolean> | null { return this.element ? Promise.resolve(this.element.paused) : null; }
     set paused(value: boolean) { value ? this.pause() : this.play(); }
 
-    get muted() { return this.element && Promise.resolve(this.element.muted); }
+    get muted(): Promise<boolean> | null { return this.element ? Promise.resolve(this.element.muted) : null; }
     set muted(value: boolean) { this.ensureAudio().muted = value; }
 
     load() { this.ensureAudio(); }
@@ -213,5 +273,17 @@ export default definePlugin({
     description: "API to play internal Discord audio files or external audio links.",
     authors: [EndcordDevs.ewlle, EndcordDevs.rootpoi, EndcordDevs.kraethis],
     playAudio,
-    createAudioPlayer
+    createAudioPlayer,
+    resolveDiscordSound,
+
+    patches: [
+        {
+            find: "could not play audio",
+            replacement: {
+                // Lets audio processors (CustomSounds) swap Discord's own sounds and their volume
+                match: /(?<=new Audio;\i\.src=)(\i\(\d+\))\(`\.\/\$\{this\.name\}\.mp3`\)/,
+                replace: "$self.resolveDiscordSound(this,$1)"
+            }
+        }
+    ]
 });

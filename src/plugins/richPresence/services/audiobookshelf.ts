@@ -4,12 +4,11 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { Logger } from "@utils/Logger";
 import { Activity } from "@endcord/discord-types";
+import { settings } from "@plugins/richPresence/settings";
+import { AbsMediaData, AbsSession } from "@plugins/richPresence/types/audiobookshelf";
+import { Logger } from "@utils/Logger";
 import { ApplicationAssetUtils, FluxDispatcher, showToast } from "@webpack/common";
-
-import { settings } from "../settings";
-import { AbsMediaData, AbsSession } from "../types/audiobookshelf";
 
 const APPLICATION_ID = "1381423044907503636";
 const SOCKET_ID = "RichPresence_ABS";

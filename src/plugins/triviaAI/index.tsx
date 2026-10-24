@@ -6,9 +6,10 @@
 
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { RobotIcon } from "@components/Icons";
-import { EquicordDevs } from "@utils/constants";
-import definePlugin from "@utils/types";
 import { Message } from "@endcord/discord-types";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
+import definePlugin from "@utils/types";
 import { ChannelStore, Menu } from "@webpack/common";
 
 import { settings } from "./settings";
@@ -23,7 +24,7 @@ const messageCtxPatch: NavContextMenuPatchCallback = (children, { message }: { m
     group.splice(group.findIndex(c => c?.props?.id === "copy-text") + 1, 0, (
         <Menu.MenuItem
             id="vc-trivia-ai"
-            label="Answer With AI"
+            label={t("Answer With AI")}
             icon={RobotIcon}
             leadingAccessory={{ type: "icon", icon: RobotIcon }}
             action={async () => {
@@ -42,7 +43,7 @@ export default definePlugin({
     description: "A plugin that helps you answer trivia questions using AI.",
     dependencies: ["MessagePopoverAPI"],
     tags: ["Appearance", "Customisation", "Fun"],
-    authors: [EquicordDevs.yash],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     contextMenus: {
         "message": messageCtxPatch

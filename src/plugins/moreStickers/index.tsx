@@ -7,10 +7,11 @@
 import "./style.css";
 
 import { definePluginSettings } from "@api/Settings";
-import { FFmpeg } from "@ffmpeg/ffmpeg";
-import { Devs, EquicordDevs } from "@utils/constants";
-import definePlugin, { OptionType } from "@utils/types";
 import { Channel } from "@endcord/discord-types";
+import { FFmpeg } from "@ffmpeg/ffmpeg";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
+import definePlugin, { OptionType } from "@utils/types";
 import { React } from "@webpack/common";
 
 import { Packs, PickerContent, PickerHeader, PickerSidebar, Wrapper } from "./components";
@@ -35,7 +36,7 @@ export default definePlugin({
     name: "MoreStickers",
     description: "Adds sticker packs from other social media platforms. (e.g. LINE)",
     tags: ["Chat", "Emotes", "Media"],
-    authors: [EquicordDevs.Leko, Devs.Arjix],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
 
     patches: [
@@ -114,7 +115,7 @@ export default definePlugin({
         closePopout: () => void;
     }) {
         if (FFmpegStateContext === undefined) {
-            return <div>FFmpegStateContext is undefined</div>;
+            return <div>{t("FFmpegStateContext is undefined")}</div>;
         }
 
         const [query, setQuery] = React.useState<string | undefined>();

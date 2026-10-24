@@ -9,10 +9,11 @@ import { BaseText } from "@components/BaseText";
 import { Flex } from "@components/Flex";
 import { FormSwitch } from "@components/FormSwitch";
 import { Heading } from "@components/Heading";
+import { RenderModalProps } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import { makeLazy } from "@utils/lazy";
 import definePlugin, { OptionType } from "@utils/types";
-import { RenderModalProps } from "@endcord/discord-types";
 import { findByProps, wreq } from "@webpack";
 import { Button, Modal,openModal, Timestamp, useState } from "@webpack/common";
 
@@ -32,7 +33,7 @@ export default definePlugin({
     name: "WebpackTarball",
     description: "Converts Discord's webpack sources into a tarball.",
     tags: ["Developers", "Utility"],
-    authors: [Devs.Kyuuhachi],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
 
     toolboxActions: {
@@ -101,7 +102,7 @@ function TarModal({ modalProps }: { modalProps: RenderModalProps; }) {
         <Modal
             {...modalProps}
             size="md"
-            title="Webpack Tarball"
+            title={t("Webpack Tarball")}
             actions={[
                 {
                     text: "Create",
@@ -124,8 +125,7 @@ function TarModal({ modalProps }: { modalProps: RenderModalProps; }) {
 
             <div style={{ marginTop: "8px", marginBottom: "24px" }}>
                 <Heading>
-                    Lazy chunks
-                </Heading>
+                    {t("Lazy chunks")}</Heading>
                 <Flex alignItems="center">
                     <BaseText
                         size="md"

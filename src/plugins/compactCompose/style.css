@@ -1,0 +1,24 @@
+/* MallCord CompactCompose — slimmer message bar */
+[class*="channelTextArea"] {
+    margin-top: 0 !important;
+    margin-bottom: 6px !important;
+}
+
+[class*="channelTextArea"] [class*="scrollableContainer"] {
+    min-height: 40px;
+}
+
+/* fade the left-side attach button + right-side gift/gif/sticker buttons
+   until the compose area is hovered or focused */
+[class*="channelTextArea"] [class*="buttons"],
+[class*="channelTextArea"] button[class*="attachButton"] {
+    opacity: 0.35;
+    transition: opacity 0.15s ease;
+}
+
+[class*="channelTextArea"]:hover [class*="buttons"],
+[class*="channelTextArea"]:focus-within [class*="buttons"],
+[class*="channelTextArea"]:hover button[class*="attachButton"],
+[class*="channelTextArea"]:focus-within button[class*="attachButton"] {
+    opacity: 1;
+}

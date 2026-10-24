@@ -5,10 +5,10 @@
  */
 
 import { Button } from "@components/Button";
+import { clearMessagesIDB } from "@plugins/messageLoggerEnhanced/db";
+import { Flogger } from "@plugins/messageLoggerEnhanced/index";
+import { t } from "@utils/i18n";
 import { Alerts, Toasts, useState } from "@webpack/common";
-
-import { clearMessagesIDB } from "../db";
-import { Flogger } from "../index";
 
 interface ClearLogsButtonProps {
     label?: string;
@@ -22,12 +22,12 @@ export function ClearLogsButton({ label = "Clear Logs", onCleared }: ClearLogsBu
             disabled={loading}
             variant="dangerPrimary"
             onClick={() => Alerts.show({
-                title: "Clear Logs",
-                body: "Are you sure you want to clear all logs?",
+                title: t("Clear Logs"),
+                body: t("Are you sure you want to clear all logs?"),
                 // @ts-ignore
                 confirmVariant: "critical-primary",
-                confirmText: "Clear",
-                cancelText: "Cancel",
+                confirmText: t("Clear"),
+                cancelText: t("Cancel"),
                 onConfirm: async () => {
                     setLoading(true);
                     try {

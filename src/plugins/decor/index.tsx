@@ -28,7 +28,7 @@ export default definePlugin({
     name: "Decor",
     description: "Create and use your own custom avatar decorations, or pick your favorite from the presets.",
     tags: ["Appearance", "Customisation"],
-    authors: [Devs.FieryFlames],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     patches: [
         // Patch MediaResolver to return correct URL for Decor avatar decorations
         {
@@ -55,8 +55,8 @@ export default definePlugin({
                     replace: "$self.DecorationGridItem=$1;",
                 },
                 {
-                    match: /(?<==)\i=>{let{user:\i,avatarDecoration/,
-                    replace: "$self.DecorationGridDecoration=$&",
+                    match: /(?<=(?:(\i)=)?)(?:\i=>|function (\i)\(\i\)){let{user:\i,avatarDecoration/,
+                    replace: (m, arrowFunctionName, functionName) => `$self.DecorationGridDecoration=${arrowFunctionName ?? functionName}${arrowFunctionName ? "" : ";"}${m}`,
                 },
                 // Remove NEW label from decor avatar decorations
                 {
@@ -98,7 +98,6 @@ export default definePlugin({
             ]
         },
         ...[
-            "#{intl::GUILD_COMMUNICATION_DISABLED_ICON_TOOLTIP_BODY}", // Messages
             "#{intl::COLLECTIBLES_NAMEPLATE_PREVIEW_A11Y}", // Nameplate preview
             "#{intl::COLLECTIBLES_PROFILE_PREVIEW_A11Y}", // Avatar preview
         ].map(find => ({

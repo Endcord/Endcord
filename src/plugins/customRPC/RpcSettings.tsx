@@ -13,6 +13,7 @@ import { resolveError } from "@components/settings/tabs/plugins/components/Commo
 import { ActivityType } from "@endcord/discord-types/enums";
 import { debounce } from "@shared/debounce";
 import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import { Select, Text, TextInput, useState } from "@webpack/common";
 
 import CustomRPCPlugin, { setRpc, settings, TimestampMode } from ".";
@@ -120,7 +121,7 @@ function SingleSetting<T>({ settingsKey, label, disabled, isValid, transform }: 
             <Heading tag="h5">{label}</Heading>
             <TextInput
                 type="text"
-                placeholder={"Enter a value"}
+                placeholder={t("Enter a value")}
                 value={state}
                 onChange={handleChange}
                 disabled={disabled}
@@ -135,7 +136,7 @@ function SelectSetting<T>({ settingsKey, label, options, disabled }: SelectOptio
         <div className={cl("single", { disabled })}>
             <Heading tag="h5">{label}</Heading>
             <Select
-                placeholder={"Select an option"}
+                placeholder={t("Select an option")}
                 options={options}
                 maxVisibleItems={5}
                 closeOnSelect={true}
@@ -155,7 +156,7 @@ export function RPCSettings() {
         <div className={cl("root")}>
             <SelectSetting
                 settingsKey="type"
-                label="Activity Type"
+                label={t("Activity Type")}
                 options={[
                     {
                         label: "Playing",
@@ -198,7 +199,7 @@ export function RPCSettings() {
 
             <SingleSetting
                 settingsKey="streamLink"
-                label="Stream Link (Twitch or YouTube, only if activity type is Streaming)"
+                label={t("Stream Link (Twitch or YouTube, only if activity type is Streaming)")}
                 disabled={s.type !== ActivityType.STREAMING}
                 isValid={isStreamLinkValid}
             />
@@ -226,13 +227,13 @@ export function RPCSettings() {
                 { settingsKey: "imageBig", label: "Large Image URL/Key", isValid: isImageKeyValid },
                 { settingsKey: "imageBigTooltip", label: "Large Image Text", isValid: maxLength128 },
             ]} />
-            <SingleSetting settingsKey="imageBigURL" label="Large Image clickable URL" isValid={isUrlValid} />
+            <SingleSetting settingsKey="imageBigURL" label={t("Large Image clickable URL")} isValid={isUrlValid} />
 
             <PairSetting data={[
                 { settingsKey: "imageSmall", label: "Small Image URL/Key", isValid: isImageKeyValid },
                 { settingsKey: "imageSmallTooltip", label: "Small Image Text", isValid: maxLength128 },
             ]} />
-            <SingleSetting settingsKey="imageSmallURL" label="Small Image clickable URL" isValid={isUrlValid} />
+            <SingleSetting settingsKey="imageSmallURL" label={t("Small Image clickable URL")} isValid={isUrlValid} />
 
             <Divider />
 
@@ -249,7 +250,7 @@ export function RPCSettings() {
 
             <SelectSetting
                 settingsKey="timestampMode"
-                label="Timestamp Mode"
+                label={t("Timestamp Mode")}
                 options={[
                     {
                         label: "None",

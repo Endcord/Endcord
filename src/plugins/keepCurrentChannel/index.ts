@@ -32,7 +32,7 @@ export default definePlugin({
     name: "KeepCurrentChannel",
     description: "Attempt to navigate to the channel you were in before switching accounts or loading Discord.",
     tags: ["Utility", "Organisation"],
-    authors: [Devs.Nuckyz],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
 
     patches: [
         {

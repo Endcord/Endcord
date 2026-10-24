@@ -6,10 +6,11 @@
 
 import "./fixDiscordBadgePadding.css";
 
-import { _getBadges, BadgePosition, BadgeUserArgs, ProfileBadge } from "@api/Badges";
+import { _getBadges, BadgeListProcessors, BadgePosition, BadgeUserArgs, ProfileBadge } from "@api/Badges";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
 import { copyWithToast } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import definePlugin from "@utils/types";
 import { ContextMenuApi, Menu } from "@webpack/common";
@@ -26,14 +27,14 @@ function BadgeContextMenu({ badge }: { badge: Omit<ProfileBadge, "id"> & BadgeUs
             {badge.description && (
                 <Menu.MenuItem
                     id="vc-badge-copy-name"
-                    label="Copy Badge Name"
+                    label={t("Copy Badge Name")}
                     action={() => copyWithToast(badge.description!)}
                 />
             )}
             {badge.iconSrc && (
                 <Menu.MenuItem
                     id="vc-badge-copy-link"
-                    label="Copy Badge Image Link"
+                    label={t("Copy Badge Image Link")}
                     action={() => copyWithToast(badge.iconSrc!)}
                 />
             )}
@@ -74,8 +75,9 @@ export default definePlugin({
         {
             find: "getLegacyUsername(){",
             replacement: {
-                match: /getBadges\(\)\{.{0,100}?return\[/,
-                replace: "$&...$self.getBadges(this),"
+                // Keep Discord's list under a new name, add our badges to it, and let plugins reorder or filter the result
+                match: /getBadges\(\)\{(.{0,100}?)return\[/,
+                replace: "getBadges(){return $self.processBadges(this,this.ecUnprocessedBadges())}ecUnprocessedBadges(){$1return[...$self.getBadges(this),"
             }
         }
     ],
@@ -98,6 +100,19 @@ export default definePlugin({
             new Logger("BadgeAPI#getBadges").error(e);
             return [];
         }
+    },
+
+    processBadges(profile: { userId: string; guildId: string; }, badges: any[]) {
+        if (!profile || !BadgeListProcessors.size) return badges;
+
+        for (const process of BadgeListProcessors) {
+            try {
+                badges = process(profile, badges) ?? badges;
+            } catch (e) {
+                new Logger("BadgeAPI#processBadges").error(e);
+            }
+        }
+        return badges;
     },
 
     renderBadgeComponent: ErrorBoundary.wrap((badge: ProfileBadge & BadgeUserArgs) => {
@@ -124,7 +139,7 @@ export default definePlugin({
 
         const list = Array.isArray(userBadges) ? userBadges : ((userBadges as any)?.badges || []);
         return list.map((badge: any, idx: number) => ({
-            id: `endcord_donor_badge_${idx}`,
+            id: badge.id ?? `endcord_donor_badge_${idx}`,
             iconSrc: badge.badge || badge.icon || badge.iconSrc,
             description: badge.tooltip || badge.description || "Custom Badge",
             position: BadgePosition.START,

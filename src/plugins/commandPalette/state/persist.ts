@@ -5,8 +5,7 @@
  */
 
 import * as DataStore from "@api/DataStore";
-
-import { notifyPaletteChange } from "../api/registry";
+import { notifyPaletteChange } from "@plugins/commandPalette/api/registry";
 
 export function createPersistedValue<T>(key: string, fallback: T) {
     const fullKey = `CommandPalette_${key}`;

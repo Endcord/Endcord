@@ -6,8 +6,8 @@
 
 import { Heart } from "@components/Heart";
 import { ButtonProps } from "@endcord/discord-types";
+import { t } from "@utils/i18n";
 import { Button } from "@webpack/common";
-
 export default function DonateButton({
     look = Button.Looks.LINK,
     color = Button.Colors.TRANSPARENT,
@@ -18,11 +18,11 @@ export default function DonateButton({
             {...props}
             look={look}
             color={color}
-            onClick={() => EndcordNative.native.openExternal("https://endcord.com")}
+            onClick={() => EndcordNative.native.openExternal("https://github.com/rootpoii/Endcord")}
             className="vc-donate-button"
         >
             <Heart />
-            Donate
+            {t("Donate")}
         </Button>
     );
 }

@@ -18,9 +18,9 @@
 
 import { definePluginSettings } from "@api/Settings";
 import { disableStyle, enableStyle } from "@api/Styles";
+import { Message } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
-import { Message } from "@endcord/discord-types";
 import { findByPropsLazy } from "@webpack";
 import { ChannelStore, createRoot, MessageStore, Toasts } from "@webpack/common";
 import { Root } from "react-dom/client";
@@ -91,7 +91,7 @@ export default definePlugin({
     description: "Jumps to the earliest reply to a message in a channel (lets you follow past conversations more easily).",
     dependencies: ["MessagePopoverAPI"],
     tags: ["Chat", "Shortcuts"],
-    authors: [Devs.newwares],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     messagePopoverButton: {
         icon: FindReplyIcon,

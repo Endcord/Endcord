@@ -3,9 +3,9 @@
     "minimum_chrome_version": "111",
 
     "name": "Endcord Web",
-    "description": "The cutest Discord mod now in your browser",
-    "author": "Vendicated",
-    "homepage_url": "https://github.com/rootpoii/endcord",
+    "description": "Endcord for Discord in your browser: plugins, themes and a settings panel right inside Discord.",
+    "author": "rootpoii",
+    "homepage_url": "https://endcord.com",
     "icons": {
         "128": "icon.png"
     },

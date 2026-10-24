@@ -21,7 +21,7 @@ export default definePlugin({
     name: "SecretRingToneEnabler",
     description: "Always play the secret version of the discord ringtone (except during special ringtone events)",
     tags: ["Notifications", "Fun"],
-    authors: [Devs.AndrewDLO, Devs.FieryFlames, Devs.RamziAH],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     patches: [
         {

@@ -6,6 +6,7 @@
 
 import "./styles.css";
 
+import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 import { FluxDispatcher } from "@webpack/common";
 
@@ -106,7 +107,7 @@ export default definePlugin({
     name: "MotionBlur",
     description: "Adds lightweight, hardware-accelerated 60+ FPS motion blur across the entire Discord app during scrolling and navigation.",
     tags: ["Appearance", "Customisation", "Fun"],
-    authors: [{ name: "rootpoi", id: 1390609041897554050n }],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
 
     start() {

@@ -11,10 +11,10 @@ import { Card } from "@components/Card";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
 import { Link } from "@components/Link";
-import { openSettingsTabModal, UpdaterTab } from "@components/settings";
 import { Channel, RenderModalProps } from "@endcord/discord-types";
 import { CONTRIB_ROLE_ID, Devs, DONOR_ROLE_ID, ENDCORD_GUILD_ID,KNOWN_ISSUES_CHANNEL_ID, REGULAR_ROLE_ID, SUPPORT_CATEGORY_ID, SUPPORT_CHANNEL_ID, VENBOT_USER_ID } from "@utils/constants";
 import { sendMessage } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import { Margins } from "@utils/margins";
 import { isPluginDev, tryOrElse } from "@utils/misc";
@@ -22,15 +22,14 @@ import { relaunch } from "@utils/native";
 import { onlyOnce } from "@utils/onlyOnce";
 import { makeCodeblock } from "@utils/text";
 import definePlugin from "@utils/types";
-import { checkForUpdates, isOutdated, update } from "@utils/updater";
-import { Button, ChannelStore, ConfirmModal, Forms, GuildMemberStore, openModal, Parser, PermissionsBits, PermissionStore, RelationshipStore, showToast, Text, Toasts, UserStore } from "@webpack/common";
+import { checkForUpdates, update } from "@utils/updater";
+import { Button, ChannelStore, ConfirmModal, Forms, Parser, PermissionsBits, PermissionStore, RelationshipStore, showToast, Text, Toasts, UserStore } from "@webpack/common";
 import { JSX } from "react";
 
 import gitHash from "~git-hash";
 import plugins, { PluginMeta } from "~plugins";
 
 import SettingsPlugin from "./settings";
-
 const CodeBlockRe = /```js\n(.+?)```/s;
 
 const AdditionalAllowedChannelIds = [
@@ -131,8 +130,8 @@ function DevBuildConfirmModal(props: RenderModalProps) {
     return (
         <ConfirmModal
             {...props}
-            title="Hold on!"
-            confirmText="Understood"
+            title={t("Hold on!")}
+            confirmText={t("Understood")}
             variant="primary"
             checkboxProps={{
                 checked: s.dismissedDevBuildWarning === true,
@@ -140,14 +139,13 @@ function DevBuildConfirmModal(props: RenderModalProps) {
             }}
         >
             <div>
-                <Forms.FormText>You are using a custom build of Endcord, which we do not provide support for!</Forms.FormText>
+                <Forms.FormText>{t("You are using a custom build of Endcord, which we do not provide support for!")}</Forms.FormText>
 
                 <Forms.FormText className={Margins.top8}>
-                    We only provide support for <Link href="https://endcord.com/download">official builds</Link>.
-                    Either <Link href="https://endcord.com/download">switch to an official build</Link> or figure your issue out yourself.
+                    {t("We only provide support for")}{" "}<Link href="https://endcord.com/download">{t("official builds")}</Link>{t(". Either")}{" "}<Link href="https://endcord.com/download">{t("switch to an official build")}</Link>{" "}{t("or figure your issue out yourself.")}
                 </Forms.FormText>
 
-                <Text variant="text-md/bold" className={Margins.top8}>You will be banned from receiving support if you ignore this rule.</Text>
+                <Text variant="text-md/bold" className={Margins.top8}>{t("You will be banned from receiving support if you ignore this rule.")}</Text>
             </div>
         </ConfirmModal>
     );
@@ -162,8 +160,8 @@ function DonateWarningModal(props: RenderModalProps) {
     return (
         <ConfirmModal
             {...props}
-            title="Hold on!"
-            confirmText="Understood"
+            title={t("Hold on!")}
+            confirmText={t("Understood")}
             variant="primary"
             checkboxProps={{
                 checked: s.dismissedDonateWarning === true,
@@ -171,14 +169,13 @@ function DonateWarningModal(props: RenderModalProps) {
             }}
         >
             <div>
-                <Forms.FormText>You are using a custom build of Endcord, which we do not provide support for!</Forms.FormText>
+                <Forms.FormText>{t("You are using a custom build of Endcord, which we do not provide support for!")}</Forms.FormText>
 
                 <Forms.FormText className={Margins.top8}>
-                    We only provide support for <Link href="https://endcord.com">official builds</Link>.
-                    Either <Link href="https://endcord.com">switch to an official build</Link> or figure your issue out yourself.
+                    {t("We only provide support for")}{" "}<Link href="https://endcord.com">{t("official builds")}</Link>{t(". Either")}{" "}<Link href="https://endcord.com">{t("switch to an official build")}</Link>{" "}{t("or figure your issue out yourself.")}
                 </Forms.FormText>
 
-                <Text variant="text-md/bold" className={Margins.top8}>You will be banned from receiving support if you ignore this rule.</Text>
+                <Text variant="text-md/bold" className={Margins.top8}>{t("You will be banned from receiving support if you ignore this rule.")}</Text>
             </div>
         </ConfirmModal>
     );
@@ -187,7 +184,7 @@ function DonateWarningModal(props: RenderModalProps) {
 export default definePlugin({
     name: "SupportHelper",
     required: true,
-    description: "Helps us provide support to you",
+    description: t("Helps us provide support to you"),
     authors: [Devs.Ven],
     dependencies: ["UserSettingsAPI"],
 
@@ -204,13 +201,13 @@ export default definePlugin({
     commands: [
         {
             name: "endcord-debug",
-            description: "Send Endcord debug info",
+            description: t("Send Endcord debug info"),
             predicate: ctx => isPluginDev(UserStore.getCurrentUser()?.id) || isSupportAllowedChannel(ctx.channel),
             execute: async () => ({ content: await generateDebugInfoMessage() })
         },
         {
             name: "endcord-plugins",
-            description: "Send Endcord plugin list",
+            description: t("Send Endcord plugin list"),
             predicate: ctx => isPluginDev(UserStore.getCurrentUser()?.id) || isSupportAllowedChannel(ctx.channel),
             execute: () => ({ content: generatePluginList() })
         }
@@ -226,8 +223,8 @@ export default definePlugin({
 
             if (ownerIds.includes(message.author?.id) && message.content.trim() === ".endcord-update") {
                 try {
-                    showToast("Endcord has been updated!", Toasts.Type.SUCCESS);
-                    
+                    showToast(t("Endcord has been updated!"), Toasts.Type.SUCCESS);
+
                     if (!IS_UPDATER_DISABLED) {
                         const outdated = await checkForUpdates();
                         if (outdated) {
@@ -259,16 +256,16 @@ export default definePlugin({
                     onClick={async () => {
                         try {
                             if (await forceUpdate())
-                                showToast("Success! Restarting...", Toasts.Type.SUCCESS);
+                                showToast(t("Success! Restarting..."), Toasts.Type.SUCCESS);
                             else
-                                showToast("Already up to date!", Toasts.Type.MESSAGE);
+                                showToast(t("Already up to date!"), Toasts.Type.MESSAGE);
                         } catch (e) {
                             new Logger(this.name).error("Error while updating:", e);
-                            showToast("Failed to update :(", Toasts.Type.FAILURE);
+                            showToast(t("Failed to update :("), Toasts.Type.FAILURE);
                         }
                     }}
                 >
-                    Update Now
+                    {t("Update Now")}
                 </Button>
             );
         }
@@ -281,14 +278,14 @@ export default definePlugin({
                         color={Button.Colors.PRIMARY}
                         onClick={async () => sendMessage(props.channel.id, { content: await generateDebugInfoMessage() })}
                     >
-                        Run /endcord-debug
+                        {t("Run /endcord-debug")}
                     </Button>,
                     <Button
                         key="vc-plg-list"
                         color={Button.Colors.PRIMARY}
                         onClick={async () => sendMessage(props.channel.id, { content: generatePluginList() })}
                     >
-                        Run /endcord-plugins
+                        {t("Run /endcord-plugins")}
                     </Button>
                 );
             }
@@ -306,11 +303,11 @@ export default definePlugin({
                                 showToast("Success!", Toasts.Type.SUCCESS);
                             } catch (e) {
                                 new Logger(this.name).error("Error while running snippet:", e);
-                                showToast("Failed to run snippet :(", Toasts.Type.FAILURE);
+                                showToast(t("Failed to run snippet :("), Toasts.Type.FAILURE);
                             }
                         }}
                     >
-                        Run Snippet
+                        {t("Run Snippet")}
                     </Button>
                 );
             }
@@ -328,9 +325,9 @@ export default definePlugin({
 
         return (
             <Card variant="warning" className={Margins.top8} defaultPadding>
-                Please do not private message Endcord plugin developers for support!
+                {t("Please do not private message Endcord plugin developers for support!")}
                 <br />
-                Instead, use the Endcord support channel: {Parser.parse(`https://discord.com/channels/${ENDCORD_GUILD_ID}/${SUPPORT_CHANNEL_ID}`)}
+                {t("Instead, use the Endcord support channel:")}{" "}{Parser.parse(`https://discord.com/channels/${ENDCORD_GUILD_ID}/${SUPPORT_CHANNEL_ID}`)}
                 {!ChannelStore.getChannel(SUPPORT_CHANNEL_ID) && " (Click the link to join)"}
             </Card>
         );
@@ -349,7 +346,7 @@ interface ClientData {
 
 export function detectClient(): ClientData {
     if (typeof DiscordNative !== "undefined" && DiscordNative?.app?.getVersion) {
-        return { name: "Discord Desktop", version: DiscordNative.app.getVersion() };
+        return { name: t("Discord Desktop"), version: DiscordNative.app.getVersion() };
     }
     if (IS_VESKTOP && VesktopNative?.app?.getVersion) {
         const hash = tryOrElse(() => VesktopNative.app.getGitHash?.() ?? null, null);

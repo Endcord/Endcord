@@ -7,6 +7,7 @@
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { PinOrder, settings } from "@plugins/pinDms";
 import { addChannelToCategory, canMoveChannelInDirection, currentUserCategories, isPinned, moveChannel, removeChannelFromCategory } from "@plugins/pinDms/data";
+import { t } from "@utils/i18n";
 import { Menu } from "@webpack/common";
 
 import { openCategoryModal } from "./CreateCategoryModal";
@@ -19,14 +20,14 @@ function createPinMenuItem(channelId: string) {
     return (
         <Menu.MenuItem
             id="vc-pin-dm"
-            label="Pin DMs"
+            label={t("Pin DMs")}
         >
 
             {!pinned && (
                 <>
                     <Menu.MenuItem
                         id="vc-add-category"
-                        label="Add Category"
+                        label={t("Add Category")}
                         color="brand"
                         action={() => openCategoryModal(null, channelId)}
                     />
@@ -49,7 +50,7 @@ function createPinMenuItem(channelId: string) {
                 <>
                     <Menu.MenuItem
                         id="vc-unpin-dm"
-                        label="Unpin DM"
+                        label={t("Unpin DM")}
                         color="danger"
                         action={() => removeChannelFromCategory(channelId)}
                     />
@@ -58,7 +59,7 @@ function createPinMenuItem(channelId: string) {
                         settings.store.pinOrder === PinOrder.Custom && canMoveChannelInDirection(channelId, -1) && (
                             <Menu.MenuItem
                                 id="move-up"
-                                label="Move Up"
+                                label={t("Move Up")}
                                 action={() => moveChannel(channelId, -1)}
                             />
                         )
@@ -68,7 +69,7 @@ function createPinMenuItem(channelId: string) {
                         settings.store.pinOrder === PinOrder.Custom && canMoveChannelInDirection(channelId, 1) && (
                             <Menu.MenuItem
                                 id="move-down"
-                                label="Move Down"
+                                label={t("Move Down")}
                                 action={() => moveChannel(channelId, 1)}
                             />
                         )

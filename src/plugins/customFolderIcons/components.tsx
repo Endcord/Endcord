@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { t } from "@utils/i18n";
 import { Button, closeModal, Menu, Modal,openModalLazy, Slider, TextInput, useState } from "@webpack/common";
 
 import { folderIconsData, settings } from "./settings";
@@ -27,7 +28,7 @@ export function ImageModal(folderProps: folderProp) {
             {data && <>
                 <div style={{
                     color: "#FFF"
-                }}>Change the size of the folder icon</div>
+                }}>{t("Change the size of the folder icon")}</div>
                 <Slider
                     initialValue={100}
                     onValueChange={(v: number) => {
@@ -49,8 +50,7 @@ export function ImageModal(folderProps: folderProp) {
                 closeModal("custom-folder-icon");
             }}
             >
-                Save
-            </Button>
+                {t("Save")}</Button>
             <hr />
             <Button onClick={() => {
                 // INFO: unset button
@@ -60,8 +60,7 @@ export function ImageModal(folderProps: folderProp) {
                 }
                 closeModal("custom-folder-icon");
             }}>
-                Unset
-            </Button>
+                {t("Unset")}</Button>
             <hr />
         </>
     );
@@ -90,14 +89,14 @@ export function makeContextItem(a: folderProp) {
         <Menu.MenuItem
             id="custom-folder-icons"
             key="custom-folder-icons"
-            label="Change Icon"
+            label={t("Change Icon")}
             action={() => {
                 openModalLazy(async () => {
                     return props => (
                         <Modal
                             {...props}
                             size="sm"
-                            title="Set a New Icon."
+                            title={t("Set a New Icon.")}
                         >
                             <ImageModal folderId={a.folderId} folderColor={a.folderColor} />
                             <div style={{
@@ -105,8 +104,7 @@ export function makeContextItem(a: folderProp) {
                                 margin: "2.5%",
                                 marginTop: "1%"
                             }}>
-                                You might have to hover the folder after setting in order for it to refresh.
-                            </div>
+                                {t("You might have to hover the folder after setting in order for it to refresh.")}</div>
                         </Modal>
                     );
                 },

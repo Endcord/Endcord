@@ -6,8 +6,9 @@
 
 import * as DataStore from "@api/DataStore";
 import { HeadingSecondary } from "@components/Heading";
-import { Margins } from "@utils/margins";
 import { RenderModalProps } from "@endcord/discord-types";
+import { t } from "@utils/i18n";
+import { Margins } from "@utils/margins";
 import { Modal, SearchableSelect, useEffect, useMemo, useState } from "@webpack/common";
 
 import { DATASTORE_KEY, getSystemTimezone, resolveUserTimezone, settings, timezones } from ".";
@@ -72,18 +73,17 @@ export function SetTimezoneModal({ userId, modalProps, database }: { userId: str
         <Modal
             {...modalProps}
             size="sm"
-            title="Timezones"
+            title={t("Timezones")}
             actions={actions}
         >
             <section className={Margins.bottom16}>
                 <HeadingSecondary>
-                    Select Timezone
-                </HeadingSecondary>
+                    {t("Select Timezone")}</HeadingSecondary>
 
                 <SearchableSelect
                     options={options}
                     value={options.find(o => o.value === currentValue)?.value}
-                    placeholder={"Select a Timezone"}
+                    placeholder={t("Select a Timezone")}
                     maxVisibleItems={5}
                     closeOnSelect={true}
                     onChange={v => setCurrentValue(v)}

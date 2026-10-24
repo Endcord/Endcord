@@ -6,10 +6,11 @@
 
 import { definePluginSettings, migratePluginSettings } from "@api/Settings";
 import { Button } from "@components/Button";
+import { Activity } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { getIntlMessage } from "@utils/discord";
+import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
-import { Activity } from "@endcord/discord-types";
 import { PresenceStore, SettingsRouter, UserStore } from "@webpack/common";
 
 const extraTimeslots = [3, 4, 5, 6, 7, 10, 15, 20, 25, 30];
@@ -36,8 +37,7 @@ const settings = definePluginSettings({
                             SettingsRouter.openUserSettings("clips_panel");
                         }}
                     >
-                        Change FPS and duration options in Clips settings!
-                    </Button >
+                        {t("Change FPS and duration options in Clips settings!")}</Button >
                 </>
             );
         }
@@ -49,7 +49,7 @@ export default definePlugin({
     name: "ClipsEnhancements",
     description: "Add more Clip FPS and duration options, custom clip length, RPC tagging and more",
     tags: ["Activity", "Media", "Utility"],
-    authors: [Devs.ewlle, Devs.rootpoi, Devs.kraethis],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     patches: [
         {
@@ -60,18 +60,17 @@ export default definePlugin({
             }
         },
         {
-            find: ".CLIPS_FRAME_RATE,{",
-            replacement: {
-                match: /\[\{.{0,25}\i.\i.FPS_15.{0,500}\}\]/,
-                replace: "$self.patchFramerates($&)"
-            }
-        },
-        {
-            find: ".CLIPS_LENGTH,{",
-            replacement: {
-                match: /\[\{.{0,25}\i.\i.SECONDS_30.{0,500}\}\]/,
-                replace: "$self.patchTimeslots($&)"
-            }
+            find: ".SECONDS_30,label:",
+            replacement: [
+                {
+                    match: /\[\{.{0,25}\i.\i.SECONDS_30.{0,500}\}\]/,
+                    replace: " $self.patchTimeslots($&)"
+                },
+                {
+                    match: /\[\{.{0,25}\i.\i.FPS_15.{0,500}\}\]/,
+                    replace: " $self.patchFramerates($&)"
+                }
+            ]
         },
     ],
 

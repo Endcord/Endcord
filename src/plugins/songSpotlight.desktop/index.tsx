@@ -7,7 +7,7 @@
 import "./style.css";
 
 import ErrorBoundary from "@components/ErrorBoundary";
-import { EquicordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 
 import { useAuthorizationStore } from "./lib/stores/AuthorizationStore";
@@ -21,7 +21,7 @@ export default definePlugin({
     description: "Show off songs on your profile",
     dependencies: ["ProfileCollectionsAPI"],
     tags: ["Appearance", "Media"],
-    authors: [EquicordDevs.nexpid],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     patches: [
         // Full profile modal sections (lazy loaded)

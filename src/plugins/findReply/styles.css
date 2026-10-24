@@ -15,4 +15,6 @@
     width: fit-content;
     padding: 10px;
     gap: 10px;
+    margin-top: 8px;
+    border-radius: 8px;
 }

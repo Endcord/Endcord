@@ -10,7 +10,8 @@ import { get as dsGet, set as dsSet } from "@api/DataStore";
 import { definePluginSettings } from "@api/Settings";
 import { Button } from "@components/Button";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { EndcordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
+import { t as translateText } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 import { findByCodeLazy, findByPropsLazy, findComponentByCodeLazy } from "@webpack";
 import { React, SearchableSelect, showToast, TextInput, Toasts, UserStore } from "@webpack/common";
@@ -147,7 +148,7 @@ const ConnectionsSection = ErrorBoundary.wrap(
 
         return (
             <Section
-                heading="Connections"
+                heading={translateText("Connections")}
                 headingVariant={isSideBar ? "text-xs/semibold" : "text-xs/medium"}
                 headingColor={isSideBar ? "text-strong" : "text-default"}
             >
@@ -184,30 +185,30 @@ function FakeConnectionsPanel() {
         showToast("Saved! Reopen your profile to see connections.", Toasts.Type.SUCCESS);
     }
 
-    if (!loaded) return <div style={{ color: "var(--text-muted)", fontSize: 13 }}>Loading...</div>;
+    if (!loaded) return <div style={{ color: "var(--text-muted)", fontSize: 13 }}>{translateText("Loading...")}</div>;
 
     return (
         <div className="vc-fc-settings">
 
             <div className="vc-fc-note">
-                💾 Saved in Discord's own database — nothing leaves your device.<br />
-                <code style={{ fontSize: 11, opacity: 0.6 }}>%APPDATA%\discord\Local Storage\leveldb\</code>
+                {translateText("💾 Saved in Discord's own database — nothing leaves your device.")}<br />
+                <code style={{ fontSize: 11, opacity: 0.6 }}>{translateText("%APPDATA%\\discord\\Local Storage\\leveldb\\")}</code>
             </div>
 
             {dirty && (
                 <div className="vc-fc-banner">
-                    <span>⚠ Unsaved changes</span>
+                    <span>{translateText("⚠ Unsaved changes")}</span>
                     <div style={{ display: "flex", gap: 8 }}>
-                        <Button variant="primary" size="small" onClick={save}>Save</Button>
-                        <Button variant="dangerPrimary" size="small" onClick={() => { setPending([...list]); setDirty(false); }}>Discard</Button>
+                        <Button variant="primary" size="small" onClick={save}>{translateText("Save")}</Button>
+                        <Button variant="dangerPrimary" size="small" onClick={() => { setPending([...list]); setDirty(false); }}>{translateText("Discard")}</Button>
                     </div>
                 </div>
             )}
 
             <div>
-                <div className="vc-fc-label">Your Connections</div>
+                <div className="vc-fc-label">{translateText("Your Connections")}</div>
                 {pending.length === 0
-                    ? <div className="vc-fc-empty">No connections yet. Add one below.</div>
+                    ? <div className="vc-fc-empty">{translateText("No connections yet. Add one below.")}</div>
                     : pending.map(c => (
                         <div key={c.uid} className="vc-fc-card">
                             <span className="vc-fc-card-platform">{getPlatformLabel(c.type)}</span>
@@ -219,8 +220,7 @@ function FakeConnectionsPanel() {
                                 onClick={() => update(pending.filter(x => x.uid !== c.uid))}
                                 style={{ marginLeft: "auto", flexShrink: 0 }}
                             >
-                                Remove
-                            </Button>
+                                {translateText("Remove")}</Button>
                         </div>
                     ))
                 }
@@ -229,32 +229,32 @@ function FakeConnectionsPanel() {
             <div className="vc-fc-divider" />
 
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                <div className="vc-fc-label">Add Connection</div>
+                <div className="vc-fc-label">{translateText("Add Connection")}</div>
 
                 <div>
-                    <label className="vc-fc-field-label">Platform</label>
+                    <label className="vc-fc-field-label">{translateText("Platform")}</label>
                     <SearchableSelect
                         options={PLATFORM_OPTIONS}
                         value={PLATFORM_OPTIONS.find(o => o.value === selType)?.value}
-                        placeholder="Select a platform..."
+                        placeholder={translateText("Select a platform...")}
                         maxVisibleItems={8}
                         onChange={(v: string) => setSelType(v)}
                     />
                 </div>
 
                 <div>
-                    <label className="vc-fc-field-label">Display Name</label>
-                    <TextInput value={name} onChange={setName} placeholder="e.g. YourUsername" />
+                    <label className="vc-fc-field-label">{translateText("Display Name")}</label>
+                    <TextInput value={name} onChange={setName} placeholder={translateText("e.g. YourUsername")} />
                 </div>
 
                 <div>
                     <label className="vc-fc-field-label">
-                        Link <span style={{ fontWeight: 400, opacity: 0.6 }}>(optional — makes it clickable)</span>
+                        {translateText("Link")}{" "}<span style={{ fontWeight: 400, opacity: 0.6 }}>{translateText("(optional — makes it clickable)")}</span>
                     </label>
                     <TextInput
                         value={url}
                         onChange={setUrl}
-                        placeholder="e.g. https://youtube.com/@YourChannel"
+                        placeholder={translateText("e.g. https://youtube.com/@YourChannel")}
                     />
                 </div>
 
@@ -275,8 +275,7 @@ function FakeConnectionsPanel() {
                         setUrl("");
                     }}
                 >
-                    Add to list
-                </Button>
+                    {translateText("Add to list")}</Button>
             </div>
 
             <div className="vc-fc-divider" />
@@ -287,12 +286,10 @@ function FakeConnectionsPanel() {
                 disabled={!dirty}
                 onClick={save}
             >
-                Save Connections
-            </Button>
+                {translateText("Save Connections")}</Button>
 
             <div style={{ fontSize: 11, color: "var(--text-muted)" }}>
-                After saving, reopen your profile to see the connections. Only visible to you.
-            </div>
+                {translateText("After saving, reopen your profile to see the connections. Only visible to you.")}</div>
         </div>
     );
 }
@@ -326,7 +323,7 @@ const profilePopoutComponent = ErrorBoundary.wrap(
 export default definePlugin({
     name: "FakeConnections",
     description: "Add fake connections to your own profile, visible only to you. Supports custom display names, optional clickable links, and per-theme text color. Manage in plugin settings.",
-    authors: [EndcordDevs.lastclipped],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     tags: ["Appearance", "Customisation"],
     settings,
 
@@ -334,7 +331,7 @@ export default definePlugin({
         {
             find: '"UserProfilePopout");',
             replacement: {
-                match: /userId:\i\.id,guild:\i\}\)(?=])/,
+                match: /userId:\i\.id,guild:\i\}\)(?=(?:,Endcord\.Plugins\.plugins\[[^\]]+\]\.\w+\(arguments\[0\]\))*])/,
                 replace: "$&,$self.profilePopoutComponent(arguments[0])"
             }
         }

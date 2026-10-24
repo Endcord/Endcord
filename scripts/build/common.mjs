@@ -31,6 +31,7 @@ import { join, relative, resolve } from "path";
 import { promisify } from "util";
 
 import { getPluginTarget } from "../utils.mjs";
+import { createLazyPluginAnalyzer } from "./lazyPlugins.mjs";
 import { builtinModules } from "module";
 
 /** @type {import("../../package.json")} */
@@ -84,7 +85,11 @@ export async function buildOrWatchAll(buildConfigs) {
             context(cfg).then(ctx => ctx.watch())
         ));
     } else {
-        await Promise.all(buildConfigs.map(cfg => build(cfg)))
+        await Promise.all(buildConfigs.map(async cfg => {
+            const res = await build(process.env.ENDCORD_METAFILE ? { ...cfg, metafile: true } : cfg);
+            if (res.metafile) (await import("fs")).writeFileSync(cfg.outfile + ".meta.json", JSON.stringify(res.metafile));
+            return res;
+        }))
             .catch(error => {
                 console.error(error.message);
                 process.exit(1); // exit immediately to skip the rest of the builds
@@ -152,6 +157,7 @@ export const globPlugins = kind => ({
 
         build.onLoad({ filter, namespace: "import-plugins" }, async () => {
             const pluginDirs = ["plugins/_api", "plugins/_core", "plugins", "userplugins"];
+            const analyzeLazy = createLazyPluginAnalyzer();
             let code = "";
             let pluginsCode = "\n";
             let metaCode = "\n";
@@ -188,13 +194,26 @@ export const globPlugins = kind => ({
                     const folderName = `src/${dir}/${fileName}`.replace(/^src\/plugins\//, "");
 
                     const mod = `p${i}`;
-                    code += `import ${mod} from "./${dir}/${fileName.replace(/\.tsx?$/, "")}";\n`;
-                    pluginsCode += `[${mod}.name]:${mod},\n`;
-                    metaCode += `[${mod}.name]:${JSON.stringify({ folderName, userPlugin })},\n`;
+                    const importPath = `./${dir}/${fileName.replace(/\.tsx?$/, "")}`;
+                    const lazy = IS_REPORTER ? { lazy: false, loadsWith: [], required: false, enabledByDefault: false, migratesFrom: [] } : await analyzeLazy(dir, fileName);
+                    const loadsWith = lazy.loadsWith.length ? { loadsWith: lazy.loadsWith } : {};
+                    // The registry key has to be known without running the plugin
+                    const name = lazy.lazy ? await resolvePluginName(fullDir, file).catch(() => null) : null;
+                    if (lazy.lazy && name) {
+                        pluginsCode += `$lazy(${JSON.stringify(name)},()=>require(${JSON.stringify(importPath)}).default);\n`;
+                        metaCode += `[${JSON.stringify(name)}]:${JSON.stringify({ folderName, userPlugin, required: lazy.required, enabledByDefault: lazy.enabledByDefault, ...(lazy.migratesFrom.length && { migratesFrom: lazy.migratesFrom }), ...loadsWith })},\n`;
+                    } else {
+                        code += `import ${mod} from "${importPath}";\n`;
+                        pluginsCode += `$eager(${mod});\n`;
+                        metaCode += `[${mod}.name]:${JSON.stringify({ folderName, userPlugin, ...loadsWith })},\n`;
+                    }
                     i++;
                 }
             }
-            code += `export default {${pluginsCode}};export const PluginMeta={${metaCode}};export const ExcludedPlugins={${excludedCode}};`;
+            if (process.env.ENDCORD_LAZY_REPORT) console.log(`[${kind}] lazy plugins: ${pluginsCode.split("$lazy(").length - 1}, eager: ${pluginsCode.split("$eager(").length - 1}`);
+            code += readFileSync("./scripts/build/module/lazyPluginRegistry.js", "utf-8");
+            code += pluginsCode;
+            code += `export default plugins;export const PluginMeta={${metaCode}};export const ExcludedPlugins={${excludedCode}};`;
             return {
                 contents: code,
                 resolveDir: "./src",
@@ -316,6 +335,30 @@ export const stylePlugin = {
             path: relative(process.cwd(), join(resolveDir, path.replace("?managed", ""))),
             namespace: "managed-style",
         }));
+        // Plain `import "./style.css"` inside a plugin folder would otherwise land in renderer.css and apply
+        // to Discord even while the plugin is disabled. Register it as a style owned by that plugin folder
+        // instead, so the PluginManager only injects it while the plugin is running.
+        // Settings styles stay global because plugin settings can be opened while the plugin is disabled.
+        onResolve({ filter: /^\.\.?\/.*\.css$/, namespace: "file" }, ({ path, resolveDir }) => {
+            const file = relative(process.cwd(), join(resolveDir, path)).replaceAll("\\", "/");
+            const folder = /^src\/plugins\/([^_/][^/]*)\//.exec(file)?.[1];
+            const importer = relative(process.cwd(), resolveDir).replaceAll("\\", "/");
+            if (!folder || /settings/i.test(file) || /settings/i.test(importer)) return;
+
+            return { path: file, namespace: "plugin-style", pluginData: { folder } };
+        });
+        onLoad({ filter: /\.css$/, namespace: "plugin-style" }, async ({ path, pluginData: { folder } }) => {
+            let css = await readFile(path, "utf-8");
+            if (!watch) css = (await esbuild.transform(css, { loader: "css", minify: true, target: ["chrome120"] })).code;
+
+            return {
+                loader: "js",
+                contents: styleModule
+                    .replaceAll("STYLE_SOURCE", JSON.stringify(css))
+                    .replaceAll("STYLE_NAME", JSON.stringify(path))
+                    + `\n((window.EndcordPluginStyles ??= {})[${JSON.stringify(folder)}] ??= []).push(${JSON.stringify(path)});\n`
+            };
+        });
         onLoad({ filter: /\.css$/, namespace: "managed-style" }, async ({ path }) => {
             const css = await readFile(path, "utf-8");
             const name = relative(process.cwd(), path).replaceAll("\\", "/");

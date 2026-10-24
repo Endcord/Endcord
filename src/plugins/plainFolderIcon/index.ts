@@ -13,7 +13,7 @@ export default definePlugin({
     name: "PlainFolderIcon",
     description: "Dont show the small guild icons in folders",
     tags: ["Appearance", "Customisation"],
-    authors: [Devs.botato],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
 
     patches: [
         {

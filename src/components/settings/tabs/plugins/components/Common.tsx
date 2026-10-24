@@ -5,6 +5,7 @@
  */
 
 import { classNameFactory } from "@utils/css";
+import { t, useI18n } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import { wordsFromCamel, wordsToTitle } from "@utils/text";
 import { DefinedSettings, PluginSettingDefCommon } from "@utils/types";
@@ -31,7 +32,7 @@ export type ComponentSettingProps<T extends Omit<PluginSettingDefCommon, "descri
 export function resolveError(isValidResult: boolean | string) {
     if (typeof isValidResult === "string") return isValidResult;
 
-    return isValidResult ? null : "Invalid input provided";
+    return isValidResult ? null : t("Hmm, that doesn't look quite right. Mind checking it?");
 }
 
 interface SettingsSectionProps extends PropsWithChildren {
@@ -44,12 +45,13 @@ interface SettingsSectionProps extends PropsWithChildren {
 }
 
 export function SettingsSection({ tag: Tag = "div", name, id, description, error, inlineSetting, children }: SettingsSectionProps) {
+    const { t } = useI18n();
     return (
         <Tag className={cl("section")}>
             <div className={classes(cl("content"), inlineSetting && cl("inline"))}>
                 <div className={cl("label")}>
-                    <Text className={cl("title")} variant="text-md/medium">{name ?? wordsToTitle(wordsFromCamel(id))}</Text>
-                    {description && <Text className={cl("description")} variant="text-sm/normal">{description}</Text>}
+                    <Text className={cl("title")} variant="text-md/medium">{t(name ?? wordsToTitle(wordsFromCamel(id)))}</Text>
+                    {description && <Text className={cl("description")} variant="text-sm/normal">{t(description)}</Text>}
                 </div>
                 {children}
             </div>

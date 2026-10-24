@@ -4,13 +4,13 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import { canonicalizeMatch, canonicalizeReplace } from "@utils/patches";
 import { makeCodeblock } from "@utils/text";
 import { ReplaceFn } from "@utils/types";
 import { Button, Forms, Parser, useMemo, useState } from "@webpack/common";
 import type { Change } from "diff";
-
 // Do not include diff in standalone builds (side effects import)
 if (!IS_STANDALONE) {
     var differ = require("diff") as typeof import("diff");
@@ -53,7 +53,7 @@ function Match({ matchResult }: { matchResult: RegExpMatchArray | null; }) {
 
     return (
         <>
-            <Forms.FormTitle>Match</Forms.FormTitle>
+            <Forms.FormTitle>{t("Match")}</Forms.FormTitle>
             <div style={{ userSelect: "text" }}>{Parser.parse(fullMatch)}</div>
             <div style={{ userSelect: "text" }}>{Parser.parse(groups)}</div>
         </>
@@ -83,7 +83,7 @@ function Diff({ diff }: { diff: Change[] | null; }) {
 
     return (
         <>
-            <Forms.FormTitle>Diff</Forms.FormTitle>
+            <Forms.FormTitle>{t("Diff")}</Forms.FormTitle>
             {diffLines}
         </>
     );
@@ -118,7 +118,7 @@ export function PatchPreview({ module, match, replacement, setReplacementError }
 
     return (
         <>
-            <Forms.FormTitle>Module {id}</Forms.FormTitle>
+            <Forms.FormTitle>{t("Module")}{" "}{id}</Forms.FormTitle>
 
             <Match matchResult={matchResult} />
             <Diff diff={diff} />
@@ -138,7 +138,7 @@ export function PatchPreview({ module, match, replacement, setReplacementError }
                         }
                     }}
                 >
-                    Compile
+                    {t("Compile")}
                 </Button>
             )}
 

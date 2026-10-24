@@ -5,7 +5,7 @@
  */
 
 .ec-motion-active {
-    filter: blur(var(--ec-motion-blur, 0px)) !important;
+    filter: blur(var(--ec-motion-blur, 0)) !important;
     transform: translateZ(0);
     backface-visibility: hidden;
     will-change: filter;

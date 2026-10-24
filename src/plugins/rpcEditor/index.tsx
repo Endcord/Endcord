@@ -6,11 +6,11 @@
 
 import { DataStore } from "@api/index";
 import { definePluginSettings } from "@api/Settings";
+import { Activity } from "@endcord/discord-types";
+import { ActivityType } from "@endcord/discord-types/enums";
 import { Devs } from "@utils/constants";
 import { useForceUpdater } from "@utils/react";
 import definePlugin, { OptionType } from "@utils/types";
-import { Activity } from "@endcord/discord-types";
-import { ActivityType } from "@endcord/discord-types/enums";
 import { React } from "@webpack/common";
 
 import { ReplaceSettings, ReplaceTutorial } from "./ReplaceSettings";
@@ -74,7 +74,7 @@ export default definePlugin({
     name: "RPCEditor",
     description: "Edit the type and content of any Rich Presence",
     tags: ["Customisation"],
-    authors: [Devs.ewlle, Devs.rootpoi, Devs.kraethis],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     patches: [
         {
             find: '"LocalActivityStore"',

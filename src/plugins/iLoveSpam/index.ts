@@ -11,7 +11,7 @@ export default definePlugin({
     name: "iLoveSpam",
     description: "Do not hide messages from 'likely spammers'",
     tags: ["Utility", "Chat"],
-    authors: [Devs.botato, Devs.Nyako],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     patches: [
         {
             find: "hasFlag:{writable",

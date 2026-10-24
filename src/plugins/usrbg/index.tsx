@@ -7,6 +7,7 @@
 import { definePluginSettings } from "@api/Settings";
 import { LinkButton } from "@components/Button";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 
 const API_URL = "https://usrbg.is-hardly.online/users";
@@ -39,7 +40,7 @@ export default definePlugin({
     name: "USRBG",
     description: "Displays user banners from USRBG, allowing anyone to get a banner without Nitro",
     tags: ["Appearance", "Customisation"],
-    authors: [Devs.AutumnVN, Devs.katlyn, Devs.pylix, Devs.TheKodeToad],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     patches: [
         {
@@ -55,13 +56,13 @@ export default definePlugin({
             predicate: () => settings.store.voiceBackground,
             replacement: [
                 {
-                    match: /(?<=function\((\i),\i\)\{)(?=let.{20,40},style:)/,
-                    replace: "$1.style=$self.getVoiceBackgroundStyles($1);"
+                    match: /(?<=function \i\((\i)\)\{)(?=(?:Object\.assign\([^;]+\);)*let.{20,40},style:)/,
+                    replace: "Object.assign($1.style=$1.style||{},$self.getVoiceBackgroundStyles($1));"
                 }
             ]
         },
         {
-            find: '"VideoBackground-web"',
+            find: ".VIDEO_TILE_BACKGROUND,primaryColor:",
             predicate: () => settings.store.voiceBackground,
             replacement: {
                 match: /backgroundColor:.{0,25},\{style:(?=\i\?)/,
@@ -75,8 +76,7 @@ export default definePlugin({
     settingsAboutComponent: () => {
         return (
             <LinkButton href="https://github.com/AutumnVN/usrbg#how-to-request-your-own-usrbg-banner" variant="primary">
-                Get your own USRBG banner
-            </LinkButton>
+                {t("Get your own USRBG banner")}</LinkButton>
         );
     },
 

@@ -11,6 +11,7 @@ import { Paragraph } from "@components/Paragraph";
 import { SettingsTab, wrapTab } from "@components/settings";
 import { classNameFactory } from "@utils/css";
 import { copyWithToast, openUserProfile } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { Avatar, Clickable, ContextMenuApi, Menu, React, TextInput, Tooltip, UserStore } from "@webpack/common";
 
 import { Data, IStorageUser } from "./data";
@@ -26,8 +27,7 @@ function tooltipText(user: IStorageUser) {
 function UsersCollectionRows({ usersCollection }: { usersCollection: Data["usersCollection"]; }) {
     if (Object.keys(usersCollection).length === 0) return (
         <BaseText>
-            It's empty right now
-        </BaseText>
+            {t("It's empty right now")}</BaseText>
     );
 
     return (
@@ -80,12 +80,12 @@ function UserRow({ user, allowOwner = true }: { user: IStorageUser, allowOwner?:
                                     >
                                         <Menu.MenuItem
                                             id="copy-user-id"
-                                            label="Copy User ID"
+                                            label={t("Copy User ID")}
                                             action={() => copyWithToast(user.id, "User ID copied to clipboard")}
                                         />
                                         <Menu.MenuItem
                                             id="view-profile"
-                                            label="View Profile"
+                                            label={t("View Profile")}
                                             action={() => openUserProfile(user.id)}
                                         />
                                     </Menu.Menu>
@@ -111,7 +111,7 @@ function SearchElement({ usersCollection }: { usersCollection: Data["usersCollec
 
     return (
         <section className={cl("search")}>
-            <TextInput placeholder="Filter by tag, username" name="Filter" onChange={setCurrent} />
+            <TextInput placeholder={t("Filter by tag, username")} name="Filter" onChange={setCurrent} />
             {current && (
                 <div className={cl("search-user")}>
                     {list.filter(user => user.tag.includes(current) || user.username.includes(current))
@@ -127,8 +127,7 @@ export function DataUI({ usersCollection }: { usersCollection: Data["usersCollec
         <SettingsTab>
             <Card>
                 <Paragraph>
-                    Provides a list of users you have mentioned or replied to, or those who own the servers you belong to (owner*), or are members of your guild
-                </Paragraph>
+                    {t("Provides a list of users you have mentioned or replied to, or those who own the servers you belong to (owner*), or are members of your guild")}</Paragraph>
                 <SearchElement usersCollection={usersCollection} />
             </Card>
             <div className={cl("rows")}>

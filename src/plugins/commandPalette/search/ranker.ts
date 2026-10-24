@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import type { PaletteCommand } from "../api/types";
-import { getAlias } from "../state/aliases";
-import { frecencyScore } from "../state/frecency";
-import { isPinned } from "../state/pins";
+import type { PaletteCommand } from "@plugins/commandPalette/api/types";
+import { getAlias } from "@plugins/commandPalette/state/aliases";
+import { frecencyScore } from "@plugins/commandPalette/state/frecency";
+import { isPinned } from "@plugins/commandPalette/state/pins";
 
 export function fuzzyScore(query: string, text: string): number {
     const q = query.toLowerCase().trim();

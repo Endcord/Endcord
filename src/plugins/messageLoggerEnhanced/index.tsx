@@ -9,7 +9,7 @@ export const Native = getNative();
 import "./styles.css";
 
 import { LogsIcon } from "@components/Icons";
-import { Devs, EquicordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
 import definePlugin from "@utils/types";
@@ -252,7 +252,7 @@ async function processMessageFetch(response: FetchMessagesResponse) {
 
 export default definePlugin({
     name: "MessageLoggerEnhanced",
-    authors: [Devs.Aria, EquicordDevs.keircn],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     description: "Improves MessageLogger with edited message history, ghost ping detection and more",
     tags: ["Chat", "Servers"],
     dependencies: ["MessageLogger", "HeaderBarAPI"],

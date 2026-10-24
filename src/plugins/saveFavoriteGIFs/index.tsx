@@ -10,6 +10,7 @@ import { isPluginEnabled } from "@api/PluginManager";
 import { definePluginSettings } from "@api/Settings";
 import equicordToolbox from "@plugins/equicordToolbox";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 import { saveFile } from "@utils/web";
 import { Menu, UserSettingsActionCreators } from "@webpack/common";
@@ -48,7 +49,7 @@ async function saveAllGifs() {
     const gifUrls = getGifUrls();
 
     if (gifUrls.length === 0) {
-        showNotification({ title: "Save Favorite GIFs", body: "No favorite GIFs found..?" });
+        showNotification({ title: "Save Favorite GIFs", body: "No favorite GIFs found" });
         return;
     }
 
@@ -60,7 +61,7 @@ async function saveWorkingGifs() {
     const gifUrls = getGifUrls();
 
     if (gifUrls.length === 0) {
-        showNotification({ title: "Save Favorite GIFs", body: "No favorite GIFs found?" });
+        showNotification({ title: "Save Favorite GIFs", body: "No favorite GIFs found" });
         return;
     }
 
@@ -117,7 +118,7 @@ export default definePlugin({
     description: "Export favorited GIF urls",
     dependencies: ["CommandsAPI"],
     tags: ["Emotes", "Utility"],
-    authors: [Devs.thororen],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     commands: [
         {
@@ -140,7 +141,7 @@ export default definePlugin({
         return (
             <Menu.MenuItem
                 id="save-favorite-gifs-toolbox"
-                label="Save Favorite GIFs"
+                label={t("Save Favorite GIFs")}
                 action={saveAllGifs}
             />
         );

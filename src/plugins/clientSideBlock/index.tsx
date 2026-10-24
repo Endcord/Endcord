@@ -6,9 +6,10 @@
 
 import { definePluginSettings } from "@api/Settings";
 import { Paragraph } from "@components/Paragraph";
-import { Devs, EquicordDevs } from "@utils/constants";
-import definePlugin, { OptionType } from "@utils/types";
 import { GuildMember } from "@endcord/discord-types";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
+import definePlugin, { OptionType } from "@utils/types";
 import { ChannelStore, GuildMemberStore, GuildRoleStore, React, RelationshipStore, UserStore } from "@webpack/common";
 
 const settings = definePluginSettings({
@@ -20,19 +21,19 @@ const settings = definePluginSettings({
     },
     usersToBlock: {
         type: OptionType.STRING,
-        description: "User IDs seperated by a comma and a space",
+        description: "User IDs separated by a comma and a space",
         restartNeeded: true,
         default: ""
     },
     hideBlockedUsers: {
         type: OptionType.BOOLEAN,
-        description: "Should blocked users should also be hidden everywhere",
+        description: "Should blocked users also be hidden everywhere",
         default: true,
         restartNeeded: true
     },
     hideBlockedMessages: {
         type: OptionType.BOOLEAN,
-        description: "Should messages from blocked users should be hidden fully (same as the old noblockedmessages plugin)",
+        description: "Should messages from blocked users be hidden fully (same as the old noblockedmessages plugin)",
         default: true,
         restartNeeded: true
     },
@@ -100,8 +101,7 @@ function hiddenReplyComponent() {
         case "displayText":
             return <Paragraph style={{ marginTop: "0px", marginBottom: "0px" }}>
                 <i>
-                    ↓ Replying to blocked message
-                </i>
+                    {t("↓ Replying to blocked message")}</i>
             </Paragraph>;
         case "hideReply":
             return null;
@@ -144,7 +144,7 @@ export default definePlugin({
     description: "Allows you to locally hide almost all content from any user",
     tags: ["Utility"],
     searchTerms: ["blocked", "block", "hide", "hidden", "noblockedmessages"],
-    authors: [Devs.Samwich, EquicordDevs.KamiRu],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     activeNowView,
     shouldHideUser,

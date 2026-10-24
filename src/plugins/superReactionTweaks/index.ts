@@ -38,7 +38,7 @@ export default definePlugin({
     name: "SuperReactionTweaks",
     description: "Customize the limit of Super Reactions playing at once, and super react by default",
     tags: ["Reactions", "Emotes"],
-    authors: [Devs.FieryFlames, Devs.ant0n],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     patches: [
         {
             find: ",BURST_REACTION_EFFECT_PLAY",

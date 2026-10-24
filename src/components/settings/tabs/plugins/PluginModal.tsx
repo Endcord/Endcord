@@ -15,12 +15,13 @@ import { RenderModalProps, User } from "@endcord/discord-types";
 import { debounce } from "@shared/debounce";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
+import { useI18n } from "@utils/i18n";
 import { proxyLazy } from "@utils/lazy";
 import { Margins } from "@utils/margins";
 import { classes } from "@utils/misc";
 import { OptionType, Plugin, PluginTag } from "@utils/types";
 import { findCssClassesLazy } from "@webpack";
-import { Clickable, FluxDispatcher, Forms, Modal,openModal, React, Text, Tooltip, useEffect, useMemo, UserStore, UserSummaryItem, UserUtils, useState } from "@webpack/common";
+import { Clickable, FluxDispatcher, Forms, Modal, openModal, React, Text, Tooltip, useEffect, useMemo, UserStore, UserSummaryItem, UserUtils, useState } from "@webpack/common";
 import { Constructor } from "type-fest";
 
 import { PluginMeta } from "~plugins";
@@ -57,16 +58,18 @@ function makeDummyUser(user: { username: string; id?: string; avatar?: string; }
 }
 
 function PluginTags({ tags }: { tags: PluginTag[]; }) {
+    const { t } = useI18n();
     return (
         <div className={cl("tags")}>
             {tags.map(tag => (
-                <div key={tag} className={cl("tag")}>{tag}</div>
+                <div key={tag} className={cl("tag")}>{t(tag)}</div>
             ))}
         </div>
     );
 }
 
 export default function PluginModal({ plugin, onRestartNeeded, onClose, transitionState }: PluginModalProps) {
+    const { t, tPluginDesc } = useI18n();
     const pluginSettings = useSettings([`plugins.${plugin.name}.*`]).plugins[plugin.name];
     const hasSettings = hasAnyVisibleSettings(plugin);
 
@@ -80,7 +83,7 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
     }, [plugin.authors]);
 
     // avoid layout shift by showing dummy users while loading users
-    const fallbackAuthors = useMemo(() => [makeDummyUser({ username: "Loading...", id: "-1465912127305809920" })], []);
+    const fallbackAuthors = useMemo(() => [makeDummyUser({ username: t("Loading..."), id: "-1465912127305809920" })], []);
     const [authors, setAuthors] = useState<Partial<User>[]>([]);
 
     useEffect(() => {
@@ -111,7 +114,7 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
     function renderSettings() {
         const { settings } = plugin;
         if (!hasSettings || !settings)
-            return <Forms.FormText>There are no settings for this plugin.</Forms.FormText>;
+            return <Forms.FormText>{t("There are no settings for this plugin.")}</Forms.FormText>;
 
         const options = Object.entries(settings.def).map(([key, setting]) => {
             if (setting.type === OptionType.CUSTOM) return null;
@@ -182,7 +185,7 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
                     {!pluginMeta.userPlugin && (
                         <div className="vc-settings-modal-links">
                             <WebsiteButton
-                                text="View more info"
+                                text={t("View more info")}
                                 href={`https://endcord.com/plugins/${plugin.name}`}
                             />
                         </div>
@@ -192,7 +195,7 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
             subtitle={
                 <div className={cl("info")}>
                     <div>
-                        <Forms.FormText>{plugin.description}</Forms.FormText>
+                        <Forms.FormText>{tPluginDesc(plugin.name, plugin.description)}</Forms.FormText>
                         {!!plugin.tags?.length && <PluginTags tags={plugin.tags} />}
                     </div>
                 </div>
@@ -200,7 +203,7 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
         >
             <div className={"vc-settings-modal-content"}>
                 <section>
-                    <Text variant="heading-lg/semibold" className={classes(Margins.top8, Margins.bottom8)}>Authors</Text>
+                    <Text variant="heading-lg/semibold" className={classes(Margins.top8, Margins.bottom8)}>{t("Authors")}</Text>
                     <div style={{ width: "fit-content" }}>
                         <ErrorBoundary noop>
                             <UserSummaryItem
@@ -231,7 +234,7 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
                 {!!plugin.settingsAboutComponent && (
                     <div className={Margins.top16}>
                         <section>
-                            <ErrorBoundary message="An error occurred while rendering this plugin's custom Info Component">
+                            <ErrorBoundary message={t("This plugin's info panel tripped over itself, but its settings still work.")}>
                                 <plugin.settingsAboutComponent />
                             </ErrorBoundary>
                         </section>
@@ -239,7 +242,7 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
                 )}
 
                 <section>
-                    <Text variant="heading-lg/semibold" className={classes(Margins.top16, Margins.bottom8)}>Settings</Text>
+                    <Text variant="heading-lg/semibold" className={classes(Margins.top16, Margins.bottom8)}>{t("Settings")}</Text>
                     {renderSettings()}
                 </section>
             </div>

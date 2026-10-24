@@ -22,7 +22,7 @@ export default definePlugin({
     name: "NotificationVolume",
     description: "Save your ears and set a separate volume for notifications and in-app sounds",
     tags: ["Notifications", "Voice"],
-    authors: [Devs.philipbry],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     patches: [
         {

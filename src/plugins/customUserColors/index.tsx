@@ -9,9 +9,10 @@ import "./styles.css";
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { get } from "@api/DataStore";
 import { definePluginSettings, Settings } from "@api/Settings";
-import { EquicordDevs } from "@utils/constants";
-import definePlugin, { OptionType } from "@utils/types";
 import { Channel, User } from "@endcord/discord-types";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
+import definePlugin, { OptionType } from "@utils/types";
 import { extractAndLoadChunksLazy } from "@webpack";
 import { ChannelStore, Menu, openModal,SelectedChannelStore } from "@webpack/common";
 
@@ -45,7 +46,7 @@ const userContextMenuPatch: NavContextMenuPatchCallback = (children, { user }: {
 
     const setCustomColorItem = (
         <Menu.MenuItem
-            label="Set Color"
+            label={t("Set Color")}
             id="set-color"
             icon={ColorIcon}
             leadingAccessory={{ type: "icon", icon: ColorIcon }}
@@ -64,7 +65,7 @@ const channelContextMenuPatch: NavContextMenuPatchCallback = (children, { channe
 
     const setCustomColorItem = (
         <Menu.MenuItem
-            label="Set Color"
+            label={t("Set Color")}
             id="set-color"
             icon={ColorIcon}
             leadingAccessory={{ type: "icon", icon: ColorIcon }}
@@ -100,9 +101,9 @@ const settings = definePluginSettings({
 
 export default definePlugin({
     name: "CustomUserColors",
-    description: "Lets you add a custom color to any user, anywhere! Highly recommend to use with typingTweaks and roleColorEverywhere",
+    description: "Give any user a custom name color, everywhere. Works best with TypingTweaks and RoleColorEverywhere",
     tags: ["Appearance", "Customisation", "Chat"],
-    authors: [EquicordDevs.mochienya],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     contextMenus: {
         "user-context": userContextMenuPatch,
         "gdm-context": channelContextMenuPatch,
@@ -158,7 +159,7 @@ export default definePlugin({
         try {
             const channelId = SelectedChannelStore.getChannelId();
             const channel = ChannelStore.getChannel(channelId);
-            const isDM = channel.isDM() || channel.isMultiUserDM();
+            const isDM = !!channel && (channel.isDM() || channel.isMultiUserDM());
             const colorString = this.colorIfServer(context);
             if (colorString === colorProps.colorString) return colorProps;
             if (!settings.store.colorInServers && !isDM) return colorProps;

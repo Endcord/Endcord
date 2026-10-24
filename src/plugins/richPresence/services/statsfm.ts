@@ -4,15 +4,14 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { Logger } from "@utils/Logger";
 import { Activity, ActivityButton } from "@endcord/discord-types";
 import { ActivityFlags, ActivityType } from "@endcord/discord-types/enums";
+import { settings } from "@plugins/richPresence/settings";
+import { NameFormat } from "@plugins/richPresence/types";
+import { SfmResponse, SfmTrackData } from "@plugins/richPresence/types/statsfm";
+import { Logger } from "@utils/Logger";
 import { findByPropsLazy } from "@webpack";
 import { ApplicationAssetUtils, FluxDispatcher } from "@webpack/common";
-
-import { settings } from "../settings";
-import { NameFormat } from "../types";
-import { SfmResponse, SfmTrackData } from "../types/statsfm";
 
 const APPLICATION_ID = "1325126169179197500";
 const PLACEHOLDER_ID = "2a96cbd8b46e442fc41c2b86b821562f";

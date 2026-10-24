@@ -8,17 +8,18 @@ import { BaseText } from "@components/BaseText";
 import { Button } from "@components/Button";
 import { Flex } from "@components/Flex";
 import { InfoIcon } from "@components/Icons";
-import { copyWithToast, openUserProfile } from "@utils/discord";
-import { LazyComponent } from "@utils/react";
 import { Channel, RenderModalProps, type User } from "@endcord/discord-types";
+import { DBMessageRecord, deleteMessageIDB, deleteMessagesBulkIDB } from "@plugins/messageLoggerEnhanced/db";
+import { cl, clearLogs, settings } from "@plugins/messageLoggerEnhanced/index";
+import { LoggedMessage, LoggedMessageJSON } from "@plugins/messageLoggerEnhanced/types";
+import { messageJsonToMessageClass } from "@plugins/messageLoggerEnhanced/utils";
+import { importLogs } from "@plugins/messageLoggerEnhanced/utils/settingsUtils";
+import { copyWithToast, openUserProfile } from "@utils/discord";
+import { t } from "@utils/i18n";
+import { LazyComponent } from "@utils/react";
 import { find, findByCodeLazy } from "@webpack";
 import { Alerts, ChannelStore, closeAllModals, ContextMenuApi, FluxDispatcher, GuildStore, Menu, Modal, NavigationRouter, openModal, React, TabBar, TextInput, Tooltip, useMemo, useRef, useState } from "@webpack/common";
 
-import { DBMessageRecord, deleteMessageIDB, deleteMessagesBulkIDB } from "../db";
-import { cl, clearLogs, settings } from "../index";
-import { LoggedMessage, LoggedMessageJSON } from "../types";
-import { messageJsonToMessageClass } from "../utils";
-import { importLogs } from "../utils/settingsUtils";
 import { useMessages } from "./hooks";
 
 export interface MessagePreviewProps {
@@ -75,23 +76,20 @@ export function LogsModal({ modalProps, initalQuery }: Props) {
                             className={cl("modal-tab-bar-item")}
                             id={LogTabs.DELETED}
                         >
-                            Deleted
-                        </TabBar.Item>
+                            {t("Deleted")}</TabBar.Item>
                         <TabBar.Item
                             className={cl("modal-tab-bar-item")}
                             id={LogTabs.EDITED}
                         >
-                            Edited
-                        </TabBar.Item>
+                            {t("Edited")}</TabBar.Item>
                         <TabBar.Item
                             className={cl("modal-tab-bar-item")}
                             id={LogTabs.GHOST_PING}
                         >
-                            Ghost Pinged
-                        </TabBar.Item>
+                            {t("Ghost Pinged")}</TabBar.Item>
                     </TabBar>
                     <div className={cl("modal-filter")}>
-                        <TextInput value={queryEh} onChange={e => setQuery(e)} placeholder="Filter Messages" />
+                        <TextInput value={queryEh} onChange={e => setQuery(e)} placeholder={t("Filter Messages")} />
                     </div>
                 </div>
             }
@@ -113,11 +111,11 @@ export function LogsModal({ modalProps, initalQuery }: Props) {
                     variant: "critical-secondary",
                     disabled: messages?.length === 0,
                     onClick: () => Alerts.show({
-                        title: "Clear Logs",
+                        title: t("Clear Logs"),
                         body: `Are you sure you want to clear ${messages.length} logs`,
-                        confirmText: "Clear",
+                        confirmText: t("Clear"),
                         confirmVariant: "critical-primary",
-                        cancelText: "Cancel",
+                        cancelText: t("Cancel"),
                         onConfirm: async () => {
                             await deleteMessagesBulkIDB(messages.map(e => e.message_id));
                             reset();
@@ -128,11 +126,11 @@ export function LogsModal({ modalProps, initalQuery }: Props) {
                     text: "Clear All Logs",
                     variant: "critical-primary",
                     onClick: () => Alerts.show({
-                        title: "Clear Logs",
-                        body: "Are you sure you want to clear all the logs",
-                        confirmText: "Clear",
+                        title: t("Clear Logs"),
+                        body: t("Are you sure you want to clear all the logs"),
+                        confirmText: t("Clear"),
                         confirmVariant: "critical-primary",
-                        cancelText: "Cancel",
+                        cancelText: t("Cancel"),
                         onConfirm: async () => {
                             await clearLogs();
                             reset();
@@ -203,8 +201,7 @@ function LogsContent({ visibleMessages, canLoadMore, sortNewest, tab, reset, han
                     style={{ marginTop: "1rem", width: "100%" }}
                     size="small" onClick={() => handleLoadMore()}
                 >
-                    Load More
-                </Button>
+                    {t("Load More")}</Button>
             }
         </div>
     );
@@ -231,10 +228,10 @@ function NoResults({ tab }: { tab: LogTabs; }) {
     return (
         <div className={cl("modal-empty-logs", "modal-content-inner")} style={{ textAlign: "center" }}>
             <BaseText size="lg">
-                No results in <b>{tab}</b>.
+                {t("No results in")}{" "}<b>{tab}</b>.
             </BaseText>
             <BaseText size="lg" style={{ marginTop: "0.2rem" }}>
-                Maybe try <b>{nextTab}</b> or <b>{lastTab}</b>
+                {t("Maybe try")}{" "}<b>{nextTab}</b> or <b>{lastTab}</b>
             </BaseText>
         </div>
     );
@@ -246,12 +243,11 @@ function EmptyLogs({ hasQuery, reset: forceUpdate }: { hasQuery: boolean; reset:
             <Flex flexDirection="column" style={{ position: "relative" }}>
 
                 <BaseText size="lg">
-                    Empty eh
-                </BaseText>
+                    {t("Empty eh")}</BaseText>
 
                 {!hasQuery && (
                     <>
-                        <Tooltip text="ML Enhanced now stores logs in indexeddb. You need to import your old logs from the logs directory. Importing wont overwrite existing logs">
+                        <Tooltip text={t("ML Enhanced now stores logs in indexeddb. You need to import your old logs from the logs directory. Importing wont overwrite existing logs")}>
                             {({ onMouseEnter, onMouseLeave }) => (
                                 <div
                                     className={cl("modal-info-icon")}
@@ -264,8 +260,7 @@ function EmptyLogs({ hasQuery, reset: forceUpdate }: { hasQuery: boolean; reset:
                         </Tooltip>
 
                         <Button onClick={() => importLogs().then(() => forceUpdate())}>
-                            Import Logs
-                        </Button>
+                            {t("Import Logs")}</Button>
                     </>
                 )}
             </Flex>
@@ -278,8 +273,7 @@ function LoadingLogs({ tab }: { tab: LogTabs; }) {
         <div className={cl("modal-empty-logs", "modal-content-inner")} style={{ textAlign: "center" }}>
             <Flex flexDirection="column" style={{ position: "relative" }}>
                 <BaseText size="lg">
-                    Loading {tab} Logs...
-                </BaseText>
+                    {t("Loading")}{" "}{tab}{" "}{t("Logs...")}</BaseText>
             </Flex>
         </div>
     );
@@ -312,7 +306,7 @@ function LMessage({ log, isGroupStart, reset, }: LMessageProps) {
                         <Menu.MenuItem
                             key="jump-to-message"
                             id="jump-to-message"
-                            label="Jump To Message"
+                            label={t("Jump To Message")}
                             action={() => {
                                 NavigationRouter.transitionTo(`/channels/${ChannelStore.getChannel(message.channel_id)?.guild_id ?? "@me"}/${message.channel_id}${message.id ? "/" + message.id : ""}`);
                                 closeAllModals();
@@ -321,7 +315,7 @@ function LMessage({ log, isGroupStart, reset, }: LMessageProps) {
                         <Menu.MenuItem
                             key="open-user-profile"
                             id="open-user-profile"
-                            label="Open user profile"
+                            label={t("Open user profile")}
                             action={() => {
                                 closeAllModals();
                                 openUserProfile(message.author.id);
@@ -331,28 +325,28 @@ function LMessage({ log, isGroupStart, reset, }: LMessageProps) {
                         <Menu.MenuItem
                             key="copy-content"
                             id="copy-content"
-                            label="Copy Content"
+                            label={t("Copy Content")}
                             action={() => copyWithToast(message.content)}
                         />
 
                         <Menu.MenuItem
                             key="copy-user-id"
                             id="copy-user-id"
-                            label="Copy User ID"
+                            label={t("Copy User ID")}
                             action={() => copyWithToast(message.author.id)}
                         />
 
                         <Menu.MenuItem
                             key="copy-message-id"
                             id="copy-message-id"
-                            label="Copy Message ID"
+                            label={t("Copy Message ID")}
                             action={() => copyWithToast(message.id)}
                         />
 
                         <Menu.MenuItem
                             key="copy-channel-id"
                             id="copy-channel-id"
-                            label="Copy Channel ID"
+                            label={t("Copy Channel ID")}
                             action={() => copyWithToast(message.channel_id)}
                         />
 
@@ -362,7 +356,7 @@ function LMessage({ log, isGroupStart, reset, }: LMessageProps) {
                                 <Menu.MenuItem
                                     key="copy-server-id"
                                     id="copy-server-id"
-                                    label="Copy Server ID"
+                                    label={t("Copy Server ID")}
                                     action={() => copyWithToast(log.message.guildId!)}
                                 />
                             )
@@ -371,7 +365,7 @@ function LMessage({ log, isGroupStart, reset, }: LMessageProps) {
                         <Menu.MenuItem
                             key="delete-log"
                             id="delete-log"
-                            label="Delete Log"
+                            label={t("Delete Log")}
                             color="danger"
                             action={() =>
                                 deleteMessageIDB(log.message.id).then(() => reset())
@@ -391,13 +385,13 @@ function LMessage({ log, isGroupStart, reset, }: LMessageProps) {
                 hideSimpleEmbedContent={false}
             />
             {settings.store.ShowWhereMessageIsFrom && channel?.isDM() && message?.author && (
-                <span className={`${cl("modal-from")} ${message.deleted ? cl("modal-from-deleted") : cl("modal-from-edited")}`}>From {message.author.username}'s DMs</span>
+                <span className={`${cl("modal-from")} ${message.deleted ? cl("modal-from-deleted") : cl("modal-from-edited")}`}>{t("From")}{" "}{message.author.username}{t("'s DMs")}</span>
             )}
             {settings.store.ShowWhereMessageIsFrom && channel?.isGroupDM() && channel?.name && (
-                <span className={`${cl("modal-from")} ${message.deleted ? cl("modal-from-deleted") : cl("modal-from-edited")}`}>From {channel.name} Group DM</span>
+                <span className={`${cl("modal-from")} ${message.deleted ? cl("modal-from-deleted") : cl("modal-from-edited")}`}>{t("From")}{" "}{channel.name}{" "}{t("Group DM")}</span>
             )}
             {settings.store.ShowWhereMessageIsFrom && !channel?.isDM() && !channel?.isGroupDM() && channel?.name && guild?.name && (
-                <span className={`${cl("modal-from")} ${message.deleted ? cl("modal-from-deleted") : cl("modal-from-edited")}`}>From {channel.name} in {guild.name}</span>
+                <span className={`${cl("modal-from")} ${message.deleted ? cl("modal-from-deleted") : cl("modal-from-edited")}`}>{t("From")}{" "}{channel.name} in {guild.name}</span>
             )}
         </div>
     );

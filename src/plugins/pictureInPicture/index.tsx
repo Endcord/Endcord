@@ -9,6 +9,7 @@ import "./styles.css";
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 import { Tooltip } from "@webpack/common";
 
@@ -25,7 +26,7 @@ export default definePlugin({
     name: "PictureInPicture",
     description: "Adds picture in picture to videos (next to the Download button)",
     tags: ["Media", "Utility"],
-    authors: [Devs.Lumap],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     patches: [
         {
@@ -39,7 +40,7 @@ export default definePlugin({
 
     PictureInPictureButton: ErrorBoundary.wrap(() => {
         return (
-            <Tooltip text="Toggle Picture in Picture">
+            <Tooltip text={t("Toggle Picture in Picture")}>
                 {tooltipProps => (
                     <div
                         {...tooltipProps}

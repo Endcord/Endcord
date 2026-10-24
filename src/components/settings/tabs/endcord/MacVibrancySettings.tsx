@@ -7,72 +7,74 @@
 import { useSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { IS_MAC } from "@utils/constants";
+import { useI18n } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import { identity } from "@utils/misc";
 import { Forms, Select } from "@webpack/common";
 
 export function MacOSVibrancySettings() {
+    const { t } = useI18n();
     const settings = useSettings(["macosVibrancyStyle"]);
 
     if (!IS_MAC || IS_WEB) return null;
 
     return (
         <ErrorBoundary noop>
-            <Forms.FormTitle tag="h5">MacOS Window vibrancy style (requires restart)</Forms.FormTitle>
+            <Forms.FormTitle tag="h5">{t("MacOS Window vibrancy style (requires restart)")}</Forms.FormTitle>
             <Select
                 className={Margins.bottom20}
-                placeholder="Window vibrancy style"
+                placeholder={t("Window vibrancy style")}
                 options={[
                     // Sorted from most opaque to most transparent
                     {
-                        label: "No vibrancy", value: undefined
+                        label: t("No vibrancy"), value: undefined
                     },
                     {
-                        label: "Under Page (window tinting)",
+                        label: t("Under Page (window tinting)"),
                         value: "under-page"
                     },
                     {
-                        label: "Content",
+                        label: t("Content"),
                         value: "content"
                     },
                     {
-                        label: "Window",
+                        label: t("Window"),
                         value: "window"
                     },
                     {
-                        label: "Selection",
+                        label: t("Selection"),
                         value: "selection"
                     },
                     {
-                        label: "Titlebar",
+                        label: t("Titlebar"),
                         value: "titlebar"
                     },
                     {
-                        label: "Header",
+                        label: t("Header"),
                         value: "header"
                     },
                     {
-                        label: "Sidebar",
+                        label: t("Sidebar"),
                         value: "sidebar"
                     },
                     {
-                        label: "Tooltip",
+                        label: t("Tooltip"),
                         value: "tooltip"
                     },
                     {
-                        label: "Menu",
+                        label: t("Menu"),
                         value: "menu"
                     },
                     {
-                        label: "Popover",
+                        label: t("Popover"),
                         value: "popover"
                     },
                     {
-                        label: "Fullscreen UI (transparent but slightly muted)",
+                        label: t("Fullscreen UI (transparent but slightly muted)"),
                         value: "fullscreen-ui"
                     },
                     {
-                        label: "HUD (Most transparent)",
+                        label: t("HUD (Most transparent)"),
                         value: "hud"
                     },
                 ]}

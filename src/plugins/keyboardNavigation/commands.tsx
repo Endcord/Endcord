@@ -8,7 +8,7 @@ import { showNotification } from "@api/Notifications";
 import { Settings } from "@api/Settings";
 import { gitHashShort } from "@shared/vencordUserAgent";
 import { copyToClipboard } from "@utils/clipboard";
-import { relaunch, showItemInFolder } from "@utils/native";
+import { relaunch } from "@utils/native";
 import { checkForUpdates, getRepo } from "@utils/updater";
 import { GuildStore, NavigationRouter, SettingsRouter, Toasts } from "@webpack/common";
 
@@ -30,7 +30,6 @@ export const actions: ButtonAction[] = [
     { id: "openPluginSettings", label: "Open Plugin tab", callback: () => SettingsRouter.openUserSettings("endcord_plugins_panel"), registrar: "Endcord" },
     { id: "openThemesSettings", label: "Open Themes tab", callback: () => SettingsRouter.openUserSettings("endcord_themes_panel"), registrar: "Endcord" },
     { id: "openUpdaterSettings", label: "Open Updater tab", callback: () => SettingsRouter.openUserSettings("endcord_updater_panel"), registrar: "Endcord" },
-    { id: "openEndcordCloudSettings", label: "Open Cloud tab", callback: () => SettingsRouter.openUserSettings("endcord_cloud_panel"), registrar: "Endcord" },
     { id: "openBackupSettings", label: "Open Backup & Restore tab", callback: () => SettingsRouter.openUserSettings("endcord_backup_restore_panel"), registrar: "Endcord" },
     { id: "restartClient", label: "Restart Client", callback: () => relaunch(), registrar: "Endcord" },
     { id: "openQuickCSSFile", label: "Open Quick CSS File", callback: () => EndcordNative.quickCss.openEditor(), registrar: "Endcord" },

@@ -6,11 +6,11 @@
 
 import type { Quest } from "@endcord/discord-types";
 import { QuestTaskType } from "@endcord/discord-types/enums";
+import { getQuestifySettings, useQuestifySettings } from "@plugins/questify/settings/access";
+import { ignoredQuestIDsKey } from "@plugins/questify/settings/def";
 import { QuestStore } from "@webpack/common";
 
-import { getQuestifySettings, useQuestifySettings } from "../settings/access";
-import { ignoredQuestIDsKey } from "../settings/def";
-import { getActiveAutoCompletes, getAutoCompleteQuestTarget, getQuestAutoCompleteEntry } from "./completion";
+import { getActiveAutoCompletes, getAutoCompleteQuestTarget, getQuestAutoCompleteEntry, hasEnabledAutoCompleteQuestTask } from "./completion";
 import { type QuestIncludedTypes, questMatchesIncludedTypes } from "./filtering";
 
 export interface QuestTask {
@@ -42,6 +42,11 @@ const questProgressTaskPriority = [
     QuestTaskType.PLAY_ON_PLAYSTATION,
     QuestTaskType.PLAY_ON_XBOX,
 ] as const satisfies readonly QuestTaskType[];
+
+interface QuestPanelCreative {
+    type: number;
+    quest?: Quest;
+}
 
 interface QuestPanelPercentCompleteOptions {
     quest?: Quest | null;
@@ -215,7 +220,7 @@ function getMostRecentlyCompletedUnclaimedQuest(): Quest | null {
         })[0] ?? null;
 }
 
-export function getQuestPanelOverride(quest: Quest | null): Quest | null {
+export function getQuestPanelOverride(creative: QuestPanelCreative, questType: number): QuestPanelCreative | null {
     const panelState = useQuestifySettings(["disableQuestsEverything", "disableAccountPanelPromo", "disableAccountPanelQuestProgress"]);
 
     if (panelState.disableQuestsEverything) {
@@ -227,12 +232,16 @@ export function getQuestPanelOverride(quest: Quest | null): Quest | null {
     }
 
     if (panelState.disableAccountPanelQuestProgress) {
-        return quest;
+        return creative;
     }
 
     const nextQuest = getAutoCompleteShowcaseQuest() ?? getMostRecentlyCompletedUnclaimedQuest();
 
-    return nextQuest ?? (panelState.disableAccountPanelPromo ? null : quest);
+    if (nextQuest) {
+        return { ...creative, type: questType, quest: nextQuest };
+    }
+
+    return panelState.disableAccountPanelPromo ? null : creative;
 }
 
 export function shouldForceQuestPanelVisible(quest: Quest | null): boolean {
@@ -320,6 +329,22 @@ export function getQuestStatus(
     return QuestStatus.Unknown;
 }
 
+export function isQuestHidden(quest: Quest, ignoredQuestIds: ReadonlyArray<string>): boolean {
+    const settings = getQuestifySettings();
+
+    if (settings.disableQuestsEverything) {
+        return false;
+    }
+
+    const questStatus = getQuestStatus(quest, ignoredQuestIds);
+    const autoCompleteExempt = Boolean(quest.userStatus?.completedAt)
+        || questStatus === QuestStatus.Claimed
+        || questStatus === QuestStatus.Expired;
+
+    return settings.hiddenQuestStatuses.some(status => status === questStatus)
+        || (settings.hideNonAutoCompletableQuests && !autoCompleteExempt && !hasEnabledAutoCompleteQuestTask(quest));
+}
+
 export function countIncludedUnclaimedQuests(
     quests: Quest[],
     ignoredQuestIds: ReadonlyArray<string>,
@@ -330,7 +355,7 @@ export function countIncludedUnclaimedQuests(
     for (const quest of quests) {
         const questStatus = getQuestStatus(quest, ignoredQuestIds);
 
-        if (questMatchesIncludedTypes(quest, includedTypes) && questStatus === QuestStatus.Unclaimed) {
+        if (questMatchesIncludedTypes(quest, includedTypes) && questStatus === QuestStatus.Unclaimed && !isQuestHidden(quest, ignoredQuestIds)) {
             count++;
         }
     }

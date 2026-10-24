@@ -11,11 +11,12 @@ import { definePluginSettings } from "@api/Settings";
 import { Button } from "@components/Button";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { DoubleCheckmarkIcon } from "@components/Icons";
-import { EquicordDevs } from "@utils/constants";
+import { Message, ScrollerBaseRef } from "@endcord/discord-types";
+import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import definePlugin, { OptionType } from "@utils/types";
-import { Message, ScrollerBaseRef } from "@endcord/discord-types";
 import { findByCodeLazy, findComponentByCodeLazy, findCssClassesLazy } from "@webpack";
 import {
     ChannelStore,
@@ -154,7 +155,7 @@ const settings = definePluginSettings({
 
 export default definePlugin({
     name: "KeywordNotify",
-    authors: [EquicordDevs.camila314, EquicordDevs.x3rt, EquicordDevs.benjas333],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     description: "Sends a notification if a given message matches certain keywords or regexes",
     settings,
     keywordTabId: KEYWORD_TAB_ID,
@@ -384,14 +385,13 @@ export default definePlugin({
     keywordTabBar() {
         return (
             <TabBar.Item className={classes(tabClass.tab)} id={KEYWORD_TAB_ID}>
-                Keywords
-            </TabBar.Item>
+                {t("Keywords")}</TabBar.Item>
         );
     },
 
     keywordClearButton() {
         return (
-            <Tooltip text="Clear All">
+            <Tooltip text={t("Clear All")}>
                 {({ onMouseLeave, onMouseEnter }) => (
                     <Button
                         variant="secondary"

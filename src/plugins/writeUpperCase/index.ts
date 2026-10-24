@@ -6,14 +6,14 @@
 
 import { addMessagePreSendListener, MessageSendListener, removeMessagePreSendListener } from "@api/MessageEvents";
 import { definePluginSettings } from "@api/Settings";
-import { Devs, EndcordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 
 const settings = definePluginSettings(
     {
         blockedWords: {
             type: OptionType.STRING,
-            description: "Strings not to capitilise (seperate with a comma)",
+            description: "Strings not to capitalise (separate with a comma)",
             default: "http, https, ok"
         }
     }
@@ -38,7 +38,7 @@ export default definePlugin({
     name: "WriteUpperCase",
     description: "Changes the first Letter of each Sentence in Message Inputs to Uppercase",
     tags: ["Appearance", "Customisation", "Chat"],
-    authors: [Devs.Samwich, EndcordDevs.KrystalSkull],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
 
     start() {

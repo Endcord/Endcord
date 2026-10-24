@@ -8,11 +8,11 @@ import { playAudio } from "@api/AudioPlayer";
 import { type NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { Notifications } from "@api/index";
 import { definePluginSettings } from "@api/Settings";
+import type { Message } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { getCurrentChannel } from "@utils/discord";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType } from "@utils/types";
-import type { Message } from "@endcord/discord-types";
 import { ChannelActionCreators, ChannelStore, Menu, MessageStore, NavigationRouter, PresenceStore, UserStore, WindowStore } from "@webpack/common";
 import { JSX } from "react";
 
@@ -173,7 +173,7 @@ export default definePlugin({
     name: "BypassStatus",
     description: "Still get notifications from specific sources when in do not disturb mode. Right-click on users/channels/guilds to set them to bypass do not disturb mode.",
     tags: ["Activity", "Customisation", "Notifications", "Servers"],
-    authors: [Devs.Inbestigator],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     dependencies: ["AudioPlayerAPI"],
     flux: {
         async MESSAGE_CREATE({ message, guildId, channelId }: IMessageCreate): Promise<void> {

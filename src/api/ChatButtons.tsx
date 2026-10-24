@@ -8,6 +8,7 @@ import "./ChatButton.css";
 
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Channel } from "@endcord/discord-types";
+import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import { classes } from "@utils/misc";
 import { IconComponent } from "@utils/types";
@@ -17,7 +18,6 @@ import { HTMLProps, JSX, MouseEventHandler, ReactNode } from "react";
 
 import { addContextMenuPatch, findGroupChildrenByChildId } from "./ContextMenu";
 import { useSettings } from "./Settings";
-
 const ButtonWrapperClasses = findCssClassesLazy("button", "buttonWrapper", "notificationDot");
 const ChannelTextAreaClasses = findCssClassesLazy("buttonContainer", "channelTextArea", "button");
 
@@ -172,7 +172,7 @@ addContextMenuPatch("textarea-context", (children, args) => {
     if (idx === -1) return;
 
     group.splice(idx, 0,
-        <Menu.MenuItem id="vc-chat-buttons" key="endcord-chat-buttons" label="Endcord Buttons">
+        <Menu.MenuItem id="vc-chat-buttons" key="endcord-chat-buttons" label={t("Endcord Buttons")}>
             {buttons.map(([id]) => (
                 <Menu.MenuCheckboxItem
                     label={id}
@@ -190,3 +190,30 @@ addContextMenuPatch("textarea-context", (children, args) => {
         </Menu.MenuItem>
     );
 });
+
+export type ChatBarButtonWrapper = (buttons: ReactNode) => ReactNode;
+
+export interface ChatBarButtonWrapperData {
+    wrapper: ChatBarButtonWrapper;
+    priority: number;
+}
+
+/**
+ * Registry for plugins that need to wrap the entire chat bar button container.
+ * Wrappers are applied in ascending priority order (lower number = outermost wrapper).
+ */
+export const ChatBarButtonWrappers = new Map<string, ChatBarButtonWrapperData>();
+
+export const addChatBarButtonWrapper = (id: string, wrapper: ChatBarButtonWrapper, priority: number = 0) => ChatBarButtonWrappers.set(id, { wrapper, priority });
+export const removeChatBarButtonWrapper = (id: string) => ChatBarButtonWrappers.delete(id);
+
+export function _wrapButtons(buttons: ReactNode) {
+    const sorted = [...ChatBarButtonWrappers.values()]
+        .sort((a, b) => a.priority - b.priority);
+
+    let wrapped = buttons;
+    for (const { wrapper } of sorted) {
+        wrapped = wrapper(wrapped);
+    }
+    return wrapped;
+}

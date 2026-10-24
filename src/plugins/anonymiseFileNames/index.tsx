@@ -59,7 +59,7 @@ const settings = definePluginSettings({
 
 export default definePlugin({
     name: "AnonymiseFileNames",
-    authors: [Devs.fawn],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     description: "Anonymise uploaded file names",
     tags: ["Privacy", "Utility"],
     settings,

@@ -1,6 +1,6 @@
 /*
- * Endcord, a vaporwave-inspired Discord client mod
- * Copyright (c) 2026 unfamiliardev
+ * Endcord, a Discord client mod
+ * Copyright (c) 2026 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -13,7 +13,7 @@ const swaps: Record<string, string> = { a: "4", e: "3", i: "1", o: "0", s: "5", 
 export default definePlugin({
     name: "LeetText",
     description: "/leet rewrites your message in 1337 5p34k.",
-    authors: [Devs.ewlle, Devs.rootpoi, Devs.kraethis],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     dependencies: ["CommandsAPI"],
     commands: [
         {

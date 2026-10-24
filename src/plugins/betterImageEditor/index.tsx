@@ -8,7 +8,8 @@ import "./style.css";
 
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { EquicordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import { classes, pluralise } from "@utils/misc";
 import definePlugin, { OptionType } from "@utils/types";
@@ -78,11 +79,11 @@ const settings = definePluginSettings({
             <Button
                 color={Button.Colors.PRIMARY}
                 onClick={() => Alerts.show({
-                    title: "Forget every remembered crop?",
-                    body: "Your pictures stay. Each one opens unframed from now on, until you crop it again.",
+                    title: t("Forget every remembered crop?"),
+                    body: t("Your pictures stay. Each one opens unframed from now on, until you crop it again."),
                     confirmColor: Button.Colors.RED,
-                    confirmText: "Forget",
-                    cancelText: "Cancel",
+                    confirmText: t("Forget"),
+                    cancelText: t("Cancel"),
                     onConfirm: () => forgetCrops()
                         .then(count => showToast(
                             count ? `Forgot the framing on ${pluralise(count, "picture")}` : "Nothing was framed",
@@ -91,8 +92,7 @@ const settings = definePluginSettings({
                         .catch(err => logger.error("could not forget the remembered crops", err))
                 })}
             >
-                Forget remembered framing
-            </Button>
+                {t("Forget remembered framing")}</Button>
         )
     },
     saveCropped: {
@@ -110,8 +110,8 @@ const settings = definePluginSettings({
         description: "Carry your pictures, and how each one is framed, to another device.",
         component: () => (
             <div className={cl("buttons")}>
-                <Button color={Button.Colors.PRIMARY} onClick={exportLibrary}>Export to a file</Button>
-                <Button color={Button.Colors.PRIMARY} onClick={importLibrary}>Import from a file</Button>
+                <Button color={Button.Colors.PRIMARY} onClick={exportLibrary}>{t("Export to a file")}</Button>
+                <Button color={Button.Colors.PRIMARY} onClick={importLibrary}>{t("Import from a file")}</Button>
             </div>
         )
     },
@@ -122,16 +122,15 @@ const settings = definePluginSettings({
             <Button
                 color={Button.Colors.PRIMARY}
                 onClick={() => Alerts.show({
-                    title: "Clear saved pictures?",
-                    body: "Every picture you have saved here goes, along with the crop remembered for each one. Discord's own archive and your current avatar and banner are not touched.",
+                    title: t("Clear saved pictures?"),
+                    body: t("Every picture you have saved here goes, along with the crop remembered for each one. Discord's own archive and your current avatar and banner are not touched."),
                     confirmColor: Button.Colors.RED,
-                    confirmText: "Clear",
-                    cancelText: "Cancel",
+                    confirmText: t("Clear"),
+                    cancelText: t("Cancel"),
                     onConfirm: () => clear().catch(err => logger.error("could not clear the library", err))
                 })}
             >
-                Clear saved pictures
-            </Button>
+                {t("Clear saved pictures")}</Button>
         )
     }
 });
@@ -246,11 +245,11 @@ function useForget(bump: () => void) {
         if (immediate) return void run();
 
         Alerts.show({
-            title: "Remove this picture?",
+            title: t("Remove this picture?"),
             body: `${entry.name} goes from your saved pictures, along with the crop remembered for it.`,
             confirmColor: Button.Colors.RED,
-            confirmText: "Remove",
-            cancelText: "Cancel",
+            confirmText: t("Remove"),
+            cancelText: t("Cancel"),
             onConfirm: run
         });
     }, [bump]);
@@ -470,10 +469,10 @@ function EditorShelf({ Original, ownProps }: { Original: React.ComponentType<Edi
         if (!settings.store.askBeforeSavingCropped) return void run();
 
         Alerts.show({
-            title: "Keep the cropped copy?",
+            title: t("Keep the cropped copy?"),
             body: `It goes on the ${croppedLabel(kind).toLowerCase()} shelf, next to your originals.`,
-            confirmText: "Keep",
-            cancelText: "No thanks",
+            confirmText: t("Keep"),
+            cancelText: t("No thanks"),
             onConfirm: run
         });
     }, [kind, bump]);
@@ -562,7 +561,7 @@ let area: Size | null = null;
 export default definePlugin({
     name: "BetterImageEditor",
     description: "Keeps a shelf of your pictures in the avatar and banner editor, and remembers how you cropped each one.",
-    authors: [EquicordDevs.heart_menace],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
 
     flux: {

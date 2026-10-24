@@ -21,7 +21,7 @@ export default definePlugin({
     name: "UnlockedAvatarZoom",
     description: "Allows you to zoom in further in the image crop tool when changing your avatar",
     tags: ["Media", "Utility"],
-    authors: [Devs.nakoyasha],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     patches: [
         {

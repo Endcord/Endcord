@@ -8,6 +8,7 @@ import { DataStore } from "@api/index";
 import { showNotification } from "@api/Notifications";
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType } from "@utils/types";
 import { maybePromptToUpdate } from "@utils/updater";
@@ -48,7 +49,7 @@ let shouldAttemptRecover = true;
 export default definePlugin({
     name: "CrashHandler",
     description: "Utility plugin for handling and possibly recovering from crashes without a restart",
-    authors: [Devs.Nuckyz],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     tags: ["Utility", "Developers"],
     enabledByDefault: true,
     settings,
@@ -87,8 +88,8 @@ export default definePlugin({
                     try {
                         showNotification({
                             color: "#eed202",
-                            title: "Discord has crashed!",
-                            body: "Awn :( Discord has crashed two times rapidly, not attempting to recover.",
+                            title: t("Whoops, Discord tripped!"),
+                            body: t("Discord tripped twice in a row, so Endcord is letting it rest this time. Press Ctrl+R if anything looks stuck."),
                             noPersist: true
                         });
                     } catch { }
@@ -104,7 +105,7 @@ export default definePlugin({
             try {
                 if (!hasCrashedOnce) {
                     hasCrashedOnce = true;
-                    maybePromptToUpdate("Uh oh, Discord has just crashed... but good news, there is a Endcord update available that might fix this issue! Would you like to update now?", true);
+                    maybePromptToUpdate(t("Discord just tripped, but good news: a fresh Endcord update might fix it! Want to update now?"), true);
                 }
             } catch { }
 
@@ -122,8 +123,8 @@ export default definePlugin({
         try {
             showNotification({
                 color: "#eed202",
-                title: "Discord has crashed!",
-                body: "Attempting to recover...",
+                title: t("Whoops, Discord tripped!"),
+                body: t("Hang on, Endcord is helping it back up..."),
                 noPersist: true
             });
         } catch { }

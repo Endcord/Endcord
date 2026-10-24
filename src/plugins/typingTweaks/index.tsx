@@ -11,6 +11,7 @@ import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import { openUserProfile } from "@utils/discord";
 import { isNonNullish } from "@utils/guards";
+import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType } from "@utils/types";
 import { AuthenticationStore, Avatar, GuildMemberStore, React, RelationshipStore, TypingStore, UserStore, useStateFromStores } from "@webpack/common";
@@ -46,8 +47,7 @@ export const buildSeveralUsers = ErrorBoundary.wrap(function buildSeveralUsers({
                     {", "}
                 </React.Fragment>
             ))}
-            and {count} others are typing...
-        </>
+            and {count}{" "}{t("others are typing...")}</>
     );
 }, { noop: true });
 
@@ -87,7 +87,7 @@ export default definePlugin({
     name: "TypingTweaks",
     description: "Show avatars and role colours in the typing indicator",
     tags: ["Appearance", "Customisation"],
-    authors: [Devs.zt, Devs.sadan],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
 
     managedStyle,
@@ -124,13 +124,14 @@ export default definePlugin({
     ],
 
     useTypingUsers(channel: Channel | undefined): User[] {
+        // Call the hooks unconditionally; a channel that shows up later must not change the hook order
+        const typingUsers = useStateFromStores([TypingStore], () => channel ? TypingStore.getTypingUsers(channel.id) : {});
+        const myId = useStateFromStores([AuthenticationStore], () => AuthenticationStore.getId());
+
         try {
             if (!channel) {
                 throw new Error("No channel");
             }
-
-            const typingUsers = useStateFromStores([TypingStore], () => TypingStore.getTypingUsers(channel.id));
-            const myId = useStateFromStores([AuthenticationStore], () => AuthenticationStore.getId());
 
             return Object.keys(typingUsers)
                 .filter(id => id && id !== myId && !RelationshipStore.isBlockedOrIgnored(id))

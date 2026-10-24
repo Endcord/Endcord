@@ -7,10 +7,11 @@
 import { BaseText } from "@components/BaseText";
 import { Flex } from "@components/Flex";
 import { AtIcon, DiscordIconSizes, RightArrow, TextIcon } from "@components/Icons";
+import { BasicGuild, Channel, Guild, GuildProfile, Message, MessageAttachment } from "@endcord/discord-types";
 import { iconsModule } from "@equicordplugins/_core/concatenatedModules";
 import { getGuildAcronym, getIntlMessage } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { getUserAvatarUrl, identity } from "@utils/misc";
-import { BasicGuild, Channel, Guild, GuildProfile, Message, MessageAttachment } from "@endcord/discord-types";
 import { findByCodeLazy, findComponentByCodeLazy } from "@webpack";
 import { BasicGuildStore, ChannelActionCreators, ChannelStore, DateUtils, GuildProfileStore, GuildStore, IconUtils, InviteActions, Popout, React, RelationshipStore, RestAPI, SnowflakeUtils, useCallback, useEffect, useMemo, useRef, UserStore, useState, useStateFromStores } from "@webpack/common";
 
@@ -290,7 +291,7 @@ export function AttachmentPicker({ message, opts, setOpts, hasOpts, defaultOpts 
 
     return (
         <TagGroup
-            label="Message attachments"
+            label={t("Message attachments")}
             selectionMode="multiple"
             size="sm"
             items={items}

@@ -12,6 +12,7 @@ import ErrorBoundary from "@components/ErrorBoundary";
 import { Heading } from "@components/Heading";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 import { findComponentByCodeLazy } from "@webpack";
 import { ColorPicker, TextInput } from "@webpack/common";
@@ -36,7 +37,7 @@ const PatternsComponent = ErrorBoundary.wrap(() => {
 
     return (
         <section>
-            <Heading>URL Patterns</Heading>
+            <Heading>{t("URL Patterns")}</Heading>
             {patterns.map((entry, i) => (
                 <div key={i} className={cl("pattern-wrapper")}>
                     <TextInput
@@ -45,7 +46,7 @@ const PatternsComponent = ErrorBoundary.wrap(() => {
                             patterns[i].pattern = v;
                             settings.store.patterns = patterns;
                         }}
-                        placeholder="*.example.com"
+                        placeholder={t("*.example.com")}
                     />
                     <div className={cl("color-picker")}>
                         <ColorPicker
@@ -76,8 +77,7 @@ const PatternsComponent = ErrorBoundary.wrap(() => {
                 variant="secondary"
                 size="small"
             >
-                <PlusIcon className={cl("icon")} /> Add New
-            </Button>
+                <PlusIcon className={cl("icon")} />{" "}{t("Add New")}</Button>
         </section>
     );
 }, { noop: true });
@@ -122,7 +122,7 @@ export default definePlugin({
     name: "UrlHighlighter",
     description: "Highlights URLs in messages that match your patterns.",
     tags: ["Appearance", "Customisation"],
-    authors: [Devs.prism],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
 
     patches: [

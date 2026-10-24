@@ -4,14 +4,14 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { EndcordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 
 export default definePlugin({
     name: "NoPushToTalk",
     description: "Bypasses the push-to-talk requirement for voice activity in channels that enforce it.",
     tags: ["Servers", "Voice"],
-    authors: [EndcordDevs.omaw],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     patches: [
         {
             find: "PermissionVADStore",

@@ -4,14 +4,13 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { Logger } from "@utils/Logger";
-import { parseUrl } from "@utils/misc";
 import { Activity } from "@endcord/discord-types";
 import { ActivityFlags, ActivityStatusDisplayType } from "@endcord/discord-types/enums";
+import { settings } from "@plugins/richPresence/settings";
+import { Logger } from "@utils/Logger";
+import { parseUrl } from "@utils/misc";
 import { ApplicationAssetUtils, FluxDispatcher } from "@webpack/common";
 import md5 from "md5";
-
-import { settings } from "../settings";
 
 function md5Hex(str: string): string {
     return md5(str);

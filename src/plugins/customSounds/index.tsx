@@ -13,6 +13,7 @@ import { Button } from "@components/Button";
 import { Heading } from "@components/Heading";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
+import { t as translateText } from "@utils/i18n";
 import definePlugin, { OptionType, StartAt } from "@utils/types";
 import { React, showToast, TextInput } from "@webpack/common";
 
@@ -326,10 +327,10 @@ const settings = definePluginSettings({
             return (
                 <div>
                     <div className="vc-custom-sounds-buttons">
-                        <Button variant="primary" onClick={triggerFileUpload}>Import</Button>
-                        <Button variant="secondary" onClick={downloadSettings}>Export</Button>
-                        <Button variant="dangerPrimary" onClick={resetOverrides}>Reset All</Button>
-                        <Button variant="overlayPrimary" onClick={debugCustomSounds}>Debug</Button>
+                        <Button variant="primary" onClick={triggerFileUpload}>{translateText("Import")}</Button>
+                        <Button variant="secondary" onClick={downloadSettings}>{translateText("Export")}</Button>
+                        <Button variant="dangerPrimary" onClick={resetOverrides}>{translateText("Reset All")}</Button>
+                        <Button variant="overlayPrimary" onClick={debugCustomSounds}>{translateText("Debug")}</Button>
                         <input
                             className={cl("file-input")}
                             ref={fileInputRef}
@@ -340,11 +341,11 @@ const settings = definePluginSettings({
                     </div>
 
                     <div className={cl("search")}>
-                        <Heading>Search Sounds</Heading>
+                        <Heading>{translateText("Search Sounds")}</Heading>
                         <TextInput
                             value={searchQuery}
                             onChange={e => setSearchQuery(e)}
-                            placeholder="Search by name or ID"
+                            placeholder={translateText("Search by name or ID")}
                         />
                     </div>
 
@@ -396,7 +397,7 @@ export default definePlugin({
     description: "Customize Discord's sounds.",
     dependencies: ["AudioPlayerAPI"],
     tags: ["Customisation", "Notifications", "Voice"],
-    authors: [Devs.ewlle, Devs.rootpoi, Devs.kraethis],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     startAt: StartAt.Init,
     audioProcessor: getCustomSoundURL,

@@ -1,13 +1,7 @@
-/* Always-on compositor hints. Avoids theme-breaking filters and full-page contain. */
-
-#app-mount {
-    text-rendering: optimizeSpeed;
-}
-
-div[class*="messagesWrapper"] {
-    transform: translateZ(0);
-    backface-visibility: hidden;
-}
+/*
+ * Always-on layout containment for long lists: a change inside one row no longer makes the browser
+ * lay out the rest of the list. Nothing here forces GPU layers or changes how text is drawn.
+ */
 
 li[id^="chat-messages-"] {
     contain: layout style;

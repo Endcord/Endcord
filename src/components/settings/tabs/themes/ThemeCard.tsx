@@ -10,6 +10,7 @@ import { Link } from "@components/Link";
 import { AddonCard } from "@components/settings/AddonCard";
 import { UserThemeHeader } from "@main/themes";
 import { openInviteModal } from "@utils/discord";
+import { useI18n } from "@utils/i18n";
 import { showToast } from "@webpack/common";
 
 interface ThemeCardProps {
@@ -20,6 +21,7 @@ interface ThemeCardProps {
 }
 
 export function ThemeCard({ theme, enabled, onChange, onDelete }: ThemeCardProps) {
+    const { t } = useI18n();
     return (
         <AddonCard
             name={theme.name}
@@ -36,17 +38,17 @@ export function ThemeCard({ theme, enabled, onChange, onDelete }: ThemeCardProps
             }
             footer={
                 <Flex flexDirection="row" gap="0.2em">
-                    {!!theme.website && <Link href={theme.website}>Website</Link>}
+                    {!!theme.website && <Link href={theme.website}>{t("Website")}</Link>}
                     {!!(theme.website && theme.invite) && " • "}
                     {!!theme.invite && (
                         <Link
                             href={`https://discord.gg/${theme.invite}`}
                             onClick={async e => {
                                 e.preventDefault();
-                                theme.invite != null && openInviteModal(theme.invite).catch(() => showToast("Invalid or expired invite"));
+                                theme.invite != null && openInviteModal(theme.invite).catch(() => showToast(t("That invite doesn't work anymore :(")));
                             }}
                         >
-                            Discord Server
+                            {t("Discord Server")}
                         </Link>
                     )}
                 </Flex>

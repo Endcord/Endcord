@@ -59,7 +59,7 @@ export default definePlugin({
     name: "ReplyTimestamp",
     description: "Shows a timestamp on replied-message previews",
     tags: ["Chat", "Appearance"],
-    authors: [Devs.Kyuuhachi],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
 
     patches: [
         {

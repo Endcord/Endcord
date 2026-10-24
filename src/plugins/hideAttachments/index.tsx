@@ -12,6 +12,7 @@ import { migratePluginSettings } from "@api/Settings";
 import { ImageInvisible, ImageVisible } from "@components/Icons";
 import { Message } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import definePlugin from "@utils/types";
 import { ChannelStore } from "@webpack/common";
@@ -44,7 +45,7 @@ export default definePlugin({
     name: "HideMedia",
     description: "Hide attachments and embeds for individual messages via hover button",
     tags: ["Chat", "Appearance"],
-    authors: [Devs.Ven],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     dependencies: ["MessageUpdaterAPI"],
 
     patches: [{
@@ -77,8 +78,7 @@ export default definePlugin({
 
         return (
             <span className={classes("vc-hideAttachments-accessory", !message.content && "vc-hideAttachments-no-content")}>
-                Media Hidden
-            </span>
+                {t("Media Hidden")}</span>
         );
     },
 

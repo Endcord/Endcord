@@ -12,5 +12,5 @@ a:hover,
 }
 
 button[class*="lookFilled"]:hover {
-    box-shadow: 0 0 14px rgba(255, 113, 206, 0.6);
+    box-shadow: 0 0 14px rgb(255 113 206 / 60%);
 }

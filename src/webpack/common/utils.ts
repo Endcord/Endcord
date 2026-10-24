@@ -113,20 +113,78 @@ export function createToast(message: string, type: string, options?: ToastOption
     } as any;
 }
 
+/**
+ * Translates toast texts into the user's language. @utils/i18n fills this in; it is a hook rather than an
+ * import because importing i18n here would pull settings into the webpack commons and create a cycle.
+ */
+export const toastTranslator = { translate: (text: string) => text };
+
+const TypeToVariant: Record<string, string> = {
+    [ToastType.SUCCESS]: "success",
+    [ToastType.FAILURE]: "critical",
+};
+
+/**
+ * Discord's toasts now take `{ text, variant, position, duration }` and render nothing for the older
+ * `{ message, type, options }` shape that plugins use. The old fields are kept so older Discord builds still work.
+ */
+function toDiscordToast(toast: any) {
+    if (!toast || typeof toast !== "object" || typeof toast.text === "string" || toast.__dangerouslyRenderContent) return toast;
+
+    const { message, type, options } = toast;
+    const converted: any = { ...toast, text: message, variant: TypeToVariant[type] ?? "default" };
+    if (options?.duration != null) converted.duration = options.duration;
+    if (options?.position != null) converted.position = options.position === ToastPosition.BOTTOM ? "bottom" : "top";
+
+    const { component } = options ?? {};
+    if (component != null && typeof component !== "string") converted.__dangerouslyRenderContent = () => component;
+
+    return converted;
+}
+
+function showTranslatedToast(toast: any) {
+    if (toast && typeof toast.message === "string") {
+        const original = toast.message;
+        const message = toastTranslator.translate(original);
+        if (message !== original) {
+            toast = { ...toast, message, content: toast.content === original ? message : toast.content };
+            if (toast.options?.component === original) toast.options = { ...toast.options, component: message };
+        }
+    } else if (toast && typeof toast.text === "string") {
+        toast = { ...toast, text: toastTranslator.translate(toast.text) };
+    }
+    return ToastsExports.showToast(toDiscordToast(toast));
+}
+
 export const Toasts = {
     Type: ToastType,
     Position: ToastPosition,
     genId: () => (Math.random() || Math.random()).toString(36).slice(2),
 
-    show: ToastsExports.showToast,
+    show: showTranslatedToast,
     pop: ToastsExports.popToast,
     create: createToast,
 };
 
+/** Toast variants used by plugins written for other client mods, mapped to Discord's toast types. */
+const VariantToType: Record<string, string> = {
+    success: ToastType.SUCCESS,
+    positive: ToastType.SUCCESS,
+    critical: ToastType.FAILURE,
+    danger: ToastType.FAILURE,
+    error: ToastType.FAILURE,
+    link: ToastType.LINK,
+};
+
 /**
- * Show a simple toast. If you need more options, use Toasts.show manually
+ * Show a simple toast. If you need more options, use Toasts.show manually.
+ * Also accepts `{ text, variant }`, the form many community plugins use.
  */
-export function showToast(message: string, type = ToastType.MESSAGE, options?: ToastOptions) {
+export function showToast(message: string | { text: string; variant?: string; }, type = ToastType.MESSAGE, options?: ToastOptions) {
+    if (typeof message === "object" && message !== null) {
+        type = VariantToType[message.variant ?? ""] ?? ToastType.MESSAGE;
+        message = String(message.text);
+    }
     Toasts.show(Toasts.create(message, type, options));
 }
 
@@ -153,12 +211,13 @@ export const NavigationRouter: t.NavigationRouter = mapMangledModuleLazy("transi
     forward: filters.byCode("goForward()"),
 });
 export const ChannelRouter: t.ChannelRouter = mapMangledModuleLazy('"Thread must have a parent ID."', {
-    transitionToChannel: filters.byCode(".preload"),
+    transitionToChannel: filters.byCode(".openTextInVoiceIfVoiceChannel"),
     transitionToThread: filters.byCode('"Thread must have a parent ID."')
 });
 
-export let SettingsRouter: any;
-waitFor(["openUserSettings", "USER_SETTINGS_MODAL_KEY"], m => SettingsRouter = m);
+export const SettingsRouter: any = mapMangledModuleLazy('type:"USER_SETTINGS_MODAL_OPEN"', {
+    openUserSettings: filters.byCode('type:"USER_SETTINGS_MODAL_OPEN"')
+});
 
 export const PermissionsBits: t.PermissionsBits = findLazy(m => typeof m.ADMINISTRATOR === "bigint");
 
@@ -172,7 +231,9 @@ export const { zustandPersist } = mapMangledModuleLazy(".onRehydrateStorage)?", 
 
 export const MessageActions = findByPropsLazy("editMessage", "sendMessage");
 export const MessageCache = findByPropsLazy("clearCache", "_channelMessages");
-export const UserProfileActions = findByPropsLazy("openUserProfileModal", "closeUserProfileModal");
+export const UserProfileActions = {
+    openUserProfileModal: findByCodeLazy('type:"USER_PROFILE_MODAL_OPEN"')
+};
 export const InviteActions = findByPropsLazy("resolveInvite");
 export const ChannelActionCreators = findByPropsLazy("openPrivateChannel");
 

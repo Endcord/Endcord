@@ -8,6 +8,7 @@ import "./style.css";
 
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Paragraph } from "@components/Paragraph";
+import { t } from "@utils/i18n";
 import { findByCodeLazy, findComponentByCodeLazy } from "@webpack";
 import { moment, useRef, UserStore, useState } from "@webpack/common";
 
@@ -102,7 +103,7 @@ const DemoMessage = (props: { msgId, compact, message, date: Date | undefined, i
     ) : <div className="vc-cmt-demo-message">
         <Paragraph>
             {/* @ts-ignore */}
-            <b>Preview:</b> {customTimestamps.renderTimestamp(date, "cozy")}
+            <b>{t("Preview:")}</b> {customTimestamps.renderTimestamp(date, "cozy")}
         </Paragraph>
     </div>;
 };

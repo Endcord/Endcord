@@ -12,6 +12,7 @@ import { Divider } from "@components/Divider";
 import { Heading } from "@components/Heading";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 import { ColorPicker } from "@webpack/common";
 
@@ -54,7 +55,7 @@ function OnekoColorSettings() {
         <div>
             <div className={cl("color-modal")}>
                 <div>
-                    <Heading className="form-subtitle">Fur Color</Heading>
+                    <Heading className="form-subtitle">{t("Fur Color")}</Heading>
                     <div className={cl("color")}>
                         <ColorPicker
                             color={parseHexToNumber(furColor) ?? 16777215}
@@ -65,7 +66,7 @@ function OnekoColorSettings() {
                 </div>
 
                 <div>
-                    <Heading className="form-subtitle">Outline Color</Heading>
+                    <Heading className="form-subtitle">{t("Outline Color")}</Heading>
                     <div className={cl("color")}>
                         <ColorPicker
                             color={parseHexToNumber(outlineColor) ?? 0}
@@ -115,7 +116,7 @@ const settings = definePluginSettings({
         type: OptionType.COMPONENT,
         component: () => (
             <div>
-                <Heading style={{ fontSize: "1.6em", marginTop: "10px" }}>Oneko</Heading>
+                <Heading style={{ fontSize: "1.6em", marginTop: "10px" }}>{t("Oneko")}</Heading>
                 <Divider style={{ marginBottom: "-10px" }}></Divider>
             </div>
         ),
@@ -143,7 +144,7 @@ const settings = definePluginSettings({
         type: OptionType.COMPONENT,
         component: () => (
             <div>
-                <Heading style={{ fontSize: "1.6em", marginTop: "10px" }}>Fatass Horse</Heading>
+                <Heading style={{ fontSize: "1.6em", marginTop: "10px" }}>{t("Fatass Horse")}</Heading>
                 <Divider style={{ marginBottom: "-10px" }}></Divider>
             </div>
         ),
@@ -236,7 +237,7 @@ export default definePlugin({
     name: "CursorBuddy",
     description: "Adds a sprite that follows your cursor.",
     tags: ["Appearance", "Customisation", "Fun"],
-    authors: [Devs.ewlle, Devs.rootpoi, Devs.kraethis],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     searchTerms: ["Oneko", "FatassHorse", "Pet"],
     settings,
     isModified: true,

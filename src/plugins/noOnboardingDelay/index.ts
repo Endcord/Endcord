@@ -11,7 +11,7 @@ export default definePlugin({
     name: "NoOnboardingDelay",
     description: "Skips the slow and annoying onboarding delay",
     tags: ["Utility", "Servers"],
-    authors: [Devs.nekohaxx],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     patches: [
         {
             find: "#{intl::ONBOARDING_COVER_WELCOME_SUBTITLE}",

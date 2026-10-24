@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { t } from "@utils/i18n";
 import { Select } from "@webpack/common";
 
 import { ListType } from "..";
@@ -15,7 +16,7 @@ export function ListPrioritySelector({ listType, setListPriority }: { listType: 
                 { label: "Whitelist", value: ListType.Whitelist },
                 { label: "Blacklist", value: ListType.BlackList }
             ]}
-            placeholder={"Select a list type"}
+            placeholder={t("Select a list type")}
             isSelected={v => v === listType}
             closeOnSelect={true}
             select={setListPriority}

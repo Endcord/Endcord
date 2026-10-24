@@ -5,7 +5,7 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
-import { EquicordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 import { SelectedChannelStore, UserStore } from "@webpack/common";
 
@@ -194,7 +194,7 @@ export default definePlugin({
     name: "Animalese",
     description: "Plays animal crossing animalese for every message sent (they yap a lot)",
     tags: ["Customisation", "Fun"],
-    authors: [EquicordDevs.ryanamay, EquicordDevs.Mocha],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
 
     flux: {

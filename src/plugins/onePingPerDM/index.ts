@@ -37,14 +37,14 @@ export default definePlugin({
     name: "OnePingPerDM",
     description: "If unread messages are sent by a user in DMs multiple times, you'll only receive one audio ping. Read the messages to reset the limit",
     tags: ["Notifications", "Customisation"],
-    authors: [Devs.ProffDea],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     patches: [
         {
-            find: ".getDesktopType()===",
+            find: '"NotificationStore"',
             replacement: [
                 {
-                    match: /(\i\.\i\.getDesktopType\(\)===\i\.\i\.NEVER)\)/,
+                    match: /\i\.\i\.getDesktopType\(\)===\i\.\i\.NEVER\)/,
                     replace: "$&if(!$self.isPrivateChannelRead(arguments[0]?.message))return;else "
                 },
                 {

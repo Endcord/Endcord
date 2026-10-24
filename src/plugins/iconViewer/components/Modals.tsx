@@ -13,6 +13,7 @@ import { TooltipContainer } from "@components/TooltipContainer";
 import { Icon, RenderModalProps } from "@endcord/discord-types";
 import { cssColors, getCssColorKeys, iconSizes, iconSizesInPx } from "@plugins/iconViewer/utils";
 import { copyWithToast, getIntlMessage } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import { saveFile } from "@utils/web";
 import { findComponentByCodeLazy } from "@webpack";
@@ -176,39 +177,39 @@ function OtherContextMenu({ iconName, Icon, color }: { iconName: string; Icon: I
         >
             <Menu.MenuItem
                 id="log-console"
-                label="Log to Console"
+                label={t("Log to Console")}
                 icon={BugIcon}
                 action={() => logger.info(Icon)}
             />
-            <Menu.MenuItem id="save" label="Save As...">
+            <Menu.MenuItem id="save" label={t("Save As...")}>
                 <Menu.MenuItem
                     id="save-png"
-                    label="PNG"
+                    label={t("PNG")}
                     action={() => handleSave("image/png")}
                 />
                 <Menu.MenuItem
                     id="save-svg"
-                    label="SVG"
+                    label={t("SVG")}
                     action={() => handleSave("image/svg+xml")}
                 />
                 <Menu.MenuItem
                     id="save-jpeg"
-                    label="JPEG"
+                    label={t("JPEG")}
                     action={() => handleSave("image/jpeg")}
                 />
                 <Menu.MenuItem
                     id="save-webp"
-                    label="WEBP"
+                    label={t("WEBP")}
                     action={() => handleSave("image/webp")}
                 />
                 <Menu.MenuItem
                     id="save-gif"
-                    label="GIF"
+                    label={t("GIF")}
                     action={() => handleSave("image/gif")}
                 />
                 <Menu.MenuItem
                     id="save-avif"
-                    label="AVIF"
+                    label={t("AVIF")}
                     action={() => handleSave("image/avif")}
                 />
             </Menu.MenuItem>
@@ -274,7 +275,7 @@ function IconModal({ iconName, Icon, onClose, transitionState }: { iconName: str
                             </TooltipContainer>
                         ))}
                     </Flex>
-                    <TooltipContainer text="Right-click icon to change">
+                    <TooltipContainer text={t("Right-click icon to change")}>
                         <BaseText size="sm" color="text-muted" className="vc-ic-color-label">
                             {colorData?.name}
                         </BaseText>
@@ -282,8 +283,8 @@ function IconModal({ iconName, Icon, onClose, transitionState }: { iconName: str
                 </Flex>
             </Flex>
             <div className="vc-ic-use-as">
-                <BaseText size="md" weight="semibold">Usage</BaseText>
-                <BaseText size="sm" color="text-muted">Click to copy</BaseText>
+                <BaseText size="md" weight="semibold">{t("Usage")}</BaseText>
+                <BaseText size="sm" color="text-muted">{t("Click to copy")}</BaseText>
             </div>
             {/* for some reason i cant make this shit codeblock full width, FF 15 */}
             <Clickable className="vc-ic-codeblock-wrapper" onClick={() => copyWithToast(findCode, "Copied!")}>
@@ -300,18 +301,18 @@ export function openIconModal(iconName: string, Icon: Icon) {
 export function SettingsAbout() {
     return (
         <>
-            <HeadingSecondary>Features</HeadingSecondary>
+            <HeadingSecondary>{t("Features")}</HeadingSecondary>
             <Paragraph>
                 <ul className="vc-ic-unordered-list">
-                    <li>Preview icons</li>
-                    <li>Copy icon names and CSS variables</li>
-                    <li>Download icons in different formats (SVG, PNG, GIF, etc.)</li>
-                    <li>Copy pre-made icon finds for your plugins</li>
-                    <li>Find icons by function context</li>
-                    <li>Search for colors by right-clicking the color name</li>
+                    <li>{t("Preview icons")}</li>
+                    <li>{t("Copy icon names and CSS variables")}</li>
+                    <li>{t("Download icons in different formats (SVG, PNG, GIF, etc.)")}</li>
+                    <li>{t("Copy pre-made icon finds for your plugins")}</li>
+                    <li>{t("Find icons by function context")}</li>
+                    <li>{t("Search for colors by right-clicking the color name")}</li>
                 </ul>
             </Paragraph>
-            <HeadingSecondary>Special thanks</HeadingSecondary>
+            <HeadingSecondary>{t("Special thanks")}</HeadingSecondary>
             <Paragraph>
                 <ul className="vc-ic-unordered-list">
                     <li>krystalskullofficial._.</li>

@@ -18,7 +18,7 @@
 
 import "./styles.css";
 
-import { EquicordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import definePlugin from "@utils/types";
@@ -43,7 +43,7 @@ type EmojiDescriptor = {
 
 export default definePlugin({
     name: "DragFavoriteEmotes",
-    authors: [EquicordDevs.PWall],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     description: "Adds the ability to change the order of your favourite emotes",
     tags: ["Customisation", "Chat", "Emotes"],
     patches: [

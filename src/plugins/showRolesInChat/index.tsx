@@ -9,12 +9,13 @@ import "./styles.css";
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { EyeIcon } from "@components/Icons";
-import { EquicordDevs } from "@utils/constants";
+import { User } from "@endcord/discord-types";
+import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import { getCurrentGuild } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import definePlugin, { OptionType } from "@utils/types";
-import { User } from "@endcord/discord-types";
 import { ChannelStore, ContextMenuApi, GuildMemberStore, GuildRoleStore, Menu, Tooltip, useStateFromStores } from "@webpack/common";
 import type React from "react";
 
@@ -98,7 +99,7 @@ const HighestRoleIndicator = ErrorBoundary.wrap(({ user, channelId, isCompact }:
                         {makeToggleRoleItem(role.id)}
 
                         {hiddenRoles.length > 0 && (
-                            <Menu.MenuItem id="unhide-menu" label="Unhide Roles in Chat">
+                            <Menu.MenuItem id="unhide-menu" label={t("Unhide Roles in Chat")}>
                                 {hiddenRoles.map(r => (
                                     <Menu.MenuItem
                                         key={r.id}
@@ -137,7 +138,7 @@ export default definePlugin({
     name: "ShowRolesInChat",
     description: "Shows a user's highest role next to their name in chat messages. Hide/show specific roles in their context menu (right-click).",
     tags: ["Appearance", "Chat", "Roles", "Servers"],
-    authors: [EquicordDevs.lucabeyer],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     contextMenus: {
         "dev-context"(children, { id }: { id: string; }) {

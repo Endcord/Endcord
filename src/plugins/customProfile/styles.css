@@ -1,3 +1,6 @@
+/* Community stylesheet: its class names (BEM "--modifier") and rule order are kept as written. */
+/* stylelint-disable selector-class-pattern, no-duplicate-selectors, no-descending-specificity */
+
 /* ── Custom Profile Plugin ── */
 
 .cp-account-selector-inline {
@@ -41,11 +44,11 @@
 }
 
 .cp-account-header-item:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgb(255 255 255 / 5%);
 }
 
 .cp-account-header-item--selected {
-    background: rgba(88, 101, 242, 0.15);
+    background: rgb(88 101 242 / 15%);
     border-color: #5865f2;
 }
 
@@ -74,13 +77,15 @@
     overflow-x: auto;
     padding: 8px 0;
     width: 100%;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-top: 1px solid rgb(255 255 255 / 6%);
     scrollbar-width: none;
+
     /* Firefox */
 }
 
 .cp-account-selector-header::-webkit-scrollbar {
     display: none;
+
     /* Chrome, Safari, Edge */
 }
 
@@ -95,11 +100,11 @@
 }
 
 .cp-account-header-item:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgb(255 255 255 / 5%);
 }
 
 .cp-account-header-item--selected {
-    background: rgba(88, 101, 242, 0.15);
+    background: rgb(88 101 242 / 15%);
     border-color: #5865f2;
 }
 
@@ -155,7 +160,7 @@
 /* ── Divider ── */
 .cp-divider {
     height: 1px;
-    background: rgba(255, 255, 255, 0.06);
+    background: rgb(255 255 255 / 6%);
     margin: 10px 0;
 }
 
@@ -169,7 +174,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.6px;
-    color: rgba(255, 255, 255, 0.45);
+    color: rgb(255 255 255 / 45%);
     margin-bottom: 6px;
 }
 
@@ -177,8 +182,8 @@
     width: 100%;
     padding: 9px 12px;
     border-radius: 6px;
-    border: 1.5px solid rgba(255, 255, 255, 0.08);
-    background: rgba(0, 0, 0, 0.2);
+    border: 1.5px solid rgb(255 255 255 / 8%);
+    background: rgb(0 0 0 / 20%);
     color: #fff;
     font-size: 14px;
     font-family: inherit;
@@ -188,11 +193,11 @@
 }
 
 .cp-input:focus {
-    border-color: rgba(255, 255, 255, 0.22);
+    border-color: rgb(255 255 255 / 22%);
 }
 
 .cp-input::placeholder {
-    color: rgba(255, 255, 255, 0.25);
+    color: rgb(255 255 255 / 25%);
 }
 
 /* Date input — forcer couleur blanche sur le texte */
@@ -213,8 +218,8 @@
     gap: 7px;
     padding: 8px 14px;
     border-radius: 6px;
-    border: 1.5px solid rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.06);
+    border: 1.5px solid rgb(255 255 255 / 10%);
+    background: rgb(255 255 255 / 6%);
     color: #fff;
     font-size: 13px;
     font-weight: 500;
@@ -223,8 +228,8 @@
 }
 
 .cp-file-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
+    background: rgb(255 255 255 / 10%);
+    border-color: rgb(255 255 255 / 20%);
 }
 
 .cp-preview-avatar {
@@ -232,7 +237,7 @@
     height: 34px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    border: 2px solid rgb(255 255 255 / 10%);
     flex-shrink: 0;
 }
 
@@ -242,7 +247,7 @@
     justify-content: center;
     background: none;
     border: none;
-    color: rgba(255, 255, 255, 0.35);
+    color: rgb(255 255 255 / 35%);
     cursor: pointer;
     padding: 5px;
     border-radius: 4px;
@@ -250,7 +255,7 @@
 }
 
 .cp-clear-btn:hover {
-    color: rgba(255, 255, 255, 0.8);
+    color: rgb(255 255 255 / 80%);
 }
 
 /* ── Toggle ── */
@@ -260,8 +265,8 @@
     justify-content: space-between;
     padding: 10px 12px;
     border-radius: 6px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1.5px solid rgba(255, 255, 255, 0.06);
+    background: rgb(255 255 255 / 3%);
+    border: 1.5px solid rgb(255 255 255 / 6%);
     cursor: pointer;
     margin-bottom: 14px;
     transition: background 0.1s;
@@ -269,7 +274,7 @@
 }
 
 .cp-toggle-row:hover {
-    background: rgba(255, 255, 255, 0.06);
+    background: rgb(255 255 255 / 6%);
 }
 
 .cp-toggle-text {
@@ -286,7 +291,7 @@
 
 .cp-toggle-sub {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.4);
+    color: rgb(255 255 255 / 40%);
 }
 
 /* Toggle pill */
@@ -294,7 +299,7 @@
     width: 40px;
     height: 22px;
     border-radius: 99px;
-    background: rgba(255, 255, 255, 0.15);
+    background: rgb(255 255 255 / 15%);
     position: relative;
     flex-shrink: 0;
     transition: background 0.2s;
@@ -313,7 +318,7 @@
     border-radius: 50%;
     background: #fff;
     transition: transform 0.2s;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 30%);
 }
 
 .cp-toggle--on .cp-toggle-thumb {
@@ -332,8 +337,8 @@
     height: 38px;
     padding: 2px;
     border-radius: 6px;
-    border: 1.5px solid rgba(255, 255, 255, 0.1);
-    background: rgba(0, 0, 0, 0.2);
+    border: 1.5px solid rgb(255 255 255 / 10%);
+    background: rgb(0 0 0 / 20%);
     cursor: pointer;
     flex-shrink: 0;
 }
@@ -356,19 +361,19 @@
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;
-    border: 1.5px solid rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.05);
-    color: rgba(255, 255, 255, 0.7);
+    border: 1.5px solid rgb(255 255 255 / 10%);
+    background: rgb(255 255 255 / 5%);
+    color: rgb(255 255 255 / 70%);
     transition: all 0.1s;
 }
 
 .cp-badge:hover {
-    border-color: rgba(255, 255, 255, 0.25);
+    border-color: rgb(255 255 255 / 25%);
     color: #fff;
 }
 
 .cp-badge--on {
-    background: rgba(88, 101, 242, 0.2);
+    background: rgb(88 101 242 / 20%);
     border-color: #5865f2;
     color: #fff;
     font-weight: 700;
@@ -377,7 +382,7 @@
 /* ── Hint ── */
 .cp-hint {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.3);
+    color: rgb(255 255 255 / 30%);
     margin-top: 6px;
     margin-bottom: 4px;
     line-height: 1.4;
@@ -411,21 +416,21 @@
 }
 
 .cp-btn-ghost {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgb(255 255 255 / 8%);
 }
 
 .cp-btn-ghost:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.13);
+    background: rgb(255 255 255 / 13%);
 }
 
 .cp-btn-danger {
-    background: rgba(237, 66, 69, 0.15);
+    background: rgb(237 66 69 / 15%);
     color: #ed4245;
-    border: 1.5px solid rgba(237, 66, 69, 0.3);
+    border: 1.5px solid rgb(237 66 69 / 30%);
 }
 
 .cp-btn-danger:hover:not(:disabled) {
-    background: rgba(237, 66, 69, 0.25);
+    background: rgb(237 66 69 / 25%);
 }
 
 .cp-btn-primary {
@@ -439,7 +444,7 @@
 /* ── Presets ── */
 .cp-presets-wrapper {
     padding: 0 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid rgb(255 255 255 / 6%);
 }
 
 .cp-presets-bar {
@@ -450,14 +455,14 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    color: rgba(255, 255, 255, 0.3);
+    color: rgb(255 255 255 / 30%);
     font-size: 12px;
 }
 
 .cp-presets-hint {
     flex: 1;
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.3);
+    color: rgb(255 255 255 / 30%);
 }
 
 .cp-presets-scroll {
@@ -480,9 +485,9 @@
     gap: 5px;
     padding: 4px 10px 4px 8px;
     border-radius: 99px;
-    border: 1.5px solid rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.05);
-    color: rgba(255, 255, 255, 0.75);
+    border: 1.5px solid rgb(255 255 255 / 10%);
+    background: rgb(255 255 255 / 5%);
+    color: rgb(255 255 255 / 75%);
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;
@@ -493,7 +498,7 @@
 }
 
 .cp-preset-chip:hover {
-    background: rgba(88, 101, 242, 0.18);
+    background: rgb(88 101 242 / 18%);
     border-color: #5865f2;
     color: #fff;
 }
@@ -510,7 +515,7 @@
     justify-content: center;
     background: none;
     border: none;
-    color: rgba(255, 255, 255, 0.3);
+    color: rgb(255 255 255 / 30%);
     cursor: pointer;
     padding: 0;
     margin-left: 2px;
@@ -529,9 +534,9 @@
     gap: 5px;
     padding: 4px 10px;
     border-radius: 99px;
-    border: 1.5px dashed rgba(255, 255, 255, 0.15);
+    border: 1.5px dashed rgb(255 255 255 / 15%);
     background: transparent;
-    color: rgba(255, 255, 255, 0.4);
+    color: rgb(255 255 255 / 40%);
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;
@@ -541,9 +546,9 @@
 }
 
 .cp-preset-add:hover {
-    border-color: rgba(88, 101, 242, 0.6);
+    border-color: rgb(88 101 242 / 60%);
     color: #5865f2;
-    background: rgba(88, 101, 242, 0.08);
+    background: rgb(88 101 242 / 8%);
 }
 
 .cp-preset-naming {
@@ -582,7 +587,6 @@ img[src*="chM1tvZ"],
 img[src*="7bJJJWl"],
 img[src*="gQg96nV"] {
     background: transparent !important;
-    background-color: transparent !important;
     mix-blend-mode: screen !important;
 }
 

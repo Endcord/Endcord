@@ -1,0 +1,6 @@
+.tc-fakevoice-indicator {
+    color: var(--brand-experiment, #ff5fa6);
+    vertical-align: middle;
+    margin: 0 2px;
+    flex-shrink: 0;
+}

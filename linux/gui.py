@@ -189,7 +189,7 @@ def fetch_dist():
             return mirror
         except Exception as e:
             last = e
-    raise RuntimeError("Could not download dist: %s" % last)
+    raise RuntimeError("Could not download Endcord files. Check https://endcord.com/download (%s)" % last)
 
 
 def write_loader(app_dir):

@@ -4,15 +4,15 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { registerCommands } from "@plugins/commandPalette/api/registry";
+import type { FormPageSpec, PageEntry, PaletteAction, PaletteCommand } from "@plugins/commandPalette/api/types";
+import { filterOptions } from "@plugins/commandPalette/search/ranker";
+import { createPersistedValue } from "@plugins/commandPalette/state/persist";
+import { BoltIcon, GearIcon, LinkIcon, PencilIcon, PlusIcon, TextIcon, TrashIcon } from "@plugins/commandPalette/ui/icons";
 import { insertTextIntoChatInputBox } from "@utils/discord";
 import { parseUrl } from "@utils/misc";
 import { showToast, Toasts } from "@webpack/common";
 
-import { registerCommands } from "../api/registry";
-import type { FormPageSpec, PageEntry, PaletteAction, PaletteCommand } from "../api/types";
-import { filterOptions } from "../search/ranker";
-import { createPersistedValue } from "../state/persist";
-import { BoltIcon, GearIcon, LinkIcon, PencilIcon, PlusIcon, TextIcon, TrashIcon } from "../ui/icons";
 import { DISCORD_SETTINGS_ROUTES, openSettingsPage } from "./openSettings";
 
 type CustomCommandKind = "url" | "settings" | "message";

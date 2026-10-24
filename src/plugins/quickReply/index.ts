@@ -46,7 +46,7 @@ const settings = definePluginSettings({
 
 export default definePlugin({
     name: "QuickReply",
-    authors: [Devs.fawn, Devs.Ven, Devs.pylix],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     description: "Reply to (ctrl + up/down) and edit (ctrl + shift + up/down) messages via keybinds",
     tags: ["Chat", "Shortcuts"],
     settings,

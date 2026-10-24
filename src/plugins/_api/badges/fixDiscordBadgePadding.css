@@ -12,7 +12,6 @@
 [class*="profile"] a[class*="badge"],
 div[class*="badgeList"] img {
     background: transparent !important;
-    background-color: transparent !important;
     box-shadow: none !important;
 }
 
@@ -30,7 +29,6 @@ img[src*="chM1tvZ"],
 img[src*="7bJJJWl"],
 img[src*="gQg96nV"] {
     background: transparent !important;
-    background-color: transparent !important;
     mix-blend-mode: screen !important;
 }
 

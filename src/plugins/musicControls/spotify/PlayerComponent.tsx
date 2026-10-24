@@ -22,14 +22,15 @@ import { Flex } from "@components/Flex";
 import { CopyIcon, ImageIcon, LinkIcon, OpenExternalIcon } from "@components/Icons";
 import { Paragraph } from "@components/Paragraph";
 import { Span } from "@components/Span";
+import { settings } from "@plugins/musicControls/settings";
 import { debounce } from "@shared/debounce";
 import { classNameFactory } from "@utils/css";
 import { copyWithToast, openImageModal } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import { formatDuration } from "@utils/text";
 import { ContextMenuApi, FluxDispatcher, Menu, React, useEffect, useState, useStateFromStores } from "@webpack/common";
 
-import { settings } from "../settings";
 import { SeekBar } from "./SeekBar";
 import { SpotifyStore, Track } from "./SpotifyStore";
 
@@ -224,7 +225,7 @@ function AlbumContextMenu({ track }: { track: Track; }) {
             <Menu.MenuItem
                 key="open-album"
                 id="open-album"
-                label="Open Album"
+                label={t("Open Album")}
                 action={() => SpotifyStore.openExternal(`/album/${track.album.id}`)}
                 icon={OpenExternalIcon}
                 leadingAccessory={{ type: "icon", icon: OpenExternalIcon }}
@@ -232,7 +233,7 @@ function AlbumContextMenu({ track }: { track: Track; }) {
             <Menu.MenuItem
                 key="view-cover"
                 id="view-cover"
-                label="View Album Cover"
+                label={t("View Album Cover")}
                 // trolley
                 action={() => openImageModal(track.album.image)}
                 icon={ImageIcon}
@@ -241,7 +242,7 @@ function AlbumContextMenu({ track }: { track: Track; }) {
             <Menu.MenuControlItem
                 id="spotify-volume"
                 key="spotify-volume"
-                label="Volume"
+                label={t("Volume")}
                 control={(props, ref) => (
                     <Menu.MenuSliderControl
                         {...props}
@@ -311,7 +312,7 @@ function Info({ track }: { track: Track; }) {
                 </Paragraph>
                 {track.artists.some(a => a.name) && (
                     <Paragraph className={cl(["ellipoverflow", "secondary-song-info"])}>
-                        <span className={cl("song-info-prefix")}>by&nbsp;</span>
+                        <span className={cl("song-info-prefix")}>{t("by")}&nbsp;</span>
                         {track.artists.map((a, i) => (
                             <React.Fragment key={a.name}>
                                 <span
@@ -329,7 +330,7 @@ function Info({ track }: { track: Track; }) {
                 )}
                 {track.album.name && (
                     <Paragraph className={cl(["ellipoverflow", "secondary-song-info"])}>
-                        <span className={cl("song-info-prefix")}>on&nbsp;</span>
+                        <span className={cl("song-info-prefix")}>{t("on")}&nbsp;</span>
                         <span
                             id={cl("album-title")}
                             className={cl("album")}

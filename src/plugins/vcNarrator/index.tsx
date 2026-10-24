@@ -6,6 +6,7 @@
 
 import { ErrorCard } from "@components/ErrorCard";
 import { Devs, IS_LINUX } from "@utils/constants";
+import { t as translateText } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import { Margins } from "@utils/margins";
 import { wordsToTitle } from "@utils/text";
@@ -145,7 +146,7 @@ export default definePlugin({
     name: "VcNarrator",
     description: "Announces when users join, leave, or move voice channels via narrator",
     tags: ["Voice", "Accessibility"],
-    authors: [Devs.Ven],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     reporterTestable: ReporterTestable.None,
 
     settings,
@@ -230,21 +231,19 @@ export default definePlugin({
                 : "Try installing some in the Narrator settings of your Operating System";
             errorComponent = <ErrorCard>{error}</ErrorCard>;
         } else if (!hasEnglishVoices) {
-            errorComponent = <ErrorCard>You don't have any English voices installed, so the narrator might sound weird</ErrorCard>;
+            errorComponent = <ErrorCard>{translateText("You don't have any English voices installed, so the narrator might sound weird")}</ErrorCard>;
         }
 
         return (
             <section>
                 <Forms.FormText>
-                    You can customise the spoken messages below. You can disable specific messages by setting them to nothing
-                </Forms.FormText>
+                    {translateText("You can customise the spoken messages below. You can disable specific messages by setting them to nothing")}</Forms.FormText>
                 <Forms.FormText>
-                    The special placeholders <code>{"{{USER}}"}</code>, <code>{"{{DISPLAY_NAME}}"}</code>, <code>{"{{NICKNAME}}"}</code> and <code>{"{{CHANNEL}}"}</code>{" "}
-                    will be replaced with the user's name (nothing if it's yourself), the user's display name, the user's nickname on current server and the channel's name respectively
-                </Forms.FormText>
+                    {translateText("The special placeholders")}{" "}<code>{"{{USER}}"}</code>, <code>{"{{DISPLAY_NAME}}"}</code>, <code>{"{{NICKNAME}}"}</code>{" "}{translateText("and")}{" "}<code>{"{{CHANNEL}}"}</code>{" "}
+                    {translateText("will be replaced with the user's name (nothing if it's yourself), the user's display name, the user's nickname on current server and the channel's name respectively")}</Forms.FormText>
                 {hasEnglishVoices && (
                     <>
-                        <Forms.FormTitle className={Margins.top20} tag="h3">Play Example Sounds</Forms.FormTitle>
+                        <Forms.FormTitle className={Margins.top20} tag="h3">{translateText("Play Example Sounds")}</Forms.FormTitle>
                         <div
                             style={{
                                 display: "grid",

@@ -10,63 +10,157 @@ import definePlugin, { OptionType } from "@utils/types";
 
 const STYLE_ID = "ec-custom-cursor-style";
 
-type CursorPreset = {
+// Every cursor is drawn on a 32x32 grid and scaled to the chosen size.
+interface CursorImage {
+    body: string;
+    hotspot: [number, number];
+}
+
+interface CursorPreset {
     label: string;
     value: string;
-    svg: string;
-    hotspotX: number;
-    hotspotY: number;
-};
+    arrow: CursorImage;
+    /** Shown over links and buttons, where Discord normally shows a hand */
+    pointer: CursorImage;
+}
+
+const ARROW = "M4 2.5v21.6l5.4-5 3.6 8.2 3.9-1.7-3.6-8h7.6z";
+const HAND = "M11.5 4.2a2 2 0 0 1 4 0V12.6a1.9 1.9 0 0 1 3.7.4v.6a1.9 1.9 0 0 1 3.6.6v.7a1.9 1.9 0 0 1 3.6.7V21c0 4.6-3.3 8-7.8 8h-1.8c-2.7 0-4.6-1.1-6.1-3.2l-4.4-6.1a2 2 0 0 1 3-2.6l2.2 2.2z";
+const SHADOW = '<filter id="s" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="1.2" stdDeviation="1.1" flood-color="#000" flood-opacity=".38"/></filter>';
+
+const svg = (inner: string, defs = "") =>
+    `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><defs>${SHADOW}${defs}</defs><g filter="url(#s)">${inner}</g></svg>`;
+
+const outlined = (d: string, fill: string, stroke: string) =>
+    `<path d="${d}" fill="${fill}" stroke="${stroke}" stroke-width="1.6" stroke-linejoin="round"/>`;
+
+const arrowAndHand = (fill: string, stroke: string, defs = ""): Pick<CursorPreset, "arrow" | "pointer"> => ({
+    arrow: { body: svg(outlined(ARROW, fill, stroke), defs), hotspot: [4, 3] },
+    pointer: { body: svg(outlined(HAND, fill, stroke), defs), hotspot: [13, 3] }
+});
+
+const PIXEL_PALETTE: Record<string, string> = { K: "#10182a", W: "#f3f6fb", I: "#9ccbff" };
+
+// 16x16 pixel grid drawn from rows of characters ("." is transparent), shown at 2px per pixel
+function pixelSvg(rows: string[]) {
+    let rects = "";
+    rows.forEach((row, y) => {
+        for (let x = 0; x < row.length; x++) {
+            const fill = PIXEL_PALETTE[row[x]];
+            if (fill) rects += `<rect x="${x}" y="${y}" width="1" height="1" fill="${fill}"/>`;
+        }
+    });
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 16 16" shape-rendering="crispEdges">${rects}</svg>`;
+}
 
 const PRESETS: CursorPreset[] = [
     {
+        label: "Endcord",
+        value: "endcord",
+        ...arrowAndHand("url(#g)", "#f3f6fb", '<linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9ccbff"/><stop offset="1" stop-color="#3d74e0"/></linearGradient>')
+    },
+    {
+        label: "Classic Light",
+        value: "light",
+        ...arrowAndHand("#ffffff", "#111318")
+    },
+    {
+        label: "Classic Dark",
+        value: "dark",
+        ...arrowAndHand("#16181d", "#ffffff")
+    },
+    {
+        label: "Blurple",
+        value: "blurple",
+        ...arrowAndHand("#5865f2", "#ffffff")
+    },
+    {
+        label: "Sakura",
+        value: "sakura",
+        ...arrowAndHand("url(#g)", "#ffffff", '<linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd1dc"/><stop offset="1" stop-color="#f27ea0"/></linearGradient>')
+    },
+    {
+        // Hard-edged cursors in the pixel style of the Endcord logo
+        label: "Pixel",
+        value: "pixel",
+        arrow: {
+            body: pixelSvg([
+                "K...........",
+                "KK..........",
+                "KIK.........",
+                "KIWK........",
+                "KIWWK.......",
+                "KIWWWK......",
+                "KIWWWWK.....",
+                "KIWWWWWK....",
+                "KIWWWWWWK...",
+                "KIWWWWKKKK..",
+                "KIWKWWK.....",
+                "KIK.KWWK....",
+                "KK..KWWK....",
+                "K....KWWK...",
+                ".....KWWK...",
+                "......KK....",
+            ]),
+            hotspot: [1, 1]
+        },
+        pointer: {
+            body: pixelSvg([
+                "....KK........",
+                "...KWWK.......",
+                "...KWWK.......",
+                "...KWWK.......",
+                "...KWWKKK.....",
+                "...KWWKWWKKK..",
+                ".KKKWWKWWKWWK.",
+                "KWWKWWWWWKWWKK",
+                "KWWKWWWWWWWWWK",
+                "KWWWWWWWWWWWWK",
+                ".KWWWWWWWWWWWK",
+                ".KWWWWWWWWWWWK",
+                "..KWWWWWWWWWK.",
+                "..KWWWWWWWWWK.",
+                "...KIIIIIIIK..",
+                "...KKKKKKKKK..",
+            ]),
+            hotspot: [9, 1]
+        }
+    },
+    {
         label: "Dot",
         value: "dot",
-        hotspotX: 8,
-        hotspotY: 8,
-        svg: `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="6" fill="#fff" stroke="#111" stroke-width="3"/></svg>`
+        arrow: {
+            body: svg('<circle cx="16" cy="16" r="5" fill="#fff" stroke="#111318" stroke-width="2"/>'),
+            hotspot: [16, 16]
+        },
+        pointer: {
+            body: svg('<circle cx="16" cy="16" r="9" fill="rgba(255,255,255,.18)" stroke="#fff" stroke-width="2"/><circle cx="16" cy="16" r="3" fill="#fff" stroke="#111318" stroke-width="1.5"/>'),
+            hotspot: [16, 16]
+        }
     },
     {
         label: "Ring",
         value: "ring",
-        hotspotX: 16,
-        hotspotY: 16,
-        svg: `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="none" stroke="#fff" stroke-width="3"/><circle cx="16" cy="16" r="2.5" fill="#fff"/></svg>`
+        arrow: {
+            body: svg('<circle cx="16" cy="16" r="9" fill="none" stroke="#111318" stroke-width="4"/><circle cx="16" cy="16" r="9" fill="none" stroke="#fff" stroke-width="2"/><circle cx="16" cy="16" r="2" fill="#fff" stroke="#111318" stroke-width="1"/>'),
+            hotspot: [16, 16]
+        },
+        pointer: {
+            body: svg('<circle cx="16" cy="16" r="11" fill="none" stroke="#111318" stroke-width="4"/><circle cx="16" cy="16" r="11" fill="none" stroke="#9ccbff" stroke-width="2"/><circle cx="16" cy="16" r="2.5" fill="#9ccbff" stroke="#111318" stroke-width="1"/>'),
+            hotspot: [16, 16]
+        }
     },
     {
         label: "Crosshair",
         value: "crosshair",
-        hotspotX: 16,
-        hotspotY: 16,
-        svg: `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M16 2v8M16 22v8M2 16h8M22 16h8" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="16" cy="16" r="3" fill="#5865F2"/></svg>`
-    },
-    {
-        label: "Heart",
-        value: "heart",
-        hotspotX: 16,
-        hotspotY: 14,
-        svg: `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M16 27s-9-5.8-12.3-11C1.6 12.2 3 8 7.2 8c2.6 0 4.3 1.6 5.3 3.2C13.5 9.6 15.2 8 17.8 8c4.2 0 5.6 4.2 3.5 8C25 21.2 16 27 16 27z" fill="#ED4245" stroke="#111" stroke-width="2"/></svg>`
-    },
-    {
-        label: "Sword",
-        value: "sword",
-        hotspotX: 5,
-        hotspotY: 5,
-        svg: `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M4 4l16 16" stroke="#e6edf3" stroke-width="4" stroke-linecap="round"/><path d="M17 21l4-4 3 3-4 4z" fill="#F0B232"/><path d="M14 24l-6-6" stroke="#8B5A2B" stroke-width="4" stroke-linecap="round"/><circle cx="6" cy="26" r="3" fill="#F0B232"/></svg>`
-    },
-    {
-        label: "Paw",
-        value: "paw",
-        hotspotX: 16,
-        hotspotY: 18,
-        svg: `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><ellipse cx="16" cy="20" rx="8" ry="6.5" fill="#f4d7b5" stroke="#111" stroke-width="2"/><circle cx="8" cy="12" r="3.2" fill="#f4d7b5" stroke="#111" stroke-width="2"/><circle cx="13" cy="8.5" r="3.2" fill="#f4d7b5" stroke="#111" stroke-width="2"/><circle cx="19" cy="8.5" r="3.2" fill="#f4d7b5" stroke="#111" stroke-width="2"/><circle cx="24" cy="12" r="3.2" fill="#f4d7b5" stroke="#111" stroke-width="2"/></svg>`
-    },
-    {
-        label: "Pixel",
-        value: "pixel",
-        hotspotX: 2,
-        hotspotY: 2,
-        svg: `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" shape-rendering="crispEdges"><path fill="#fff" d="M2 2h6v2H4v16h2v2H4v2H2z"/><path fill="#111" d="M8 2h2v2H8zM4 4h2v16H4zM6 20h2v2H6zM4 22h2v2H4zM2 24h2v2H2z"/><path fill="#5865F2" d="M8 8h8v8H8z"/></svg>`
+        arrow: {
+            body: svg('<path d="M16 3v9M16 20v9M3 16h9M20 16h9" stroke="#111318" stroke-width="4" stroke-linecap="round"/><path d="M16 3v9M16 20v9M3 16h9M20 16h9" stroke="#fff" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="16" r="1.6" fill="#fff" stroke="#111318" stroke-width="1"/>'),
+            hotspot: [16, 16]
+        },
+        pointer: {
+            body: svg('<path d="M16 3v9M16 20v9M3 16h9M20 16h9" stroke="#111318" stroke-width="4" stroke-linecap="round"/><path d="M16 3v9M16 20v9M3 16h9M20 16h9" stroke="#f0776b" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="16" r="2" fill="#f0776b" stroke="#111318" stroke-width="1"/>'),
+            hotspot: [16, 16]
+        }
     },
 ];
 
@@ -104,10 +198,19 @@ const settings = definePluginSettings({
     },
 });
 
-function svgCursor(svg: string, size: number) {
-    const scaled = svg.replace(/width="32"/, `width="${size}"`).replace(/height="32"/, `height="${size}"`);
-    return `url("data:image/svg+xml,${encodeURIComponent(scaled)}")`;
+function cursorValue(image: CursorImage, size: number, fallback: string) {
+    const scale = size / 32;
+    const sized = image.body.replace('width="32" height="32"', `width="${size}" height="${size}"`);
+    return `url("data:image/svg+xml,${encodeURIComponent(sized)}") ${Math.round(image.hotspot[0] * scale)} ${Math.round(image.hotspot[1] * scale)}, ${fallback}`;
 }
+
+// Everything Discord renders as clickable; these get the pointer variant
+const CLICKABLE = [
+    "a", "button", "select", "summary", "label[for]",
+    '[role="button"]', '[role="link"]', '[role="tab"]', '[role="menuitem"]', '[role="menuitemcheckbox"]', '[role="menuitemradio"]',
+    '[role="option"]', '[role="switch"]', '[role="checkbox"]', '[role="radio"]', '[role="treeitem"]',
+    '[class*="clickable"]', '[class*="Clickable"]'
+].map(s => `#app-mount ${s}, #app-mount ${s} *`).join(", ");
 
 function applyCursor() {
     document.getElementById(STYLE_ID)?.remove();
@@ -115,27 +218,21 @@ function applyCursor() {
     const size = Math.max(16, Math.min(64, Number(settings.store.size) || 32));
     const customUrl = String(settings.store.customUrl ?? "").trim();
     const preset = PRESETS.find(item => item.value === settings.store.preset) ?? PRESETS[0];
-    const scale = size / 32;
-    const hotspotX = Math.round(preset.hotspotX * scale);
-    const hotspotY = Math.round(preset.hotspotY * scale);
-    const image = customUrl
-        ? `url("${customUrl.replace(/"/g, "")}")`
-        : svgCursor(preset.svg, size);
-    const fallback = customUrl ? "auto" : "auto";
-    const cursor = `${image} ${hotspotX} ${hotspotY}, ${fallback}`;
-    const textCursor = settings.store.applyToTextFields
-        ? cursor
-        : "text";
+
+    let arrow: string, pointer: string;
+    if (customUrl) {
+        arrow = pointer = `url("${customUrl.replace(/["\\]/g, "")}") 0 0, auto`;
+    } else {
+        arrow = cursorValue(preset.arrow, size, "auto");
+        pointer = cursorValue(preset.pointer, size, "pointer");
+    }
 
     const style = document.createElement("style");
     style.id = STYLE_ID;
     style.textContent = `
-        html, body, #app-mount, #app-mount * {
-            cursor: ${cursor} !important;
-        }
-        input, textarea, [contenteditable="true"], [role="textbox"] {
-            cursor: ${textCursor} !important;
-        }
+        html, body, #app-mount, #app-mount * { cursor: ${arrow} !important; }
+        ${CLICKABLE} { cursor: ${pointer} !important; }
+        ${settings.store.applyToTextFields ? "" : '#app-mount input, #app-mount textarea, #app-mount [contenteditable="true"], #app-mount [contenteditable="true"] *, #app-mount [role="textbox"], #app-mount [role="textbox"] * { cursor: text !important; }'}
     `;
     document.documentElement.appendChild(style);
 }
@@ -148,7 +245,7 @@ export default definePlugin({
     name: "CustomCursor",
     description: "Replace Discord's cursor with a custom image or a built-in style.",
     tags: ["Appearance", "Customisation", "Fun"],
-    authors: [{ name: "rootpoi", id: 1390609041897554050n }],
+    authors: [Devs.ewlle],
     settings,
     searchTerms: ["cursor", "imlec", "mouse", "pointer"],
 

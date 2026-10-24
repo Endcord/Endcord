@@ -1,0 +1,143 @@
+/*
+ * Endcord, a Discord client mod
+ * Copyright (c) 2026 Vendicated and contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+import { definePluginSettings } from "@api/Settings";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
+import definePlugin, { OptionType,PluginSettingComponentProps } from "@utils/types";
+import { findComponentByCodeLazy } from "@webpack";
+import { Button, Toasts, useEffect, useState } from "@webpack/common";
+// two lines because formatting removes the two spaces at the end of the line
+/**
+ * shortcut: keys & mods in a string, joined by "+"
+ *
+ *
+ * ctrl => mod
+ *
+ *
+ * all lowercase
+ */
+const KeyComponent = findComponentByCodeLazy<{ shortcut: string; }>("{let{shortcut");
+interface KeyBind {
+    ctrl: boolean,
+    shift: boolean,
+    alt: boolean,
+    // I HATE MACOS I HATE MACOS
+    meta: boolean,
+    key: string;
+}
+const ModKeys = new Set(["Control", "Alt", "Shift", "Meta"]);
+function KeybindRecorder({ onBind }: {
+    onBind: (kb: KeyBind) => void;
+}) {
+    useEffect(() => {
+        function eventListener(ev: KeyboardEvent) {
+            if (ModKeys.has(ev.key)) return;
+            ev.stopImmediatePropagation();
+            onBind({
+                alt: ev.altKey,
+                ctrl: ev.ctrlKey,
+                shift: ev.shiftKey,
+                meta: ev.metaKey,
+                key: ev.key
+            });
+        }
+        document.addEventListener("keydown", eventListener);
+        return () => {
+            document.removeEventListener("keydown", eventListener);
+        };
+    }, [onBind]);
+    return <></>;
+}
+function KeymapElement(props: PluginSettingComponentProps) {
+    const [keybind, setKeybind] = useState<KeyBind>(settings.store.keymap ?? {});
+    const [recording, setRecording] = useState(false);
+    // there has to be a better way to do this
+    const keybindString: string[] = [];
+    if (keybind.alt) keybindString.push("alt");
+    if (keybind.ctrl) keybindString.push("mod");
+    if (keybind.shift) keybindString.push("shift");
+    if (keybind.meta) keybindString.push("cmd");
+    if (keybind.key) keybindString.push(keybind.key.toLowerCase());
+    // dont let them save if they're recording
+    return <>
+        <p></p>
+        <div style={{
+            color: "var(--header-primary)"
+        }}>{t("Record Your Keymap")}</div>
+        <Button onClick={() => {
+            (props as any).setError(!recording);
+            setRecording(!recording);
+        }}>{recording ? "Stop Recording" : "Start Recording"}</Button>
+        {recording && <KeybindRecorder onBind={kb => {
+            (props as any).setError(false);
+            setRecording(!recording);
+            setKeybind(kb);
+            props.setValue(kb);
+        }} />}
+        {keybind.key && <KeyComponent shortcut={keybindString.join("+")} />
+        }
+    </>;
+}
+function isMatch(ev: KeyboardEvent) {
+    const s: KeyBind = settings.store.keymap;
+    if (!s || Object.entries(s).length === 0) {
+        Toasts.show({
+            id: Toasts.genId(),
+            message: "(CtrlEnterSave) Set your keybind in settings",
+            type: Toasts.Type.FAILURE,
+            options: {
+                position: Toasts.Position.TOP,
+                duration: 2000
+            }
+        });
+    }
+    return ev.altKey === s.alt
+        && ev.key === s.key
+        && ev.ctrlKey === s.ctrl
+        && ev.shiftKey === s.shift
+        && ev.metaKey === s.meta;
+}
+const settings = definePluginSettings({
+    keymap: {
+        type: OptionType.COMPONENT,
+        description: "the keybind that you want to save on",
+        component: props => <KeymapElement {...props}></KeymapElement>
+    }
+});
+export default definePlugin({
+    settings,
+    name: "CtrlEnterSave",
+    description: "Adds a keybind to save settings. YOU HAVE TO SET THE KEYBIND IN SETTINGS.",
+    tags: ["Chat", "Shortcuts"],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    patches: [
+        {
+            // The notice text key is shared with another component that loads first
+            find: "saveButtonTooltip:",
+            replacement: {
+                match: /onSave:(\i).*?children:\[/,
+                replace: "$&$self.KeyListener($1),"
+            }
+        }
+    ],
+
+    KeyListener(onClickFunc: () => void) {
+        useEffect(() => {
+            function eventListener(ev: KeyboardEvent) {
+                if (isMatch(ev)) {
+                    ev.stopImmediatePropagation();
+                    onClickFunc();
+                }
+            }
+            document.addEventListener("keydown", eventListener);
+            return () => {
+                document.removeEventListener("keydown", eventListener);
+            };
+        });
+        return <></>;
+    }
+});

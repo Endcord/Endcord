@@ -9,10 +9,11 @@ import { CheckedTextInput } from "@components/CheckedTextInput";
 import { FormSwitch } from "@components/FormSwitch";
 import { Heading, HeadingSecondary } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
-import { Margins } from "@utils/margins";
-import { identity } from "@utils/misc";
 import { Activity } from "@endcord/discord-types";
 import { ActivityFlags, ActivityType } from "@endcord/discord-types/enums";
+import { t } from "@utils/i18n";
+import { Margins } from "@utils/margins";
+import { identity } from "@utils/misc";
 import { PresenceStore, React, Select, SnowflakeUtils, TextInput, UserStore } from "@webpack/common";
 
 import { AppIdSetting, makeEmptyAppId } from ".";
@@ -32,10 +33,10 @@ export function ReplaceTutorial() {
     const activities: Activity[] = PresenceStore.getActivities(UserStore.getCurrentUser().id);
     return (
         <>
-            <HeadingSecondary>IDs of currently running activities</HeadingSecondary>
+            <HeadingSecondary>{t("IDs of currently running activities")}</HeadingSecondary>
             {
                 activities.length === 0
-                    ? <Paragraph>No running activities</Paragraph>
+                    ? <Paragraph>{t("No running activities")}</Paragraph>
                     : activities.map(activity => {
                         const isSpotify = (activity.flags & (ActivityFlags.SYNC | ActivityFlags.PLAY)) === (ActivityFlags.SYNC | ActivityFlags.PLAY);
                         return !isSpotify
@@ -43,23 +44,17 @@ export function ReplaceTutorial() {
                             : null;
                     })
             }
-            <HeadingSecondary className={Margins.top8}>Available variables</HeadingSecondary>
+            <HeadingSecondary className={Margins.top8}>{t("Available variables")}</HeadingSecondary>
             <Paragraph>
-                In all fields (except stream URL), you can put in variables that'll automatically be replaced by their original content:
-                <pre style={{ fontFamily: "monospace" }}>
-                    :name:, :details:, :state:
-                    <br />
-                    :large_image:, :large_text:, :small_image:, :small_text:
-                </pre>
+                {t("In all fields (except stream URL), you can put in variables that'll automatically be replaced by their original content:")}<pre style={{ fontFamily: "monospace" }}>
+                    {t(":name:, :details:, :state:")}<br />
+                    {t(":large_image:, :large_text:, :small_image:, :small_text:")}</pre>
             </Paragraph>
-            <HeadingSecondary className={Margins.top8}>More details</HeadingSecondary>
+            <HeadingSecondary className={Margins.top8}>{t("More details")}</HeadingSecondary>
             <Paragraph>
-                Leave a field empty to leave it as is.
-                <br />
-                Set a field to "null" to hide it on the presence.
-                <br />
-                You may need to reload Discord for changes to apply.
-            </Paragraph>
+                {t("Leave a field empty to leave it as is.")}<br />
+                {t("Set a field to \"null\" to hide it on the presence.")}<br />
+                {t("You may need to reload Discord for changes to apply.")}</Paragraph>
         </>
     );
 }
@@ -83,16 +78,16 @@ export function ReplaceSettings({ appIds, update, save }: SettingsProps) {
                         {
                             isValidSnowflake(setting.appId) ?
                                 <FormSwitch
-                                    title="Apply edits to app"
+                                    title={t("Apply edits to app")}
                                     value={setting.enabled}
                                     onChange={value => {
                                         onChange(value, i, "enabled");
                                     }}
                                     className={Margins.bottom8}
                                     hideBorder={true}
-                                /> : <HeadingSecondary>Add new application</HeadingSecondary>
+                                /> : <HeadingSecondary>{t("Add new application")}</HeadingSecondary>
                         }
-                        <Heading className={`${Margins.top8} ${Margins.bottom8}`}>Application ID</Heading>
+                        <Heading className={`${Margins.top8} ${Margins.bottom8}`}>{t("Application ID")}</Heading>
                         <CheckedTextInput
                             initialValue={setting.appId}
                             onChange={async v => {
@@ -104,7 +99,7 @@ export function ReplaceSettings({ appIds, update, save }: SettingsProps) {
                         />
                         {
                             isValidSnowflake(setting.appId) && <>
-                                <Heading className={Margins.top8}>New activity type</Heading>
+                                <Heading className={Margins.top8}>{t("New activity type")}</Heading>
                                 <Select
                                     options={[
                                         { label: "Playing", value: ActivityType.PLAYING },
@@ -123,7 +118,7 @@ export function ReplaceSettings({ appIds, update, save }: SettingsProps) {
                                 {
                                     setting.newActivityType === ActivityType.STREAMING &&
                                     <>
-                                        <Heading className={`${Margins.top8} ${Margins.bottom8}`}>Stream URL (must be YouTube or Twitch)</Heading>
+                                        <Heading className={`${Margins.top8} ${Margins.bottom8}`}>{t("Stream URL (must be YouTube or Twitch)")}</Heading>
                                         <CheckedTextInput
                                             initialValue={setting.newStreamUrl}
                                             onChange={async v => {
@@ -139,7 +134,7 @@ export function ReplaceSettings({ appIds, update, save }: SettingsProps) {
                                 {
                                     setting.newActivityType !== ActivityType.STREAMING &&
                                     <>
-                                        <Heading className={Margins.top8}>New name {setting.newActivityType === ActivityType.PLAYING && "(first line)"}</Heading>
+                                        <Heading className={Margins.top8}>{t("New name")}{" "}{setting.newActivityType === ActivityType.PLAYING && "(first line)"}</Heading>
                                         <TextInput
                                             className={Margins.top8}
                                             value={setting.newName}
@@ -149,7 +144,7 @@ export function ReplaceSettings({ appIds, update, save }: SettingsProps) {
                                         />
                                     </>
                                 }
-                                <Heading className={Margins.top8}>New details {setting.newActivityType === ActivityType.PLAYING ? "(second line)" : "(first line)"}</Heading>
+                                <Heading className={Margins.top8}>{t("New details")}{" "}{setting.newActivityType === ActivityType.PLAYING ? "(second line)" : "(first line)"}</Heading>
                                 <TextInput
                                     className={Margins.top8}
                                     value={setting.newDetails}
@@ -157,7 +152,7 @@ export function ReplaceSettings({ appIds, update, save }: SettingsProps) {
                                         onChange(v, i, "newDetails");
                                     }}
                                 />
-                                <Heading className={Margins.top8}>New state {setting.newActivityType === ActivityType.PLAYING ? "(third line)" : "(second line)"}</Heading>
+                                <Heading className={Margins.top8}>{t("New state")}{" "}{setting.newActivityType === ActivityType.PLAYING ? "(third line)" : "(second line)"}</Heading>
                                 <TextInput
                                     className={Margins.top8}
                                     value={setting.newState}
@@ -168,8 +163,8 @@ export function ReplaceSettings({ appIds, update, save }: SettingsProps) {
                                 {
                                     !setting.disableAssets &&
                                     <>
-                                        <Paragraph style={{ fontSize: "1.05rem", fontWeight: "500" }} className={Margins.top8}>Large image</Paragraph>
-                                        <Heading className={Margins.top8}>Text {setting.newActivityType !== ActivityType.PLAYING && "(also third line)"}</Heading>
+                                        <Paragraph style={{ fontSize: "1.05rem", fontWeight: "500" }} className={Margins.top8}>{t("Large image")}</Paragraph>
+                                        <Heading className={Margins.top8}>{t("Text")}{" "}{setting.newActivityType !== ActivityType.PLAYING && "(also third line)"}</Heading>
                                         <TextInput
                                             className={Margins.top8}
                                             value={setting.newLargeImageText}
@@ -177,7 +172,7 @@ export function ReplaceSettings({ appIds, update, save }: SettingsProps) {
                                                 onChange(v, i, "newLargeImageText");
                                             }}
                                         />
-                                        <Heading className={Margins.top8}>URL</Heading>
+                                        <Heading className={Margins.top8}>{t("URL")}</Heading>
                                         <TextInput
                                             className={Margins.top8}
                                             value={setting.newLargeImageUrl}
@@ -185,8 +180,8 @@ export function ReplaceSettings({ appIds, update, save }: SettingsProps) {
                                                 onChange(v, i, "newLargeImageUrl");
                                             }}
                                         />
-                                        <Paragraph style={{ fontSize: "1.05rem", fontWeight: "500" }} className={Margins.top8}>Small image</Paragraph>
-                                        <Heading className={Margins.top8}>Text</Heading>
+                                        <Paragraph style={{ fontSize: "1.05rem", fontWeight: "500" }} className={Margins.top8}>{t("Small image")}</Paragraph>
+                                        <Heading className={Margins.top8}>{t("Text")}</Heading>
                                         <TextInput
                                             className={Margins.top8}
                                             value={setting.newSmallImageText}
@@ -194,7 +189,7 @@ export function ReplaceSettings({ appIds, update, save }: SettingsProps) {
                                                 onChange(v, i, "newSmallImageText");
                                             }}
                                         />
-                                        <Heading className={Margins.top8}>URL</Heading>
+                                        <Heading className={Margins.top8}>{t("URL")}</Heading>
                                         <TextInput
                                             className={Margins.top8}
                                             value={setting.newSmallImageUrl}
@@ -205,7 +200,7 @@ export function ReplaceSettings({ appIds, update, save }: SettingsProps) {
                                     </>
                                 }
                                 <FormSwitch
-                                    title="Hide assets (large & small images)"
+                                    title={t("Hide assets (large & small images)")}
                                     value={setting.disableAssets}
                                     onChange={value => {
                                         onChange(value, i, "disableAssets");
@@ -214,7 +209,7 @@ export function ReplaceSettings({ appIds, update, save }: SettingsProps) {
                                     hideBorder={true}
                                 />
                                 <FormSwitch
-                                    title="Hide timestamps"
+                                    title={t("Hide timestamps")}
                                     value={setting.disableTimestamps}
                                     onChange={value => {
                                         onChange(value, i, "disableTimestamps");

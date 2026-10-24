@@ -5,12 +5,13 @@
  */
 
 import { type AudioPlayerInterface, createAudioPlayer, defaultAudioNames } from "@api/AudioPlayer";
+import { getQuestifySettings, useQuestifySettings } from "@plugins/questify/settings/access";
+import { startAutoFetchingQuests } from "@plugins/questify/settings/fetching";
+import { q } from "@plugins/questify/utils/ui";
+import { t } from "@utils/i18n";
 import { useEffect, useMemo, useRef, useState } from "@webpack/common";
 import type { JSX, MouseEvent } from "react";
 
-import { getQuestifySettings, useQuestifySettings } from "../settings/access";
-import { startAutoFetchingQuests } from "../settings/fetching";
-import { q } from "../utils/ui";
 import { ManaSelectFormattedOption, ManaSelectOption, SettingsCard, SettingsDescription, SettingsHeader, SettingsRow, SettingsRowItem, SettingsSelect, SettingsSlider, SettingsSubheader, SettingsSubtleSwitch } from "./shared";
 
 const questFetchIntervalOptions = [
@@ -123,7 +124,7 @@ function QuestNotificationSoundSelect({
             clearable={true}
             fullWidth={true}
             maxOptionsVisible={7}
-            placeholder="DISABLED"
+            placeholder={t("DISABLED")}
             selectClassName="sound-select"
             formatOption={formatOption}
             tooltip={tooltip}
@@ -171,7 +172,17 @@ export function QuestNotificationsSetting(): JSX.Element {
         }
 
         clearActivePlayer();
-        const player = createAudioPlayer(sound, { volume: Math.max(0, Math.min(100, volume)), onEnded: clearActivePlayer });
+
+        function finishPreview(): void {
+            if (activePlayer.current !== player) {
+                return;
+            }
+
+            activePlayer.current = null;
+            setPlayingSound(null);
+        }
+
+        const player = createAudioPlayer(sound, { volume: Math.max(0, Math.min(100, volume)), onEnded: finishPreview, onError: finishPreview });
         activePlayer.current = player;
         setPlayingSound(sound);
         player?.play();
@@ -194,20 +205,20 @@ export function QuestNotificationsSetting(): JSX.Element {
 
     return (
         <SettingsCard>
-            <SettingsHeader> Quest Notifications </SettingsHeader>
-            <SettingsDescription>Configure Quest completed and new Quest detected notifications and alerts. </SettingsDescription>
-            <SettingsSubheader> Quest Completed </SettingsSubheader>
+            <SettingsHeader>{" "}{t("Quest Notifications")}{" "}</SettingsHeader>
+            <SettingsDescription>{t("Configure Quest completed and new Quest detected notifications and alerts.")}{" "}</SettingsDescription>
+            <SettingsSubheader>{" "}{t("Quest Completed")}{" "}</SettingsSubheader>
             <SettingsSubtleSwitch
                 checked={questNotifications.notifyOnQuestComplete}
                 disabled={disabled}
-                label="Show a notification when a Quest is completed:"
+                label={t("Show a notification when a Quest is completed:")}
                 onChange={checked => { getQuestifySettings().notifyOnQuestComplete = checked; }}
                 bottomSpacing="5"
             />
             <SettingsRow>
                 <SettingsRowItem className="sound-select-row-item">
                     <QuestNotificationSoundSelect
-                        label="Play a sound when a Quest is completed:"
+                        label={t("Play a sound when a Quest is completed:")}
                         disabled={disabled}
                         options={soundOptions}
                         value={questNotifications.questCompletedAlertSound}
@@ -218,7 +229,7 @@ export function QuestNotificationsSetting(): JSX.Element {
                 </SettingsRowItem>
                 <SettingsRowItem className="volume-slider-row-item">
                     <SettingsSlider
-                        label="Volume:"
+                        label={t("Volume:")}
                         className="inline-volume-slider"
                         disabled={disabled}
                         value={questNotifications.questCompletedAlertVolume}
@@ -226,11 +237,11 @@ export function QuestNotificationsSetting(): JSX.Element {
                     />
                 </SettingsRowItem>
             </SettingsRow>
-            <SettingsSubheader> New Quests Detected </SettingsSubheader>
+            <SettingsSubheader>{" "}{t("New Quests Detected")}{" "}</SettingsSubheader>
             <SettingsSubtleSwitch
                 checked={questNotifications.notifyOnNewQuests}
                 disabled={disabled}
-                label="Show a notification when new Quests are detected:"
+                label={t("Show a notification when new Quests are detected:")}
                 bottomSpacing="5"
                 onChange={checked => {
                     getQuestifySettings().notifyOnNewQuests = checked;
@@ -240,7 +251,7 @@ export function QuestNotificationsSetting(): JSX.Element {
             <SettingsRow>
                 <SettingsRowItem className="sound-select-row-item">
                     <QuestNotificationSoundSelect
-                        label="Play a sound when new Quests are detected:"
+                        label={t("Play a sound when new Quests are detected:")}
                         disabled={disabled}
                         options={soundOptions}
                         value={questNotifications.newQuestAlertSound}
@@ -254,7 +265,7 @@ export function QuestNotificationsSetting(): JSX.Element {
                 </SettingsRowItem>
                 <SettingsRowItem className="volume-slider-row-item">
                     <SettingsSlider
-                        label="Volume:"
+                        label={t("Volume:")}
                         className="inline-volume-slider"
                         disabled={disabled}
                         value={questNotifications.newQuestAlertVolume}
@@ -266,7 +277,7 @@ export function QuestNotificationsSetting(): JSX.Element {
                 className="margin-top-14"
                 checked={questNotifications.notifyOnNewExcludedQuests}
                 disabled={disabled}
-                label="Show a notification when new excluded Quests are detected:"
+                label={t("Show a notification when new excluded Quests are detected:")}
                 bottomSpacing="5"
                 onChange={checked => {
                     getQuestifySettings().notifyOnNewExcludedQuests = checked;
@@ -281,7 +292,7 @@ export function QuestNotificationsSetting(): JSX.Element {
             <SettingsRow>
                 <SettingsRowItem className="sound-select-row-item">
                     <QuestNotificationSoundSelect
-                        label="Play a sound when new excluded Quests are detected:"
+                        label={t("Play a sound when new excluded Quests are detected:")}
                         disabled={disabled}
                         options={soundOptions}
                         value={questNotifications.newExcludedQuestAlertSound}
@@ -300,7 +311,7 @@ export function QuestNotificationsSetting(): JSX.Element {
                 </SettingsRowItem>
                 <SettingsRowItem className="volume-slider-row-item">
                     <SettingsSlider
-                        label="Volume:"
+                        label={t("Volume:")}
                         className="inline-volume-slider"
                         disabled={disabled}
                         value={questNotifications.newExcludedQuestAlertVolume}
@@ -312,14 +323,14 @@ export function QuestNotificationsSetting(): JSX.Element {
                 <SettingsRowItem>
                     <SettingsSelect
                         className="margin-top-12"
-                        label="Quest Fetch Interval:"
+                        label={t("Quest Fetch Interval:")}
                         options={questFetchIntervalOptions}
                         value={questNotifications.questFetchInterval > 0 ? String(questNotifications.questFetchInterval) : null}
                         selectionMode="single"
                         disabled={disabled}
                         clearable={true}
                         fullWidth={true}
-                        placeholder="DISABLED"
+                        placeholder={t("DISABLED")}
                         maxOptionsVisible={questFetchIntervalOptions.length}
                         onSelectionChange={updateFetchInterval}
                         tooltip={{

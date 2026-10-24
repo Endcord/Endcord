@@ -12,6 +12,7 @@ import { RenderModalProps } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import { getTheme, insertTextIntoChatInputBox, Theme } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import definePlugin, { IconComponent, OptionType } from "@utils/types";
 import { Forms, Modal,openModal, Parser, Select, useMemo, useState } from "@webpack/common";
@@ -56,7 +57,7 @@ function PickerModal(props: RenderModalProps) {
     return (
         <Modal
             {...props}
-            title="Timestamp Picker"
+            title={t("Timestamp Picker")}
             actions={[{
                 text: "Insert",
                 variant: "primary",
@@ -76,7 +77,7 @@ function PickerModal(props: RenderModalProps) {
                 }}
             />
 
-            <Forms.FormTitle>Timestamp Format</Forms.FormTitle>
+            <Forms.FormTitle>{t("Timestamp Format")}</Forms.FormTitle>
             <div className={cl("format-select")}>
                 <Select
                     options={
@@ -97,7 +98,7 @@ function PickerModal(props: RenderModalProps) {
                 />
             </div>
 
-            <Forms.FormTitle className={Margins.bottom8}>Preview</Forms.FormTitle>
+            <Forms.FormTitle className={Margins.bottom8}>{t("Preview")}</Forms.FormTitle>
             <Forms.FormText className={cl("preview-text")}>
                 {rendered} ({formatted})
             </Forms.FormText>
@@ -129,7 +130,7 @@ const SendTimestampButton: ChatBarButtonFactory = ({ isAnyChat }) => {
 
     return (
         <ChatBarButton
-            tooltip="Insert Timestamp"
+            tooltip={t("Insert Timestamp")}
             onClick={() => openModal(props => <PickerModal {...props} />)}
             buttonProps={{ "aria-haspopup": "dialog" }}
         >
@@ -142,7 +143,7 @@ export default definePlugin({
     name: "SendTimestamps",
     description: "Send timestamps easily via chat box button & text shortcuts. Read the extended description!",
     tags: ["Chat", "Commands"],
-    authors: [Devs.Ven, Devs.Tyler, Devs.Grzesiek11],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
 
     chatBarButton: {
@@ -169,15 +170,11 @@ export default definePlugin({
         return (
             <>
                 <Forms.FormText>
-                    To quickly send time only timestamps, include timestamps formatted as `HH:MM` (including the backticks!) in your message
-                </Forms.FormText>
+                    {t("To quickly send time only timestamps, include timestamps formatted as `HH:MM` (including the backticks!) in your message")}</Forms.FormText>
                 <Forms.FormText>
-                    See below for examples.
-                    If you need anything more specific, use the Date button in the chat bar!
-                </Forms.FormText>
+                    {t("See below for examples. If you need anything more specific, use the Date button in the chat bar!")}</Forms.FormText>
                 <Forms.FormText>
-                    Examples:
-                    <ul>
+                    {t("Examples:")}<ul>
                         {samples.map(s => (
                             <li key={s}>
                                 <code>{s}</code> {"->"} {Parser.parse(parseTime(s))}

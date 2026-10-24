@@ -7,13 +7,13 @@
 import { getUserSettingLazy } from "@api/UserSettings";
 import { HeadingSecondary } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
-import { Devs } from "@utils/constants";
-import definePlugin from "@utils/types";
 import { VoiceState } from "@endcord/discord-types";
-import { findByCodeLazy, findStoreLazy } from "@webpack";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
+import definePlugin from "@utils/types";
+import { findByCodeLazy, findByPropsLazy, findStoreLazy } from "@webpack";
 import { ChannelStore, MediaEngineStore, PermissionsBits, PermissionStore, SelectedChannelStore, showToast, Toasts, UserStore, WindowStore } from "@webpack/common";
-import { findByPropsLazy } from "@webpack";
-const VoiceActions = findByPropsLazy("toggleSelfDeaf", "selectVoiceChannel");
+const VoiceActions = findByPropsLazy("toggleSelfDeaf", "toggleSelfMute");
 
 import { getCurrentMedia, settings } from "./utils";
 
@@ -65,7 +65,7 @@ export default definePlugin({
     name: "InstantScreenshare",
     description: "Instantly screenshare when joining a voice channel with support for desktop sources, windows, and video input devices (cameras, capture cards)",
     tags: ["Media", "Voice"],
-    authors: [Devs.ewlle, Devs.rootpoi, Devs.kraethis],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     dependencies: ["EndcordToolbox"],
     searchTerms: ["ScreenshareKeybind"],
     autoStartStream,
@@ -73,22 +73,18 @@ export default definePlugin({
 
     settingsAboutComponent: () => (
         <>
-            <HeadingSecondary>For Linux</HeadingSecondary>
+            <HeadingSecondary>{t("For Linux")}</HeadingSecondary>
             <Paragraph>
-                For Wayland it only pops up the screenshare select
-                <br />
-                For X11 it may or may not work :shrug:
-            </Paragraph>
+                {t("For Wayland it only pops up the screenshare select")}<br />
+                {t("For X11 it may or may not work :shrug:")}</Paragraph>
             <br />
-            <HeadingSecondary>Video Devices</HeadingSecondary>
+            <HeadingSecondary>{t("Video Devices")}</HeadingSecondary>
             <Paragraph>
-                Supports cameras and capture cards (like Elgato HD60X) when enabled in settings
-            </Paragraph>
+                {t("Supports cameras and capture cards (like Elgato HD60X) when enabled in settings")}</Paragraph>
             <br />
-            <HeadingSecondary>Regarding Sound & Preview Settings</HeadingSecondary>
+            <HeadingSecondary>{t("Regarding Sound & Preview Settings")}</HeadingSecondary>
             <Paragraph>
-                We use the settings set and used by discord to decide if stream preview and sound should be enabled or not
-            </Paragraph>
+                {t("We use the settings set and used by discord to decide if stream preview and sound should be enabled or not")}</Paragraph>
         </>
     ),
 

@@ -6,6 +6,7 @@
 
 import "./styles.css";
 
+import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 import { ChannelStore, FluxDispatcher, GuildMemberStore, MessageStore, ReadStateStore, UserStore } from "@webpack/common";
 
@@ -226,7 +227,7 @@ export default definePlugin({
     name: "MentionColors",
     description: "Distinguishes direct mentions from @everyone/@here pings. Direct personal tags show a green +1 badge across all servers and channels, while broadcast pings stay red.",
     tags: ["Notifications", "Appearance", "Servers"],
-    authors: [{ name: "rootpoi", id: 1390609041897554050n }],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
 
     start() {

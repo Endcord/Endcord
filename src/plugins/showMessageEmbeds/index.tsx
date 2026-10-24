@@ -7,11 +7,12 @@
 import { findGroupChildrenByChildId } from "@api/ContextMenu";
 import { updateMessage } from "@api/MessageUpdater";
 import { ImageInvisible, ImageVisible } from "@components/Icons";
+import { Message } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import { parseUrl } from "@utils/misc";
 import definePlugin from "@utils/types";
-import { Message } from "@endcord/discord-types";
 import { findByCodeLazy } from "@webpack";
 import { ChannelStore, Constants, Menu, MessageStore, React, RestAPI, showToast, Toasts } from "@webpack/common";
 
@@ -44,7 +45,7 @@ const addButton = (children, message, url) => {
         children.splice(0, 0,
             <Menu.MenuItem
                 id="vc-sme-show"
-                label="Show Embed"
+                label={t("Show Embed")}
                 action={_ => unfurlEmbed(url, message)}
                 icon={ImageVisible}
                 key="vc-sme-show" />);
@@ -52,7 +53,7 @@ const addButton = (children, message, url) => {
         children.splice(0, 0,
             <Menu.MenuItem
                 id="vc-sme-remove"
-                label="Remove Embed"
+                label={t("Remove Embed")}
                 action={_ => removeEmbed(url, message)}
                 icon={ImageInvisible}
                 key="vc-sme-remove" />);
@@ -194,7 +195,7 @@ export default definePlugin({
     name: "ShowMessageEmbeds",
     description: "Adds a context menu option to show embeds for links that don't have one",
     tags: ["Appearance", "Chat"],
-    authors: [Devs.ewlle, Devs.rootpoi, Devs.kraethis],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
 
     patches: [
         {

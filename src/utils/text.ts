@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { isTruthy } from "./guards";
+
 // Utils for readable text transformations eg: `toTitle(fromKebab())`
 
 // Case style to words

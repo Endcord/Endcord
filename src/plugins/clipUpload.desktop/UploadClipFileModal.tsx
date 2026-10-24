@@ -9,6 +9,7 @@ import { Flex } from "@components/Flex";
 import { Heading } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
 import type { RenderModalProps } from "@endcord/discord-types";
+import { t } from "@utils/i18n";
 import { Checkbox, FluxDispatcher, MessageActions, Modal, openModal, PendingReplyStore, showToast, Toasts, useEffect, useState } from "@webpack/common";
 
 import { ApplicationField, BooleanField, DateTimeField, getDateTimeLocalValue, ParticipantField, TextField } from "./fields";
@@ -106,7 +107,7 @@ function UploadClipFileModal({ modalProps, channelId, clip }: { modalProps: Rend
     return (
         <Modal
             {...modalProps}
-            title="Upload Clip File"
+            title={t("Upload Clip File")}
             notice={notice}
             actions={[
                 {
@@ -125,11 +126,10 @@ function UploadClipFileModal({ modalProps, channelId, clip }: { modalProps: Rend
         >
             <Flex flexDirection="column" gap={12}>
                 <section>
-                    <Heading tag="h5">File</Heading>
+                    <Heading tag="h5">{t("File")}</Heading>
                     <Flex alignItems="center" gap={8}>
                         <Button onClick={() => void chooseClipFile()} disabled={uploading}>
-                            Select File
-                        </Button>
+                            {t("Select File")}</Button>
                         <Paragraph>{file?.name ?? "No file selected"}</Paragraph>
                     </Flex>
                     <Checkbox
@@ -138,21 +138,20 @@ function UploadClipFileModal({ modalProps, channelId, clip }: { modalProps: Rend
                         disabled={uploading}
                         type="row"
                     >
-                        Parse clip metadata from file
-                    </Checkbox>
+                        {t("Parse clip metadata from file")}</Checkbox>
                 </section>
 
-                <TextField title="File name" value={fileName} onChange={setFileName} placeholder="my_clip.mp4" disabled={uploading} />
-                <TextField title="Title" value={title} onChange={setTitle} placeholder="Epic Moment" disabled={uploading} />
+                <TextField title={t("File name")} value={fileName} onChange={setFileName} placeholder="my_clip.mp4" disabled={uploading} />
+                <TextField title={t("Title")} value={title} onChange={setTitle} placeholder={t("Epic Moment")} disabled={uploading} />
                 <ParticipantField value={participants} onChange={setParticipants} disabled={uploading} />
                 <DateTimeField value={createdAt} onChange={setCreatedAt} disabled={uploading} />
-                <TextField title="Message" value={message} onChange={setMessage} placeholder="Check out this clip!" disabled={uploading} multiline />
+                <TextField title={t("Message")} value={message} onChange={setMessage} placeholder={t("Check out this clip!")} disabled={uploading} multiline />
                 <ApplicationField value={applicationId} onChange={setApplicationId} disabled={uploading} />
 
                 <Flex flexDirection="column" gap={8}>
-                    <BooleanField label="Spoiler" value={spoiler} onChange={setSpoiler} disabled={uploading} />
-                    <BooleanField label="Remix" value={remix} onChange={setRemix} disabled={uploading} />
-                    <BooleanField label="Thumbnail" value={thumbnail} onChange={setThumbnail} disabled={uploading} />
+                    <BooleanField label={t("Spoiler")} value={spoiler} onChange={setSpoiler} disabled={uploading} />
+                    <BooleanField label={t("Remix")} value={remix} onChange={setRemix} disabled={uploading} />
+                    <BooleanField label={t("Thumbnail")} value={thumbnail} onChange={setThumbnail} disabled={uploading} />
                 </Flex>
             </Flex>
         </Modal>

@@ -9,6 +9,7 @@ import { HeadingSecondary } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
 import { debounce } from "@shared/debounce";
 import { Devs, IS_MAC } from "@utils/constants";
+import { t as translateText } from "@utils/i18n";
 import definePlugin, { OptionType, StartAt } from "@utils/types";
 import { showToast, Toasts } from "@webpack/common";
 
@@ -245,17 +246,15 @@ export default definePlugin({
     name: "QuickThemeSwitcher",
     description: "Quickly switch between themes using keyboard shortcuts.",
     tags: ["Appearance", "Utility"],
-    authors: [Devs.ewlle, Devs.rootpoi, Devs.kraethis],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     startAt: StartAt.DOMContentLoaded,
     settingsAboutComponent: () => (
         <>
-            <HeadingSecondary>Bindings</HeadingSecondary>
+            <HeadingSecondary>{translateText("Bindings")}</HeadingSecondary>
             <Paragraph>
-                Use Ctrl/Cmd+Shift+Arrows to navigate (Left/Right: cycle themes, Up: enable, Down: disable).
-                <br />
-                Press Ctrl/Cmd+Shift+Alt to reload the theme list.
-            </Paragraph>
+                {translateText("Use Ctrl/Cmd+Shift+Arrows to navigate (Left/Right: cycle themes, Up: enable, Down: disable).")}<br />
+                {translateText("Press Ctrl/Cmd+Shift+Alt to reload the theme list.")}</Paragraph>
         </>
     ),
 

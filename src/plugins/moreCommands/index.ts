@@ -19,7 +19,7 @@
 import { ApplicationCommandInputType, ApplicationCommandOptionType, findOption, OptionalMessageOption, RequiredMessageOption, sendBotMessage } from "@api/Commands";
 import { addMessagePreEditListener, addMessagePreSendListener, MessageObject, removeMessagePreEditListener, removeMessagePreSendListener } from "@api/MessageEvents";
 import { migratePluginSettings } from "@api/Settings";
-import { Devs, EquicordDevs, GUILD_IDS } from "@utils/constants";
+import { Devs, GUILD_IDS } from "@utils/constants";
 import { sendMessage } from "@utils/discord";
 import definePlugin from "@utils/types";
 import { DraftType, UploadHandler, UploadManager, UserAffinitiesStore, UserStore } from "@webpack/common";
@@ -53,21 +53,7 @@ export default definePlugin({
     description: "Adds various fun and useful commands",
     dependencies: ["CommandsAPI"],
     tags: ["Commands", "Fun", "Shortcuts"],
-    authors: [
-        Devs.Arjix,
-        Devs.amy,
-        Devs.Samu,
-        EquicordDevs.zyqunix,
-        EquicordDevs.ShadyGoat,
-        Devs.thororen,
-        Devs.Korbo,
-        Devs.nyx,
-        Devs.amy,
-        Devs.Samwich,
-        EquicordDevs.Fafa,
-        Devs.JacobTm,
-        EquicordDevs.voidbbg
-    ],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     commands: [
         {

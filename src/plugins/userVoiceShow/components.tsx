@@ -9,6 +9,7 @@ import ErrorBoundary from "@components/ErrorBoundary";
 import { Channel } from "@endcord/discord-types";
 import ShowHiddenChannelsPlugin from "@plugins/showHiddenChannels";
 import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import { findByPropsLazy, findCssClassesLazy } from "@webpack";
 import { ChannelRouter, ChannelStore, Parser, PermissionsBits, PermissionStore, React, showToast, Text, Toasts, Tooltip, useMemo, UserStore, UserSummaryItem, useStateFromStores, VoiceStateStore } from "@webpack/common";
@@ -98,7 +99,7 @@ function VoiceChannelTooltip({ channel, isLocked }: VoiceChannelTooltipProps) {
     const Icon = isLocked ? LockedSpeakerIcon : SpeakerIcon;
     return (
         <>
-            <Text variant="text-sm/bold">In Voice Chat</Text>
+            <Text variant="text-sm/bold">{t("In Voice Chat")}</Text>
             <Text variant="text-sm/bold">{Parser.parse(`<#${channel.id}>`)}</Text>
             <div className={cl("vc-members")}>
                 <Icon size={18} />

@@ -7,11 +7,10 @@
 import "./styles.css";
 
 import { Icon, User } from "@endcord/discord-types";
-import { findComponentByCodeLazy, findStoreLazy } from "@webpack";
+import { findByPropsLazy, findComponentByCodeLazy, findStoreLazy } from "@webpack";
 import { Button, ChannelActionCreators, ChannelStore, MediaEngineStore, NavigationRouter, PermissionsBits, PermissionStore, Tooltip, UserStore, VoiceStateStore } from "@webpack/common";
-import { findByPropsLazy } from "@webpack";
 const GuildActions = findByPropsLazy("requestMembers");
-const VoiceActions = findByPropsLazy("toggleSelfDeaf", "selectVoiceChannel");
+const VoiceActions = findByPropsLazy("toggleSelfDeaf", "toggleSelfMute");
 import { JSX } from "react";
 
 import { settings } from "./settings";

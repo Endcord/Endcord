@@ -10,6 +10,7 @@ import { getUserSettingLazy } from "@api/UserSettings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import EndcordToolboxPlugin from "@plugins/endcordToolbox";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 import { findComponentByCodeLazy } from "@webpack";
 import { Menu } from "@webpack/common";
@@ -93,7 +94,7 @@ export default definePlugin({
     name: "GameActivityToggle",
     description: "Adds a button next to the mic and deafen button to toggle game activity.",
     tags: ["Activity", "Shortcuts"],
-    authors: [Devs.Nuckyz, Devs.RuukuLada],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     dependencies: ["UserSettingsAPI"],
     settings,
 
@@ -103,7 +104,7 @@ export default definePlugin({
         {
             find: "#{intl::USER_PROFILE_ACCOUNT_POPOUT_BUTTON_A11Y_LABEL}",
             replacement: {
-                match: /children:\[(?=.{0,25}?accountContainerRef)/,
+                match: /children:\[(?=(?:\.\.\.[^,]{0,100},)?.{0,25}?accountContainerRef)/,
                 replace: "children:[$self.GameActivityToggleButton(arguments[0]),"
             }
         }
@@ -118,7 +119,7 @@ export default definePlugin({
         return (
             <Menu.MenuCheckboxItem
                 id="game-activity-toggle-toolbox"
-                label="Enable Game Activity"
+                label={t("Enable Game Activity")}
                 checked={showCurrentGame}
                 action={() => ShowCurrentGame.updateSetting(old => !old)}
             />

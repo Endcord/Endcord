@@ -51,7 +51,7 @@ export default definePlugin({
     name: "MemberCount",
     description: "Shows the number of online members, total members, and users in voice channels on the server — in the member list and tooltip.",
     tags: ["Servers", "Utility"],
-    authors: [Devs.Ven, Devs.Commandtechno, Devs.Apexo],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
 
     patches: [

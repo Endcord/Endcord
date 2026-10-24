@@ -11,6 +11,7 @@ import { BaseText } from "@components/BaseText";
 import { Heading } from "@components/Heading";
 import { Link } from "@components/Link";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import { identity } from "@utils/misc";
 import definePlugin, { OptionType } from "@utils/types";
 import { findByPropsLazy } from "@webpack";
@@ -20,7 +21,7 @@ const configModule = findByPropsLazy("getOutputVolume");
 const settings = definePluginSettings({
     title1: {
         type: OptionType.COMPONENT,
-        component: () => <BaseText weight="bold" style={{ fontSize: "1.27rem" }}>Appearance</BaseText>,
+        component: () => <BaseText weight="bold" style={{ fontSize: "1.27rem" }}>{t("Appearance")}</BaseText>,
         description: ""
     },
     uncollapseSettingsByDefault: {
@@ -30,7 +31,7 @@ const settings = definePluginSettings({
     },
     title2: {
         type: OptionType.COMPONENT,
-        component: () => <BaseText weight="bold" style={{ fontSize: "1.27rem" }}>Settings to show</BaseText>,
+        component: () => <BaseText weight="bold" style={{ fontSize: "1.27rem" }}>{t("Settings to show")}</BaseText>,
         description: ""
     },
     outputVolume: {
@@ -60,7 +61,7 @@ const settings = definePluginSettings({
     },
     title3: {
         type: OptionType.COMPONENT,
-        component: () => <BaseText weight="bold" style={{ fontSize: "1.27rem" }}>Headers to show</BaseText>,
+        component: () => <BaseText weight="bold" style={{ fontSize: "1.27rem" }}>{t("Headers to show")}</BaseText>,
         description: ""
     },
     showOutputVolumeHeader: {
@@ -101,7 +102,7 @@ function OutputVolumeComponent() {
 
     return (
         <>
-            {settings.store.showOutputVolumeHeader && <Heading>Output volume</Heading>}
+            {settings.store.showOutputVolumeHeader && <Heading>{t("Output volume")}</Heading>}
             <Slider maxValue={200} minValue={0} onValueRender={v => `${v.toFixed(0)}%`} initialValue={outputVolume} asValueChanges={volume => {
                 FluxDispatcher.dispatch({
                     type: "AUDIO_SET_OUTPUT_VOLUME",
@@ -123,7 +124,7 @@ function InputVolumeComponent() {
 
     return (
         <>
-            {settings.store.showInputVolumeHeader && <Heading>Input volume</Heading>}
+            {settings.store.showInputVolumeHeader && <Heading>{t("Input volume")}</Heading>}
             <Slider maxValue={100} minValue={0} initialValue={inputVolume} asValueChanges={volume => {
                 FluxDispatcher.dispatch({
                     type: "AUDIO_SET_INPUT_VOLUME",
@@ -145,7 +146,7 @@ function OutputDeviceComponent() {
 
     return (
         <>
-            {settings.store.showOutputDeviceHeader && <Heading>Output device</Heading>}
+            {settings.store.showOutputDeviceHeader && <Heading>{t("Output device")}</Heading>}
             <Select options={Object.values(configModule.getOutputDevices()).map((device: any /* i am NOT typing this*/) => {
                 return { value: device.id, label: settings.store.showOutputDeviceHeader ? device.name : `🔊 ${device.name}` };
             })}
@@ -174,7 +175,7 @@ function InputDeviceComponent() {
 
     return (
         <div style={{ marginTop: "10px" }}>
-            {settings.store.showInputDeviceHeader && <Heading>Input device</Heading>}
+            {settings.store.showInputDeviceHeader && <Heading>{t("Input device")}</Heading>}
             <Select options={Object.values(configModule.getInputDevices()).map((device: any /* i am NOT typing this*/) => {
                 return { value: device.id, label: settings.store.showInputDeviceHeader ? device.name : `🎤 ${device.name}` };
             })}
@@ -203,7 +204,7 @@ function VideoDeviceComponent() {
 
     return (
         <div style={{ marginTop: "10px" }}>
-            {settings.store.showVideoDeviceHeader && <Heading>Camera</Heading>}
+            {settings.store.showVideoDeviceHeader && <Heading>{t("Camera")}</Heading>}
             <Select options={Object.values(configModule.getVideoDevices()).map((device: any /* i am NOT typing this*/) => {
                 return { value: device.id, label: settings.store.showVideoDeviceHeader ? device.name : `📷 ${device.name}` };
             })}
@@ -244,7 +245,7 @@ export default definePlugin({
     name: "VCPanelSettings",
     description: "Control voice settings right from the voice panel",
     tags: ["Utility", "Voice"],
-    authors: [Devs.nin0dev],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     renderVoiceSettings() { return <VoiceSettings />; },
     patches: [

@@ -12,25 +12,22 @@ on:
                 default: both
             webhook_url:
                 type: string
-                description: "Webhook URL that the report will be posted to. This will be visible for everyone, so DO NOT pass sensitive webhooks like discord webhook. This is meant to be used by Venbot."
+                description: "Webhook URL that the report will be posted to. This is visible to everyone, so do not pass a sensitive webhook."
                 required: false
-    # schedule:
-    #   # Every day at midnight
-    #   - cron: 0 0 * * *
+    # Discord ships updates daily; this catches plugins they break before users notice.
+    schedule:
+        - cron: 0 6 * * *
 
 jobs:
     TestPlugins:
-        if: github.repository == 'Vendicated/Vencord'
+        if: github.repository == 'rootpoii/Endcord'
         runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            issues: write
 
         steps:
             - uses: actions/checkout@v7
-              if: ${{ github.event_name == 'schedule' }}
-              with:
-                  ref: dev
-
-            - uses: actions/checkout@v7
-              if: ${{ github.event_name == 'workflow_dispatch' }}
 
             - uses: pnpm/action-setup@v6 # Install pnpm using packageManager key in package.json
 
@@ -44,11 +41,13 @@ jobs:
               run: |
                   pnpm install --frozen-lockfile
 
-            - name: Build Vencord Reporter Version
+            - name: Build Endcord Reporter Version
               run: pnpm buildReporter
 
             - name: Run Reporter
+              id: reporter
               timeout-minutes: 10
+              continue-on-error: true
               run: |
                   export PATH="$PWD/node_modules/.bin:$PATH"
                   export CHROMIUM_BIN=/usr/bin/google-chrome
@@ -82,8 +81,32 @@ jobs:
                       fi
                   done
 
-                  cat "$stable_output_file" "$canary_output_file" >> $GITHUB_STEP_SUMMARY
+                  cat "$stable_output_file" "$canary_output_file" > report.md
+                  cat report.md >> $GITHUB_STEP_SUMMARY
                   exit $exit_code
               env:
                   WEBHOOK_URL: ${{ inputs.webhook_url || secrets.DISCORD_WEBHOOK }}
                   WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
+
+            # Keeps one open issue while something is broken, so GitHub notifies the maintainers,
+            # and closes it once a run comes back clean.
+            - name: Report broken plugins in an issue
+              if: always() && github.event_name == 'schedule' && hashFiles('report.md') != ''
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  BROKEN: ${{ steps.reporter.outcome == 'failure' }}
+                  RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+              run: |
+                  title="Plugins broken by a Discord update"
+                  issue=$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number')
+
+                  if [[ "$BROKEN" == "true" ]]; then
+                    { echo "The daily patch test found plugins that Discord broke. Full log: $RUN_URL"; echo; head -c 60000 report.md; } > body.md
+                    if [[ -n "$issue" ]]; then
+                      gh issue comment "$issue" --body-file body.md
+                    else
+                      gh issue create --title "$title" --body-file body.md
+                    fi
+                  elif [[ -n "$issue" ]]; then
+                    gh issue close "$issue" --comment "Everything passes again as of $RUN_URL"
+                  fi

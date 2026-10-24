@@ -9,6 +9,7 @@ import { Span } from "@components/Span";
 import { fetchOrgRepos, fetchReposByUserId, fetchReposByUsername, fetchUserInfo, fetchUserOrgs, GitHubUserInfo } from "@equicordplugins/githubRepos/githubApi";
 import { GitHubRepo, RepoGroup } from "@equicordplugins/githubRepos/types";
 import { buildRepoGroups, getLanguageIconUrl, PERSONAL_GROUP_KEY } from "@equicordplugins/githubRepos/utils";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import { findCssClassesLazy } from "@webpack";
 import { Clickable, openModal, React, useEffect, UserProfileStore, useState } from "@webpack/common";
@@ -89,8 +90,7 @@ export function ProfilePopoutComponent({ id, isSideBar = false, isRedesignEnable
                     <Clickable className={ProfileCardContainerClasses.breadcrumb} onClick={openReposModal}>
                         <div className={classes(ProfileCardOverlayClasses.overlay, ProfileCardContainerClasses.innerContainer, ProfileCardClasses.card)}>
                             <Paragraph size={isSideBar ? "sm" : "xs"} weight="medium">
-                                GitHub Repositories
-                            </Paragraph>
+                                {t("GitHub Repositories")}</Paragraph>
                             {!!repos.length && (
                                 <div className={ProfileCardContainerClasses.icons}>
                                     {topRepos.slice(0, 4).map((repo, idx) => {

@@ -97,7 +97,7 @@ export default definePlugin({
     name: "petpet",
     description: "Adds a /petpet slash command to create headpet gifs from any image",
     tags: ["Fun", "Commands"],
-    authors: [Devs.Ven, Devs.u32],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     commands: [
         {
             inputType: ApplicationCommandInputType.BUILT_IN,

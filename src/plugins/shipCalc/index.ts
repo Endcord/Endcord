@@ -5,7 +5,7 @@
  */
 
 import { ApplicationCommandOptionType, findOption } from "@api/Commands";
-import { EndcordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 
 // stable per name-pair so the same couple always gets the same score
@@ -26,7 +26,7 @@ const opt = (name: string) => ({
 export default definePlugin({
     name: "ShipCalc",
     description: "/ship rates the love between two people.",
-    authors: [EndcordDevs.Sharp],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     dependencies: ["CommandsAPI"],
     commands: [
         {

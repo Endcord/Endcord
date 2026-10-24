@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { classNameFactory } from "@utils/css";
 import { Activity, Application } from "@endcord/discord-types";
+import { classNameFactory } from "@utils/css";
 import { findByPropsLazy, findComponentByCodeLazy } from "@webpack";
 import { ApplicationStore } from "@webpack/common";
 

@@ -4,15 +4,15 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { Message } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
-import { Message } from "@endcord/discord-types";
 import { MessageStore } from "@webpack/common";
 
 export default definePlugin({
     name: "BetterPlusReacts",
-    authors: [Devs.Joona],
-    description: "The amount of plus before :emoji: is the message to add it to",
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    description: "React to an earlier message by typing +:emoji:, with one + per message back",
     tags: ["Chat", "Emotes"],
     patches: [
         {

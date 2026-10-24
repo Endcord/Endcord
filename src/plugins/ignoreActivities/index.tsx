@@ -10,6 +10,7 @@ import ErrorBoundary from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
 import CustomRpcPlugin from "@plugins/customRPC";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import definePlugin, { OptionType } from "@utils/types";
 import { Button, Forms, RunningGameStore, showToast, TextArea, Toasts, Tooltip, useEffect, useState } from "@webpack/common";
@@ -80,7 +81,7 @@ function recalculateActivities() {
 function ImportCustomRPCComponent() {
     return (
         <Flex flexDirection="column">
-            <Forms.FormText>Import the application id of the CustomRPC plugin to the filter list</Forms.FormText>
+            <Forms.FormText>{t("Import the application id of the CustomRPC plugin to the filter list")}</Forms.FormText>
             <div>
                 <Button
                     onClick={() => {
@@ -95,8 +96,7 @@ function ImportCustomRPCComponent() {
                         }
                     }}
                 >
-                    Import CustomRPC ID
-                </Button>
+                    {t("Import CustomRPC ID")}</Button>
             </div>
         </Flex>
     );
@@ -130,8 +130,8 @@ function IdsListComponent(props: { setValue: (value: string) => void; }) {
 
     return (
         <section>
-            <Forms.FormTitle tag="h3">Filter List</Forms.FormTitle>
-            <Forms.FormText className={Margins.bottom8}>Comma separated list of activity IDs to filter (Useful for filtering specific RPC activities and CustomRPC</Forms.FormText>
+            <Forms.FormTitle tag="h3">{t("Filter List")}</Forms.FormTitle>
+            <Forms.FormText className={Margins.bottom8}>{t("Comma separated list of activity IDs to filter (Useful for filtering specific RPC activities and CustomRPC")}</Forms.FormText>
             <TextArea
                 type="text"
                 value={idsList}
@@ -228,7 +228,7 @@ function isActivityTypeIgnored(type: number, id?: string) {
 
 export default definePlugin({
     name: "IgnoreActivities",
-    authors: [Devs.Nuckyz, Devs.Kylie],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     description: "Ignore activities from showing up on your status ONLY. You can configure which ones are specifically ignored from the Registered Games and Activities tabs, or use the general settings below",
     tags: ["Activity", "Privacy", "Customisation"],
     dependencies: ["UserSettingsAPI"],
@@ -250,13 +250,6 @@ export default definePlugin({
             replacement: {
                 match: /getVisibleRunningGames\(\).+?;(?=for)(?<=(\i)=\i\.\i\.getVisibleRunningGames.+?)/,
                 replace: (m, runningGames) => `${m}${runningGames}=${runningGames}.filter(({id,name})=>$self.isActivityNotIgnored({type:0,application_id:id,name}));`
-            }
-        },
-        {
-            find: "#{intl::SETTINGS_GAMES_TOGGLE_OVERLAY}",
-            replacement: {
-                match: /(\i)&&!\i\|\|\i\?null(?<=(\i)\.verified&&.+?)/,
-                replace: "$self.renderToggleGameActivityButton($2,$1),$&"
             }
         },
 

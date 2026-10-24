@@ -61,7 +61,7 @@ const settings = definePluginSettings({
 
 export default definePlugin({
     name: "RoleColorEverywhere",
-    authors: [Devs.KingFish, Devs.lewisakura, Devs.AutumnVN, Devs.Kyuuhachi, Devs.jamesbt365],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     description: "Adds the top role color anywhere possible",
     tags: ["Roles", "Appearance"],
     settings,
@@ -95,7 +95,7 @@ export default definePlugin({
             find: 'tutorialId:"whos-online',
             replacement: [
                 {
-                    match: /(#{intl::CHANNEL_MEMBERS_A11Y_LABEL}.+}\):null,).{0,100}?(?:—|\\u2014) ",\i\]\}\)\]/,
+                    match: /(#{intl::CHANNEL_MEMBERS_A11Y_LABEL}.+}\):null,).{0,100}?(?:\u2014|\\u2014) ",\i\]\}\)\]/,
                     replace: "$1$self.RoleGroupColor(arguments[0])]"
                 },
             ],
@@ -105,7 +105,7 @@ export default definePlugin({
             find: "#{intl::THREAD_BROWSER_PRIVATE}",
             replacement: [
                 {
-                    match: /children:\[\i," (?:—|\\u2014) ",\i\]/,
+                    match: /children:\[\i," (?:\u2014|\\u2014) ",\i\]/,
                     replace: "children:[$self.RoleGroupColor(arguments[0])]"
                 },
             ],

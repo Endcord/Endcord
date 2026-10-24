@@ -6,9 +6,8 @@
 
 import { Activity } from "@endcord/discord-types";
 import { ActivityType } from "@endcord/discord-types/enums";
+import { BanchoStatusEnum, GameState, Modes, TosuApi } from "@plugins/richPresence/types/tosu";
 import { ApplicationAssetUtils, FluxDispatcher } from "@webpack/common";
-
-import { BanchoStatusEnum, GameState, Modes, TosuApi } from "../types/tosu";
 
 const OSU_APP_ID = "367827983903490050";
 const OSU_LARGE_IMAGE = "373344233077211136";

@@ -8,6 +8,7 @@ import { onceDefined } from "@shared/onceDefined";
 import electron, { app, BrowserWindowConstructorOptions, Menu } from "electron";
 import { dirname, join } from "path";
 
+import { initMemoryTrim } from "./memoryTrim";
 import { RendererSettings } from "./settings";
 import { IS_VANILLA } from "./utils/constants";
 
@@ -104,6 +105,8 @@ if (!IS_VANILLA) {
                 // Disable the Electron call entirely so that Discord can't dynamically change the size
                 this.setMinimumSize = (_width: number, _height: number) => { };
             }
+
+            if (!settings.disableBackgroundMemoryTrim) initMemoryTrim(this);
         }
     }
     Object.assign(BrowserWindow, electron.BrowserWindow);
@@ -136,10 +139,9 @@ if (!IS_VANILLA) {
             const disabledFeatures = new Set((args[1] ?? "").split(",").filter(Boolean));
             disabledFeatures.add("WidgetLayering");
             disabledFeatures.add("UseEcoQoSForBackgroundProcess");
-            disabledFeatures.add("CalculateNativeWinOcclusion");
             disabledFeatures.add("IntensiveWakeUpThrottling");
             args[1] = [...disabledFeatures].join(",");
-        } else if (args[0] === "enable-features") {
+        } else if (args[0] === "enable-features" && settings.gpuRasterization) {
             const enabledFeatures = new Set((args[1] ?? "").split(",").filter(Boolean));
             enabledFeatures.add("CanvasOopRasterization");
             args[1] = [...enabledFeatures].join(",");
@@ -155,11 +157,13 @@ if (!IS_VANILLA) {
     app.commandLine.appendSwitch("disable-renderer-backgrounding");
     app.commandLine.appendSwitch("disable-background-timer-throttling");
     app.commandLine.appendSwitch("disable-backgrounding-occluded-windows");
-    app.commandLine.appendSwitch("ignore-gpu-blocklist");
-    app.commandLine.appendSwitch("enable-gpu-rasterization");
-    app.commandLine.appendSwitch("enable-zero-copy");
-    app.commandLine.appendSwitch("enable-native-gpu-memory-buffers");
-    app.commandLine.appendSwitch("enable-features", "CanvasOopRasterization");
+    // Opt-in: GPU rasterization moves painting into the GPU process. It can be smoother on some GPUs, but costs
+    // 50-80 MB more memory there, so by default Endcord leaves Chromium's own choice alone like Discord does.
+    // Chromium's GPU blocklist still applies; forcing zero-copy or native GPU memory buffers is never done.
+    if (settings.gpuRasterization) {
+        app.commandLine.appendSwitch("enable-gpu-rasterization");
+        app.commandLine.appendSwitch("enable-features", "CanvasOopRasterization");
+    }
 } else {
     console.log("[Endcord] Running in vanilla mode. Not loading Endcord");
 }

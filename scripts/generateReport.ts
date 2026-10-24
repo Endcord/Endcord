@@ -64,6 +64,8 @@ interface PatchInfo {
 
 const report = {
     badPatches: [] as PatchInfo[],
+    /** Patches that fail only because another plugin changed the same code first; each works on its own. */
+    conflicts: [] as PatchInfo[],
     slowPatches: [] as PatchInfo[],
     badStarts: [] as {
         plugin: string;
@@ -80,7 +82,9 @@ const IGNORED_DISCORD_ERRORS = [
     "Downloading the full bad domains file",
     /\[GatewaySocket\].{0,110}Cannot access '/,
     "search for 'name' in undefined",
-    "Attempting to set fast connect zstd when unsupported"
+    "Attempting to set fast connect zstd when unsupported",
+    // The reporter runs on the logged out login page
+    "Could not complete Remote Auth login"
 ] as Array<string | RegExp>;
 
 function toCodeBlock(s: string, indentation = 0, isDiscord = false) {
@@ -90,7 +94,58 @@ function toCodeBlock(s: string, indentation = 0, isDiscord = false) {
     return `\`\`\`\n${s.split("\n").map(s => indentationStr + s).join("\n")}\n${indentationStr}\`\`\``;
 }
 
+/**
+ * The reporter turns every plugin on at once, so a patch can fail only because another plugin rewrote the same
+ * code first. Re-test each failed patch against Discord's original module source and move the ones that work
+ * on their own into report.conflicts, so the report only flags what Discord actually broke.
+ */
+async function sortOutConflicts() {
+    if (!report.badPatches.length) return;
+
+    try {
+        const worksAlone: boolean[] = await page.evaluate((patches: PatchInfo[]) => {
+            const { Webpack, Util, Plugins } = (window as any).Endcord;
+            const ids = Object.keys(Webpack.wreq.m);
+            const canon = (m: any) => typeof m === "string" ? Util.canonicalizeMatch(m) : Util.canonicalizeMatch(new RegExp(m.source, m.flags));
+            const test = (m: any, s: string) => typeof m === "string" ? s.includes(m) : (m.lastIndex = 0, m.test(s));
+            // String() of a module factory is always Discord's original source, never the patched one
+            const source = (id: string) => String(Webpack.wreq.m[id] ?? "");
+
+            return patches.map(info => {
+                try {
+                    if (info.type === "errored") return false;
+
+                    for (const patch of Plugins.plugins[info.plugin]?.patches ?? []) {
+                        const find = canon(patch.find);
+
+                        if (info.type === "found no module") {
+                            if (String(patch.find) === info.match) return ids.some(id => test(find, source(id)));
+                            continue;
+                        }
+
+                        for (const replacement of [patch.replacement].flat()) {
+                            if (String(replacement.match) !== info.match) continue;
+                            const original = source(info.id);
+                            return test(find, original) && test(canon(replacement.match), original);
+                        }
+                    }
+                } catch { }
+
+                return false;
+            });
+        }, report.badPatches);
+
+        report.conflicts = report.badPatches.filter((_, i) => worksAlone[i]);
+        report.badPatches = report.badPatches.filter((_, i) => !worksAlone[i]);
+    } catch (err) {
+        logStderr("Couldn't sort out plugin conflicts:", err);
+    }
+}
+
 async function printReport() {
+    // Only real breakage fails the run; conflicts and slow patches are informational
+    process.exitCode = report.badPatches.length || report.badWebpackFinds.length || report.badStarts.length ? 1 : 0;
+
     console.log();
 
     console.log("# Endcord Report" + (CANARY ? " (Canary)" : ""));
@@ -104,6 +159,11 @@ async function printReport() {
         console.log(`  - Match: ${toCodeBlock(p.match, "  - Match: ".length)}`);
         if (p.error) console.log(`  - Error: ${toCodeBlock(p.error, "  - Error: ".length)}`);
     });
+
+    console.log();
+
+    console.log("## Plugin Conflicts (each works on its own)");
+    report.conflicts.forEach(p => console.log(`- ${p.plugin} (${p.type}) in module \`${p.id}\``));
 
     console.log();
 
@@ -259,6 +319,8 @@ page.on("console", async e => {
         }
 
         const [, tag, message, otherMessage] = args as Array<string>;
+        // Some logs pass an object instead of a message
+        if (typeof message !== "string") break outer;
 
         switch (tag) {
             case "WebpackPatcher:":
@@ -315,6 +377,7 @@ page.on("console", async e => {
                         report.badWebpackFinds.push(otherMessage);
                         break;
                     case "Finished test":
+                        await sortOutConflicts();
                         await browser.close();
                         await printReport();
                         process.exit();

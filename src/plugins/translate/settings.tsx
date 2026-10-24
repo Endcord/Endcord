@@ -6,6 +6,7 @@
 
 import { definePluginSettings } from "@api/Settings";
 import { Button } from "@components/Button";
+import { t } from "@utils/i18n";
 import { OptionType } from "@utils/types";
 
 import { openTranslateModal } from "./TranslateModal";
@@ -72,8 +73,7 @@ export const settings = definePluginSettings({
         type: OptionType.COMPONENT,
         component: () => (
             <Button onClick={openTranslateModal}>
-                Customize translation languages & Auto-Translate
-            </Button>
+                {t("Customize translation languages & Auto-Translate")}</Button>
         )
     }
 }, {

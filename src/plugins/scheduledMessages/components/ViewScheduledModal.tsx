@@ -6,11 +6,12 @@
 
 import { Button } from "@components/Button";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { classNameFactory } from "@utils/css";
 import { RenderModalProps } from "@endcord/discord-types";
+import { clearAllScheduledMessages, getChannelDisplayInfo, getScheduledMessages, removeScheduledMessage } from "@plugins/scheduledMessages/utils";
+import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import { ChannelStore, closeModal, Modal, openModal, showToast, Toasts, useState } from "@webpack/common";
 
-import { clearAllScheduledMessages, getChannelDisplayInfo, getScheduledMessages, removeScheduledMessage } from "../utils";
 import { CalendarIcon, TimerIcon } from "./Icons";
 
 const cl = classNameFactory("vc-scheduled-msg-");
@@ -55,13 +56,13 @@ function ViewScheduledModalInner({ rootProps, close }: ViewScheduledModalProps) 
         <Modal
             {...rootProps}
             size="md"
-            title="Scheduled Messages"
+            title={t("Scheduled Messages")}
             actions={actions}
         >
             {!messages.length ? (
                 <div className={cl("empty-state")}>
                     <CalendarIcon width={48} height={48} />
-                    <span>No scheduled messages</span>
+                    <span>{t("No scheduled messages")}</span>
                 </div>
             ) : (
                 <div className={cl("message-list")}>
@@ -95,8 +96,7 @@ function ViewScheduledModalInner({ rootProps, close }: ViewScheduledModalProps) 
                                     variant="dangerPrimary"
                                     onClick={() => handleDelete(msg.id)}
                                 >
-                                    Delete
-                                </Button>
+                                    {t("Delete")}</Button>
                             </div>
                         );
                     })}

@@ -5,13 +5,13 @@
  */
 
 import { findOption, RequiredMessageOption } from "@api/Commands";
-import { EndcordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 
 export default definePlugin({
     name: "Starify",
     description: "Adds /starify to wrap your message in sparkles ｡ﾟ☆.",
-    authors: [EndcordDevs.Sharp],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     dependencies: ["CommandsAPI"],
     commands: [
         {

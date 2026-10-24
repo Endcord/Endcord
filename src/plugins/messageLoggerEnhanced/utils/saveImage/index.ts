@@ -17,10 +17,10 @@
 */
 
 import { MessageAttachment } from "@endcord/discord-types";
+import { Flogger, settings } from "@plugins/messageLoggerEnhanced";
+import { LoggedAttachment, LoggedMessage, LoggedMessageJSON } from "@plugins/messageLoggerEnhanced/types";
+import { memoize } from "@plugins/messageLoggerEnhanced/utils/memoize";
 
-import { Flogger, settings } from "../..";
-import { LoggedAttachment, LoggedMessage, LoggedMessageJSON } from "../../types";
-import { memoize } from "../memoize";
 import { deleteImage, downloadAttachment, getImage, } from "./ImageManager";
 
 export function getFileExtension(str: string) {

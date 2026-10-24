@@ -19,12 +19,12 @@ const settings = definePluginSettings({
     imageSource: {
         type: OptionType.STRING,
         description: "Sets the image url of the jumpscare",
-        default: "https://github.com/Endcord/Equibored/blob/main/icons/jumpscare/troll.gif?raw=true"
+        default: "https://github.com/Equicord/Equibored/blob/main/icons/jumpscare/troll.gif?raw=true"
     },
     audioSource: {
         type: OptionType.STRING,
         description: "Sets the audio url of the jumpscare",
-        default: "https://github.com/Endcord/Equibored/raw/main/sounds/jumpscare/trollolol.mp3?raw=true"
+        default: "https://github.com/Equicord/Equibored/raw/main/sounds/jumpscare/trollolol.mp3?raw=true"
     },
     chance: {
         type: OptionType.NUMBER,
@@ -49,11 +49,17 @@ export default definePlugin({
     name: "Jumpscare",
     description: "Adds a configurable chance of jumpscaring you whenever you open a channel. Inspired by Geometry Dash Mega Hack",
     tags: ["Fun"],
-    authors: [Devs.ewlle, Devs.rootpoi, Devs.kraethis],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     dependencies: ["AudioPlayerAPI"],
     settings,
 
     start() {
+        // Earlier builds saved defaults pointing at a repository that doesn't exist
+        for (const key of ["imageSource", "audioSource"] as const) {
+            const value = settings.store[key];
+            if (value?.includes("github.com/Endcord/Equibored/")) settings.store[key] = value.replace("github.com/Endcord/", "github.com/Equicord/");
+        }
+
         getJumpscareRoot().render(
             <this.JumpscareComponent />
         );

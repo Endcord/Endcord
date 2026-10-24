@@ -1,0 +1,45 @@
+{
+  "mod": "vencord",
+  "detected": "Vencord",
+  "readyMs": 3678,
+  "pageStartMs": 633,
+  "inPageReadyMs": 3045,
+  "domContentLoadedMs": 546,
+  "cpuFirst30sMs": 27172,
+  "cpuFirst60sMs": 32984,
+  "idleCpuPct": 1.88,
+  "ramMB": 708,
+  "rendererRamMB": 401,
+  "jsHeapMB": 106.4,
+  "domNodes": 3712,
+  "eventListeners": 1142,
+  "cssRules": 35357,
+  "styleElements": 7,
+  "processes": {
+    "browser": {
+      "count": 1,
+      "memMB": 117
+    },
+    "crashpad-handler": {
+      "count": 1,
+      "memMB": 9
+    },
+    "gpu-process": {
+      "count": 2,
+      "memMB": 151
+    },
+    "NetworkService": {
+      "count": 1,
+      "memMB": 19
+    },
+    "renderer": {
+      "count": 1,
+      "memMB": 401
+    },
+    "AudioService": {
+      "count": 1,
+      "memMB": 11
+    }
+  },
+  "round": 2
+}

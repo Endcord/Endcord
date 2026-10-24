@@ -13,6 +13,7 @@ import { Logger } from "@utils/Logger";
 import { canonicalizeMatch } from "@utils/patches";
 import { escapeRegExp } from "@utils/text";
 
+import { getCachedModuleId, rememberModuleId, withCacheKey } from "./findCache";
 import type { AnyModuleFactory, AnyWebpackRequire } from "./types";
 
 const logger = new Logger("Webpack");
@@ -47,10 +48,12 @@ export function makeClassNameRegex(className: string) {
 }
 
 export const filters = {
-    byProps: (...props: PropsFilter): FilterFn =>
+    byProps: (...props: PropsFilter): FilterFn => withCacheKey(
         props.length === 1
             ? m => m[props[0]] !== void 0
             : m => props.every(p => m[p] !== void 0),
+        "props", props
+    ),
 
     byCode: (...code: CodeFilter): FilterFn => {
         const parsedCode = code.map(canonicalizeMatch);
@@ -60,10 +63,12 @@ export const filters = {
         };
 
         filter.$$endcordProps = [...code];
-        return filter;
+        return withCacheKey(filter, "code", code);
     },
-    byStoreName: (name: StoreNameFilter): FilterFn => m =>
-        m.constructor?.displayName === name,
+    byStoreName: (name: StoreNameFilter): FilterFn => withCacheKey(
+        m => m.constructor?.displayName === name,
+        "store", [name]
+    ),
 
     componentByCode: (...code: CodeFilter): FilterFn => {
         const byCodeFilter = filters.byCode(...code);
@@ -82,7 +87,7 @@ export const filters = {
         };
 
         filter.$$endcordProps = [...code];
-        return filter;
+        return withCacheKey(filter, "component", code);
     },
 
     byClassNames: (...classes: string[]): FilterFn => {
@@ -219,21 +224,33 @@ export const find = traceFunction("find", function find(filter: FilterFn, { isIn
     if (typeof filter !== "function")
         throw new Error("Invalid filter. Expected a function got " + typeof filter);
 
-    for (const key in cache) {
+    const matchModule = (key: string) => {
         const mod = cache[key];
-        if (!mod?.loaded || mod.exports == null) continue;
+        if (!mod?.loaded || mod.exports == null) return null;
 
-        if (filter(mod.exports)) {
-            return isWaitFor ? [mod.exports, key] : mod.exports;
-        }
-
-        if (typeof mod.exports !== "object" || topLevelOnly) continue;
+        if (filter(mod.exports)) return mod.exports;
+        if (typeof mod.exports !== "object" || topLevelOnly) return null;
 
         for (const nestedMod in mod.exports) {
             const nested = mod.exports[nestedMod];
-            if (nested && filter(nested)) {
-                return isWaitFor ? [nested, key] : nested;
-            }
+            if (nested && filter(nested)) return nested;
+        }
+
+        return null;
+    };
+
+    // Most finds resolve to the same module on every start of the same Discord build
+    const cachedKey = getCachedModuleId(filter);
+    if (cachedKey != null) {
+        const found = matchModule(cachedKey);
+        if (found != null) return isWaitFor ? [found, cachedKey] : found;
+    }
+
+    for (const key in cache) {
+        const found = matchModule(key);
+        if (found != null) {
+            rememberModuleId(filter, key);
+            return isWaitFor ? [found, key] : found;
         }
     }
 

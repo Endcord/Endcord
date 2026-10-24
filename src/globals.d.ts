@@ -36,6 +36,7 @@ declare global {
     export var EndcordNative: typeof import("./EndcordNative").default;
     export var Endcord: typeof import("./Endcord");
     export var EndcordStyles: Map<string, Style>;
+    export var EndcordPluginStyles: Record<string, string[]> | undefined;
     export var appSettings: {
         set(setting: string, v: any): void;
     };

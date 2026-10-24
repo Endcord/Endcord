@@ -7,6 +7,7 @@
 import { definePluginSettings } from "@api/Settings";
 import type { Channel, Embed, GuildMember, MessageAttachment, User } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import definePlugin, { makeRange, OptionType, PluginNative, ReporterTestable } from "@utils/types";
 import { findByCodeLazy, findLazy } from "@webpack";
@@ -97,8 +98,8 @@ const settings = definePluginSettings({
         type: OptionType.NUMBER,
         description: "Websocket port",
         default: 42070,
-        async onChange() {
-            await start();
+        onChange() {
+            start().catch(e => logger.warn(e.message));
         }
     },
     preferUDP: {
@@ -178,11 +179,14 @@ let socket: WebSocket;
 
 async function start() {
     if (socket) socket.close();
-    socket = new WebSocket(`ws://127.0.0.1:${settings.store.webSocketPort ?? 42070}/?client=Endcord`);
+    const port = settings.store.webSocketPort ?? 42070;
+    socket = new WebSocket(`ws://127.0.0.1:${port}/?client=Endcord`);
+    // Reject with a readable error instead of a bare Event when XSOverlay isn't running
+    const notReachable = () => new Error(`Could not connect to XSOverlay on port ${port}. Is XSOverlay running?`);
     return new Promise((resolve, reject) => {
         socket.onopen = resolve;
-        socket.onerror = reject;
-        setTimeout(reject, 3000);
+        socket.onerror = () => reject(notReachable());
+        setTimeout(() => reject(notReachable()), 3000);
     });
 }
 
@@ -192,7 +196,7 @@ export default definePlugin({
     name: "XSOverlay",
     description: "Forwards discord notifications to XSOverlay, for easy viewing in VR",
     tags: ["Notifications"],
-    authors: [Devs.Nyako],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     searchTerms: ["vr", "notify"],
     reporterTestable: ReporterTestable.None,
     settings,
@@ -301,7 +305,10 @@ export default definePlugin({
         }
     },
 
-    start,
+    start() {
+        // XSOverlay may simply not be open yet; we connect again when the next notification comes in
+        start().catch(e => logger.warn(e.message));
+    },
 
     stop() {
         socket.close();
@@ -310,8 +317,7 @@ export default definePlugin({
     settingsAboutComponent: () => (
         <>
             <Button onClick={() => sendOtherNotif("This is a test notification! explode", "Hello from Vendor!")}>
-                Send test notification
-            </Button>
+                {t("Send test notification")}</Button>
         </>
     )
 });
@@ -377,7 +383,13 @@ async function sendToOverlay(notif: NotificationObject) {
         jsonData: JSON.stringify(notif),
         rawData: null
     };
-    if (socket.readyState !== socket.OPEN) await start();
+    if (socket.readyState !== socket.OPEN) {
+        try {
+            await start();
+        } catch {
+            return;
+        }
+    }
     socket.send(JSON.stringify(apiObject));
 }
 

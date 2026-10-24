@@ -13,76 +13,150 @@
     position: relative;
 }
 
-.vc-special-card-special {
-    padding: 1em 1.5em;
-    margin-bottom: 1em;
-    background-size: cover;
-    background-position: center;
+/* Endcord cards: the installer's night-blue palette, with one accent colour per card */
+.ec-card-root {
+    --ec-card-accent: #9ccbff;
+
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 16px;
+    padding: 20px 24px;
+    border: 1px solid rgb(156 203 255 / 16%);
+    border-radius: 12px;
+    background:
+        radial-gradient(circle at 1px 1px, rgb(156 203 255 / 7%) 1px, transparent 0) 0 0 / 14px 14px,
+        linear-gradient(135deg, #1d2b46 0%, #162137 45%, #10182a 100%);
+    color: #f3f6fb;
 }
 
-.vc-special-card-flex {
+/* thin accent line along the top edge */
+.ec-card-root::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 2px;
+    background: linear-gradient(90deg, var(--ec-card-accent), transparent 70%);
+    opacity: 0.85;
+}
+
+.ec-card-accent-bamboo {
+    --ec-card-accent: #74d49a;
+}
+
+.ec-card-accent-honey {
+    --ec-card-accent: #f2c14e;
+}
+
+.ec-card-body {
     display: flex;
-    flex-direction: row;
+    align-items: center;
+    gap: 24px;
 }
 
-.vc-special-card-flex-main {
-    width: 100%;
+.ec-card-text {
+    flex: 1;
+    min-width: 0;
 }
 
-.vc-special-title {
-    color: black;
+.ec-card-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: #f3f6fb;
 }
 
-.vc-special-subtitle {
-    color: black;
-    font-size: 1.2em;
-    font-weight: bold;
-    margin-top: 0.5em;
+.ec-card-subtitle {
+    margin: 4px 0 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ec-card-accent);
 }
 
-.vc-special-text {
-    color: black;
-    font-size: 1em;
-    margin-top: .75em;
+.ec-card-description {
+    margin: 10px 0 0;
+    max-width: 62ch;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #b3bfd4;
     white-space: pre-line;
 }
 
-.vc-special-seperator {
-    margin-top: .75em;
-    border-top: 1px solid white;
-    opacity: 0.4;
-}
-
-.vc-special-hyperlink {
-    margin-top: 1em;
-    cursor: pointer;
-
-    .vc-special-hyperlink-text {
-        color: black;
-        font-size: 1em;
-        font-weight: bold;
-        text-align: center;
-        transition: text-decoration 0.5s;
-        cursor: pointer;
-    }
-
-    &:hover .vc-special-hyperlink-text {
-        text-decoration: underline;
-    }
-}
-
-.vc-special-image-container {
+.ec-card-actions {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-left: 1em;
-    flex-shrink: 0;
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    background-color: white;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
 }
 
-.vc-special-image {
-    width: 65%;
+.ec-card-art {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 96px;
+    height: 96px;
+    border: 1px solid rgb(156 203 255 / 12%);
+    border-radius: 16px;
+    background: #10182a;
+}
+
+.ec-card-pixel-art {
+    display: block;
+    image-rendering: pixelated;
+    filter: drop-shadow(0 3px 0 rgb(0 0 0 / 35%));
+}
+
+/* Buttons inside the card follow the card, not Discord's theme */
+.ec-card-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 34px;
+    padding: 0 14px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.ec-card-button:active {
+    transform: translateY(1px);
+}
+
+.ec-card-button:focus-visible {
+    outline: 2px solid var(--ec-card-accent);
+    outline-offset: 2px;
+}
+
+.ec-card-button-primary {
+    background: #3d74e0;
+    color: #fff;
+}
+
+.ec-card-button-primary:hover {
+    background: #5288f0;
+}
+
+.ec-card-button-secondary {
+    border-color: rgb(156 203 255 / 22%);
+    background: transparent;
+    color: #dbe6f7;
+}
+
+.ec-card-button-secondary:hover {
+    border-color: rgb(156 203 255 / 45%);
+    background: rgb(156 203 255 / 6%);
+}
+
+.ec-card-button svg {
+    width: 16px;
+    height: 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ec-card-button {
+        transition: none;
+    }
 }

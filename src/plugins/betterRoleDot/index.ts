@@ -26,7 +26,7 @@ const settings = definePluginSettings({
 
 export default definePlugin({
     name: "BetterRoleDot",
-    authors: [Devs.Ven, Devs.AutumnVN],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     description:
         "Copy role colour on RoleDot (accessibility setting) click. Also allows using both RoleDot and coloured names simultaneously",
     tags: ["Roles", "Appearance"],

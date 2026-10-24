@@ -39,7 +39,7 @@ export default definePlugin({
     name: "ClearURLs",
     description: "Automatically removes tracking elements from URLs you send",
     tags: ["Privacy", "Utility"],
-    authors: [Devs.adryd, Devs.thororen],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
 
     rules: [] as RuleSet[],
 

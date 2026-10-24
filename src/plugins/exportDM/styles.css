@@ -1,0 +1,268 @@
+/* Community stylesheet: its class names (BEM "--modifier") and rule order are kept as written. */
+/* stylelint-disable selector-class-pattern, no-duplicate-selectors, no-descending-specificity */
+
+/* ── Export DM Plugin ── */
+
+.edm-content {
+    padding: 14px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* ── Barre de recherche ── */
+.edm-search-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgb(0 0 0 / 25%);
+    border: 1.5px solid rgb(255 255 255 / 8%);
+    border-radius: 8px;
+    padding: 8px 12px;
+    transition: border-color 0.15s;
+}
+
+.edm-search-bar:focus-within {
+    border-color: rgb(255 255 255 / 25%);
+}
+
+.edm-search-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #fff;
+    font-size: 13px;
+    font-family: inherit;
+}
+
+.edm-search-input::placeholder {
+    color: rgb(255 255 255 / 35%);
+}
+
+.edm-search-clear {
+    background: none;
+    border: none;
+    color: rgb(255 255 255 / 40%);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 0 2px;
+    line-height: 1;
+    transition: color 0.1s;
+}
+
+.edm-search-clear:hover {
+    color: rgb(255 255 255 / 80%);
+}
+
+/* ── Labels ── */
+.edm-label {
+    margin: 0 !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: rgb(255 255 255 / 50%) !important;
+}
+
+/* ── Liste conversations ── */
+.edm-channel-list {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    max-height: 200px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgb(255 255 255 / 15%) transparent;
+}
+
+.edm-channel-list::-webkit-scrollbar { width: 4px; }
+
+.edm-channel-list::-webkit-scrollbar-thumb {
+    background: rgb(255 255 255 / 15%);
+    border-radius: 2px;
+}
+
+.edm-empty {
+    text-align: center;
+    color: rgb(255 255 255 / 40%);
+    font-size: 13px;
+    padding: 16px;
+}
+
+.edm-channel-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: all 0.1s;
+    background: rgb(255 255 255 / 4%);
+}
+
+.edm-channel-row:hover {
+    background: rgb(255 255 255 / 8%);
+}
+
+.edm-channel-row--selected {
+    border-color: var(--brand-500, #5865f2);
+    background: rgb(88 101 242 / 12%);
+}
+
+.edm-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+/* Avatar placeholder (lettre) quand pas d'image */
+.edm-avatar-placeholder {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgb(88 101 242 / 40%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+    text-transform: uppercase;
+}
+
+.edm-channel-name {
+    flex: 1;
+    font-size: 13px;
+    color: #fff;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.edm-check {
+    color: var(--brand-500, #5865f2);
+    font-weight: 700;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+/* ── Options ── */
+.edm-options-row {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.edm-option {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    color: #fff;
+    cursor: pointer;
+    user-select: none;
+}
+
+.edm-option span {
+    color: #fff;
+}
+
+.edm-option input[type="checkbox"] {
+    accent-color: var(--brand-500, #5865f2);
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+}
+
+/* ── Formats ── */
+.edm-format-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.edm-format-btn {
+    flex: 1;
+    min-width: 60px;
+    background: rgb(255 255 255 / 5%);
+    border: 1.5px solid rgb(255 255 255 / 8%);
+    border-radius: 6px;
+    padding: 8px 6px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    transition: all 0.1s;
+}
+
+.edm-format-btn:hover {
+    border-color: rgb(255 255 255 / 25%);
+    background: rgb(255 255 255 / 8%);
+}
+
+.edm-format-btn--active {
+    border-color: var(--brand-500, #5865f2);
+    background: rgb(88 101 242 / 15%);
+}
+
+.edm-fmt-key {
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.edm-fmt-desc {
+    font-size: 10px;
+    color: rgb(255 255 255 / 50%);
+    text-align: center;
+}
+
+/* ── Status ── */
+.edm-status {
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+.edm-status--fetching {
+    background: rgb(250 166 26 / 12%);
+    color: #faa61a;
+
+}
+
+.edm-status--done {
+    background: rgb(59 165 92 / 12%);
+    color: #3ba55c;
+}
+
+.edm-status--error {
+    background: rgb(237 66 69 / 12%);
+    color: #ed4245;
+}
+
+/* ── Bouton export ── */
+.edm-export-btn {
+    background: var(--brand-500, #5865f2);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 11px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: opacity 0.15s;
+}
+
+.edm-export-btn:hover { opacity: 0.85; }
+
+.edm-export-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}

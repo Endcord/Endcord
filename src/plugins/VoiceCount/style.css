@@ -1,0 +1,17 @@
+.vc-voicecount-count {
+    order: 2;
+    flex: 0 0 auto;
+    margin-left: auto;
+    padding: 0 6px;
+    border-radius: 8px;
+    background: var(--background-modifier-selected);
+    color: var(--channels-default);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16px;
+    font-variant-numeric: tabular-nums;
+}
+
+.vc-voicecount-full {
+    color: var(--text-danger);
+}

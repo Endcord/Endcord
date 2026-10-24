@@ -7,6 +7,7 @@
 import { CodeBlock } from "@components/CodeBlock";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { FolderIcon } from "@components/Icons";
+import { t } from "@utils/i18n";
 
 function ChevronSmallDownIcon(props: any) {
     return (
@@ -178,7 +179,7 @@ function ZipPreviewContent({
     onNavigate: (path: string) => void;
 }) {
     if (!cacheState || cacheState.status === "pending") {
-        return <div className={cl("state")}>Loading ZIP preview...</div>;
+        return <div className={cl("state")}>{t("Loading ZIP preview...")}</div>;
     }
 
     if (cacheState.status === "rejected") {
@@ -187,13 +188,13 @@ function ZipPreviewContent({
 
     const { entries, truncated } = cacheState.result;
     if (entries.length === 0) {
-        return <div className={cl("state")}>This ZIP is empty.</div>;
+        return <div className={cl("state")}>{t("This ZIP is empty.")}</div>;
     }
 
     return (
         <>
             <ZipPreviewBreadcrumb path={currentPath} onNavigate={onNavigate} />
-            {truncated && <div className={cl("state")}>Only showing first {MAX_ENTRIES} entries.</div>}
+            {truncated && <div className={cl("state")}>{t("Only showing first")}{" "}{MAX_ENTRIES} entries.</div>}
             <div className={cl("entries")}>
                 <ZipPreviewFileList entries={entries} currentPath={currentPath} onNavigate={onNavigate} />
             </div>
@@ -259,7 +260,7 @@ function ZipPreviewFileList({ entries, currentPath, onNavigate }: { entries: Zip
     const { directories, files } = useMemo(() => getVisibleEntries(entries, currentPath), [entries, currentPath]);
 
     if (directories.length === 0 && files.length === 0) {
-        return <div className={cl("state")}>This folder is empty.</div>;
+        return <div className={cl("state")}>{t("This folder is empty.")}</div>;
     }
 
     return (

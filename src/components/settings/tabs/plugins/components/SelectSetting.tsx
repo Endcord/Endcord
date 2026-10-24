@@ -5,6 +5,7 @@
  */
 
 import { isSettingDisabled } from "@api/PluginManager";
+import { t } from "@utils/i18n";
 import { PluginSettingSelectDef } from "@utils/types";
 import { React, Select, useState } from "@webpack/common";
 
@@ -30,8 +31,8 @@ export function SelectSetting({ setting, pluginSettings, definedSettings, onChan
     return (
         <SettingsSection name={setting.displayName} id={id} description={setting.description} error={error}>
             <Select
-                placeholder={setting.placeholder ?? "Select an option"}
-                options={setting.options}
+                placeholder={t(setting.placeholder ?? "Select an option")}
+                options={setting.options.map(o => ({ ...o, label: t(o.label) }))}
                 maxVisibleItems={5}
                 closeOnSelect={true}
                 select={handleChange}

@@ -9,6 +9,7 @@ import { Heading } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
 import { ChannelTabsPreview } from "@equicordplugins/channelTabs/components/ChannelTabsContainer";
 import { KeybindSettings } from "@equicordplugins/channelTabs/components/KeybindSettings";
+import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import { makeRange, OptionType } from "@utils/types";
 import { SearchableSelect, useState } from "@webpack/common";
@@ -85,13 +86,12 @@ function AnimationSettings(): JSX.Element {
 
     return (
         <section>
-            <Heading>Animation Controls</Heading>
+            <Heading>{t("Animation Controls")}</Heading>
             <Paragraph>
-                Enable or disable specific animations for channel tabs. Each option can be toggled independently.
-            </Paragraph>
+                {t("Enable or disable specific animations for channel tabs. Each option can be toggled independently.")}</Paragraph>
             <div style={{ marginTop: "8px" }}>
                 <SearchableSelect
-                    placeholder="Select which animations to enable..."
+                    placeholder={t("Select which animations to enable...")}
                     maxVisibleItems={12}
                     clearable={true}
                     multi={true}

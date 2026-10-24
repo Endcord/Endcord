@@ -62,7 +62,7 @@
 
 .vc-fc-link:hover .vc-fc-name {
     text-decoration: underline;
-    text-decoration-color: currentColor;
+    text-decoration-color: currentcolor;
 }
 
 .vc-fc-link:hover .vc-fc-arrow {
@@ -149,7 +149,7 @@
 }
 
 .vc-fc-banner {
-    background: rgba(88, 101, 242, 0.12);
+    background: rgb(88 101 242 / 12%);
     border: 1px solid var(--brand-500);
     border-radius: 8px;
     padding: 10px 14px;

@@ -7,7 +7,8 @@
 import { definePluginSettings } from "@api/Settings";
 import { BaseText } from "@components/BaseText";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { EquicordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import definePlugin, { OptionType } from "@utils/types";
 import { findCssClassesLazy } from "@webpack";
@@ -31,8 +32,7 @@ const CollapsibleCard = ErrorBoundary.wrap(
                         weight="semibold"
                         className={AdvancedClasses.advancedTitle}
                     >
-                        Simplified permissions
-                        <svg
+                        {t("Simplified permissions")}<svg
                             className={AdvancedClasses.titleCaret}
                             width="20"
                             height="20"
@@ -92,7 +92,7 @@ const settings = definePluginSettings({
 export default definePlugin({
     name: "AdvancedPermissions",
     description: "Show advanced permissions card by default.",
-    authors: [EquicordDevs.bastih18],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     tags: ["Utility"],
     settings,
 

@@ -1,0 +1,53 @@
+#!/bin/bash
+# Endcord Installer for macOS: asks what to do with native dialogs, then runs the bundled install.sh.
+
+RESOURCES="$(cd "$(dirname "$0")/../Resources" && pwd)"
+LOG="$HOME/Library/Logs/Endcord Installer.log"
+mkdir -p "$(dirname "$LOG")"
+
+# AppleScript strings can't contain raw double quotes or backslashes
+quote() { printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'; }
+
+# $1 = message, $2 = buttons as an AppleScript list, $3 = default button; prints the button pressed
+ask() {
+    osascript -e "button returned of (display dialog \"$(quote "$1")\" with title \"Endcord Installer\" buttons $2 default button \"$3\" with icon note)" 2>/dev/null
+}
+
+choice=$(osascript -e 'choose from list {"Install Endcord", "Repair Endcord", "Uninstall Endcord"} with title "Endcord Installer" with prompt "Endcord adds plugins and themes to the Discord app. Discord will close while this runs." default items {"Install Endcord"} OK button name "Continue"' 2>/dev/null)
+case "$choice" in
+    "Install Endcord") action=install ;;
+    "Repair Endcord") action=repair ;;
+    "Uninstall Endcord") action=uninstall ;;
+    *) exit 0 ;;
+esac
+
+osascript -e 'display notification "This takes a few seconds." with title "Endcord Installer"' >/dev/null 2>&1
+# The app carries its own copy of Endcord, like the Windows installer; without it, install.sh downloads the latest
+if [ -f "$RESOURCES/files/patcher.js" ]; then
+    /bin/sh "$RESOURCES/install.sh" "--$action" --all --local "$RESOURCES/files" > "$LOG" 2>&1 < /dev/null
+else
+    /bin/sh "$RESOURCES/install.sh" "--$action" --all > "$LOG" 2>&1 < /dev/null
+fi
+status=$?
+
+if [ "$status" -eq 0 ]; then
+    if [ "$action" = uninstall ]; then
+        ask "Endcord is uninstalled. Your settings are kept in case you come back." '{"OK"}' "OK" >/dev/null
+    else
+        pressed=$(ask "Done! Open Discord and Endcord loads with it. When Discord updates itself, open this installer again and choose Repair." '{"OK", "Open Discord"}' "Open Discord")
+        [ "$pressed" = "Open Discord" ] && open -a Discord 2>/dev/null
+    fi
+    exit 0
+fi
+
+if grep -q "App Management" "$LOG"; then
+    pressed=$(ask "macOS blocked the change. In System Settings > Privacy & Security > App Management, turn on Endcord Installer, then open the installer again." '{"Cancel", "Open Settings"}' "Open Settings")
+    [ "$pressed" = "Open Settings" ] && open "x-apple.systempreferences:com.apple.preference.security?Privacy_AppBundles"
+    exit 1
+fi
+
+reason=$(grep -E "^Error:|^No Discord" "$LOG" | tail -n 1 | sed 's/^Error: //')
+[ -n "$reason" ] || reason="Something went wrong."
+pressed=$(ask "$reason" '{"OK", "Show Log"}' "OK")
+[ "$pressed" = "Show Log" ] && open -e "$LOG"
+exit 1

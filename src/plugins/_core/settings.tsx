@@ -7,15 +7,16 @@
 import { definePluginSettings } from "@api/Settings";
 import { BackupRestoreIcon, MainSettingsIcon, PaintbrushIcon, PatchHelperIcon, PlaceholderIcon, PluginsIcon, UpdaterIcon, VesktopSettingsIcon } from "@components/Icons";
 import { BackupAndRestoreTab, EndcordTab,PatchHelperTab, PluginsTab, ThemesTab, UpdaterTab } from "@components/settings/tabs";
+import { getIsEndcordHidden } from "@plugins/hideEndcord";
 import { Devs } from "@utils/constants";
 import { isTruthy } from "@utils/guards";
+import { t } from "@utils/i18n";
 import definePlugin, { IconProps, OptionType } from "@utils/types";
 import { waitFor } from "@webpack";
 import { React } from "@webpack/common";
 import type { ComponentType, PropsWithChildren, ReactNode } from "react";
 
 import gitHash from "~git-hash";
-import { getIsEndcordHidden } from "../hideEndcord";
 
 let LayoutTypes = {
     SECTION: 1,
@@ -69,19 +70,21 @@ interface SettingsLayoutBuilder {
 const settings = definePluginSettings({
     settingsLocation: {
         type: OptionType.SELECT,
-        description: "Where to put the Endcord settings section",
-        options: [
-            { label: "At the very top", value: "top" },
-            { label: "Above the Nitro section", value: "aboveNitro", default: true },
-            { label: "Below the Nitro section", value: "belowNitro" },
-            { label: "Above Activity Settings", value: "aboveActivity" },
-            { label: "Below Activity Settings", value: "belowActivity" },
-            { label: "At the very bottom", value: "bottom" },
-        ] as { label: string; value: SettingsLocation; default?: boolean; }[]
+        get description() { return t("Where to put the Endcord settings section"); },
+        get options() {
+            return [
+                { label: t("At the very top"), value: "top" },
+                { label: t("Above the Nitro section"), value: "aboveNitro", default: true },
+                { label: t("Below the Nitro section"), value: "belowNitro" },
+                { label: t("Above Activity Settings"), value: "aboveActivity" },
+                { label: t("Below Activity Settings"), value: "belowActivity" },
+                { label: t("At the very bottom"), value: "bottom" },
+            ] as { label: string; value: SettingsLocation; default?: boolean; }[];
+        }
     },
     includeEndcordInfoWhenCopying: {
         type: OptionType.BOOLEAN,
-        description: "Also copy Endcord info (Endcord, Electron, Chromium) when clicking the version info in the bottom left area of the Settings page",
+        get description() { return t("Also copy Endcord info (Endcord, Electron, Chromium) when clicking the version info in the bottom left area of the Settings page"); },
         default: true
     }
 });
@@ -99,10 +102,9 @@ export default definePlugin({
             find: "#{intl::COPY_VERSION}",
             replacement: [
                 {
-                    match: /"text-xxs\/normal".{0,300}?(?=null!=(\i)&&(.{0,20}\i\.\i.{0,200}?,children:).{0,15}?("span"),({className:\i\.\i,children:\["Build Override: ",\1\.id\]\})\)\}\))/,
-                    replace: (m, _buildOverride, makeRow, component, props) => {
-                        props = props.replace(/children:\[.+\]/, "");
-                        return `${m},$self.makeInfoElements(${component},${props}).map(e=>${makeRow}e})),`;
+                    match: /"text-xxs\/normal".{0,300}?(?=null!=(\i)&&(.{0,20}\i\.\i.{0,200}?,children:).{0,15}?("span"),{className:(\i\.\i),children:\["Build Override: ",\1\.id,\i\]\}\)\}\))/,
+                    replace: (m, _buildOverride, makeRow, component, className) => {
+                        return `${m},$self.makeInfoElements(${component},{className:${className}}).map(e=>${makeRow}e})),`;
                     }
                 },
                 {
@@ -126,7 +128,7 @@ export default definePlugin({
         const panel: SettingsLayoutNode = {
             key: key + "_panel",
             type: LayoutTypes.PANEL,
-            useTitle: () => panelTitle,
+            useTitle: () => t(panelTitle),
             buildLayout: () => [{
                 type: LayoutTypes.CATEGORY,
                 key: key + "_category",
@@ -134,7 +136,7 @@ export default definePlugin({
                     type: LayoutTypes.CUSTOM,
                     key: key + "_custom",
                     Component: Component,
-                    useSearchTerms: () => [title]
+                    useSearchTerms: () => [t(title), title]
                 }]
             }]
         };
@@ -142,7 +144,7 @@ export default definePlugin({
         return ({
             key,
             type: LayoutTypes.SIDEBAR_ITEM,
-            useTitle: () => title,
+            useTitle: () => t(title),
             icon: () => <Icon width={20} height={20} />,
             buildLayout: () => [panel]
         });
@@ -216,7 +218,7 @@ export default definePlugin({
         const endcordSection: SettingsLayoutNode = {
             key: "endcord_section",
             type: LayoutTypes.SECTION,
-            useTitle: () => "Endcord Settings",
+            useTitle: () => t("Endcord Settings"),
             buildLayout: () => endcordEntries
         };
 

@@ -10,6 +10,7 @@ import { Message, Sticker } from "@endcord/discord-types";
 import ExpressionClonerPlugin from "@plugins/expressionCloner";
 import { Devs } from "@utils/constants";
 import { copyWithToast } from "@utils/discord";
+import { t } from "@utils/i18n";
 import definePlugin from "@utils/types";
 import { Menu, React, StickersStore } from "@webpack/common";
 
@@ -31,14 +32,14 @@ function buildMenuItem(sticker: PartialSticker, addBottomSeparator: boolean) {
                 <Menu.MenuItem
                     id="vc-copy-sticker-link"
                     key="vc-copy-sticker-link"
-                    label="Copy Link"
+                    label={t("Copy Link")}
                     action={() => copyWithToast(getUrl(sticker), "Link copied!")}
                 />
 
                 <Menu.MenuItem
                     id="vc-open-sticker-link"
                     key="vc-open-sticker-link"
-                    label="Open Link"
+                    label={t("Open Link")}
                     action={() => EndcordNative.native.openExternal(getUrl(sticker))}
                 />
             </Menu.MenuGroup>
@@ -76,7 +77,7 @@ export default definePlugin({
     name: "CopyStickerLinks",
     description: "Adds the ability to copy & open Sticker links",
     tags: ["Emotes", "Utility"],
-    authors: [Devs.Ven, Devs.Byeoon],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     contextMenus: {
         "message": messageContextMenuPatch,
         "expression-picker": expressionPickerPatch

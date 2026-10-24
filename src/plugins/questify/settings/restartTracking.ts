@@ -5,9 +5,8 @@
  */
 
 import { SettingsStore } from "@api/Settings";
+import { Alerts } from "@plugins/questify/utils/ui";
 import type { DefinedSettings, SettingsDefinition } from "@utils/types";
-
-import { Alerts } from "../utils/ui";
 
 type RestartTrackingSettings = Pick<DefinedSettings<SettingsDefinition>, "def" | "pluginName">;
 

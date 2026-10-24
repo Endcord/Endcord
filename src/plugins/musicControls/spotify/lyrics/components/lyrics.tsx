@@ -9,6 +9,7 @@ import { TooltipContainer } from "@components/TooltipContainer";
 import { settings } from "@equicordplugins/musicControls/settings";
 import { SpotifyLrcStore } from "@equicordplugins/musicControls/spotify/lyrics/providers/store";
 import { SpotifyStore } from "@equicordplugins/musicControls/spotify/SpotifyStore";
+import { t } from "@utils/i18n";
 import { ContextMenuApi, openModal,React, useEffect, useState, useStateFromStores } from "@webpack/common";
 
 import { LyricsContextMenu } from "./ctxMenu";
@@ -50,7 +51,7 @@ function LyricsDisplay({ scroll = true }: { scroll?: boolean; }) {
                     </BaseText>
                 </div>
             )) : showMusicNoteOnNoLyrics ? (
-                <TooltipContainer text="No synced lyrics found">
+                <TooltipContainer text={t("No synced lyrics found")}>
                     <NoteSvg />
                 </TooltipContainer>
             ) : null}

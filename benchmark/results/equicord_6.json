@@ -1,0 +1,41 @@
+{
+  "mod": "equicord",
+  "detected": "Equicord",
+  "readyMs": 3676,
+  "pageStartMs": 591,
+  "inPageReadyMs": 3085,
+  "domContentLoadedMs": 762,
+  "cpuFirst30sMs": 27047,
+  "cpuFirst60sMs": 32625,
+  "idleCpuPct": 2.16,
+  "ramMB": 752,
+  "rendererRamMB": 411,
+  "jsHeapMB": 109.4,
+  "domNodes": 3627,
+  "eventListeners": 1133,
+  "cssRules": 36946,
+  "styleElements": 7,
+  "processes": {
+    "browser": {
+      "count": 1,
+      "memMB": 118
+    },
+    "gpu-process": {
+      "count": 2,
+      "memMB": 190
+    },
+    "NetworkService": {
+      "count": 1,
+      "memMB": 21
+    },
+    "renderer": {
+      "count": 1,
+      "memMB": 411
+    },
+    "AudioService": {
+      "count": 1,
+      "memMB": 12
+    }
+  },
+  "round": 6
+}

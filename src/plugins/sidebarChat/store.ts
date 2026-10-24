@@ -5,9 +5,9 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
+import { Flux as TFlux } from "@endcord/discord-types";
 import { proxyLazy } from "@utils/lazy";
 import { OptionType } from "@utils/types";
-import { Flux as TFlux } from "@endcord/discord-types";
 import { ChannelActionCreators, Flux as FluxWP, FluxDispatcher, PopoutActions, PopoutWindowStore } from "@webpack/common";
 
 interface IFlux extends TFlux {

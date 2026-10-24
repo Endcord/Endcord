@@ -7,10 +7,11 @@
 import "./styles.css";
 
 import { BadgePosition, ProfileBadge } from "@api/Badges";
-import BadgeAPIPlugin from "../_api/badges";
 import { addHeaderBarButton, HeaderBarButton, removeHeaderBarButton } from "@api/HeaderBar";
 import { DataStore } from "@api/index";
-import { EndcordDevs } from "@utils/constants";
+import BadgeAPIPlugin from "@plugins/_api/badges";
+import { Devs } from "@utils/constants";
+import { t, useI18n } from "@utils/i18n";
 import {
     ModalCloseButton as ModalCloseButton_,
     ModalContent as ModalContent_,
@@ -19,11 +20,11 @@ import {
     ModalRoot as ModalRoot_,
     openModal
 } from "@utils/modal";
-import definePlugin from "@utils/types";
-import { AuthenticationStore, Button, FluxDispatcher, IconUtils, React, RestAPI, Select, showToast, SnowflakeUtils, Toasts, UserProfileStore, UserStore } from "@webpack/common";
 import { safeRecordMerge } from "@utils/safeRecordMerge";
+import definePlugin from "@utils/types";
+import { AuthenticationStore, Button, FluxDispatcher, IconUtils, React, Select, showToast, SnowflakeUtils, Toasts, UserProfileStore, UserStore } from "@webpack/common";
 
-const t = (s: string) => s;
+import { profileBadgeId, reloadBadgeLayout, setManagedBadges, startBadgeManagement, stopBadgeManagement } from "./badgeManagement";
 
 const ModalRoot = ModalRoot_ as React.ComponentType<any>;
 const ModalHeader = ModalHeader_ as React.ComponentType<any>;
@@ -71,13 +72,16 @@ const SPECIAL_BADGES: Record<string, { label: string; icon: string }> = {
     quest: { label: t("Completed a quest"), icon: "https://cdn.discordapp.com/badge-icons/7d9ae358c8c5e118768335dbe68b4fb8.png" },
     meadow: { label: t("Last Meadow Online"), icon: "https://cdn.discordapp.com/badge-icons/ca105ad9cfc8580c765101d17bbb2323.png" },
     orbs: { label: t("Orbs — Apprentice"), icon: "https://cdn.discordapp.com/badge-icons/83d8a1eb09a8d64e59233eec5d4d5c2d.png" },
-    gift_patron: { label: t("Gifting — Patron"), icon: "https://raw.githubusercontent.com/plaiboiewlle/endcord-api/main/assets/gift_patron.png" },
-    gift_champion: { label: t("Gifting — Champion"), icon: "https://raw.githubusercontent.com/plaiboiewlle/endcord-api/main/assets/gift_champion.png" },
-    gift_luminary: { label: t("Gifting — Luminary"), icon: "https://raw.githubusercontent.com/plaiboiewlle/endcord-api/main/assets/gift_luminary.png" },
-    gift_icon: { label: t("Gifting — Icon"), icon: "https://raw.githubusercontent.com/plaiboiewlle/endcord-api/main/assets/gift_icon.png" },
-    gift_hero: { label: t("Gifting — Hero"), icon: "https://raw.githubusercontent.com/plaiboiewlle/endcord-api/main/assets/gift_hero.png" },
-    gift_legendary: { label: t("Gifting — Legendary"), icon: "https://raw.githubusercontent.com/plaiboiewlle/endcord-api/main/assets/gift_legendary.png" },
+    gift_patron: { label: t("Gifting — Patron"), icon: "https://cdn.discordapp.com/assets/content/5a2c578f82445956549c6454a2d65f8ba35b53f59120a4aa55855098ce5a653d.png" },
+    gift_champion: { label: t("Gifting — Champion"), icon: "https://cdn.discordapp.com/assets/content/ac865fd339fbaa75d77278cd695936f168cd9b88dbbd72fdaeb76174bc0039d3.png" },
+    gift_luminary: { label: t("Gifting — Luminary"), icon: "https://cdn.discordapp.com/assets/content/35885be90179a2b4cc4e29aaf1285fe561c837f037aa805df40e921fd8db4867.png" },
+    gift_icon: { label: t("Gifting — Icon"), icon: "https://cdn.discordapp.com/assets/content/70b46c1ea400bc57e2d5ac937c70b7ef25599feb1c62d7817c257f19051f1460.png" },
+    gift_hero: { label: t("Gifting — Hero"), icon: "https://cdn.discordapp.com/assets/content/779d517e251fd2f6c4d64b4bf5839ea20cc5e061a2f971c7811ab2486ccf4553.png" },
+    gift_legendary: { label: t("Gifting — Legendary"), icon: "https://cdn.discordapp.com/assets/content/eb5ce89c01c7884a614b5be0ebadb0d86215b61b55c04a01d27cffb131b4a070.png" },
 };
+
+const GIFT_IDS = ["gift_patron", "gift_champion", "gift_luminary", "gift_icon", "gift_hero", "gift_legendary"];
+const GIFT_TIER_NAMES = ["Patron", "Champion", "Luminary", "Icon", "Hero", "Legend"];
 
 const NITRO_LEVELS = [
     { label: t("Nitro (0 months)"), icon: "https://cdn.discordapp.com/badge-icons/2ba85e8026a8614b640c2837bcdfe21b.png" },
@@ -108,6 +112,75 @@ const BOOST_ICONS = [
     "https://cdn.discordapp.com/badge-icons/cb3ae83c15e970e8f3d410bc62cb8b99.png",
     "https://cdn.discordapp.com/badge-icons/7142225d31238f6387d9f09efaa02759.png",
     "https://cdn.discordapp.com/badge-icons/ec92202290b48d0879b7413d2dde3bab.png",
+];
+
+// Discord's tiered badges (2026). Icons and tier names come from Discord's badge catalog.
+interface BadgeTier { label: string; icon: string; }
+const TIERED_BADGES: Array<{ key: string; label: string; tiers: BadgeTier[]; }> = [
+    {
+        key: "account_age",
+        label: "Account Age",
+        tiers: [
+            { label: "Seed", icon: "https://cdn.discordapp.com/assets/content/8da9339b9d405f0194947e607c839b1bd43436211e5bf07fe7f4ce005578e9e4.png" },
+            { label: "Sprout", icon: "https://cdn.discordapp.com/assets/content/f12847ebadd9022c3d67e5b31b5f3608e1ff48a222528fb6059e0fd310fc71b7.png" },
+            { label: "Sapling", icon: "https://cdn.discordapp.com/assets/content/dccc28b53d39406e65e76541d6b940b23a9d31ef418100d77d6eb30c4adb9098.png" },
+            { label: "Bud", icon: "https://cdn.discordapp.com/assets/content/7c0a10981060861722c0216fd6c01a9fd8b10accbd3d6a04dcde275896e82e8b.png" },
+            { label: "Blossom", icon: "https://cdn.discordapp.com/assets/content/52c374af536a4621a65503b4350f7459e3d00f3ed4e3b941c3902c0d9af45f4a.png" },
+            { label: "Redwood", icon: "https://cdn.discordapp.com/assets/content/8041acaf604df1ace1ad2a12fd020513e50dfdd09899dc2e455e622d41c91000.png" },
+            { label: "Sequoia", icon: "https://cdn.discordapp.com/assets/content/7c5a1b1ce27181145c7e37bf6ad323353c14e8db201cfa3cb336292ad9a5d03d.png" },
+            { label: "Bristlecone", icon: "https://cdn.discordapp.com/assets/content/53b3a2b4307df9dfc05a4c9da977baa4a6fd822f5a3d24843f949d1c93398322.png" },
+            { label: "Stromatolite", icon: "https://cdn.discordapp.com/assets/content/d30993594816cc6035041941291dc7a5862e55676ce85eef91f89fd0c59f2931.png" },
+            { label: "Primordial", icon: "https://cdn.discordapp.com/assets/content/1930d04a8a1d0aba6f97b19b7e7b87158ab154ebffd5468d6ada66671285968b.png" },
+        ]
+    },
+    {
+        key: "streaming",
+        label: "Streaming",
+        tiers: [
+            { label: "Newcomer", icon: "https://cdn.discordapp.com/assets/content/571a6f607289dfc034d5735ea020bb53f29e9d53dcc54ee852f9f070538ff73a.png" },
+            { label: "Fledgling", icon: "https://cdn.discordapp.com/assets/content/3e1ec0a72ca812e53ecd53d55c18c2d9765cc89eee08b1e74f7e0bdbfe2e96a2.png" },
+            { label: "Breakout", icon: "https://cdn.discordapp.com/assets/content/443707ffced738635bb0ee5c054544c67ec9dfab63b03e661bc1295d5399cac7.png" },
+            { label: "Standout", icon: "https://cdn.discordapp.com/assets/content/522de4edcb75e0544633b9ccb55c58d672c4a2fa70a81231bd42bb56cd6555bd.png" },
+            { label: "Trendsetter", icon: "https://cdn.discordapp.com/assets/content/9482ad3a1104986a4cce2979291c733eca0707f6218ddfb6ff36e32e3fd709e9.png" },
+            { label: "Headliner", icon: "https://cdn.discordapp.com/assets/content/2cf2a4ab39800a963efdb900b823dc8ccb23464434f3e11d329851ae566cac22.png" },
+            { label: "Star", icon: "https://cdn.discordapp.com/assets/content/20e0b4ff7fc63681efe95082a69f9bfe7259f1485fa6fa6cebaf709336f42b90.png" },
+            { label: "Sensation", icon: "https://cdn.discordapp.com/assets/content/7ceb7fc55dba1fd4c4c5a9acd8345e3b74bca789bf8503445f3bf89109ae47a4.png" },
+            { label: "Visionary", icon: "https://cdn.discordapp.com/assets/content/5fbabf24366e08c5f7a56219d7d39f29c41034b5bd091573600f07a904af0035.png" },
+            { label: "Phenomenon", icon: "https://cdn.discordapp.com/assets/content/dd20ac476f0bb7ea9a553abc699c0d6b9854a3f802187e3bf9bf2e45c37a766a.png" },
+        ]
+    },
+    {
+        key: "game_time",
+        label: "Game Time",
+        tiers: [
+            { label: "Casual", icon: "https://cdn.discordapp.com/assets/content/c2844b37da74241525c1001c2ae5dd2719beb0095af8f88dcb35a37ceb0e1892.png" },
+            { label: "Recreational", icon: "https://cdn.discordapp.com/assets/content/157b789531c602542070e680c410d74275e796b6c45cd717292f6d2a59593972.png" },
+            { label: "Dedicated", icon: "https://cdn.discordapp.com/assets/content/d6ab0696aae97fca8e6b2b88d4117f09f9ea895d4f0cebee770564369ff06873.png" },
+            { label: "Committed", icon: "https://cdn.discordapp.com/assets/content/cc1edd8d955872cd9fbd9bafec80c973287817560d0895587686e3e1671a698e.png" },
+            { label: "Serious", icon: "https://cdn.discordapp.com/assets/content/4039caeef586467d50939f3154f87828645d6f1bd699b8f0c1da686b02cefe68.png" },
+            { label: "Devoted", icon: "https://cdn.discordapp.com/assets/content/3d39b6cef7f00fe9e2d51f229034650b900481823af05d09e6537e912de30301.png" },
+            { label: "Seasoned", icon: "https://cdn.discordapp.com/assets/content/46512ce94203c84d7919904acfbd07fc5a8316010a610b8fd6a1cc937e5ac75e.png" },
+            { label: "Ironclad", icon: "https://cdn.discordapp.com/assets/content/9bff716e6bae2ef42dc959bac05a0dfc480bf89484c111ed7fb4aa0332cb22d8.png" },
+            { label: "Unshakeable", icon: "https://cdn.discordapp.com/assets/content/1f51d59934543176d8b585c4e5a62d77ca3677c6e26ae4da74b1b639f9091b5e.png" },
+            { label: "Eternal", icon: "https://cdn.discordapp.com/assets/content/8a62ba720addf7584d3e7f82170104e6a2b35aea4aba5ffc7260cfd706f40c37.png" },
+        ]
+    },
+    {
+        key: "game_variety",
+        label: "Game Variety",
+        tiers: [
+            { label: "Sampler", icon: "https://cdn.discordapp.com/assets/content/cbd75cae9bca1c49b35eb0d9c189af4c8604b4f69a1de17ae550db9f03cbd371.png" },
+            { label: "Dabbler", icon: "https://cdn.discordapp.com/assets/content/c9fe2cefaf224c0fb73a5fe11476987930809fa307069deb8bbb2f0b99bac545.png" },
+            { label: "Enthusiast", icon: "https://cdn.discordapp.com/assets/content/e016406cec55df228f6e4e7ee9ec5ac10cf0ccd5037c5926da5c26c44e32d374.png" },
+            { label: "Ranger", icon: "https://cdn.discordapp.com/assets/content/7265bc6f9ff0a47962dafe01b6f9c8f75927392aaf48d48c3619d123d2b584f5.png" },
+            { label: "Explorer", icon: "https://cdn.discordapp.com/assets/content/ffd4938d41c57d27fec0f253a54756c40add56f761c5b1471b531d838e8669db.png" },
+            { label: "Adventurer", icon: "https://cdn.discordapp.com/assets/content/dcfdce8dfc254b6e8fa9cfba5dcd918f027e27554c3aa2403fe01eb319cf2194.png" },
+            { label: "Voyager", icon: "https://cdn.discordapp.com/assets/content/183d6521c3696b0b42f73dd9c319307490982a5dffdc34a923b760d82b20916a.png" },
+            { label: "Maverick", icon: "https://cdn.discordapp.com/assets/content/84d4695cdcbb350ad5385c06e87caf06835872135625a8bff6bac300af858412.png" },
+            { label: "Polymath", icon: "https://cdn.discordapp.com/assets/content/1d8d9e3254727d1a1c01b194f2d01ade4525dc8b85c39b877af09768eaf031be.png" },
+            { label: "Universalist", icon: "https://cdn.discordapp.com/assets/content/4731855cd51c1d45fd14dc088b80815ea0562a353b48db369092019fbcb44ec7.png" },
+        ]
+    },
 ];
 
 const AVATAR_DECORATIONS = [
@@ -214,6 +287,8 @@ interface CustomProfileData {
     email?: string;
     phone?: string;
     customBadgeIds?: string[];
+    /** Tier index per tiered badge type, see TIERED_BADGES */
+    tieredBadges?: Record<string, number>;
     oldName?: string;
     decorationAsset?: string;
     profileEffectId?: string;
@@ -278,6 +353,7 @@ function hasAnyCustomData(pd: CustomProfileData | null | undefined): boolean {
     if (pd.decorationAsset) return true;
     if (pd.badgeFlags != null && pd.badgeFlags > 0) return true;
     if (pd.customBadgeIds && pd.customBadgeIds.length > 0) return true;
+    if (pd.tieredBadges && Object.keys(pd.tieredBadges).length > 0) return true;
     if (pd.nitroLevel != null && pd.nitroLevel >= 0) return true;
     if (pd.boostMonths != null && pd.boostMonths >= 0) return true;
     if (pd.nitro) return true;
@@ -290,6 +366,7 @@ function hasCustomBadgesConfigured(pd: CustomProfileData | null | undefined): bo
     if (!pd) return false;
     if (pd.badgeFlags != null && pd.badgeFlags > 0) return true;
     if (pd.customBadgeIds && pd.customBadgeIds.length > 0) return true;
+    if (pd.tieredBadges && Object.keys(pd.tieredBadges).length > 0) return true;
     if (pd.nitroLevel != null && pd.nitroLevel >= 0) return true;
     if (pd.boostMonths != null && pd.boostMonths >= 0) return true;
     return false;
@@ -329,10 +406,15 @@ function getProfileDataFor(userId: string | null | undefined): CustomProfileData
     return null;
 }
 
+// Every badge carries a stable key, so Discord's badge panel can reorder and hide it (see badgeManagement.ts)
+function makeBadge(key: string, icon: string, label: string) {
+    return { id: profileBadgeId(key), key, badge: icon, tooltip: label, icon, description: label };
+}
+
 function pushBadge(arr: any[], flag: number, badgeFlag: number): void {
     const b = BADGES.find(x => x.flag === flag);
     if (b && (badgeFlag & flag)) {
-        arr.push({ badge: b.icon, tooltip: b.label, icon: b.icon, description: b.label });
+        arr.push(makeBadge(`flag_${flag}`, b.icon, b.label));
     }
 }
 
@@ -348,7 +430,7 @@ function buildUserBadgesArray(data: CustomProfileData, enabled: boolean): any[] 
     // 2. Nitro Subscriber
     if (data.nitroLevel !== undefined && data.nitroLevel >= 0 && NITRO_LEVELS[data.nitroLevel]) {
         const nl = NITRO_LEVELS[data.nitroLevel];
-        userBadges.push({ badge: nl.icon, tooltip: nl.label, icon: nl.icon, description: nl.label });
+        userBadges.push(makeBadge("nitro", nl.icon, nl.label));
     }
 
     // 3. Partner
@@ -370,12 +452,7 @@ function buildUserBadgesArray(data: CustomProfileData, enabled: boolean): any[] 
 
     // 8. Server Booster
     if (data.boostMonths !== undefined && data.boostMonths >= 0 && BOOST_ICONS[data.boostMonths]) {
-        userBadges.push({
-            badge: BOOST_ICONS[data.boostMonths],
-            tooltip: `Server Boost - ${BOOST_LABELS[data.boostMonths]}`,
-            icon: BOOST_ICONS[data.boostMonths],
-            description: `Server Boost - ${BOOST_LABELS[data.boostMonths]}`
-        });
+        userBadges.push(makeBadge("boost", BOOST_ICONS[data.boostMonths], `Server Boost - ${BOOST_LABELS[data.boostMonths]}`));
     }
 
     // 9. Bug Hunter Gold (Level 2)
@@ -401,19 +478,33 @@ function buildUserBadgesArray(data: CustomProfileData, enabled: boolean): any[] 
             const idxB = specialOrder.indexOf(b);
             return (idxA !== -1 ? idxA : 999) - (idxB !== -1 ? idxB : 999);
         });
+        let giftShown = false;
         for (const cbId of sortedIds) {
+            if (GIFT_IDS.includes(cbId)) {
+                if (giftShown) continue;
+                giftShown = true;
+            }
             const sb = SPECIAL_BADGES[cbId];
             if (sb) {
                 const tooltip = (cbId === "oldname" && data.oldName)
                     ? `Old username: ${data.oldName}`
                     : sb.label;
-                userBadges.push({ badge: sb.icon, tooltip, icon: sb.icon, description: tooltip });
+                userBadges.push(makeBadge(`sp_${cbId}`, sb.icon, tooltip));
             } else {
                 const found = BADGES.find(b => String(b.flag) === cbId);
                 if (found) {
-                    userBadges.push({ badge: found.icon, tooltip: found.label, icon: found.icon, description: found.label });
+                    userBadges.push(makeBadge(`flag_${found.flag}`, found.icon, found.label));
                 }
             }
+        }
+    }
+
+    // === Tiered badges (account age, streaming, game time, game variety, gifting) ===
+    for (const type of TIERED_BADGES) {
+        const tier = data.tieredBadges?.[type.key];
+        if (tier != null && type.tiers[tier]) {
+            const tr = type.tiers[tier];
+            userBadges.push(makeBadge(`tier_${type.key}`, tr.icon, `${type.label} - ${tr.label}`));
         }
     }
     return userBadges;
@@ -422,6 +513,9 @@ function buildUserBadgesArray(data: CustomProfileData, enabled: boolean): any[] 
 function applyLocalProfileCache(userId: string, data: CustomProfileData, enabled: boolean) {
     if (!userId) return [];
     const userBadges = buildUserBadgesArray(data, enabled);
+    if (userId === AuthenticationStore?.getId?.()) {
+        setManagedBadges(userBadges.map(b => ({ key: b.key, label: b.description, icon: b.icon })));
+    }
     if (!enabled || (userBadges.length === 0 && !hasAnyCustomData(data))) {
         forgetProfile(userId);
     } else {
@@ -434,18 +528,14 @@ function saveDataSync(userId: string, data: CustomProfileData, enabled: boolean)
     try {
         localStorage.setItem(LS_KEY_DATA, JSON.stringify(data));
         localStorage.setItem(LS_KEY_ENABLED, enabled ? "1" : "0");
-    } catch (e) {
-        console.warn("[CustomProfile] localStorage saveDataSync failed:", e);
-    }
+    } catch { } // the desktop app has no localStorage; DataStore holds the real copy
 }
 
 function saveAllDataSync() {
     try {
         localStorage.setItem(LS_ALL_DATA, JSON.stringify(allAccountsData));
         localStorage.setItem(LS_ALL_ENABLED, JSON.stringify(allAccountsEnabled));
-    } catch (e) {
-        console.warn("[CustomProfile] localStorage saveAllDataSync failed:", e);
-    }
+    } catch { }
 }
 
 function savePresetsSync() {
@@ -549,6 +639,7 @@ function onAccountSwitch() {
     _realGlobalName = "";
     if (isEnabled) startDomObserver();
     else stopDomObserver();
+    reloadBadgeLayout();
     forceAccountPanelRerender();
 }
 
@@ -1010,20 +1101,24 @@ function BadgeBtn({ label, icon, active, onClick }: { label: string; icon?: stri
     );
 }
 
-function BadgePicker({ selected, onChange, nitroType, onNitroType, boostLevel, onBoostLevel, customIds, onCustomIds, oldName, onOldName }: {
+function BadgePicker({ selected, onChange, nitroType, onNitroType, boostLevel, onBoostLevel, customIds, onCustomIds, oldName, onOldName, tiered, onTiered }: {
     selected: number; onChange: (v: number) => void;
     nitroType: number; onNitroType: (v: number) => void;
     boostLevel: number; onBoostLevel: (v: number) => void;
     customIds: string[]; onCustomIds: (v: string[]) => void;
     oldName: string; onOldName: (v: string) => void;
+    tiered: Record<string, number>; onTiered: (v: Record<string, number>) => void;
 }) {
+    const { t } = useI18n();
     const hasOldName = customIds.includes("oldname");
+    // Discord shows one Gifting tier at a time, so the tiers are a single choice
+    const giftId = customIds.find(x => GIFT_IDS.includes(x));
     return (
         <div className="cp-field">
             <SectionLabel>{t("Badges")}</SectionLabel>
             <div className="cp-badges">
                 {BADGES.map(b => (
-                    <BadgeBtn key={b.flag} label={b.label} icon={b.icon}
+                    <BadgeBtn key={b.flag} label={t(b.label)} icon={b.icon}
                         active={!!(selected & b.flag)} onClick={() => onChange(selected ^ b.flag)} />
                 ))}
             </div>
@@ -1031,7 +1126,7 @@ function BadgePicker({ selected, onChange, nitroType, onNitroType, boostLevel, o
             <div className="cp-badges">
                 <BadgeBtn label={t("None")} active={nitroType === -1} onClick={() => onNitroType(-1)} />
                 {NITRO_LEVELS.map((n, i) => (
-                    <BadgeBtn key={i} label={n.label} icon={n.icon} active={nitroType === i} onClick={() => {
+                    <BadgeBtn key={i} label={t(n.label)} icon={n.icon} active={nitroType === i} onClick={() => {
                         onNitroType(i);
                     }} />
                 ))}
@@ -1040,60 +1135,64 @@ function BadgePicker({ selected, onChange, nitroType, onNitroType, boostLevel, o
             <div className="cp-badges">
                 <BadgeBtn label={t("Old username")} icon={OLD_NAME_BADGE_ICON} active={hasOldName}
                     onClick={() => onCustomIds(hasOldName ? customIds.filter(x => x !== "oldname") : [...customIds, "oldname"])} />
-                <BadgeBtn label={SPECIAL_BADGES.quest.label}
+                <BadgeBtn label={t(SPECIAL_BADGES.quest.label)}
                     icon={SPECIAL_BADGES.quest.icon}
                     active={customIds.includes("quest")}
                     onClick={() => onCustomIds(customIds.includes("quest") ? customIds.filter(x => x !== "quest") : [...customIds, "quest"])} />
-                <BadgeBtn label={SPECIAL_BADGES.meadow.label}
+                <BadgeBtn label={t(SPECIAL_BADGES.meadow.label)}
                     icon={SPECIAL_BADGES.meadow.icon}
                     active={customIds.includes("meadow")}
                     onClick={() => onCustomIds(customIds.includes("meadow") ? customIds.filter(x => x !== "meadow") : [...customIds, "meadow"])} />
-                <BadgeBtn label={SPECIAL_BADGES.orbs.label}
+                <BadgeBtn label={t(SPECIAL_BADGES.orbs.label)}
                     icon={SPECIAL_BADGES.orbs.icon}
                     active={customIds.includes("orbs")}
                     onClick={() => onCustomIds(customIds.includes("orbs") ? customIds.filter(x => x !== "orbs") : [...customIds, "orbs"])} />
-                <BadgeBtn label={SPECIAL_BADGES.gift_patron.label}
-                    icon={SPECIAL_BADGES.gift_patron.icon}
-                    active={customIds.includes("gift_patron")}
-                    onClick={() => onCustomIds(customIds.includes("gift_patron") ? customIds.filter(x => x !== "gift_patron") : [...customIds, "gift_patron"])} />
-                <BadgeBtn label={SPECIAL_BADGES.gift_champion.label}
-                    icon={SPECIAL_BADGES.gift_champion.icon}
-                    active={customIds.includes("gift_champion")}
-                    onClick={() => onCustomIds(customIds.includes("gift_champion") ? customIds.filter(x => x !== "gift_champion") : [...customIds, "gift_champion"])} />
-                <BadgeBtn label={SPECIAL_BADGES.gift_luminary.label}
-                    icon={SPECIAL_BADGES.gift_luminary.icon}
-                    active={customIds.includes("gift_luminary")}
-                    onClick={() => onCustomIds(customIds.includes("gift_luminary") ? customIds.filter(x => x !== "gift_luminary") : [...customIds, "gift_luminary"])} />
-                <BadgeBtn label={SPECIAL_BADGES.gift_icon.label}
-                    icon={SPECIAL_BADGES.gift_icon.icon}
-                    active={customIds.includes("gift_icon")}
-                    onClick={() => onCustomIds(customIds.includes("gift_icon") ? customIds.filter(x => x !== "gift_icon") : [...customIds, "gift_icon"])} />
-                <BadgeBtn label={SPECIAL_BADGES.gift_hero.label}
-                    icon={SPECIAL_BADGES.gift_hero.icon}
-                    active={customIds.includes("gift_hero")}
-                    onClick={() => onCustomIds(customIds.includes("gift_hero") ? customIds.filter(x => x !== "gift_hero") : [...customIds, "gift_hero"])} />
-                <BadgeBtn label={SPECIAL_BADGES.gift_legendary.label}
-                    icon={SPECIAL_BADGES.gift_legendary.icon}
-                    active={customIds.includes("gift_legendary")}
-                    onClick={() => onCustomIds(customIds.includes("gift_legendary") ? customIds.filter(x => x !== "gift_legendary") : [...customIds, "gift_legendary"])} />
             </div>
             {hasOldName && (
                 <div className="cp-field" style={{ marginTop: 6 }}>
                     <SectionLabel style={{ marginTop: 0 }}>{t("Old username displayed in tooltip")}</SectionLabel>
-                    <input className="cp-input" value={oldName} placeholder="OldUser#0000"
+                    <input className="cp-input" value={oldName} placeholder={t("OldUser#0000")}
                         onChange={e => onOldName(e.target.value)} />
                     <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 3 }}>
                         {t('Ex : Triggerr#5954 — will appear as "Old username: Triggerr#5954" when hovering the badge.')}
                     </div>
                 </div>
             )}
+            <SectionLabel style={{ marginTop: 8 }}>{t("Gifting")}</SectionLabel>
+            <div className="cp-badges">
+                <BadgeBtn label={t("None")} active={!giftId} onClick={() => onCustomIds(customIds.filter(x => !GIFT_IDS.includes(x)))} />
+                {GIFT_IDS.map((id, i) => (
+                    <BadgeBtn key={id} label={t(GIFT_TIER_NAMES[i])} icon={SPECIAL_BADGES[id].icon}
+                        active={giftId === id} onClick={() => onCustomIds([...customIds.filter(x => !GIFT_IDS.includes(x)), id])} />
+                ))}
+            </div>
             <SectionLabel style={{ marginTop: 8 }}>{t("Boost Badge (Server Booster)")}</SectionLabel>
             <div className="cp-badges">
                 <BadgeBtn label={t("None")} active={boostLevel === -1} onClick={() => onBoostLevel(-1)} />
-                {BOOST_LABELS.map((lbl, i) => (
-                    <BadgeBtn key={i} label={lbl} icon={BOOST_ICONS[i]} active={boostLevel === i} onClick={() => onBoostLevel(i)} />
+                {BOOST_LABELS_RAW.map((lbl, i) => (
+                    <BadgeBtn key={i} label={t(lbl)} icon={BOOST_ICONS[i]} active={boostLevel === i} onClick={() => onBoostLevel(i)} />
                 ))}
             </div>
+            {TIERED_BADGES.map(type => {
+                const current = tiered[type.key] ?? -1;
+                const pick = (tier: number) => {
+                    const next = { ...tiered };
+                    if (tier < 0) delete next[type.key];
+                    else next[type.key] = tier;
+                    onTiered(next);
+                };
+                return (
+                    <React.Fragment key={type.key}>
+                        <SectionLabel style={{ marginTop: 8 }}>{t(type.label)}</SectionLabel>
+                        <div className="cp-badges">
+                            <BadgeBtn label={t("None")} active={current === -1} onClick={() => pick(-1)} />
+                            {type.tiers.map((tier, i) => (
+                                <BadgeBtn key={i} label={t(tier.label)} icon={tier.icon} active={current === i} onClick={() => pick(i)} />
+                            ))}
+                        </div>
+                    </React.Fragment>
+                );
+            })}
         </div>
     );
 }
@@ -1116,6 +1215,7 @@ function forceAccountPanelRerender() {
 }
 
 function CustomProfileModal({ rootProps }: { rootProps: any; }) {
+    const { t } = useI18n();
     const myId = AuthenticationStore?.getId?.() || "";
     const [selectedAccountId, setSelectedAccountId] = React.useState(myId);
     const [data, setData] = React.useState<CustomProfileData>(() => ({ ...(allAccountsData[myId] || storedData || {}) }));
@@ -1183,8 +1283,8 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
             updateCachedRealData();
             forceAccountPanelRerender();
 
-            showToast("Profile Saved", Toasts.Type.SUCCESS, {
-                component: React.createElement("span", { style: { color: "var(--text-normal, #ffffff)", fontWeight: "600", fontSize: "14px" } }, "Profile Saved")
+            showToast(t("Profile Saved"), Toasts.Type.SUCCESS, {
+                component: React.createElement("span", { style: { color: "var(--text-normal, #ffffff)", fontWeight: "600", fontSize: "14px" } }, t("Profile Saved"))
             });
         } catch (err: any) {
             console.error("[CustomProfile] save error:", err);
@@ -1218,6 +1318,7 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
                 if (BadgeAPIPlugin && BadgeAPIPlugin.DonorBadges) {
                     delete BadgeAPIPlugin.DonorBadges[selectedAccountId];
                 }
+                if (selectedAccountId === myId) setManagedBadges([]);
             } catch {}
 
             saveDataSync(selectedAccountId, {}, false);
@@ -1231,8 +1332,8 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
             updateCachedRealData();
             forceAccountPanelRerender();
 
-            showToast("Profile Reset", Toasts.Type.SUCCESS, {
-                component: React.createElement("span", { style: { color: "var(--text-normal, #ffffff)", fontWeight: "600", fontSize: "14px" } }, "Profile Reset")
+            showToast(t("Profile Reset"), Toasts.Type.SUCCESS, {
+                component: React.createElement("span", { style: { color: "var(--text-normal, #ffffff)", fontWeight: "600", fontSize: "14px" } }, t("Profile Reset"))
             });
         } catch (err: any) {
             console.error("[CustomProfile] reset error:", err);
@@ -1290,7 +1391,7 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
                         }}
                         renderOptionValue={(selected: any[]) => {
                             const option = selected[0];
-                            if (!option) return "Select Account";
+                            if (!option) return t("Select Account");
                             const acc = accounts.find((a: any) => a.id === option.value);
                             let avatarUrl = "";
                             try { if (acc && IconUtils?.getUserAvatarURL) avatarUrl = IconUtils.getUserAvatarURL(acc, false, 20); } catch {}
@@ -1310,7 +1411,7 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
             </div>
             <ModalContent className="cp-content">
                 <Field label={t("Username")} value={data.username ?? ""} placeholder="my_username_00" onChange={v => set("username", v)} />
-                <Field label={t("Display name")} value={data.globalName ?? ""} placeholder="My Name" onChange={v => set("globalName", v)} />
+                <Field label={t("Display name")} value={data.globalName ?? ""} placeholder={t("My Name")} onChange={v => set("globalName", v)} />
                 <ImageUpload label={t("Profile picture")} value={data.avatar ?? ""} onChange={v => set("avatar", v)} isAvatar={true} />
                 <Toggle label={t("Simulate Nitro")} sublabel={t("Enables gradient profile color")} checked={data.nitro ?? false} onChange={v => set("nitro", v)} />
                 <ImageUpload label={t("Banner")} value={data.banner ?? ""} onChange={v => set("banner", v)} />
@@ -1330,14 +1431,14 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
                         {(() => {
                             const hex2 = data.accentColor2 != null ? "#" + data.accentColor2.toString(16).padStart(6, "0") : ""; return (<>
                                 <input type="color" value={hex2 || "#eb459e"} onChange={e => { const n = parseInt(e.target.value.replace("#", ""), 16); if (!isNaN(n)) set("accentColor2", n); }} className="cp-color-swatch" />
-                                <input value={hex2} placeholder="#eb459e (optional)" onChange={e => { const h = e.target.value.replace("#", ""); const n = parseInt(h, 16); if (!isNaN(n) && h.length === 6) set("accentColor2", n); else if (!e.target.value || e.target.value === "#") set("accentColor2", undefined); }} className="cp-input cp-color-input" />
+                                <input value={hex2} placeholder={`#eb459e (${t("optional")})`} onChange={e => { const h = e.target.value.replace("#", ""); const n = parseInt(h, 16); if (!isNaN(n) && h.length === 6) set("accentColor2", n); else if (!e.target.value || e.target.value === "#") set("accentColor2", undefined); }} className="cp-input cp-color-input" />
                                 {data.accentColor2 != null && <button className="cp-clear-btn" onClick={() => set("accentColor2", undefined)}><CloseIcon /></button>}
                             </>);
                         })()}
                     </div>
                 </div>
                 <Field label={t("Account creation date")} value={data.createdAt ?? ""} placeholder="2010-06-29" type="date" onChange={v => set("createdAt", v)} />
-                <Field label={t("Email address (local display)")} value={data.email ?? ""} placeholder="exemple@mail.com" onChange={v => set("email", v)} />
+                <Field label={t("Email address (local display)")} value={data.email ?? ""} placeholder={t("exemple@mail.com")} onChange={v => set("email", v)} />
                 <Field label={t("Phone (local display)")} value={data.phone ?? ""} placeholder="+33 6 00 00 00 00" onChange={v => set("phone", v)} />
                 <div className="cp-divider" />
                 <BadgePicker
@@ -1348,6 +1449,7 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
                     }}
                     boostLevel={boostLevel} onBoostLevel={v => set("boostMonths", v)}
                     customIds={customIds} onCustomIds={v => set("customBadgeIds", v)}
+                    tiered={data.tieredBadges ?? {}} onTiered={v => set("tieredBadges", v)}
                     oldName={oldName} onOldName={v => set("oldName", v)}
                 />
                 <div className="cp-divider" />
@@ -1412,7 +1514,7 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
 }
 
 function CustomProfileButton() {
-    return <HeaderBarButton icon={() => <EditIcon size={18} />} tooltip="Custom Profile" onClick={() => openModal(props => <CustomProfileModal rootProps={props} />)} />;
+    return <HeaderBarButton icon={() => <EditIcon size={18} />} tooltip={t("Custom Profile")} onClick={() => openModal(props => <CustomProfileModal rootProps={props} />)} />;
 }
 
 // ── Badge tooltip component — renders the new Discord-style big tooltip ────────
@@ -1476,7 +1578,7 @@ export default definePlugin({
     name: "CustomProfile",
     enabledByDefault: true,
     description: t("Visually customize your Discord profile (username, PFP, banner, badges, bio...) — persistent, only visible to you."),
-    authors: [EndcordDevs.pepsify],
+    authors: [Devs.ewlle],
     dependencies: ["HeaderBarAPI", "ContextMenuAPI"],
 
     patches: [
@@ -1776,13 +1878,15 @@ export default definePlugin({
             applyLocalProfileCache(uid, data, !!allAccountsEnabled[uid]);
         }
 
+        startBadgeManagement();
         applyAvatarPatchEarly();
         addHeaderBarButton("custom-profile-btn", () => <CustomProfileButton />, 10);
 
         FluxDispatcher.subscribe("CONNECTION_OPEN", onAccountSwitch);
 
         try {
-            const US = (Endcord as any).Webpack?.findByProps?.("getCurrentUser", "getUser");
+            // Same object as findByProps("getCurrentUser", "getUser"), without scanning every module at startup
+            const US = UserStore as any;
             if (US && !US._cp_perfect_hook) {
                 const origCurrent = US.getCurrentUser.bind(US);
                 _origGetCurrentUser = origCurrent;
@@ -1891,7 +1995,8 @@ export default definePlugin({
         } catch { }
 
         try {
-            const UPS = (Endcord as any).Webpack?.findByProps?.("getUserProfile", "getGuildMemberProfile");
+            // Same object as findByProps("getUserProfile", "getGuildMemberProfile")
+            const UPS = UserProfileStore as any;
             if (UPS && !UPS._cp_profile_hook) {
                 const origGetProfile = UPS.getUserProfile.bind(UPS);
                 UPS.getUserProfile = (userId: string) => {
@@ -2035,6 +2140,7 @@ export default definePlugin({
     },
 
     stop() {
+        stopBadgeManagement();
         removeHeaderBarButton("custom-profile-btn");
         FluxDispatcher.unsubscribe("CONNECTION_OPEN", onAccountSwitch);
         stopDomObserver();
@@ -2050,6 +2156,7 @@ export default definePlugin({
     },
 
     settingsAboutComponent() {
-        return <Button onClick={() => openModal(props => <CustomProfileModal rootProps={props} />)}>Open Custom Profile</Button>;
+        const { t } = useI18n();
+        return <Button onClick={() => openModal(props => <CustomProfileModal rootProps={props} />)}>{t("Open Custom Profile")}</Button>;
     },
 });

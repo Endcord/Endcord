@@ -5,10 +5,10 @@
  */
 
 import type { Quest } from "@endcord/discord-types";
+import type { QuestIncludedTypes } from "@plugins/questify/utils/filtering";
+import { countIncludedUnclaimedQuests, getQuestStatus, QuestStatus } from "@plugins/questify/utils/questState";
 import { QuestStore } from "@webpack/common";
 
-import type { QuestIncludedTypes } from "../utils/filtering";
-import { countIncludedUnclaimedQuests, getQuestStatus, QuestStatus } from "../utils/questState";
 import { getQuestifySettings } from "./access";
 import { ignoredQuestIDsKey } from "./def";
 import { rerenderQuests } from "./rerender";

@@ -7,13 +7,14 @@
 import "./style.css";
 
 import ErrorBoundary from "@components/ErrorBoundary";
+import type { Role } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import { openUserProfile } from "@utils/discord";
 import { isTruthy } from "@utils/guards";
+import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import definePlugin from "@utils/types";
-import type { Role } from "@endcord/discord-types";
 import { findByPropsLazy } from "@webpack";
 import { Constants, GuildRoleStore, IconUtils, Popout, RestAPI, ScrollerThin, useEffect, useRef, UserStore, useState, useStateFromStores } from "@webpack/common";
 
@@ -94,9 +95,9 @@ function RoleMembersList({ roleId, guildId, closePopout, setPopoutRef }: { roleI
             </div>
             <ScrollerThin className={cl("list")} fade>
                 {loading ? (
-                    <div className={cl("empty")}>Loading members...</div>
+                    <div className={cl("empty")}>{t("Loading members...")}</div>
                 ) : users.length === 0 ? (
-                    <div className={cl("empty")}>No members found.</div>
+                    <div className={cl("empty")}>{t("No members found.")}</div>
                 ) : users.map(user => (
                     <div
                         key={user.id}
@@ -147,7 +148,7 @@ export default definePlugin({
     name: "ClickableRoles",
     description: "Click on roles in user profiles and the member list to see which members have them.",
     tags: ["Appearance", "Roles"],
-    authors: [Devs.prism],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
 
     patches: [
         {
@@ -160,22 +161,20 @@ export default definePlugin({
         {
             find: 'tutorialId:"whos-online"',
             replacement: {
-                match: /\((function\(\i\)\{let\{id:.*?#{intl::CHANNEL_MEMBERS_A11Y_LABEL}.*?\}\))\}\);/,
-                replace: "($self.wrapRoleGroup($1}));",
+                match: /(\i\.\i),\{(?=\.\.\.\i,key:`section-)/g,
+                replace: "$self.RoleGroup,{Original:$1,",
             },
         },
     ],
 
-    wrapRoleGroup(originalFn: (props: { id: string; guildId: string; }) => React.ReactNode) {
-        return (props: { id: string; guildId: string; }) => {
-            const result = originalFn(props);
-            if (!GuildRoleStore.getRole(props.guildId, props.id)) return result;
-            return (
-                <WrappedClickableRole roleId={props.id} guildId={props.guildId}>
-                    {result}
-                </WrappedClickableRole>
-            );
-        };
+    RoleGroup({ Original, ...props }: { Original: React.ComponentType<{ id: string; guildId: string; }>; id: string; guildId: string; }) {
+        const result = <Original {...props} />;
+        if (!GuildRoleStore.getRole(props.guildId, props.id)) return result;
+        return (
+            <WrappedClickableRole roleId={props.id} guildId={props.guildId}>
+                {result}
+            </WrappedClickableRole>
+        );
     },
 
     wrapRolePill(props: { role: Role; guildId: string; }, renderOriginal: () => React.ReactNode) {

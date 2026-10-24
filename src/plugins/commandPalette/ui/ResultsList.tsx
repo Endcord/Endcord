@@ -4,11 +4,12 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import type { PaletteAction, PaletteIcon as PaletteIconType } from "@plugins/commandPalette/api/types";
 import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import { useEffect, useRef } from "@webpack/common";
 import type { ReactNode } from "react";
 
-import type { PaletteAction, PaletteIcon as PaletteIconType } from "../api/types";
 import { PaletteIcon } from "./PaletteIcon";
 
 const cl = classNameFactory("vc-cmdpal-");
@@ -96,7 +97,7 @@ export function ResultsList({ sections, selectedIndex, onSelect, onRun }: Result
                 </div>
             ))}
             {sections.length === 0 && (
-                <div className={cl("empty")}>No results</div>
+                <div className={cl("empty")}>{t("No results")}</div>
             )}
         </div>
     );

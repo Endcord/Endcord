@@ -5,9 +5,10 @@
  */
 
 import { HeaderBarButton } from "@api/HeaderBar";
+import { cl } from "@plugins/voiceChannelLog/utils";
+import { t } from "@utils/i18n";
 import { ChannelStore, SelectedChannelStore, useStateFromStores } from "@webpack/common";
 
-import { cl } from "../utils";
 import { openVoiceChannelLog } from "./VoiceChannelLogModal";
 
 function LogIcon({ height = 24, width = 24 }: { height?: number; width?: number; }) {
@@ -31,7 +32,7 @@ export function OpenLogsButton() {
         <HeaderBarButton
             className={cl("toolbar-btn")}
             onClick={() => openVoiceChannelLog(channel)}
-            tooltip="Voice Channel Logs"
+            tooltip={t("Voice Channel Logs")}
             icon={LogIcon}
         />
     );

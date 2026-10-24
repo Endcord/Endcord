@@ -7,6 +7,7 @@
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 import { useCallback, useEffect, useRef, useState } from "@webpack/common";
 
@@ -70,30 +71,12 @@ export const settings = definePluginSettings({
 
 export default definePlugin({
     name: "FavoriteGifSearch",
-    authors: [Devs.Aria],
-    description: "Adds a search bar to favorite gifs.",
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    description: "Adds a search bar to favorite gifs. Discord now has this built in, so the plugin no longer changes anything.",
     tags: ["Media", "Customisation"],
 
-    patches: [
-        {
-            find: "renderHeaderContent()",
-            replacement: [
-                {
-                    // https://regex101.com/r/07gpzP/1
-                    // ($1 renderHeaderContent=function { ... switch (x) ... case FAVORITES:return) ($2) ($3 case default: ... return r.jsx(($<searchComp>), {...props}))
-                    match: /(renderHeaderContent\(\).{1,150}FAVORITES:return)(.{1,150});(case.{1,200}default:.{0,50}?return\(0,\i\.jsx\)\((?<searchComp>\i\.\i),)/,
-                    replace: "$1 this?.state?.resultType === 'Favorites' ? $self.renderSearchBar(this, $<searchComp>) : $2;$3"
-                },
-                {
-                    // to persist filtered favorites when component re-renders.
-                    // when resizing the window the component rerenders and we loose the filtered favorites and have to type in the search bar to get them again
-                    match: /(,suggestions:\i,favorites:)(\i),/,
-                    replace: "$1$self.getFav($2),favCopy:$2,"
-                }
-
-            ]
-        }
-    ],
+    // Discord's favorites tab ships its own search bar now, so these patches had nothing left to replace
+    patches: [],
 
     settings,
 
@@ -177,7 +160,7 @@ function SearchBar({ instance, SearchBarComponent }: { instance: Instance; Searc
                 }
             }}
             query={query}
-            placeholder="Search Favorite Gifs"
+            placeholder={t("Search Favorite Gifs")}
         />
     );
 }

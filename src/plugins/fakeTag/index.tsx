@@ -6,7 +6,8 @@
 
 import { get as dsGet, set as dsSet } from "@api/DataStore";
 import { definePluginSettings } from "@api/Settings";
-import { EndcordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 import { FluxDispatcher, React, UserStore } from "@webpack/common";
 
@@ -38,15 +39,28 @@ function buildFakePrimaryGuild() {
     };
 }
 
+// Store selectors compare by reference: handing out a fresh object on every getCurrentUser() call makes
+// components that read the current user re-render forever (React error #185). Reuse the last wrapper.
+let lastSourceUser: any = null;
+let lastFakeKey = "";
+let lastWrappedUser: any = null;
+
 function wrapUser(user: any) {
     const fake = buildFakePrimaryGuild();
     if (!fake) return user;
+    const fakeKey = `${fake.tag}\0${fake.badge}`;
+    if (user === lastSourceUser && fakeKey === lastFakeKey) return lastWrappedUser;
+
     const wrapped = Object.create(Object.getPrototypeOf(user));
     for (const key of Object.getOwnPropertyNames(user)) {
         const desc = Object.getOwnPropertyDescriptor(user, key);
         if (desc) Object.defineProperty(wrapped, key, desc);
     }
     wrapped.primaryGuild = fake;
+
+    lastSourceUser = user;
+    lastFakeKey = fakeKey;
+    lastWrappedUser = wrapped;
     return wrapped;
 }
 
@@ -117,8 +131,7 @@ function BadgeUploader() {
     return (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <div style={{ fontSize: 12, color: "var(--header-secondary)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                Badge Image
-            </div>
+                {t("Badge Image")}</div>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 {preview && (
                     <img
@@ -144,8 +157,7 @@ function BadgeUploader() {
                         }}
                         onClick={clear}
                     >
-                        Remove
-                    </button>
+                        {t("Remove")}</button>
                 )}
                 <input
                     ref={inputRef}
@@ -156,8 +168,7 @@ function BadgeUploader() {
                 />
             </div>
             <div style={{ fontSize: 11, color: "var(--text-muted)" }}>
-                Or paste a URL in the field below — uploaded image takes priority.
-            </div>
+                {t("Or paste a URL in the field below — uploaded image takes priority.")}</div>
         </div>
     );
 }
@@ -198,7 +209,7 @@ export default definePlugin({
     name: "FakeTag",
     description: "Adds a fake clan tag and badge emoji next to your username. Client-side only.",
     tags: ["Customisation", "Fun"],
-    authors: [EndcordDevs.Sharp],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
 
     async start() {

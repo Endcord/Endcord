@@ -15,7 +15,7 @@ export default definePlugin({
     name: "ThemeAttributes",
     description: "Adds data attributes to various elements for theming purposes",
     tags: ["Appearance", "Customisation"],
-    authors: [Devs.Ven, Devs.Board],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
 
     patches: [
         // Add data-tab-id to all tab bar items

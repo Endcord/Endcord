@@ -12,7 +12,7 @@ export default definePlugin({
     name: "NoNitroUpsell",
     description: "Removes all of Discord's nitro upsells by tricking the client into thinking you have nitro.",
     tags: ["Utility"],
-    authors: [Devs.thororen],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     flux: {
         CONNECTION_OPEN() {
             const state = OverridePremiumTypeStore.getState();

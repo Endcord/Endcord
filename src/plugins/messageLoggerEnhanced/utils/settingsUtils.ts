@@ -16,14 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { addMessagesBulkIDB, iterateAllMessagesIDB } from "@plugins/messageLoggerEnhanced/db";
+import { LoggedMessageJSON } from "@plugins/messageLoggerEnhanced/types";
 import JSONParser from "@streamparser/json/jsonparser.js";
 import { chooseFile as chooseFileWeb } from "@utils/web";
 import { Toasts } from "@webpack/common";
 import { showSaveFilePicker } from "native-file-system-adapter";
 
 import { clearLogs,Native } from "..";
-import { addMessagesBulkIDB, iterateAllMessagesIDB } from "../db";
-import { LoggedMessageJSON } from "../types";
 
 export async function importLogs() {
     try {

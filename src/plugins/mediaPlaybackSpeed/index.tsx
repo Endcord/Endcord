@@ -10,6 +10,7 @@ import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import definePlugin, { makeRange, OptionType } from "@utils/types";
 import { ContextMenuApi, FluxDispatcher, Menu, React, Tooltip, useEffect } from "@webpack/common";
 import { RefObject } from "react";
@@ -49,7 +50,7 @@ export default definePlugin({
     name: "MediaPlaybackSpeed",
     description: "Allows changing the (default) playback speed of media embeds",
     tags: ["Chat", "Media"],
-    authors: [Devs.D3SOX],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     patches: [
         // replace voice message embed speed control because ours provides more speeds
@@ -102,7 +103,7 @@ export default definePlugin({
         }, [mediaRef]);
 
         return (
-            <Tooltip text="Playback speed">
+            <Tooltip text={t("Playback speed")}>
                 {tooltipProps => (
                     <button
                         {...tooltipProps}
@@ -115,7 +116,7 @@ export default definePlugin({
                                     aria-label="Playback speed control"
                                 >
                                     <Menu.MenuGroup
-                                        label="Playback speed"
+                                        label={t("Playback speed")}
                                     >
                                         {speeds.map(speed => (
                                             <Menu.MenuItem

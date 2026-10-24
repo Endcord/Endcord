@@ -8,7 +8,8 @@ import "./styles.css";
 
 import { addServerListElement, removeServerListElement, ServerListRenderPosition } from "@api/ServerList";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { EquicordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import definePlugin from "@utils/types";
 import { FluxDispatcher, Tooltip } from "@webpack/common";
 
@@ -26,14 +27,14 @@ function SearchIcon() {
 
 export default definePlugin({
     name: "ServerSearch",
-    authors: [EquicordDevs.camila314],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     description: "Navigate your servers better with a quick search button",
     tags: ["Shortcuts", "Servers"],
 
     renderButton() {
         return <ErrorBoundary noop>
             <div id="vc-searchbutton-container">
-                <Tooltip text="Search" position="right">
+                <Tooltip text={t("Search")} position="right">
                     {({ onMouseEnter, onMouseLeave }) => (
                         <div
                             id="vc-searchbutton"

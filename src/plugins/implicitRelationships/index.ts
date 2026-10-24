@@ -25,7 +25,7 @@ export default definePlugin({
     name: "ImplicitRelationships",
     description: "Shows your implicit relationships in the Friends tab.",
     tags: ["Friends", "Servers"],
-    authors: [Devs.Dolfies],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
 
     patches: [

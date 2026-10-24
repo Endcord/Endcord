@@ -6,13 +6,14 @@
 
 import "./VoiceChannelLogEntryComponent.css";
 
-import { openUserProfile } from "@utils/discord";
 import { Channel } from "@endcord/discord-types";
+import { getCallStartTime } from "@plugins/voiceChannelLog/logs";
+import { VoiceChannelLogEntry } from "@plugins/voiceChannelLog/types";
+import { cl, downloadSound, formatElapsedTime, getEmojiUrl, playSound } from "@plugins/voiceChannelLog/utils";
+import { openUserProfile } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { ApplicationStore, Clickable, closeAllModals,IconUtils, NavigationRouter, Timestamp, Tooltip, UserStore } from "@webpack/common";
 
-import { getCallStartTime } from "../logs";
-import { VoiceChannelLogEntry } from "../types";
-import { cl, downloadSound, formatElapsedTime, getEmojiUrl, playSound } from "../utils";
 import EventIcon from "./VoiceChannelLogEntryIcons";
 
 function getEventDescription(entry: VoiceChannelLogEntry): string {
@@ -79,16 +80,16 @@ export function VoiceChannelLogEntryComponent({ logEntry, channel }: { logEntry:
                 {logEntry.type === "soundboard" ? (
                     <div className={cl("soundboard-info")}>
                         {logEntry.emoji && <img className={cl("soundboard-emoji")} src={getEmojiUrl(logEntry.emoji)} alt={logEntry.emoji.name} />}
-                        <span className={cl("soundboard-id")}>Played a soundboard sound</span>
+                        <span className={cl("soundboard-id")}>{t("Played a soundboard sound")}</span>
                         <div className={cl("soundboard-actions")}>
-                            <Tooltip text="Play sound">
+                            <Tooltip text={t("Play sound")}>
                                 {tooltipProps => (
                                     <Clickable {...tooltipProps} className={cl("soundboard-action")} onClick={() => playSound(logEntry.soundId!)}>
                                         <svg width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z" /></svg>
                                     </Clickable>
                                 )}
                             </Tooltip>
-                            <Tooltip text="Save sound">
+                            <Tooltip text={t("Save sound")}>
                                 {tooltipProps => (
                                     <Clickable {...tooltipProps} className={cl("soundboard-action")} onClick={() => downloadSound(logEntry.soundId!)}>
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
@@ -101,7 +102,7 @@ export function VoiceChannelLogEntryComponent({ logEntry, channel }: { logEntry:
                     <div className={cl("soundboard-info")}>
                         <span className={cl("soundboard-id")}>{description}</span>
                         <div className={cl("soundboard-actions")}>
-                            <Tooltip text="View activity">
+                            <Tooltip text={t("View activity")}>
                                 {tooltipProps => (
                                     <Clickable
                                         {...tooltipProps}

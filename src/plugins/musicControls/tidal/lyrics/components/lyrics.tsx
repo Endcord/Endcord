@@ -9,6 +9,7 @@ import { TooltipContainer } from "@components/TooltipContainer";
 import { settings } from "@equicordplugins/musicControls/settings";
 import { TidalLrcStore } from "@equicordplugins/musicControls/tidal/lyrics/providers/store";
 import { TidalStore } from "@equicordplugins/musicControls/tidal/TidalStore";
+import { t } from "@utils/i18n";
 import { ContextMenuApi, openModal,useEffect, useState, useStateFromStores } from "@webpack/common";
 
 import { LyricsContextMenu } from "./ctxMenu";
@@ -40,7 +41,7 @@ function LyricsDisplay({ scroll = true }: { scroll?: boolean; }) {
             <div className="eq-tidal-lyrics"
                 onContextMenu={e => ContextMenuApi.openContextMenu(e, () => <LyricsContextMenu />)}
             >
-                <TooltipContainer text="No lyrics found">
+                <TooltipContainer text={t("No lyrics found")}>
                     {NoteElement}
                 </TooltipContainer>
             </div>

@@ -49,7 +49,7 @@ export default definePlugin({
     name: "IrcColors",
     description: "Makes username colors in chat unique, like in IRC clients",
     tags: ["Appearance", "Customisation"],
-    authors: [Devs.Grzesiek11, Devs.jamesbt365],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
 
     patches: [
@@ -57,7 +57,7 @@ export default definePlugin({
             find: '="SYSTEM_TAG"',
             replacement: {
                 // Override colorString with our custom color and disable gradients if applying the custom color.
-                match: /(?<=colorString:\i,colorStrings:\i,colorRoleName:\i.*?}=)(\i),/,
+                match: /(?<=colorString:\i,colorStrings:\i,colorRoleName:\i.*?}=)(\i|Endcord\.Plugins\.plugins\[[^\]]+\]\.\w+\(\i, arguments\[0\]\)),/,
                 replace: "$self.wrapMessageColorProps($1, arguments[0]),"
             }
         },

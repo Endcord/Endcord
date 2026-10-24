@@ -95,7 +95,7 @@ function TypingBadge({ channelId }: { channelId: string; }) {
 export default definePlugin({
     name: "ShowTypingUsers",
     description: "Shows a badge in the channel header listing who is currently typing.",
-    authors: [Devs.ewlle, Devs.rootpoi, Devs.kraethis],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     tags: ["Chat", "Utility"],
 
     start() {

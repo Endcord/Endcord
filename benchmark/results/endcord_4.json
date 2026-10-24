@@ -1,0 +1,45 @@
+{
+  "mod": "endcord",
+  "detected": "Endcord",
+  "readyMs": 4023,
+  "pageStartMs": 650,
+  "inPageReadyMs": 3373,
+  "domContentLoadedMs": 646,
+  "cpuFirst30sMs": 29094,
+  "cpuFirst60sMs": 35516,
+  "idleCpuPct": 1.88,
+  "ramMB": 714,
+  "rendererRamMB": 401,
+  "jsHeapMB": 107.4,
+  "domNodes": 3768,
+  "eventListeners": 1155,
+  "cssRules": 35294,
+  "styleElements": 9,
+  "processes": {
+    "browser": {
+      "count": 1,
+      "memMB": 112
+    },
+    "crashpad-handler": {
+      "count": 1,
+      "memMB": 9
+    },
+    "gpu-process": {
+      "count": 2,
+      "memMB": 162
+    },
+    "NetworkService": {
+      "count": 1,
+      "memMB": 19
+    },
+    "renderer": {
+      "count": 1,
+      "memMB": 401
+    },
+    "AudioService": {
+      "count": 1,
+      "memMB": 11
+    }
+  },
+  "round": 4
+}

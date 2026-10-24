@@ -28,7 +28,7 @@ export default definePlugin({
     searchTerms: ["ShowTimeouts", "ShowInvitesPaused", "ShowModView", "DisableDiscoveryFilters"],
     description: "Displays various hidden & moderator-only things regardless of permissions.",
     tags: ["Servers", "Utility"],
-    authors: [Devs.Dolfies],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
 
     patches: [

@@ -6,7 +6,8 @@
 
 import { definePluginSettings } from "@api/Settings";
 import { BaseText } from "@components/BaseText";
-import { EndcordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import definePlugin, { makeRange, OptionType } from "@utils/types";
 import { ReactNode } from "react";
 
@@ -113,15 +114,15 @@ export default definePlugin({
     name: "WigglyText",
     description: "Adds a new markdown formatting that makes text wiggly.",
     tags: ["Appearance", "Customisation", "Fun"],
-    authors: [EndcordDevs.nexpid],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     settingsAboutComponent: () => (
         <BaseText>
-            You can make text wiggle with the following:<br />
+            {t("You can make text wiggle with the following:")}<br />
             <ul className="wiggle-example">
-                <li><ExampleWiggle wiggle="x">left and right</ExampleWiggle> by typing <code>&lt;~text~&gt;</code></li>
-                <li><ExampleWiggle wiggle="y">up and down</ExampleWiggle> by typing <code>^~text~^</code></li>
-                <li><ExampleWiggle wiggle="xy">in a circle</ExampleWiggle> by typing <code>)~text~(</code></li>
+                <li><ExampleWiggle wiggle="x">{t("left and right")}</ExampleWiggle>{" "}{t("by typing")}{" "}<code>&lt;~text~&gt;</code></li>
+                <li><ExampleWiggle wiggle="y">{t("up and down")}</ExampleWiggle>{" "}{t("by typing")}{" "}<code>{t("^~text~^")}</code></li>
+                <li><ExampleWiggle wiggle="xy">{t("in a circle")}</ExampleWiggle>{" "}{t("by typing")}{" "}<code>{t(")~text~(")}</code></li>
             </ul>
         </BaseText>
     ),

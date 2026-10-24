@@ -6,7 +6,8 @@
 
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { PaintbrushIcon } from "@components/Icons";
-import { EquicordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import definePlugin from "@utils/types";
 import { extractAndLoadChunksLazy } from "@webpack";
 import { ChannelStore, closeModal, DraftType, FluxDispatcher, Menu, openModal, PendingReplyStore, SelectedChannelStore, UploadHandler } from "@webpack/common";
@@ -24,7 +25,7 @@ const UploadContextMenuPatch: NavContextMenuPatchCallback = (children, props) =>
 
     children.push(<Menu.MenuItem
         id="vc-remix"
-        label="Remix"
+        label={t("Remix")}
         action={() => {
             const key = openModal(props =>
                 <RemixModal modalProps={props} close={() => closeModal(key)} />
@@ -46,7 +47,7 @@ const MessageContextMenuPatch: NavContextMenuPatchCallback = (children, props) =
 
     group.splice(index + 1, 0, <Menu.MenuItem
         id="vc-remix"
-        label="Remix"
+        label={t("Remix")}
         icon={PaintbrushIcon}
         leadingAccessory={{ type: "icon", icon: PaintbrushIcon }}
         action={() => {
@@ -71,7 +72,7 @@ export default definePlugin({
     name: "RemixRevived",
     description: "Revives Remix and breings it to Desktop",
     tags: ["Customisation", "Fun"],
-    authors: [EquicordDevs.MrDiamond, EquicordDevs.meowabyte],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     contextMenus: {
         "channel-attach": UploadContextMenuPatch,
         "message": MessageContextMenuPatch,

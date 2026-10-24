@@ -7,6 +7,7 @@
 import { LazyComponent, LazyComponentWrapper } from "@utils/lazyReact";
 import { Logger } from "@utils/Logger";
 import { Margins } from "@utils/margins";
+import { translateHook } from "@utils/translateHook";
 import type { React } from "@webpack/common";
 import { ComponentType } from "react";
 
@@ -84,11 +85,12 @@ const ErrorBoundary = LazyComponent(() => {
                     </this.props.fallback>
                 );
 
-            const msg = this.props.message || "An error occurred while rendering this Component. More info can be found below and in your console.";
+            const { translate } = translateHook;
+            const msg = this.props.message || translate("This little part of Endcord tripped over itself. Everything else still works, and the details below help us fix it.");
 
             return (
                 <ErrorCard style={{ overflow: "hidden" }}>
-                    <h1>Oh no!</h1>
+                    <h1>{translate("Oopsie! (｡•́︿•̀｡)")}</h1>
                     <p>{msg}</p>
                     <code>
                         {this.state.message}

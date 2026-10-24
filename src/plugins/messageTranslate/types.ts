@@ -7,9 +7,12 @@
 import type { Message } from "@endcord/discord-types";
 
 export interface TranslateResponse {
-    src: string;
-    confidence: number;
-    sentences: { trans?: string; }[];
+    translation?: string;
+    sourceLanguage: string;
+    detectedLanguages?: {
+        srclangs?: string[];
+        srclangsConfidences?: number[];
+    };
 }
 
 export interface CachedTranslation {

@@ -15,6 +15,7 @@ import { CloudUpload as TCloudUpload, RenderModalProps } from "@endcord/discord-
 import { CloudUploadPlatform } from "@endcord/discord-types/enums";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import { useAwaiter } from "@utils/react";
 import definePlugin from "@utils/types";
@@ -55,7 +56,7 @@ const ctxMenuPatch: NavContextMenuPatchCallback = (children, props) => {
                 type: "icon",
                 icon: Microphone
             }}
-            label="Send Voice Message"
+            label={t("Send Voice Message")}
             action={() => openModal(modalProps => <VoiceMessageModal modalProps={modalProps} />)}
         />
     );
@@ -65,12 +66,13 @@ export default definePlugin({
     name: "VoiceMessages",
     description: "Allows you to send voice messages like on mobile. To do so, right click the upload button and click Send Voice Message",
     tags: ["Voice"],
-    authors: [Devs.Ven, Devs.Vap, Devs.Nickyux],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
 
     patches: [
         {
-            find: "#{intl::PAUSE_VOICE_MESSAGE_A11Y_LABEL}",
+            // The pause label also appears in another module that loads first, and MediaPlaybackSpeed replaces the rate control
+            find: "#{intl::VOICE_MESSAGES_A11Y_LABEL}",
             replacement: {
                 match: /(?<=\i=)(?=\i\.memo\(.{0,50}?=1,onVolumeChange:[^}]+?waveform:[^}]+?playbackCacheKey:)/,
                 replace: "$self.VoiceMessage=",
@@ -197,7 +199,7 @@ function VoiceMessageModal({ modalProps }: { modalProps: RenderModalProps; }) {
     return (
         <Modal
             {...modalProps}
-            title="Record Voice Message"
+            title={t("Record Voice Message")}
             actions={[{
                 text: "Send",
                 variant: "primary",
@@ -227,13 +229,12 @@ function VoiceMessageModal({ modalProps }: { modalProps: RenderModalProps; }) {
                         }
                     }}
                 >
-                    Upload File
-                </Button>
+                    {t("Upload File")}</Button>
             </div>
 
-            <Forms.FormTitle>Preview</Forms.FormTitle>
+            <Forms.FormTitle>{t("Preview")}</Forms.FormTitle>
             {metaError
-                ? <Paragraph className={cl("error")}>Failed to parse selected audio file: {metaError.message}</Paragraph>
+                ? <Paragraph className={cl("error")}>{t("Failed to parse selected audio file:")}{" "}{metaError.message}</Paragraph>
                 : (
                     <VoicePreview
                         src={blobUrl}
@@ -244,10 +245,10 @@ function VoiceMessageModal({ modalProps }: { modalProps: RenderModalProps; }) {
 
             {isUnsupportedFormat && (
                 <Card variant="warning" className={Margins.top16} defaultPadding>
-                    <Forms.FormText>Voice Messages have to be OggOpus to be playable on iOS. This file is <code>{blob.type}</code> so it will not be playable on iOS.</Forms.FormText>
+                    <Forms.FormText>{t("Voice Messages have to be OggOpus to be playable on iOS. This file is")}{" "}<code>{blob.type}</code>{" "}{t("so it will not be playable on iOS.")}</Forms.FormText>
 
                     <Forms.FormText className={Margins.top8}>
-                        To fix it, first convert it to OggOpus, for example using the <Link href="https://convertio.co/mp3-opus/">convertio web converter</Link>
+                        {t("To fix it, first convert it to OggOpus, for example using the")}{" "}<Link href="https://convertio.co/mp3-opus/">{t("convertio web converter")}</Link>
                     </Forms.FormText>
                 </Card>
             )}

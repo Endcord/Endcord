@@ -6,12 +6,12 @@
 
 import type { MessageSendListener } from "@api/MessageEvents";
 import { definePluginSettings } from "@api/Settings";
-import { EquicordDevs } from "@utils/constants";
+import type { Channel } from "@endcord/discord-types";
+import { Devs } from "@utils/constants";
 import { copyWithToast, getCurrentChannel, insertTextIntoChatInputBox, sendMessage } from "@utils/discord";
 import { Logger } from "@utils/Logger";
 import { sleep } from "@utils/misc";
 import definePlugin, { makeRange, OptionType } from "@utils/types";
-import type { Channel } from "@endcord/discord-types";
 import { ChannelStore, ComponentDispatch, PermissionsBits, PermissionStore, Toasts, UserStore } from "@webpack/common";
 
 import { splitMessage, type SplitMode } from "./splitMessage";
@@ -149,7 +149,7 @@ export default definePlugin({
     description: "Splits oversized messages into Discord-sized chunks before sending.",
     dependencies: ["MessageEventsAPI"],
     tags: ["Chat", "Utility"],
-    authors: [EquicordDevs.Reycko, EquicordDevs.justjxke],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     onBeforeMessageSend: listener,
 

@@ -14,13 +14,14 @@ import { Flex } from "@components/Flex";
 import { User, UserProfile } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { copyWithToast, fetchUserProfile } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import { classes } from "@utils/misc";
 import { useAwaiter } from "@utils/react";
+import { safeRecordMerge } from "@utils/safeRecordMerge";
 import definePlugin, { OptionType } from "@utils/types";
 import { findComponentByCodeLazy } from "@webpack";
 import { Button, ColorPicker, Forms, React, Text, UserProfileStore, UserStore, useState } from "@webpack/common";
-import { safeRecordMerge } from "@utils/safeRecordMerge";
 
 interface Colors {
     primary: number;
@@ -104,22 +105,21 @@ function SettingsAboutComponent() {
 
     return (
         <section>
-            <Forms.FormTitle tag="h3">Usage</Forms.FormTitle>
+            <Forms.FormTitle tag="h3">{t("Usage")}</Forms.FormTitle>
             <Forms.FormText>
-                After enabling this plugin, you will see custom colors in
-                the profiles of other people using compatible plugins.{" "}
+                {t("After enabling this plugin, you will see custom colors in the profiles of other people using compatible plugins.")}{" "}
             </Forms.FormText>
             <Forms.FormText className={Margins.top8}>
-                <strong>To set your own profile theme colors:</strong>
+                <strong>{t("To set your own profile theme colors:")}</strong>
                 <ul>
-                    <li>&mdash; use the color pickers below to choose your colors</li>
-                    <li>&mdash; click the "Copy 3y3" button</li>
-                    <li>&mdash; paste the invisible text anywhere in your bio</li>
+                    <li>{"— "}{t("use the color pickers below to choose your colors")}</li>
+                    <li>{"— "}{t("click the \"Copy 3y3\" button")}</li>
+                    <li>{"— "}{t("paste the invisible text anywhere in your bio")}</li>
                 </ul>
                 <Divider
                     className={classes(Margins.top8, Margins.bottom8)}
                 />
-                <Forms.FormTitle tag="h3">Color pickers</Forms.FormTitle>
+                <Forms.FormTitle tag="h3">{t("Color pickers")}</Forms.FormTitle>
                 <Flex gap="1em">
                     <ColorPicker
                         color={color1}
@@ -128,8 +128,7 @@ function SettingsAboutComponent() {
                                 variant={"text-xs/normal"}
                                 style={{ marginTop: "4px" }}
                             >
-                                Primary
-                            </Text>
+                                {t("Primary")}</Text>
                         }
                         onChange={(color: number) => {
                             setColor1(color);
@@ -142,8 +141,7 @@ function SettingsAboutComponent() {
                                 variant={"text-xs/normal"}
                                 style={{ marginTop: "4px" }}
                             >
-                                Accent
-                            </Text>
+                                {t("Accent")}</Text>
                         }
                         onChange={(color: number) => {
                             setColor2(color);
@@ -158,13 +156,12 @@ function SettingsAboutComponent() {
                         size={Button.Sizes.XLARGE}
                         style={{ marginBottom: "auto" }}
                     >
-                        Copy 3y3
-                    </Button>
+                        {t("Copy 3y3")}</Button>
                 </Flex>
                 <Divider
                     className={classes(Margins.top8, Margins.bottom8)}
                 />
-                <Forms.FormTitle tag="h3">Preview</Forms.FormTitle>
+                <Forms.FormTitle tag="h3">{t("Preview")}</Forms.FormTitle>
                 <div className="vc-fpt-preview">
                     <ProfileModal
                         user={UserStore.getCurrentUser()}
@@ -185,7 +182,7 @@ export default definePlugin({
     name: "FakeProfileThemes",
     description: "Allows profile theming by hiding the colors in your bio thanks to invisible 3y3 encoding",
     tags: ["Appearance", "Customisation"],
-    authors: [Devs.Alyxia, Devs.Remty],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     patches: [
         {
             find: "UserProfileStore",
@@ -229,7 +226,6 @@ export default definePlugin({
             color={Button.Colors.PRIMARY}
             size={Button.Sizes.XLARGE}
             className={Margins.left16}
-        >Copy 3y3
-        </Button >;
+        >{t("Copy 3y3")}</Button >;
     }, { noop: true }),
 });

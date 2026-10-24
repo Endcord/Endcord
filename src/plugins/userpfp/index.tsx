@@ -14,11 +14,12 @@ import { Heart } from "@components/Heart";
 import { PencilIcon } from "@components/Icons";
 import { Margins } from "@components/margins";
 import { Notice } from "@components/Notice";
-import { Devs, EquicordDevs } from "@utils/constants";
+import { User } from "@endcord/discord-types";
+import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import { openInviteModal } from "@utils/discord";
+import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
-import { User } from "@endcord/discord-types";
 import { extractAndLoadChunksLazy } from "@webpack";
 import { IconUtils, Menu, openModal, UserStore } from "@webpack/common";
 
@@ -66,28 +67,26 @@ export default definePlugin({
     name: "UserPFP",
     description: "Allows you to use an animated avatar without Nitro",
     tags: ["Appearance", "Customisation", "Servers"],
-    authors: [EquicordDevs.nexpid, Devs.thororen, EquicordDevs.soapphia, EquicordDevs.sketchmyname],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     data,
     settingsAboutComponent: () => (
         <>
             <Notice.Info className={Margins.bottom8}>
-                Using the set avatar feature is local only meaning only you see it change.
-            </Notice.Info>
+                {t("Using the set avatar feature is local only meaning only you see it change.")}</Notice.Info>
             <Flex className={cl("settings")}>
                 <Button
                     variant="link"
                     className={cl("settings-button")}
                     onClick={() => openInviteModal(INVITE_LINK)}
                 >
-                    Join UserPFP Server
-                </Button>
+                    {t("Join UserPFP Server")}</Button>
                 <Button
                     variant="secondary"
                     className={cl("settings-button")}
                     onClick={() => EndcordNative.native.openExternal(DONO_URL)}
                 >
-                    Support UserPFP here <Heart className={cl("settings-heart")} />
+                    {t("Support UserPFP here")}{" "}<Heart className={cl("settings-heart")} />
                 </Button>
             </Flex>
         </>
@@ -115,7 +114,7 @@ export default definePlugin({
             children.push(
                 <Menu.MenuSeparator />,
                 <Menu.MenuItem
-                    label="Set Avatar"
+                    label={t("Set Avatar")}
                     id="set-avatar"
                     icon={PencilIcon}
                     leadingAccessory={{ type: "icon", icon: PencilIcon }}

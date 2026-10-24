@@ -9,6 +9,7 @@ import "./styles.css";
 import { Guild, RenderModalProps, User } from "@endcord/discord-types";
 import { classNameFactory } from "@utils/css";
 import { getGuildAcronym, openImageModal, openUserProfile } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import { useAwaiter } from "@utils/react";
 import { findComponentByCodeLazy, findCssClassesLazy } from "@webpack";
@@ -122,25 +123,24 @@ function GuildInfoModal({ guild, modalProps }: GuildProps & { modalProps: Render
                     className={cl("tab", { selected: currentTab === Tabs.ServerInfo })}
                     id={Tabs.ServerInfo}
                 >
-                    Server Info
-                </TabBar.Item>
+                    {t("Server Info")}</TabBar.Item>
                 <TabBar.Item
                     className={cl("tab", { selected: currentTab === Tabs.Friends })}
                     id={Tabs.Friends}
                 >
-                    Friends{friendCount !== undefined ? ` (${friendCount})` : ""}
+                    {t("Friends")}{friendCount !== undefined ? ` (${friendCount})` : ""}
                 </TabBar.Item>
                 <TabBar.Item
                     className={cl("tab", { selected: currentTab === Tabs.BlockedUsers })}
                     id={Tabs.BlockedUsers}
                 >
-                    Blocked Users{blockedCount !== undefined ? ` (${blockedCount})` : ""}
+                    {t("Blocked Users")}{blockedCount !== undefined ? ` (${blockedCount})` : ""}
                 </TabBar.Item>
                 <TabBar.Item
                     className={cl("tab", { selected: currentTab === Tabs.IgnoredUsers })}
                     id={Tabs.IgnoredUsers}
                 >
-                    Ignored Users{ignoredCount !== undefined ? ` (${ignoredCount})` : ""}
+                    {t("Ignored Users")}{ignoredCount !== undefined ? ` (${ignoredCount})` : ""}
                 </TabBar.Item>
             </TabBar>
 

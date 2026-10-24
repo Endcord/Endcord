@@ -7,10 +7,10 @@
 import * as DataStore from "@api/DataStore";
 import { isPluginEnabled } from "@api/PluginManager";
 import { definePluginSettings } from "@api/Settings";
+import { User } from "@endcord/discord-types";
 import usrbg from "@plugins/usrbg";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
-import { User } from "@endcord/discord-types";
 import { UserProfileStore } from "@webpack/common";
 
 import style from "./style.css?managed";
@@ -42,9 +42,9 @@ const DATASTORE_KEY = "bannersEverywhere";
 
 export default definePlugin({
     name: "BannersEverywhere",
-    description: "Displays banners in the member list ",
+    description: "Displays banners in the member list",
     tags: ["Appearance", "Customisation"],
-    authors: [Devs.ImLvna, Devs.AutumnVN],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     patches: [
         {

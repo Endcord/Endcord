@@ -10,10 +10,11 @@ import { Button } from "@components/Button";
 import { Card } from "@components/Card";
 import { HeadingPrimary } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
+import { User } from "@endcord/discord-types";
 import type { Theme, ThemeLikeProps } from "@equicordplugins/themeLibrary/types";
+import { useI18n } from "@utils/i18n";
 import { proxyLazy } from "@utils/lazy";
 import { Margins } from "@utils/margins";
-import { User } from "@endcord/discord-types";
 import { FluxDispatcher, Modal, openModal, Parser, React, UserStore, UserUtils } from "@webpack/common";
 import { Constructor } from "type-fest";
 
@@ -47,6 +48,7 @@ function makeDummyUser(user: { username: string; id?: string; avatar?: string; }
 }
 
 export const ThemeCard: React.FC<ThemeCardProps> = ({ theme, themeLinks, likedThemes, setThemeLinks, removeButtons, removePreview }) => {
+    const { t } = useI18n();
 
     const getUser = (id: string, username: string) => UserUtils.getUser(id) ?? makeDummyUser({ username, id });
 
@@ -67,10 +69,10 @@ export const ThemeCard: React.FC<ThemeCardProps> = ({ theme, themeLinks, likedTh
                 <Modal
                     {...modalProps}
                     size="sm"
-                    title="Hold on!"
+                    title={t("Hold on!")}
                     actions={[
                         {
-                            text: "Enable Plugin",
+                            text: t("Enable Plugin"),
                             variant: "primary",
                             onClick: () => {
                                 Settings.plugins.ThemeAttributes.enabled = true;
@@ -79,15 +81,15 @@ export const ThemeCard: React.FC<ThemeCardProps> = ({ theme, themeLinks, likedTh
                             }
                         },
                         {
-                            text: "Cancel",
+                            text: t("Cancel"),
                             variant: "secondary",
                             onClick: () => modalProps.onClose()
                         }
                     ]}
                 >
                     <Paragraph style={{ padding: "8px" }}>
-                        <p>This theme requires the <b>ThemeAttributes</b> plugin to work properly!</p>
-                        <p>Do you want to enable it?</p>
+                        <p>{t("This theme requires the ThemeAttributes plugin to work properly!")}</p>
+                        <p>{t("Do you want to enable it?")}</p>
                     </Paragraph>
                 </Modal>
             ));
@@ -139,7 +141,7 @@ export const ThemeCard: React.FC<ThemeCardProps> = ({ theme, themeLinks, likedTh
                                 className={Margins.right8}
                                 disabled={!theme.content || theme.id === "preview"}
                             >
-                                {themeLinks.includes(`${apiUrl}/${theme.id}`) ? "Remove Theme" : "Add Theme"}
+                                {themeLinks.includes(`${apiUrl}/${theme.id}`) ? t("Remove Theme") : t("Add Theme")}
                             </Button>
                             <Button
                                 onClick={async () => {
@@ -152,7 +154,7 @@ export const ThemeCard: React.FC<ThemeCardProps> = ({ theme, themeLinks, likedTh
                                 size="medium"
                                 className={Margins.right8}
                             >
-                                Theme Info
+                                {t("Theme Info")}
                             </Button>
                             <LikesComponent themeId={theme.id} likedThemes={likedThemes} />
                             <Button
@@ -162,7 +164,7 @@ export const ThemeCard: React.FC<ThemeCardProps> = ({ theme, themeLinks, likedTh
                                 disabled={!theme.content || theme.id === "preview"}
                                 style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
                             >
-                                View Source
+                                {t("View Source")}
                             </Button>
                         </div>
                     )}

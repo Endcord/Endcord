@@ -5,6 +5,7 @@
  */
 
 import { ErrorCard } from "@components/ErrorCard";
+import { t } from "@utils/i18n";
 import { UpdateLogger } from "@utils/updater";
 import { ConfirmModal,openModal, Parser } from "@webpack/common";
 
@@ -36,8 +37,8 @@ export function runWithDispatch(dispatch: React.Dispatch<React.SetStateAction<bo
             openModal(props => (
                 <ConfirmModal
                     {...props}
-                    title="Oops!"
-                    confirmText="OK"
+                    title={t("Oops!")}
+                    confirmText={t("OK")}
                     variant="primary"
                 >
                     <ErrorCard>

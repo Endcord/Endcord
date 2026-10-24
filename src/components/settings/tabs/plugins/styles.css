@@ -63,6 +63,8 @@
     line-height: 16px;
     color: var(--white-500);
     text-align: center;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .vc-plugins-dep-name {
@@ -71,7 +73,6 @@
 
 .vc-plugins-info-card {
     padding: 1em;
-    height: 8em;
     display: flex;
     flex-direction: column;
     gap: 0.25em;
@@ -104,11 +105,11 @@
     align-items: center;
     gap: 8px;
     background: var(--background-secondary);
-    border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
+    border: 1px solid var(--border-subtle, rgb(255 255 255 / 8%));
     border-radius: 8px;
     padding: 6px 14px;
     font-size: 13px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 10%);
 }
 
 .vc-plugins-stat-label {

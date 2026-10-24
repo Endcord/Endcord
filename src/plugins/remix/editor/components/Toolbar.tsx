@@ -10,6 +10,7 @@ import { BrushTool } from "@equicordplugins/remix/editor/tools/brush";
 import { CropTool, resetBounds } from "@equicordplugins/remix/editor/tools/crop";
 import { EraseTool } from "@equicordplugins/remix/editor/tools/eraser";
 import { currentShape, setShape, setShapeFill, Shape, ShapeTool } from "@equicordplugins/remix/editor/tools/shape";
+import { t } from "@utils/i18n";
 import { Button, Select, Slider, useEffect, useState } from "@webpack/common";
 
 import { brushCanvas, canvas, cropCanvas, render, shapeCanvas } from "./Canvas";
@@ -92,10 +93,10 @@ export const Toolbar = () => {
     return (
         <div className="vc-remix-toolbar">
             <div className="vc-remix-tools">
-                <Button className={(tool === "brush" ? "tool-active" : "")} onClick={() => changeTool("brush")}>Brush</Button>
-                <Button className={(tool === "erase" ? "tool-active" : "")} onClick={() => changeTool("erase")}>Erase</Button>
-                <Button className={(tool === "crop" ? "tool-active" : "")} onClick={() => changeTool("crop")}>Crop</Button>
-                <Button className={(tool === "shape" ? "tool-active" : "")} onClick={() => changeTool("shape")}>Shape</Button>
+                <Button className={(tool === "brush" ? "tool-active" : "")} onClick={() => changeTool("brush")}>{t("Brush")}</Button>
+                <Button className={(tool === "erase" ? "tool-active" : "")} onClick={() => changeTool("erase")}>{t("Erase")}</Button>
+                <Button className={(tool === "crop" ? "tool-active" : "")} onClick={() => changeTool("crop")}>{t("Crop")}</Button>
+                <Button className={(tool === "shape" ? "tool-active" : "")} onClick={() => changeTool("shape")}>{t("Shape")}</Button>
             </div>
             <div className="vc-remix-settings">
                 <div className="vc-remix-setting-section">
@@ -114,14 +115,14 @@ export const Toolbar = () => {
                         />
                     }
                 </div>
-                {(tool === "crop") && <Button onClick={resetBounds}>Reset</Button>}
+                {(tool === "crop") && <Button onClick={resetBounds}>{t("Reset")}</Button>}
                 <div className="vc-remix-setting-section">
                     {(tool === "shape") && (<>
                         <Select
                             select={setShape}
                             isSelected={v => v === currentShape}
                             serialize={v => String(v)}
-                            placeholder="Shape"
+                            placeholder={t("Shape")}
                             options={
                                 ["Rectangle", "Ellipse", "Line", "Arrow"].map(v => ({
                                     label: v,
@@ -130,12 +131,12 @@ export const Toolbar = () => {
                             }
                         />
 
-                        <Paragraph className="vc-remix-setting-switch">Fill <Switch checked={fill} onChange={setFill} /></Paragraph>
+                        <Paragraph className="vc-remix-setting-switch">{t("Fill")}{" "}<Switch checked={fill} onChange={setFill} /></Paragraph>
                     </>)}
                 </div>
             </div>
             <div className="vc-remix-misc">
-                <Button onClick={clear}>Clear</Button>
+                <Button onClick={clear}>{t("Clear")}</Button>
             </div>
         </div>
     );

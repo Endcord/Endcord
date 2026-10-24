@@ -5,10 +5,10 @@
  */
 
 import { Button } from "@components/Button";
+import { CLONE_LINK_REGEX, showInstallFinishedAlert, WHITELISTED_SHARE_CHANNELS } from "@plugins/userpluginInstaller.dev/misc/constants";
 import { Alerts, ChannelStore, useEffect, useState } from "@webpack/common";
 
 import userpluginInstaller, { Native, OpenSettingsModule, settings } from "..";
-import { CLONE_LINK_REGEX, showInstallFinishedAlert, WHITELISTED_SHARE_CHANNELS } from "../misc/constants";
 
 export default function UserpluginInstallButton({ props }: any) {
     const [plugins, setPlugins] = useState<{

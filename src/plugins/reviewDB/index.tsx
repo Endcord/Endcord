@@ -13,6 +13,7 @@ import { Paragraph } from "@components/Paragraph";
 import { Span } from "@components/Span";
 import { Guild, User } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import { useAwaiter } from "@utils/react";
 import definePlugin from "@utils/types";
@@ -35,7 +36,7 @@ const guildPopoutPatch: NavContextMenuPatchCallback = (children, { guild }: { gu
     if (!guild) return;
     children.push(
         <Menu.MenuItem
-            label="View Reviews"
+            label={t("View Reviews")}
             id="vc-rdb-server-reviews"
             icon={OpenExternalIcon}
             action={() => openReviewsModal(guild.id, guild.name, ReviewType.Server)}
@@ -47,7 +48,7 @@ const userContextPatch: NavContextMenuPatchCallback = (children, { user }: { use
     if (!user) return;
     children.push(
         <Menu.MenuItem
-            label="View Reviews"
+            label={t("View Reviews")}
             id="vc-rdb-user-reviews"
             icon={OpenExternalIcon}
             action={() => openReviewsModal(user.id, user.username, ReviewType.User)}
@@ -59,7 +60,7 @@ export default definePlugin({
     name: "ReviewDB",
     description: "Review other users (Adds a new settings to profiles)",
     tags: ["Friends", "Servers"],
-    authors: [Devs.mantikafasi, Devs.Ven],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
 
     settings,
     contextMenus: {
@@ -71,14 +72,6 @@ export default definePlugin({
     },
 
     patches: [
-        {
-            // DM profile sidebar
-            find: ".SIDEBAR,disableToolbar:",
-            replacement: {
-                match: /user:(\i),widgets:.{0,100}?\}\),(?=.{0,200}?#{intl::USER_PROFILE_WISHLIST})/,
-                replace: "$&$self.renderProfileComponent({user:$1,isSideBar:true}),"
-            }
-        },
         {
             // User popout
             // Same find as ShowConnections
@@ -166,7 +159,7 @@ export default definePlugin({
                             onClick={() => !reviewData?.hasOptedOut && openReviewsModal(user.id, user.username, ReviewType.User)}
                         >
                             <div className={classes(ProfileCardOverlayClasses.overlay, ProfileCardContainerClasses.innerContainer, ProfileCardClasses.card)}>
-                                <Paragraph size={isSideBar ? "sm" : "xs"} weight="medium">User Reviews</Paragraph>
+                                <Paragraph size={isSideBar ? "sm" : "xs"} weight="medium">{t("User Reviews")}</Paragraph>
                                 {!!reviewData?.reviewCount
                                     ? (
                                         <div className={ProfileCardContainerClasses.icons}>

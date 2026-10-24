@@ -5,9 +5,10 @@
  */
 
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
-import { EquicordDevs } from "@utils/constants";
-import definePlugin from "@utils/types";
 import { Channel } from "@endcord/discord-types";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
+import definePlugin from "@utils/types";
 import { Menu, NavigationRouter, RestAPI, Toasts, UserStore } from "@webpack/common";
 
 async function findLastMessageFromUser(guildId: string, channelId: string, userId: string) {
@@ -81,7 +82,7 @@ const ChannelContextMenuPatch: NavContextMenuPatchCallback = (children, { channe
     children.push(
         <Menu.MenuItem
             id="LastActive"
-            label={<span style={{ color: "#aa6746" }}>Your Last Message</span>}
+            label={<span style={{ color: "#aa6746" }}>{t("Your Last Message")}</span>}
             icon={LastActiveIcon}
             leadingAccessory={{ type: "icon", icon: LastActiveIcon }}
             action={() => {
@@ -97,7 +98,7 @@ const UserContextMenuPatch: NavContextMenuPatchCallback = (children, { user, cha
     children.push(
         <Menu.MenuItem
             id="LastActive"
-            label={<span style={{ color: "#aa6746" }}>User's Last Message</span>}
+            label={<span style={{ color: "#aa6746" }}>{t("User's Last Message")}</span>}
             icon={UserLastActiveIcon}
             leadingAccessory={{ type: "icon", icon: UserLastActiveIcon }}
             action={() => {
@@ -145,7 +146,7 @@ export default definePlugin({
     name: "LastActive",
     description: "A plugin to jump to last active message from yourself or another user in a channel/server.",
     tags: ["Chat", "Utility"],
-    authors: [EquicordDevs.Crxa],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     contextMenus: {
         "channel-context": ChannelContextMenuPatch,
         "user-context": UserContextMenuPatch,

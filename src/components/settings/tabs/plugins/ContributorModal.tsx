@@ -11,8 +11,9 @@ import { Link } from "@components/Link";
 import { RenderModalProps, User } from "@endcord/discord-types";
 import { classNameFactory } from "@utils/css";
 import { fetchUserProfile } from "@utils/discord";
+import { useI18n } from "@utils/i18n";
 import { classes, pluralise } from "@utils/misc";
-import { Forms, Modal,openModal, showToast, useEffect, useMemo, UserProfileStore, useStateFromStores } from "@webpack/common";
+import { Forms, Modal, openModal, showToast, useEffect, useMemo, UserProfileStore, useStateFromStores } from "@webpack/common";
 
 import Plugins from "~plugins";
 
@@ -26,6 +27,7 @@ export function openContributorModal(user: User) {
 }
 
 function ContributorModal({ user, modalProps }: { user: User; modalProps: RenderModalProps; }) {
+    const { t } = useI18n();
     useSettings();
 
     const profile = useStateFromStores([UserProfileStore], () => UserProfileStore.getUserProfile(user.id));
@@ -49,7 +51,7 @@ function ContributorModal({ user, modalProps }: { user: User; modalProps: Render
             .sort((a, b) => Number(a.required ?? false) - Number(b.required ?? false));
     }, [user.id, user.username]);
 
-    const ContributedHyperLink = <Link href="https://endcord.com/source">contributed</Link>;
+    const ContributedHyperLink = <Link href="https://endcord.com/source">{t("contributed")}</Link>;
 
     return (
         <Modal
@@ -83,12 +85,12 @@ function ContributorModal({ user, modalProps }: { user: User; modalProps: Render
                 plugins.length
                     ? (
                         <Forms.FormText>
-                            This person has {ContributedHyperLink} to {pluralise(plugins.length, "plugin")}!
+                            {t("This person has")} {ContributedHyperLink} ({pluralise(plugins.length, "plugin")})!
                         </Forms.FormText>
                     )
                     : (
                         <Forms.FormText>
-                            This person has not made any plugins. They likely {ContributedHyperLink} to Endcord in other ways!
+                            {t("This person has not made any plugins. They likely")} {ContributedHyperLink} {t("to Endcord in other ways!")}
                         </Forms.FormText>
                     )
             }
@@ -100,7 +102,7 @@ function ContributorModal({ user, modalProps }: { user: User; modalProps: Render
                             key={p.name}
                             plugin={p}
                             disabled={p.required ?? false}
-                            onRestartNeeded={() => showToast("Restart to apply changes!")}
+                            onRestartNeeded={() => showToast(t("Restart to apply changes"))}
                         />
                     )}
                 </div>

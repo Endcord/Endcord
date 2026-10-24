@@ -5,10 +5,10 @@
  */
 
 import { isPluginEnabled } from "@api/PluginManager";
+import { CloudUpload } from "@endcord/discord-types";
 import anonymiseFileNames, { tarExtMatcher } from "@plugins/anonymiseFileNames";
 import { Devs } from "@utils/constants";
 import definePlugin, { ReporterTestable } from "@utils/types";
-import { CloudUpload } from "@endcord/discord-types";
 
 const extensionMap = {
     "ogg": [".ogv", ".oga", ".ogx", ".ogm", ".spx", ".aac", ".wma"],
@@ -27,7 +27,7 @@ export const reverseExtensionMap = Object.entries(extensionMap).reduce((acc, [ta
 
 export default definePlugin({
     name: "FixFileExtensions",
-    authors: [Devs.thororen],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     description: "Fixes file extensions by renaming them to a compatible supported format if possible",
     tags: ["Media", "Utility"],
     reporterTestable: ReporterTestable.None,

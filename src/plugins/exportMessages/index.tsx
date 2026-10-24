@@ -9,12 +9,13 @@ import "./styles.css";
 import { showNotification } from "@api/Notifications";
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
+import { Message } from "@endcord/discord-types";
 import { copyToClipboard } from "@utils/clipboard";
-import { EquicordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import { showItemInFolder } from "@utils/native";
 import definePlugin, { OptionType } from "@utils/types";
 import { saveFile } from "@utils/web";
-import { Message } from "@endcord/discord-types";
 import { Menu, Toasts } from "@webpack/common";
 
 import { ContactsList } from "./types";
@@ -110,7 +111,7 @@ const messageContextMenuPatch = (children: Array<React.ReactElement<any> | null>
     children.push(
         <Menu.MenuItem
             id="export-message"
-            label="Export Message"
+            label={t("Export Message")}
             icon={Icon}
             leadingAccessory={{ type: "icon", icon: Icon }}
             action={() => exportMessage(message)}
@@ -135,7 +136,7 @@ export default definePlugin({
     name: "ExportMessages",
     description: "Allows you to export any message to a file",
     tags: ["Chat", "Utility"],
-    authors: [EquicordDevs.veygax, EquicordDevs.dat_insanity],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     contextMenus: {
         "message": messageContextMenuPatch
@@ -169,7 +170,7 @@ export default definePlugin({
     },
     addExportButton() {
         return <ErrorBoundary noop key=".2">
-            <button className="export-contacts-button" onClick={() => { this.copyContactToClipboard(); console.log("clicked"); }}>Export</button>
+            <button className="export-contacts-button" onClick={() => { this.copyContactToClipboard(); console.log("clicked"); }}>{t("Export")}</button>
         </ErrorBoundary>;
     },
     copyContactToClipboard() {

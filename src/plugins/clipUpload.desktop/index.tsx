@@ -7,7 +7,8 @@
 import type { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { CloudUploadIcon } from "@components/Icons";
-import { EquicordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import definePlugin from "@utils/types";
 import { findComponentByCodeLazy } from "@webpack";
 import { Menu } from "@webpack/common";
@@ -29,7 +30,7 @@ const ctxMenuPatch: NavContextMenuPatchCallback = (children, props) => {
         <Menu.MenuItem
             id="vc-upload-clip-file"
             iconLeft={CloudUploadIcon}
-            label="Upload Clip File"
+            label={t("Upload Clip File")}
             action={() => openUploadClipFileModal(props.channel.id)}
         />
     );
@@ -38,7 +39,7 @@ const ctxMenuPatch: NavContextMenuPatchCallback = (children, props) => {
 export default definePlugin({
     name: "ClipUpload",
     description: "Adds a button to upload a local video file as a Discord clip.",
-    authors: [EquicordDevs.qdnx, EquicordDevs.BachLe2000, EquicordDevs.pandaptable, EquicordDevs.Nyro, EquicordDevs.Jahsohsani],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     tags: ["Media", "Utility"],
 
     patches: [
@@ -62,7 +63,7 @@ export default definePlugin({
 
         return (
             <ActionBarIcon
-                tooltip="Upload clip file"
+                tooltip={t("Upload clip file")}
                 onClick={() => openUploadClipFileModal(channelId, clip)}
             >
                 <CloudUploadIcon width={20} height={20} />

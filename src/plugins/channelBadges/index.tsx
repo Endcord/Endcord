@@ -6,9 +6,9 @@
 
 import "./style.css";
 
+import { Channel } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
-import { Channel } from "@endcord/discord-types";
 import { GuildStore, React, SelectedGuildStore } from "@webpack/common";
 import { JSX } from "react";
 
@@ -33,7 +33,7 @@ export default definePlugin({
     name: "ChannelBadges",
     description: "Adds badges to channels based on their type",
     tags: ["Appearance", "Customisation", "Servers"],
-    authors: [Devs.ewlle, Devs.rootpoi, Devs.kraethis],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     patches: [
         // TY TypingIndicator

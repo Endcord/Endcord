@@ -21,6 +21,7 @@ import { Heading } from "@components/Heading";
 import { cl, Native, settings } from "@equicordplugins/messageLoggerEnhanced/index";
 import { DEFAULT_IMAGE_CACHE_DIR } from "@equicordplugins/messageLoggerEnhanced/utils/constants";
 import { copyWithToast } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import { findCssClassesLazy } from "@webpack";
 import { Toasts } from "@webpack/common";
@@ -89,8 +90,7 @@ export function SelectFolderInput({ settingsKey, successMessage }: Props) {
                 size="small"
                 onClick={onFolderSelect}
             >
-                Browse
-            </Button>
+                {t("Browse")}</Button>
         </div >
     );
 

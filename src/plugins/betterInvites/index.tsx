@@ -7,11 +7,12 @@
 import "./style.css";
 
 import { InfoIcon } from "@components/Icons";
+import { Guild } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { openUserProfile } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import definePlugin, { StartAt } from "@utils/types";
-import { Guild } from "@endcord/discord-types";
 import { findByPropsLazy, findCssClassesLazy } from "@webpack";
 import { Parser, Tooltip, UserStore } from "@webpack/common";
 
@@ -35,13 +36,13 @@ export default definePlugin({
     name: "BetterInvites",
     description: "See invites expiration date, view inviter profile and preview servers before joining by clicking the name",
     tags: ["Appearance", "Customisation", "Chat", "Servers"],
-    authors: [Devs.ewlle, Devs.rootpoi, Devs.kraethis],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     patches: [
         {
             find: "#{intl::xdCLeM::raw}",
             replacement: [
                 {
-                    match: /profile:\i\}\),.{0,20}profile:\i(?=.{0,20}profile:\i)/,
+                    match: /profile:\i,disableGuildNameClick:!\i/,
                     replace: "$&,invite:arguments[0].invite"
                 }
             ]
@@ -55,9 +56,14 @@ export default definePlugin({
                     replace: "onClick:$self.Lurkable($1),$&"
                 },
                 {
-                    // tip gets inserted in the name container, header gets inserted beside it
-                    match: /(:(\i),disableGuildNameClick:.{0,20}\}\),\i)(\]\}\))/,
-                    replace: "$1,$self.RenderTip(arguments[0].invite?.expires_at)$3,$self.Header(arguments[0].invite?.inviter,$2.name)"
+                    // tip gets inserted in the name container
+                    match: /(profile:\i\}\))/,
+                    replace: "$1,$self.RenderTip(arguments[0]?.invite?.expires_at)"
+                },
+                {
+                    // header gets inserted beside it
+                    match: /(?<=\]\}\),)(?=.{0,15}onlineCount:\i\.onlineCount)/,
+                    replace: "$self.Header(arguments[0]?.invite?.inviter,arguments[0]?.profile?.name),"
                 }
             ]
         },
@@ -67,7 +73,7 @@ export default definePlugin({
         const timestamp = <>{Parser.parse(`<t:${Math.round(new Date(expires_at).getTime() / 1000)}:R>`)}</>;
         const tooltipText = (
             <>
-                This invite will {expires_at ? <>expire {timestamp}</> : <>not expire</>}
+                {t("This invite will")}{" "}{expires_at ? <>expire {timestamp}</> : <>{t("not expire")}</>}
             </>
         );
 

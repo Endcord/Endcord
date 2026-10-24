@@ -6,12 +6,12 @@
 
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { migratePluginSettings } from "@api/Settings";
+import { Message } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import { sendMessage } from "@utils/discord";
 import { useForceUpdater } from "@utils/react";
 import definePlugin from "@utils/types";
-import { Message } from "@endcord/discord-types";
 import { ChannelStore, Menu, useEffect } from "@webpack/common";
 
 interface AttachmentInfo {
@@ -134,7 +134,7 @@ export default definePlugin({
     description: "Allows you to repeat messages quickly. If you hold shift while clicking the Repeat option, it will reply to the message.",
     dependencies: ["MessagePopoverAPI"],
     tags: ["Chat"],
-    authors: [Devs.ewlle, Devs.rootpoi, Devs.kraethis],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     contextMenus: {
         "message": messageCtxPatch
     },

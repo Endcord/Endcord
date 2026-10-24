@@ -11,7 +11,7 @@ export default definePlugin({
     name: "BypassPinPrompt",
     description: "Bypass the pin prompt when using the pin functions",
     tags: ["Shortcuts"],
-    authors: [Devs.thororen],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     patches: [
         ...[
             'source:"message-actions"',

@@ -9,6 +9,7 @@ import { ApplicationCommandInputType, ApplicationCommandOptionType, findOption, 
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import definePlugin, { IconComponent, OptionType } from "@utils/types";
 import { FluxDispatcher, Menu, React } from "@webpack/common";
 
@@ -88,7 +89,7 @@ const ChatBarContextCheckbox: NavContextMenuPatchCallback = children => {
     group.splice(idx + 1, 0,
         <Menu.MenuCheckboxItem
             id="vc-silent-typing"
-            label="Enable Silent Typing"
+            label={t("Enable Silent Typing")}
             checked={isEnabled}
             action={() => settings.store.isEnabled = !settings.store.isEnabled}
         />
@@ -98,7 +99,7 @@ const ChatBarContextCheckbox: NavContextMenuPatchCallback = children => {
 
 export default definePlugin({
     name: "SilentTyping",
-    authors: [Devs.Ven, Devs.Rini, Devs.ImBanana],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     description: "Hide that you are typing",
     tags: ["Chat", "Privacy"],
     settings,

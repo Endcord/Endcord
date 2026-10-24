@@ -127,7 +127,7 @@ export default definePlugin({
     name: "KeyboardSounds",
     description: "Adds OperaGX or osu! sound effects when typing on your keyboard.",
     tags: ["Fun"],
-    authors: [Devs.ewlle, Devs.rootpoi, Devs.kraethis],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     dependencies: ["AudioPlayerAPI"],
     settings,
     start() {

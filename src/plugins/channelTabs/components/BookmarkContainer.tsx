@@ -9,6 +9,7 @@ import { BasicChannelTabsProps, Bookmark, BookmarkFolder, BookmarkProps, getDisc
 import { CircleQuestionIcon, DiscoveryIcon, EnvelopeIcon, FriendsIcon, NitroIcon, QuestIcon, ShopIcon } from "@equicordplugins/channelTabs/util/icons";
 import { classNameFactory } from "@utils/css";
 import { getGuildAcronym, getIntlMessage } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import { findComponentByCodeLazy } from "@webpack";
 import { Avatar, ChannelStore, closeModal, ContextMenuApi, FluxDispatcher, GuildStore, Menu, openModal, React, ReadStateStore, ReadStateUtils, SelectedChannelStore, SelectedGuildStore, TextInput, Tooltip, useDrag, useDrop, useEffect, useRef, UserStore, useState } from "@webpack/common";
@@ -222,7 +223,7 @@ function FolderBookmarkItem({ bookmark, bookmarks, folderIndex, bookmarkIndex, m
                         <Menu.MenuItem
                             key="edit-bookmark"
                             id="edit-bookmark"
-                            label="Edit Bookmark"
+                            label={t("Edit Bookmark")}
                             action={() => {
                                 const key = openModal(modalProps =>
                                     <EditModal
@@ -245,13 +246,13 @@ function FolderBookmarkItem({ bookmark, bookmarks, folderIndex, bookmarkIndex, m
                         <Menu.MenuItem
                             key="delete-bookmark"
                             id="delete-bookmark"
-                            label="Delete Bookmark"
+                            label={t("Delete Bookmark")}
                             action={() => methods.deleteBookmark(bookmarkIndex, folderIndex)}
                         />
                         <Menu.MenuItem
                             key="remove-from-folder"
                             id="remove-from-folder"
-                            label="Remove from Folder"
+                            label={t("Remove from Folder")}
                             action={() => {
                                 methods.addBookmark(bookmark);
                                 methods.deleteBookmark(bookmarkIndex, folderIndex);
@@ -571,11 +572,9 @@ export default function BookmarkContainer(props: BasicChannelTabsProps & { userI
         <div className={cl("bookmark-container")}>
             <HorizontalScroller className={classes(cl("bookmarks"), isOver && cl("bookmarks-drop-target"))} customRef={dropRef}>
                 {!bookmarks && <BaseText className={cl("bookmark-placeholder-text")} size="xs">
-                    Loading bookmarks...
-                </BaseText>}
+                    {t("Loading bookmarks...")}</BaseText>}
                 {bookmarks && !bookmarks.length && <BaseText className={cl("bookmark-placeholder-text")} size="xs">
-                    You have no bookmarks. You can add an open tab or hide this by right clicking it
-                </BaseText>}
+                    {t("You have no bookmarks. You can add an open tab or hide this by right clicking it")}</BaseText>}
                 {Array.isArray(bookmarks) && bookmarks.length > 0 &&
                     bookmarks.flatMap((bookmark, i) => {
                         if (!isBookmarkFolder(bookmark)) {
@@ -658,7 +657,7 @@ export default function BookmarkContainer(props: BasicChannelTabsProps & { userI
                         style={{ width: "100%" }}
                         value={searchQuery}
                         onChange={setSearchQuery}
-                        placeholder="Search bookmarks"
+                        placeholder={t("Search bookmarks")}
                         onBlur={() => {
                             if (!searchQuery.trim()) setIsSearchOpen(false);
                         }}
@@ -672,7 +671,7 @@ export default function BookmarkContainer(props: BasicChannelTabsProps & { userI
                         }}
                     />
                 </div>
-                <Tooltip text="Search bookmarks" position="left">
+                <Tooltip text={t("Search bookmarks")} position="left">
                     {p => <button
                         className={classes(cl("button"), cl("bookmark-search-button"))}
                         {...p}

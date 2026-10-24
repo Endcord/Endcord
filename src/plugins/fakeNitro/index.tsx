@@ -11,6 +11,7 @@ import { StickerFormatType } from "@endcord/discord-types/enums";
 import { ApngBlendOp, ApngDisposeOp, parseAPNG } from "@utils/apng";
 import { Devs } from "@utils/constants";
 import { getCurrentGuild } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType } from "@utils/types";
 import { findByCodeLazy, findByPropsLazy, proxyLazyWebpack } from "@webpack";
@@ -148,10 +149,10 @@ function CannotEmbedNoticeModal({ modalProps, resolve }: { modalProps: RenderMod
     return (
         <ConfirmModal
             {...modalProps}
-            title="Hold on!"
-            subtitle="You are trying to send/edit a message that contains a FakeNitro emoji or sticker, however you do not have permissions to embed links in the current channel. Are you sure you want to send this message? Your FakeNitro items will appear as a link only."
-            confirmText="Send Anyway"
-            cancelText="Cancel"
+            title={t("Hold on!")}
+            subtitle={t("You are trying to send/edit a message that contains a FakeNitro emoji or sticker, however you do not have permissions to embed links in the current channel. Are you sure you want to send this message? Your FakeNitro items will appear as a link only.")}
+            confirmText={t("Send Anyway")}
+            cancelText={t("Cancel")}
             onConfirm={() => resolve(true)}
             onCloseCallback={() => setImmediate(() => resolve(false))}
             checkboxProps={{
@@ -170,7 +171,7 @@ function showCannotEmbedNotice() {
 
 export default definePlugin({
     name: "FakeNitro",
-    authors: [Devs.Arjix, Devs.D3SOX, Devs.Ven, Devs.fawn, Devs.captain, Devs.Nuckyz, Devs.AutumnVN, Devs.sadan],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     description: "Allows you to send fake emojis/stickers, use nitro themes, and stream in nitro quality",
     tags: ["Emotes", "Appearance", "Customisation", "Chat"],
     dependencies: ["MessageEventsAPI"],
@@ -334,7 +335,7 @@ export default definePlugin({
         },
         // Allow users to use custom client themes
         {
-            find: '("custom_themes_editor_footer")',
+            find: ".CLIENT_THEMES_EDITOR?",
             replacement: {
                 match: /(?<=\i=)\(0,\i\.\i\)\(\i\.\i\.TIER_2\)(?=,|;)/g,
                 replace: "true"
@@ -342,20 +343,11 @@ export default definePlugin({
         },
         {
             find: '["strong","em","u","text","inlineCode","s","spoiler"]',
-            replacement: [
-                {
-                    // Call our function to decide whether the emoji link should be kept or not
-                    predicate: () => settings.store.transformEmojis,
-                    match: /1!==(\i)\.length\|\|1!==\i\.length/,
-                    replace: (m, content) => `${m}||$self.shouldKeepEmojiLink(${content}[0])`
-                },
-                {
-                    // Patch the rendered message content to add fake nitro emojis or remove sticker links
-                    predicate: () => settings.store.transformEmojis || settings.store.transformStickers,
-                    match: /(?=return{hasSpoilerEmbeds:\i,hasBailedAst:\i,content:(\i))/,
-                    replace: (_, content) => `${content}=$self.patchFakeNitroEmojisOrRemoveStickersLinks(${content},arguments[2]?.formatInline);`
-                }
-            ]
+            predicate: () => settings.store.transformEmojis || settings.store.transformStickers,
+            replacement: {
+                match: /\(\{ast:(\i)(?=,inline:\i)/,
+                replace: "({ast:$self.transformAst($1)"
+            }
         },
         {
             find: "}renderStickersAccessories(",
@@ -431,19 +423,21 @@ export default definePlugin({
             }
         },
         // Free accounts have no premium SKU. The emoji picker calls this once per emoji,
-        // and each warn() freezes the client. Drop the log and keep the original false return.
+        // and each warn() freezes the client. Drop the logs and keep the original false return.
+        // Separate patches: ConsoleJanitor removes the first warning too, and a shared find would then skip the second.
         {
             find: "Cannot find the corresponding SKU to the user's premium type ",
-            replacement: [
-                {
-                    match: /\i\.warn\(`Cannot find the corresponding SKU to the user's premium type \$\{[^`]+\.premiumType\}`\),/,
-                    replace: ""
-                },
-                {
-                    match: /\i\.warn\(`Cannot find the corresponding product catalog entry to the user's SKU \$\{[^`]+\.premiumType\}`\),/,
-                    replace: ""
-                }
-            ]
+            replacement: {
+                match: /\i\.warn\(`Cannot find the corresponding SKU to the user's premium type \$\{[^`]+\.premiumType\}`\),/,
+                replace: ""
+            }
+        },
+        {
+            find: "Cannot find the corresponding product catalog entry to the user's SKU ",
+            replacement: {
+                match: /\i\.warn\(`Cannot find the corresponding product catalog entry to the user's SKU \$\{[^`]+\.premiumType\}`\),/,
+                replace: ""
+            }
         }
     ],
 
@@ -769,6 +763,60 @@ export default definePlugin({
         });
     },
 
+    transformAst(ast: any[]) {
+        try {
+            if (!settings.store.transformCompoundSentence && ast.length > 1) {
+                return ast;
+            }
+            // Sticker links become real stickers later, so drop them to avoid showing both
+            if (settings.store.transformStickers) {
+                ast = ast.filter(node => {
+                    const { type, target } = node;
+
+                    if (type !== "link") return true;
+                    if (fakeNitroStickerRegex.test(target)) return false;
+
+                    const gifStickerLinkMatch = target.match(fakeNitroGifStickerRegex);
+                    const isGifStickerLink = gifStickerLinkMatch && StickersStore.getStickerById(gifStickerLinkMatch[1]);
+
+                    return !isGifStickerLink;
+                });
+            }
+
+            if (settings.store.transformEmojis) {
+                ast = ast.map(node => {
+                    const { type, target } = node;
+
+                    if (type !== "link") return node;
+
+                    const fakeNitroMatch = target.match(fakeNitroEmojiRegex);
+                    if (!fakeNitroMatch) return node;
+
+                    let url: URL | null = null;
+                    try {
+                        url = new URL(target);
+                    } catch { }
+
+                    const emojiId = fakeNitroMatch[1];
+                    const emojiName = EmojiStore.getCustomEmojiById(emojiId)?.name ?? url?.searchParams.get("name") ?? "FakeNitroEmoji";
+                    const animated = fakeNitroMatch[2] === "gif" || url?.searchParams.get("animated") === "true";
+
+                    return {
+                        animated,
+                        emojiId,
+                        name: `:${emojiName}:`,
+                        type: "customEmoji",
+                        fake: true
+                    };
+                });
+            }
+        } catch (e) {
+            new Logger("FakeNitro").error("Error transforming AST:", e);
+        }
+
+        return ast;
+    },
+
     shouldKeepEmojiLink(link: any) {
         return link.target && fakeNitroEmojiRegex.test(link.target);
     },
@@ -907,15 +955,13 @@ export default definePlugin({
                         openModal(props => (
                             <ConfirmModal
                                 {...props}
-                                title="Hold on!"
-                                confirmText="OK"
+                                title={t("Hold on!")}
+                                confirmText={t("OK")}
                                 variant="primary"
                             >
                                 <div>
                                     <Forms.FormText>
-                                        You cannot send this message because it contains an animated FakeNitro sticker,
-                                        and you do not have permissions to attach files in the current channel. Please remove the sticker to proceed.
-                                    </Forms.FormText>
+                                        {t("You cannot send this message because it contains an animated FakeNitro sticker, and you do not have permissions to attach files in the current channel. Please remove the sticker to proceed.")}</Forms.FormText>
                                 </div>
                             </ConfirmModal>
                         ));

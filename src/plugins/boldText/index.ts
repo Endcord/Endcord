@@ -5,7 +5,7 @@
  */
 
 import { findOption, RequiredMessageOption } from "@api/Commands";
-import { EndcordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 
 function toBold(text: string) {
@@ -21,7 +21,7 @@ function toBold(text: string) {
 export default definePlugin({
     name: "BoldText",
     description: "/bold turns your message into 𝐮𝐧𝐢𝐜𝐨𝐝𝐞 bold (works where markdown can't).",
-    authors: [EndcordDevs.Sharp],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     dependencies: ["CommandsAPI"],
     commands: [
         {

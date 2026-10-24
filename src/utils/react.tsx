@@ -149,6 +149,11 @@ export function useCleanupEffect(
     useEffect(() => effect, deps);
 }
 
+interface FixedTimerOpts {
+    interval?: number;
+    initialTime?: number;
+}
+
 export function useFixedTimer({ interval = 1000, initialTime = Date.now() }: FixedTimerOpts) {
     const [time, setTime] = useState(Date.now() - initialTime);
 

@@ -1,0 +1,126 @@
+/*
+ * Endcord, a Discord client mod
+ * Copyright (c) 2026 Vendicated and contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+import { NavContextMenuPatchCallback } from "@api/ContextMenu";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
+import definePlugin from "@utils/types";
+import { Channel, Message, User } from "@vencord/discord-types";
+import { ChannelStore, Constants, Menu, NavigationRouter, RestAPI, SelectedChannelStore, SelectedGuildStore, showToast, Toasts } from "@webpack/common";
+
+function jumpToFirstMessage(channelId: string, guildId?: string | null) {
+    NavigationRouter.transitionTo(`/channels/${guildId ?? "@me"}/${channelId}/0`);
+}
+
+async function jumpToLastMessage(channelId: string, guildId?: string | null) {
+    const res = await RestAPI.get({
+        url: Constants.Endpoints.MESSAGES(channelId),
+        query: { limit: 1 }
+    });
+    const messageId = res.body?.[0]?.id;
+    if (!messageId) return;
+    NavigationRouter.transitionTo(`/channels/${guildId ?? "@me"}/${channelId}/${messageId}`);
+}
+
+async function jumpToUserMessage(channelId: string, guildId: string, userId: string, first: boolean) {
+    try {
+        const res = await RestAPI.get({
+            url: Constants.Endpoints.SEARCH_GUILD(guildId),
+            query: {
+                author_id: userId,
+                channel_id: channelId,
+                sort_by: "timestamp",
+                sort_order: first ? "asc" : "desc"
+            }
+        });
+
+        const messageId = res.body?.messages?.[0]?.[0]?.id;
+        if (!messageId) {
+            showToast("No messages found from this user in this channel.", Toasts.Type.FAILURE);
+            return;
+        }
+
+        NavigationRouter.transitionTo(`/channels/${guildId}/${channelId}/${messageId}`);
+    } catch (e) {
+        showToast("Failed to search for messages.", Toasts.Type.FAILURE);
+    }
+}
+
+const ChannelMenuPatch: NavContextMenuPatchCallback = (
+    children,
+    { channel, thread }: { channel?: Channel; thread?: Channel; }
+) => {
+    const selectedId = SelectedChannelStore.getChannelId();
+    const selectedChannel = selectedId ? ChannelStore.getChannel(selectedId) : null;
+    const forumChild = channel?.isForumLikeChannel?.() && selectedChannel?.isThread?.() && selectedChannel.parent_id === channel.id
+        ? selectedChannel
+        : null;
+    const targetChannel = thread ?? forumChild ?? channel;
+    if (!targetChannel) return;
+
+    children.push(
+        <Menu.MenuItem
+            id="vc-jump-to-first"
+            label={t("Jump To First Message")}
+            action={() => jumpToFirstMessage(targetChannel.id, targetChannel.guild_id)}
+        />,
+        <Menu.MenuItem
+            id="vc-jump-to-last"
+            label={t("Jump To Last Message")}
+            action={() => jumpToLastMessage(targetChannel.id, targetChannel.guild_id)}
+        />
+    );
+};
+
+const UserMenuPatch: NavContextMenuPatchCallback = (children, { user, channel }: { user: User; channel?: Channel; }) => {
+    if (!user) return;
+    if (!channel || channel.guild_id) return;
+    children.push(
+        <Menu.MenuItem
+            id="vc-jump-to-first"
+            label={t("Jump To First Message")}
+            action={() => jumpToFirstMessage(channel.id, null)}
+        />,
+        <Menu.MenuItem
+            id="vc-jump-to-last"
+            label={t("Jump To Last Message")}
+            action={() => jumpToLastMessage(channel.id, null)}
+        />
+    );
+};
+
+const MessageMenuPatch: NavContextMenuPatchCallback = (children, { message }: { message: Message; }) => {
+    if (!message) return;
+    const channelId = SelectedChannelStore.getChannelId();
+    const guildId = SelectedGuildStore.getGuildId();
+    if (!channelId || !guildId) return;
+    children.push(
+        <Menu.MenuItem
+            id="vc-jump-to-first-user"
+            label={t("Jump To First Message")}
+            action={() => jumpToUserMessage(channelId, guildId, message.author.id, true)}
+        />,
+        <Menu.MenuItem
+            id="vc-jump-to-last-user"
+            label={t("Jump To Last Message")}
+            action={() => jumpToUserMessage(channelId, guildId, message.author.id, false)}
+        />
+    );
+};
+
+export default definePlugin({
+    name: "JumpTo",
+    description: "Adds context menu options to jump to the start or bottom of a channel/DM.",
+    tags: ["Chat", "Utility"],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    contextMenus: {
+        "channel-context": ChannelMenuPatch,
+        "gdm-context": ChannelMenuPatch,
+        "thread-context": ChannelMenuPatch,
+        "user-context": UserMenuPatch,
+        "message": MessageMenuPatch
+    }
+});

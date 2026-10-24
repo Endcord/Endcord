@@ -10,7 +10,7 @@ import { mergeDefaults } from "@utils/mergeDefaults";
 import { DefinedSettings, OptionType, SettingsChecks, SettingsDefinition } from "@utils/types";
 import { React, useEffect } from "@webpack/common";
 
-import plugins from "~plugins";
+import plugins, { getPluginFlag } from "~plugins";
 
 const logger = new Logger("Settings");
 
@@ -26,6 +26,7 @@ export type SettingsPluginUiElements = {
 };
 
 export interface Settings {
+    language: "en" | "tr" | "ru" | "es" | "fr";
     autoUpdate: boolean;
     autoUpdateNotification: boolean,
     useQuickCss: boolean;
@@ -52,6 +53,9 @@ export interface Settings {
     | undefined;
     windowsMaterial: "none" | "mica" | "tabbed" | "acrylic";
     disableMinSize: boolean;
+    disableBackgroundMemoryTrim: boolean;
+    /** GPU rasterization and out-of-process canvas: smoother on some GPUs, but more memory in the GPU process */
+    gpuRasterization: boolean;
     winNativeTitleBar: boolean;
     plugins: {
         [plugin: string]: {
@@ -81,6 +85,7 @@ export interface Settings {
 }
 
 const DefaultSettings: Settings = {
+    language: "en",
     autoUpdate: true,
     autoUpdateNotification: true,
     useQuickCss: true,
@@ -94,6 +99,8 @@ const DefaultSettings: Settings = {
     macosVibrancyStyle: undefined,
     windowsMaterial: "none",
     disableMinSize: false,
+    disableBackgroundMemoryTrim: false,
+    gpuRasterization: false,
     winNativeTitleBar: false,
     plugins: {},
 
@@ -132,7 +139,8 @@ export const SettingsStore = new SettingsStoreClass(settings, {
 
         if (path === "plugins" && key in plugins)
             return target[key] = {
-                enabled: IS_REPORTER || plugins[key].required || plugins[key].enabledByDefault || false
+                // getPluginFlag keeps lazy plugins unloaded; this runs for every plugin at startup
+                enabled: IS_REPORTER || getPluginFlag(key, "required") || getPluginFlag(key, "enabledByDefault") || false
             };
 
         // Since the property is not set, check if this is a plugin's setting and if so, try to resolve

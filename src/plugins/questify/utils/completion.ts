@@ -4,17 +4,17 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import type { PluginNative } from "@utils/types";
 import type { Quest, User } from "@endcord/discord-types";
 import { QuestTargetedContent, QuestTaskType } from "@endcord/discord-types/enums";
-import { findByCodeLazy, findLazy } from "@webpack";
-import { AuthorizedAppsStore, FluxDispatcher, QuestStore, RestAPI, showToast, Toasts, UserStore } from "@webpack/common";
+import { getCurrentUserId, getQuestifySettings } from "@plugins/questify/settings/access";
+import { autoCompleteQuestTaskTypes, isDesktopCompatible } from "@plugins/questify/settings/def";
+import { resetQuestsToResume } from "@plugins/questify/settings/fetching";
+import { getIgnoredQuestIDs } from "@plugins/questify/settings/ignoredQuests";
+import { rerenderQuests } from "@plugins/questify/settings/rerender";
+import type { PluginNative } from "@utils/types";
+import { filters, findByCodeLazy, findLazy } from "@webpack";
+import { AuthorizedAppsStore, FluxDispatcher, QuestStore, RestAPI, showToast, UserStore } from "@webpack/common";
 
-import { getCurrentUserId, getQuestifySettings } from "../settings/access";
-import { autoCompleteQuestTaskTypes, isDesktopCompatible } from "../settings/def";
-import { resetQuestsToResume } from "../settings/fetching";
-import { getIgnoredQuestIDs } from "../settings/ignoredQuests";
-import { rerenderQuests } from "../settings/rerender";
 import { snakeToCamel } from "./fetching";
 import { normalizeQuestName, type QuestIncludedTypes, questMatchesIncludedTypes } from "./filtering";
 import { QL } from "./logging";
@@ -27,7 +27,7 @@ type QuestEnrollResult =
     | { type: "unknown_error"; }
     | { type: "previous_in_flight_request"; };
 
-type QuestManualEnrollResult =
+type QuestAPIEnrollResult =
     | { type: "success"; }
     | { type: "rate_limited"; retryAfter: number | null; }
     | { type: "cancelled"; }
@@ -35,6 +35,7 @@ type QuestManualEnrollResult =
 
 type QuestEnrollmentResult =
     | { type: "success"; }
+    | { type: "previous_in_flight_request"; }
     | { type: "rate_limited"; retryAfter: number | null; }
     | { type: "cancelled"; }
     | { type: "unknown_error"; };
@@ -101,7 +102,10 @@ const sendHeartbeat = findByCodeLazy(".QUESTS_HEARTBEAT(") as (options: {
     terminal?: boolean;
     executableFingerprint?: unknown;
 }) => Promise<void>;
-const getApplicationProxyTicket = findByCodeLazy("APPLICATION_PROXY_TICKET", "body.ticket") as (applicationId: string, channelId?: string) => Promise<string>;
+// Newer Discord builds cache tickets with a try/await instead of .catch(); match either version
+const isOlderTicketFetcher = filters.byCode(".expiresAt>", ".ticket.catch(");
+const isTicketFetcher = filters.byCode(".expiresAt>Date.now())try{");
+const getApplicationProxyTicket = findLazy(m => isOlderTicketFetcher(m) || isTicketFetcher(m)) as (applicationId: string, channelId?: string) => Promise<string>;
 export const enrollInQuestNative = findByCodeLazy('type:"QUESTS_ENROLL_BEGIN",') as (questId: string, options: QuestEnrollmentMetadata) => Promise<QuestEnrollResult>;
 const getQuestOrbQuantity = findByCodeLazy("premiumOrbQuantity??", "orbQuantity") as (
     config: Quest["config"],
@@ -130,7 +134,7 @@ async function getActivityReferrer(appId: string): Promise<string | undefined> {
 
 export function makeEnrollmentData(args: QuestButtonAnalyticsArgs): QuestEnrollmentMetadata {
     return {
-        questContent: args.analyticsCtxQuestContent,
+        questContent: args.analyticsCtxQuestContent ?? QuestTargetedContent.QUEST_HOME_DESKTOP,
         questContentCTA: resolveQuestCTA(args.taskType),
         sourceQuestContent: args.analyticsCtxSourceQuestContent,
         sourceQuestContentCTA: resolveQuestCTA(args.taskType),
@@ -194,6 +198,7 @@ interface VideoProgressReportOptions {
 
 const activeAutoCompletes = new Map<string, AutoCompleteEntry>();
 const manuallyStoppedQuestIds = new Set<string>();
+let autoCompleteStartGeneration = 0;
 let enrollmentRateLimitBlockedUntil = 0;
 let queueAllAutoCompleteQuestsAbortController: AbortController | null = null;
 let suppressQueueDrain = false;
@@ -251,7 +256,7 @@ function showBrokenAutoCompleteToast(): void {
     }
 
     didShowBrokenAutoCompleteToast = true;
-    showToast("AutoComplete is broken. A fix will be implemented shortly.", Toasts.Type.FAILURE);
+    showToast({ text: "AutoComplete is broken. A fix will be implemented shortly.", variant: "critical" });
 }
 
 export function hasEnabledAutoCompleteQuestTypes(): boolean {
@@ -513,8 +518,7 @@ export function getQuestButtonProps(args: QuestButtonPropsArgs): QuestButtonPatc
             if (completionState === QuestCompletionState.Unenrolled) {
                 args.preClickCallback?.();
 
-                if ((await ensureQuestEnrolledForAutoComplete(args.quest, { analytics: args, method: "native" })).type === "success") {
-                    processQuestForAutoComplete(args.quest, { force: true, source: "manual" });
+                if (await enrollAndStartQuestAutoComplete(args.quest, args)) {
                     rerenderQuests();
                 }
             } else if (completionState === QuestCompletionState.Completing) {
@@ -524,7 +528,7 @@ export function getQuestButtonProps(args: QuestButtonPropsArgs): QuestButtonPatc
                 stopQuestAutoComplete(args.quest, { manual: true, preserveResume: false, terminalHeartbeat: true });
                 rerenderQuests();
             } else if (completionState === QuestCompletionState.Accepted) {
-                processQuestForAutoComplete(args.quest, { force: true, source: "manual" });
+                processQuestForAutoComplete(refreshQuest(args.quest), { force: true, source: "manual" });
                 rerenderQuests();
             }
         }
@@ -558,6 +562,10 @@ export function getQuestPanelSubtitleText(quest: Quest): string | null {
     return `${statusText} for an unrecognized reward.`;
 }
 
+export function hasEnabledAutoCompleteQuestTask(quest: Quest): boolean {
+    return resolveAutoCompleteQuest(quest) != null;
+}
+
 export function canAutoCompleteQuest(quest: Quest): boolean {
     if (!isAutoCompleteRuntimeReady()) {
         return false;
@@ -571,7 +579,7 @@ export function canAutoCompleteQuest(quest: Quest): boolean {
         return false;
     }
 
-    return resolveAutoCompleteQuest(quest) != null;
+    return hasEnabledAutoCompleteQuestTask(quest);
 }
 
 function getEnrollmentRetryAfter(error: unknown): number | null {
@@ -613,10 +621,10 @@ function blockQuestEnrollmentForRetryAfter(retryAfter: number | null): void {
 function showQuestEnrollmentFailureToast(quest: Quest, result: Exclude<QuestEnrollmentResult, { type: "success"; }>): void {
     const rateLimitSuffix = result.type === "rate_limited" ? " due to rate limits" : "";
 
-    showToast(`Enrollment in ${normalizeQuestName(quest)} Quest failed${rateLimitSuffix}.`, Toasts.Type.FAILURE);
+    showToast({ text: `Enrollment in ${normalizeQuestName(quest)} Quest failed${rateLimitSuffix}.`, variant: "critical" });
 }
 
-export async function enrollInQuestManually(quest: Quest): Promise<QuestManualEnrollResult> {
+export async function enrollInQuestAPI(quest: Quest): Promise<QuestAPIEnrollResult> {
     quest = refreshQuest(quest);
     const userId = getCurrentUserId();
 
@@ -673,26 +681,44 @@ export async function enrollInQuestManually(quest: Quest): Promise<QuestManualEn
     }
 }
 
-async function ensureQuestEnrolledForAutoComplete(
+export async function ensureQuestEnrolled(
     quest: Quest,
-    options: { analytics?: QuestButtonAnalyticsArgs; method?: "manual" | "native"; } = {},
+    options: { analytics?: QuestButtonAnalyticsArgs; method: "api" | "native"; },
 ): Promise<QuestEnrollmentResult> {
     quest = refreshQuest(quest);
+    const userId = getCurrentUserId();
+
+    if (!userId) {
+        return { type: "cancelled" };
+    }
 
     if (quest.userStatus?.enrolledAt) {
         return { type: "success" };
     }
 
-    const result = options.method === "manual"
-        ? await enrollInQuestManually(quest)
-        : await enrollInQuestNative(quest.id, makeEnrollmentData(options.analytics ?? {}));
+    let result: QuestAPIEnrollResult | QuestEnrollResult;
 
-    if (result.type === "cancelled") {
+    try {
+        result = options.method === "api"
+            ? await enrollInQuestAPI(quest)
+            : await enrollInQuestNative(quest.id, makeEnrollmentData(options.analytics ?? {}));
+    } catch (error) {
+        QL.error("QUEST_ENROLLMENT_ERROR", { questId: quest.id, error });
+        result = { type: "unknown_error" };
+    }
+
+    await new Promise<void>(resolve => FluxDispatcher.wait(resolve));
+
+    if (getCurrentUserId() !== userId || result.type === "cancelled") {
         return { type: "cancelled" };
     }
 
-    if (result.type === "success" || result.type === "previous_in_flight_request") {
+    if ((result.type === "success" || result.type === "previous_in_flight_request") && refreshQuest(quest).userStatus?.enrolledAt) {
         return { type: "success" };
+    }
+
+    if (result.type === "previous_in_flight_request") {
+        return result;
     }
 
     const failure = result.type === "rate_limited"
@@ -702,6 +728,17 @@ async function ensureQuestEnrolledForAutoComplete(
     showQuestEnrollmentFailureToast(quest, failure);
 
     return failure;
+}
+
+export async function enrollAndStartQuestAutoComplete(quest: Quest, analytics: QuestButtonAnalyticsArgs): Promise<boolean> {
+    const generation = autoCompleteStartGeneration;
+    const enrollment = await ensureQuestEnrolled(quest, { analytics, method: "native" });
+
+    if (enrollment.type !== "success" || generation !== autoCompleteStartGeneration) {
+        return false;
+    }
+
+    return processQuestForAutoComplete(refreshQuest(quest), { force: true, source: "manual" });
 }
 
 function getQuestExpiryTime(quest: Quest): number {
@@ -1314,7 +1351,7 @@ export async function queueAllAutoCompleteQuests(): Promise<number> {
                 enrollmentAttempts++;
             }
 
-            const enrollment = await ensureQuestEnrolledForAutoComplete(refreshedQuest, { method: "manual" });
+            const enrollment = await ensureQuestEnrolled(refreshedQuest, { method: "api" });
 
             if (signal.aborted) {
                 break;
@@ -1391,6 +1428,7 @@ export function stopQuestAutoComplete(questOrId: Quest | string, options: AutoCo
 }
 
 export function stopAllAutoCompletes(options: AutoCompleteStopOptions = {}): void {
+    autoCompleteStartGeneration++;
     stopQueueAllAutoCompleteQuests();
 
     const resumeQuestIds = options.preserveResume ? getResumeQuestIds() : undefined;

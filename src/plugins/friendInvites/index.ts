@@ -15,7 +15,7 @@ export default definePlugin({
     name: "FriendInvites",
     description: "Create and manage friend invite links via slash commands (/create friend invite, /view friend invites, /revoke friend invites).",
     tags: ["Friends", "Commands"],
-    authors: [Devs.afn, Devs.Dziurwa],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     commands: [
         {
             name: "create friend invite",

@@ -4,11 +4,13 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { getQuestifySettings, useQuestifySettings } from "@plugins/questify/settings/access";
+import { defaultQuestOrder, type QuestOrderStatus, type QuestSubsort } from "@plugins/questify/settings/def";
+import { validateIgnoredQuests } from "@plugins/questify/settings/ignoredQuests";
+import { rerenderQuests } from "@plugins/questify/settings/rerender";
+import { t } from "@utils/i18n";
 import type { JSX } from "react";
 
-import { getQuestifySettings, useQuestifySettings } from "../settings/access";
-import { defaultQuestOrder, type QuestOrderStatus, type QuestSubsort } from "../settings/def";
-import { rerenderQuests } from "../settings/rerender";
 import { type ManaSelectOption, SettingsCard, SettingsDescription, SettingsHeader, SettingsRow, SettingsRowItem, SettingsSelect, SettingsSubheader, SettingsSubtleSwitch } from "./shared";
 
 const questStatusOptions = [
@@ -18,11 +20,13 @@ const questStatusOptions = [
     { label: "Expired", value: "EXPIRED" },
 ] as const satisfies readonly { label: string, value: QuestOrderStatus; }[];
 
-const questStatusManaOptions: ManaSelectOption[] = questStatusOptions.map(({ label, value }) => ({
-    id: value,
+const questPositionManaOptions: ManaSelectOption[] = ["First", "Second", "Third", "Fourth"].map((label, index) => ({
+    id: String(index),
     label,
-    value,
+    value: String(index),
 }));
+
+questPositionManaOptions.push({ id: "hidden", label: "Hidden", value: "hidden" });
 
 const baseSubsortOptions = [
     { label: "Added (Newest)", value: "Recent DESC" },
@@ -59,7 +63,6 @@ const unclaimedSubsortManaOptions = toManaOptions(expiringSubsortOptions);
 const claimedSubsortManaOptions = toManaOptions(claimedSubsortOptions);
 const ignoredSubsortManaOptions = toManaOptions(expiringSubsortOptions);
 const expiredSubsortManaOptions = toManaOptions(expiredSubsortOptions);
-const positionLabels = ["First", "Second", "Third", "Fourth"] as const;
 const subsortTooltips = {
     unclaimedSubsort: "Completed but unclaimed Quests stay below incomplete unclaimed Quests, then this subsort is applied within those groups.",
     claimedSubsort: "Claimed Quests can be sorted by claim time or by when the Quest was added.",
@@ -72,20 +75,22 @@ function sanitizeQuestOrder(order: unknown): QuestOrderStatus[] {
     const sanitized = Array.isArray(order)
         ? order.filter((status): status is QuestOrderStatus => validStatuses.has(status as QuestOrderStatus))
         : [];
+    const uniqueOrder = Array.from(new Set(sanitized));
 
     for (const status of defaultQuestOrder) {
-        if (!sanitized.includes(status)) {
-            sanitized.push(status);
+        if (!uniqueOrder.includes(status)) {
+            uniqueOrder.push(status);
         }
     }
 
-    return sanitized.slice(0, defaultQuestOrder.length);
+    return uniqueOrder;
 }
 
 export function ReorderQuestsSetting(): JSX.Element {
     const reorderQuests = useQuestifySettings([
         "disableQuestsEverything",
         "questOrder",
+        "hiddenQuestStatuses",
         "unclaimedSubsort",
         "claimedSubsort",
         "ignoredSubsort",
@@ -97,21 +102,31 @@ export function ReorderQuestsSetting(): JSX.Element {
     const disabled = reorderQuests.disableQuestsEverything;
     const questOrder = sanitizeQuestOrder(reorderQuests.questOrder);
 
-    function updateQuestOrder(index: number, value: string | string[] | null): void {
+    function updateQuestOrder(status: QuestOrderStatus, value: string | string[] | null): void {
         if (typeof value !== "string") return;
 
-        const nextStatus = value as QuestOrderStatus;
-        const nextOrder = [...questOrder];
-        const previousStatus = nextOrder[index];
-        const existingIndex = nextOrder.indexOf(nextStatus);
+        const hiddenStatuses = new Set(reorderQuests.hiddenQuestStatuses);
 
-        if (existingIndex !== -1 && existingIndex !== index) {
-            nextOrder[existingIndex] = previousStatus;
+        if (value === "hidden") {
+            hiddenStatuses.add(status);
+            getQuestifySettings().hiddenQuestStatuses = Array.from(hiddenStatuses);
+            validateIgnoredQuests();
+            return;
         }
 
-        nextOrder[index] = nextStatus;
+        const index = Number(value);
+
+        if (!Number.isInteger(index) || index < 0 || index >= questOrder.length) return;
+
+        const nextOrder = [...questOrder];
+        const previousIndex = nextOrder.indexOf(status);
+
+        nextOrder[previousIndex] = nextOrder[index];
+        nextOrder[index] = status;
+        hiddenStatuses.delete(status);
         getQuestifySettings().questOrder = nextOrder;
-        rerenderQuests();
+        getQuestifySettings().hiddenQuestStatuses = Array.from(hiddenStatuses);
+        validateIgnoredQuests();
     }
 
     function updateSubsort(key: "unclaimedSubsort" | "claimedSubsort" | "ignoredSubsort" | "expiredSubsort", value: string | string[] | null): void {
@@ -127,34 +142,34 @@ export function ReorderQuestsSetting(): JSX.Element {
 
     return (
         <SettingsCard>
-            <SettingsHeader> Reorder Quests </SettingsHeader>
-            <SettingsDescription> Sort Quests by their status when the Questify sort option is selected on the Quests page. </SettingsDescription>
-            <SettingsSubheader> Status Order </SettingsSubheader>
+            <SettingsHeader>{" "}{t("Reorder Quests")}{" "}</SettingsHeader>
+            <SettingsDescription>{" "}{t("Sort Quests by their status when the Questify sort option is selected on the Quests page. Hidden statuses are filtered out with any sort option.")}{" "}</SettingsDescription>
+            <SettingsSubheader>{" "}{t("Status Order")}{" "}</SettingsSubheader>
             <SettingsRow>
-                {questOrder.map((status, index) => (
-                    <SettingsRowItem key={index}>
+                {questStatusOptions.map(({ label, value: status }) => (
+                    <SettingsRowItem key={status}>
                         <SettingsSelect
-                            label={`${positionLabels[index]}:`}
-                            options={questStatusManaOptions}
-                            value={status}
+                            label={`${label}:`}
+                            options={questPositionManaOptions}
+                            value={reorderQuests.hiddenQuestStatuses.includes(status) ? "hidden" : String(questOrder.indexOf(status))}
                             selectionMode="single"
                             disabled={disabled}
                             fullWidth={true}
-                            maxOptionsVisible={questStatusManaOptions.length}
-                            onSelectionChange={value => updateQuestOrder(index, value)}
+                            maxOptionsVisible={questPositionManaOptions.length}
+                            onSelectionChange={value => updateQuestOrder(status, value)}
                             tooltip={{
                                 position: "top",
-                                text: "Each status can only appear once. Selecting a status already used in another position swaps the two positions."
+                                text: "Selecting an occupied position swaps the two statuses. Hidden statuses are removed from the Quest lists."
                             }}
                         />
                     </SettingsRowItem>
                 ))}
             </SettingsRow>
-            <SettingsSubheader> Subsorts </SettingsSubheader>
+            <SettingsSubheader>{" "}{t("Subsorts")}{" "}</SettingsSubheader>
             <SettingsRow>
                 <SettingsRowItem>
                     <SettingsSelect
-                        label="Unclaimed Subsort:"
+                        label={t("Unclaimed Subsort:")}
                         options={unclaimedSubsortManaOptions}
                         value={reorderQuests.unclaimedSubsort}
                         selectionMode="single"
@@ -170,7 +185,7 @@ export function ReorderQuestsSetting(): JSX.Element {
                 </SettingsRowItem>
                 <SettingsRowItem>
                     <SettingsSelect
-                        label="Claimed Subsort:"
+                        label={t("Claimed Subsort:")}
                         options={claimedSubsortManaOptions}
                         value={reorderQuests.claimedSubsort}
                         selectionMode="single"
@@ -188,7 +203,7 @@ export function ReorderQuestsSetting(): JSX.Element {
             <SettingsRow>
                 <SettingsRowItem>
                     <SettingsSelect
-                        label="Ignored Subsort:"
+                        label={t("Ignored Subsort:")}
                         options={ignoredSubsortManaOptions}
                         value={reorderQuests.ignoredSubsort}
                         selectionMode="single"
@@ -204,7 +219,7 @@ export function ReorderQuestsSetting(): JSX.Element {
                 </SettingsRowItem>
                 <SettingsRowItem>
                     <SettingsSelect
-                        label="Expired Subsort:"
+                        label={t("Expired Subsort:")}
                         options={expiredSubsortManaOptions}
                         value={reorderQuests.expiredSubsort}
                         selectionMode="single"
@@ -219,11 +234,11 @@ export function ReorderQuestsSetting(): JSX.Element {
                     />
                 </SettingsRowItem>
             </SettingsRow>
-            <SettingsSubheader> Quest Page Memory </SettingsSubheader>
+            <SettingsSubheader>{" "}{t("Quest Page Memory")}{" "}</SettingsSubheader>
             <SettingsSubtleSwitch
                 checked={reorderQuests.rememberQuestPageSort}
                 disabled={disabled}
-                label="Remember the selected Quest page sort:"
+                label={t("Remember the selected Quest page sort:")}
                 onChange={checked => updateRememberSetting("rememberQuestPageSort", checked)}
                 bottomSpacing="5"
                 tooltip={{
@@ -234,7 +249,7 @@ export function ReorderQuestsSetting(): JSX.Element {
             <SettingsSubtleSwitch
                 checked={reorderQuests.rememberQuestPageFilters}
                 disabled={disabled}
-                label="Remember the selected Quest page filters:"
+                label={t("Remember the selected Quest page filters:")}
                 onChange={checked => updateRememberSetting("rememberQuestPageFilters", checked)}
                 tooltip={{
                     position: "top",

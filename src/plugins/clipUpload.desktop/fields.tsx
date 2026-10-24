@@ -8,6 +8,7 @@ import { Flex } from "@components/Flex";
 import { Heading } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
 import { getTheme, Theme } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import { ApplicationStore, Checkbox, IconUtils, lodash, RelationshipStore, RunningGameStore, SearchableSelect, TextArea, TextInput, UserStore, useStateFromStores } from "@webpack/common";
 import type { PointerEvent as ReactPointerEvent } from "react";
@@ -56,7 +57,7 @@ export function TextField({ title, value, onChange, placeholder, disabled, multi
 export function DateTimeField({ value, onChange, disabled }: { value: string; onChange(value: string): void; disabled?: boolean; }) {
     return (
         <section>
-            <Heading tag="h5">Created at</Heading>
+            <Heading tag="h5">{t("Created at")}</Heading>
             <TextInput
                 type="datetime-local"
                 value={value}
@@ -126,15 +127,15 @@ export function ParticipantField({ value, onChange, disabled }: ParticipantField
 
     return (
         <section>
-            <Heading tag="h5">Participants</Heading>
+            <Heading tag="h5">{t("Participants")}</Heading>
             <Flex flexDirection="column" gap={8}>
-                <Paragraph className={Margins.bottom8}>Only tag people who were present and have consented to being in this clip.</Paragraph>
+                <Paragraph className={Margins.bottom8}>{t("Only tag people who were present and have consented to being in this clip.")}</Paragraph>
                 <SearchableSelect
                     options={options}
                     value={value}
                     onChange={(selected: unknown) => onChange(getSelectedParticipantIds(selected))}
                     closeOnSelect={false}
-                    placeholder="Select friends"
+                    placeholder={t("Select friends")}
                     isDisabled={disabled}
                     multi
                     renderOptionPrefix={option => {
@@ -188,13 +189,13 @@ export function ApplicationField({ value, onChange, disabled }: ApplicationField
 
     return (
         <section>
-            <Heading tag="h5">Game/Application</Heading>
+            <Heading tag="h5">{t("Game/Application")}</Heading>
             <Flex flexDirection="column" gap={8}>
                 <SearchableSelect
                     options={options}
                     value={value || undefined}
                     onChange={(selected: unknown) => onChange(getString(selected) ?? "")}
-                    placeholder="Select a game"
+                    placeholder={t("Select a game")}
                     isDisabled={disabled}
                     clearable
                     renderOptionPrefix={option => {
@@ -215,7 +216,7 @@ export function ApplicationField({ value, onChange, disabled }: ApplicationField
                 <TextInput
                     value={value}
                     onChange={onChange}
-                    placeholder="Custom application ID"
+                    placeholder={t("Custom application ID")}
                     disabled={disabled}
                 />
             </Flex>

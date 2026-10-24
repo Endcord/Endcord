@@ -12,6 +12,7 @@ import { Logger } from "@utils/Logger";
 import { interpolateIfDefined } from "@utils/misc";
 import { Patch, PatchReplacement } from "@utils/types";
 
+import { canSkipPatch, ensurePatchCache, recordMatch, recordScanned } from "./patchCache";
 import { AnyModuleFactory, AnyWebpackRequire, MaybePatchedModuleFactory, PatchedModuleFactory } from "./types";
 import { _blacklistBadModules, _initWebpack, factoryListeners, findModuleFactory, moduleListeners, waitForSubscriptions, wreq } from "./webpack";
 
@@ -451,7 +452,6 @@ function runFactoryWithWrap(patchedFactory: PatchedModuleFactory, thisArg: unkno
             if (filter(exports)) {
                 waitForSubscriptions.delete(filter);
                 callback(exports, module.id);
-                continue;
             }
         } catch (err) {
             logger.error(
@@ -461,24 +461,29 @@ function runFactoryWithWrap(patchedFactory: PatchedModuleFactory, thisArg: unkno
                 "\n\nCallback:", callback
             );
         }
+    }
 
-        if (typeof exports !== "object") {
+    if (typeof exports !== "object" || !waitForSubscriptions.size) {
+        return factoryReturn;
+    }
+
+    // Read each export once and test it against every subscription. Discord's exports are getters,
+    // so walking the exports once per subscription called each getter dozens of times per module.
+    for (const exportKey in exports) {
+        // Some exports might have not been initialized yet due to circular imports, so try catch it.
+        try {
+            var exportValue = exports[exportKey];
+        } catch {
             continue;
         }
 
-        for (const exportKey in exports) {
-            try {
-                // Some exports might have not been initialized yet due to circular imports, so try catch it.
-                try {
-                    var exportValue = exports[exportKey];
-                } catch {
-                    continue;
-                }
+        if (exportValue == null) continue;
 
-                if (exportValue != null && filter(exportValue)) {
+        for (const [filter, callback] of waitForSubscriptions) {
+            try {
+                if (filter(exportValue)) {
                     waitForSubscriptions.delete(filter);
                     callback(exportValue, module.id);
-                    break;
                 }
             } catch (err) {
                 logger.error(
@@ -489,6 +494,8 @@ function runFactoryWithWrap(patchedFactory: PatchedModuleFactory, thisArg: unkno
                 );
             }
         }
+
+        if (!waitForSubscriptions.size) break;
     }
 
     return factoryReturn;
@@ -512,11 +519,13 @@ function patchFactory(moduleId: PropertyKey, originalFactory: AnyModuleFactory):
 
     const patchedBy = new Set<string>();
 
+    const buildNumber = getBuildNumber();
+    const shouldCheckBuildNumber = buildNumber !== -1;
+
+    ensurePatchCache(patches);
+
     for (let i = 0; i < patches.length; i++) {
         const patch = patches[i];
-
-        const buildNumber = getBuildNumber();
-        const shouldCheckBuildNumber = buildNumber !== -1;
 
         if (
             shouldCheckBuildNumber &&
@@ -524,6 +533,10 @@ function patchFactory(moduleId: PropertyKey, originalFactory: AnyModuleFactory):
             (patch.toBuild != null && buildNumber > patch.toBuild)
         ) {
             patches.splice(i--, 1);
+            continue;
+        }
+
+        if (canSkipPatch(moduleId, patch)) {
             continue;
         }
 
@@ -535,6 +548,69 @@ function patchFactory(moduleId: PropertyKey, originalFactory: AnyModuleFactory):
             continue;
         }
 
+        recordMatch(moduleId, patch);
+
+        // Fast path: apply every replacement as plain string work and compile the result once.
+        // The per-replacement path below compiles after each replacement to pinpoint a broken one,
+        // so it only runs if something here throws.
+        if (!IS_REPORTER) {
+            let fastCode = code;
+            let undone = false;
+
+            try {
+                for (const replacement of patch.replacement as PatchReplacement[]) {
+                    if (
+                        shouldCheckBuildNumber &&
+                        (replacement.fromBuild != null && buildNumber < replacement.fromBuild) ||
+                        (replacement.toBuild != null && buildNumber > replacement.toBuild)
+                    ) {
+                        continue;
+                    }
+
+                    const { match } = replacement;
+                    if (typeof match !== "string" && match.global) {
+                        match.lastIndex = 0;
+                    }
+
+                    const newCode = fastCode.replace(match, replacement.replace as string);
+                    if (newCode === fastCode) {
+                        if (!(patch.noWarn || replacement.noWarn)) {
+                            logger.warn(`Patch by ${patch.plugin} had no effect (Module id is ${String(moduleId)}): ${replacement.match}`);
+                        }
+
+                        if (patch.group) {
+                            logger.warn(`Undoing patch group ${patch.find} by ${patch.plugin} because replacement ${replacement.match} had no effect`);
+                            undone = true;
+                            break;
+                        }
+
+                        continue;
+                    }
+
+                    fastCode = newCode;
+                }
+
+                if (!undone && fastCode !== code) {
+                    const pluginsList = patchedBy.has(patch.plugin) ? [...patchedBy] : [...patchedBy, patch.plugin];
+                    const source = `// Webpack Module ${String(moduleId)} - Patched by ${pluginsList.join(", ")}\n${fastCode}\n//# sourceURL=file:///WebpackModule${String(moduleId)}`;
+                    const factory = (0, eval)(source);
+
+                    code = fastCode;
+                    patchedSource = source;
+                    patchedFactory = factory;
+                    patchedBy.add(patch.plugin);
+                }
+
+                if (!patch.all) {
+                    patches.splice(i--, 1);
+                }
+
+                continue;
+            } catch {
+                // Fall through to the per-replacement path to find and skip the broken replacement
+            }
+        }
+
         const executePatch = traceFunctionWithResults(`patch by ${patch.plugin}`, (match: string | RegExp, replace: string) => {
             if (typeof match !== "string" && match.global) {
                 match.lastIndex = 0;
@@ -544,7 +620,7 @@ function patchFactory(moduleId: PropertyKey, originalFactory: AnyModuleFactory):
         });
 
         const previousCode = code;
-        const previousFactory = originalFactory;
+        const previousFactory = patchedFactory;
         let markedAsPatched = false;
 
         // We change all patch.replacement to array in PluginManager
@@ -558,7 +634,7 @@ function patchFactory(moduleId: PropertyKey, originalFactory: AnyModuleFactory):
             }
 
             const lastCode = code;
-            const lastFactory = originalFactory;
+            const lastFactory = patchedFactory;
 
             try {
                 const [newCode, totalTime] = executePatch(replacement.match, replacement.replace as string);
@@ -634,6 +710,8 @@ function patchFactory(moduleId: PropertyKey, originalFactory: AnyModuleFactory):
             patches.splice(i--, 1);
         }
     }
+
+    recordScanned(moduleId);
 
     patchedFactory[SYM_ORIGINAL_FACTORY] = originalFactory;
 

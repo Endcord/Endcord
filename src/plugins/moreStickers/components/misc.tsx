@@ -17,6 +17,7 @@ import { isV1, migrate } from "@equicordplugins/moreStickers/migrate-v1";
 import { deleteStickerPack, getStickerPack, getStickerPackMetas, saveStickerPack } from "@equicordplugins/moreStickers/stickers";
 import { SettingsTabsKey, Sticker, StickerPack, StickerPackMeta } from "@equicordplugins/moreStickers/types";
 import { cl, clPicker, Mutex } from "@equicordplugins/moreStickers/utils";
+import { t } from "@utils/i18n";
 import { Button, React, TabBar, TextArea, Toasts } from "@webpack/common";
 import { JSX } from "react";
 
@@ -80,7 +81,7 @@ const StickerPackMetadata = ({ meta, hoveredStickerPackId, setHoveredStickerPack
                 }}
             >
                 <svg width="24" height="24" viewBox="0 0 24 24" style={{ fill: "var(--status-danger)" }}>
-                    <title>Delete</title>
+                    <title>{t("Delete")}</title>
                     <path d="M15 3.999V2H9V3.999H3V5.999H21V3.999H15Z" />
                     <path d="M5 6.99902V18.999C5 20.101 5.897 20.999 7 20.999H17C18.103 20.999 19 20.101 19 18.999V6.99902H5ZM11 17H9V11H11V17ZM15 17H13V11H15V17Z" />
                 </svg>
@@ -128,12 +129,12 @@ export const Packs = () => {
 
             {tab === SettingsTabsKey.ADD_STICKER_PACK_URL &&
                 <div className="section">
-                    <Heading>Add Sticker Pack from URL</Heading>
+                    <Heading>{t("Add Sticker Pack from URL")}</Heading>
                     <Paragraph>
                         <p>
-                            Currently LINE stickers/emojis supported only. <br />
+                            {t("Currently LINE stickers/emojis supported only.")}{" "}<br />
 
-                            Get Telegram stickers with <a href="#" onClick={() => EndcordNative.native.openExternal("https://github.com/lekoOwO/MoreStickersConverter")}> MoreStickersConverter</a>.
+                            {t("Get Telegram stickers with")}{" "}<a href="#" onClick={() => EndcordNative.native.openExternal("https://github.com/lekoOwO/MoreStickersConverter")}>{" "}{t("MoreStickersConverter")}</a>.
                         </p>
                     </Paragraph>
                     <Flex flexDirection="row" style={{
@@ -158,7 +159,7 @@ export const Packs = () => {
 
                                     return "Invalid URL";
                                 }}
-                                placeholder="Sticker Pack URL"
+                                placeholder={t("Sticker Pack URL")}
                             />
                         </span>
                         <Button
@@ -230,19 +231,18 @@ export const Packs = () => {
                                 }
 
                             }}
-                        >Insert</Button>
+                        >{t("Insert")}</Button>
                     </Flex>
                 </div>
             }
             {tab === SettingsTabsKey.ADD_STICKER_PACK_HTML &&
                 <div className="section">
-                    <Heading>Add Sticker Pack from HTML</Heading>
+                    <Heading>{t("Add Sticker Pack from HTML")}</Heading>
                     <Paragraph>
                         <p>
-                            When encountering errors while adding a sticker pack, you can try to add it using the HTML source code of the sticker pack page.<br />
-                            This applies to stickers which are region locked / OS locked / etc.<br />
-                            The region LINE recognized may vary from the region you are in due to the CORS proxy we're using.
-                        </p>
+                            {t("When encountering errors while adding a sticker pack, you can try to add it using the HTML source code of the sticker pack page.")}<br />
+                            {t("This applies to stickers which are region locked / OS locked / etc.")}<br />
+                            {t("The region LINE recognized may vary from the region you are in due to the CORS proxy we're using.")}</p>
                     </Paragraph>
                     <Flex flexDirection="row" style={{
                         alignItems: "center",
@@ -254,7 +254,7 @@ export const Packs = () => {
                             <TextArea
                                 value={addStickerHtml}
                                 onChange={setAddStickerHtml}
-                                placeholder="Paste HTML here"
+                                placeholder={t("Paste HTML here")}
                                 rows={1}
                             />
                         </span>
@@ -307,14 +307,14 @@ export const Packs = () => {
                                     });
                                 }
                             }}
-                        >Insert from HTML</Button>
+                        >{t("Insert from HTML")}</Button>
                     </Flex>
                 </div>
             }
             {
                 tab === SettingsTabsKey.ADD_STICKER_PACK_FILE &&
                 <div className="section">
-                    <Heading>Add Sticker Pack from File</Heading>
+                    <Heading>{t("Add Sticker Pack from File")}</Heading>
 
                     <Button
                         size={Button.Sizes.SMALL}
@@ -363,14 +363,13 @@ export const Packs = () => {
                             input.click();
                         }}
                     >
-                        Open Sticker Pack File
-                    </Button>
+                        {t("Open Sticker Pack File")}</Button>
                 </div>
             }
             {
                 tab === SettingsTabsKey.MISC &&
                 <div className="section">
-                    <Heading>Misc tools</Heading>
+                    <Heading>{t("Misc tools")}</Heading>
 
                     <Flex flexDirection="row" style={{
                         alignItems: "center",
@@ -404,7 +403,7 @@ export const Packs = () => {
                                     }
                                 });
                             }}
-                        >Export Sticker Packs</Button>
+                        >{t("Export Sticker Packs")}</Button>
                         <Button
                             size={Button.Sizes.SMALL}
                             onClick={async e => {
@@ -413,7 +412,7 @@ export const Packs = () => {
                             style={{
                                 display: _isV1 ? "unset" : "none"
                             }}
-                        >Migrate from v1</Button>
+                        >{t("Migrate from v1")}</Button>
                     </Flex>
                 </div>
             }
@@ -421,7 +420,7 @@ export const Packs = () => {
                 marginTop: "8px",
                 marginBottom: "8px"
             }} />
-            <Heading>Stickers Management</Heading>
+            <Heading>{t("Stickers Management")}</Heading>
 
             <div className="section">
                 <div style={{

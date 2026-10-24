@@ -15,7 +15,7 @@ import type { ComponentType, JSX, MouseEventHandler, ReactNode } from "react";
 const logger = new Logger("HeaderBarAPI");
 
 const HeaderBarClasses = findCssClassesLazy("clickable", "selected", "badge", "badgeContainer");
-const HeaderBarIcon = findComponentByCodeLazy(".HEADER_BAR_BADGE_TOP:", '"aria-haspopup":') as ComponentType<ChannelToolbarButtonProps>;
+const HeaderBarIcon = findComponentByCodeLazy("tooltipPosition:", '"aria-haspopup":', '"data-jump-section":') as ComponentType<ChannelToolbarButtonProps>;
 
 export interface HeaderBarButtonProps {
     /** The icon component to render inside the button */

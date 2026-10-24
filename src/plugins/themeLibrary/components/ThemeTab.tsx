@@ -14,6 +14,7 @@ import { OpenExternalIcon } from "@components/Icons";
 import { Paragraph } from "@components/Paragraph";
 import { SettingsTab, wrapTab } from "@components/settings";
 import { SearchStatus, Theme, ThemeLikeProps } from "@equicordplugins/themeLibrary/types";
+import { useI18n } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import { Margins } from "@utils/margins";
 import { classes } from "@utils/misc";
@@ -58,6 +59,7 @@ const SearchTags = {
 };
 
 function ThemeTab() {
+    const { t } = useI18n();
     const [themes, setThemes] = useState<Theme[]>([]);
     const [filteredThemes, setFilteredThemes] = useState<Theme[]>([]);
     const [themeLinks, setThemeLinks] = useState(Settings.themeLinks);
@@ -163,25 +165,25 @@ function ThemeTab() {
                             fontSize: "1.5em",
                             color: "var(--text-default)"
                         }}>
-                        <p> Getting the latest themes... </p>
+                        <p>{t("Getting the latest themes...")}</p>
                         <p style={{
                             fontSize: ".75em",
                             color: "var(--text-muted)"
-                        }}> This won't take long! </p>
+                        }}>{t("This won't take long!")}</p>
 
                     </div>
                 ) : error ? (
                     <ErrorCard>
-                        <HeadingTertiary>Failed to fetch themes</HeadingTertiary>
-                        <Paragraph className={Margins.top8}>Could not fetch the theme list. Try again later.</Paragraph>
+                        <HeadingTertiary>{t("Failed to fetch themes")}</HeadingTertiary>
+                        <Paragraph className={Margins.top8}>{t("Could not fetch the theme list. Try again later.")}</Paragraph>
                     </ErrorCard>
                 ) : (
                     <>
                         {hideWarningCard ? null : (
                             <ErrorCard>
-                                <HeadingTertiary>Want your theme removed?</HeadingTertiary>
+                                <HeadingTertiary>{t("Want your theme removed?")}</HeadingTertiary>
                                 <Paragraph className={Margins.top8}>
-                                    If you want your theme(s) permanently removed, please open an issue on <a href="https://github.com/Faf4a/plugins/issues/new?labels=removal&projects=&template=request_removal.yml&title=Theme+Removal">GitHub <OpenExternalIcon height={16} width={16} /></a>
+                                    {t("If you want your theme(s) permanently removed, please open an issue on")} <a href="https://github.com/Faf4a/plugins/issues/new?labels=removal&projects=&template=request_removal.yml&title=Theme+Removal">{t("GitHub")}{" "}<OpenExternalIcon height={16} width={16} /></a>
                                 </Paragraph>
                                 <Button
                                     onClick={() => {
@@ -192,7 +194,7 @@ function ThemeTab() {
                                     color={Button.Colors.RED}
                                     look={Button.Looks.FILLED}
                                     className={classes(Margins.top16, "vce-warning-button")}
-                                >Hide</Button>
+                                >{t("Hide")}</Button>
                             </ErrorCard>
                         )}
                         <div className={classes(Margins.bottom8, Margins.top16)}>
@@ -201,7 +203,7 @@ function ThemeTab() {
                                     overflowWrap: "break-word",
                                     marginTop: 8,
                                 }}>
-                                {searchValue.status === SearchStatus.LIKED ? "Most Liked" : "Newest Additions"}
+                                {searchValue.status === SearchStatus.LIKED ? t("Most Liked") : t("Newest Additions")}
                             </HeadingPrimary>
 
                             {themes.slice(0, 2).map((theme: Theme) => (
@@ -219,20 +221,20 @@ function ThemeTab() {
                             overflowWrap: "break-word",
                             marginTop: 20,
                         }}>
-                            Themes
+                            {t("Themes")}
                         </HeadingPrimary>
                         <div className={classes(Margins.bottom20, "vce-search-grid")}>
-                            <TextInput value={searchValue.value} placeholder="Search for a theme..." onChange={onSearch} />
+                            <TextInput value={searchValue.value} placeholder={t("Search for a theme...")} onChange={onSearch} />
                             <SearchableSelect
                                 options={[
-                                    { label: "Show All", value: SearchStatus.ALL, default: true },
-                                    { label: "Show Themes", value: SearchStatus.THEME },
-                                    { label: "Show Snippets", value: SearchStatus.SNIPPET },
-                                    { label: "Show Most Liked", value: SearchStatus.LIKED },
-                                    { label: "Show Dark", value: SearchStatus.DARK },
-                                    { label: "Show Light", value: SearchStatus.LIGHT },
-                                    { label: "Show Enabled", value: SearchStatus.ENABLED },
-                                    { label: "Show Disabled", value: SearchStatus.DISABLED },
+                                    { label: t("Show All"), value: SearchStatus.ALL, default: true },
+                                    { label: t("Show Themes"), value: SearchStatus.THEME },
+                                    { label: t("Show Snippets"), value: SearchStatus.SNIPPET },
+                                    { label: t("Show Most Liked"), value: SearchStatus.LIKED },
+                                    { label: t("Show Dark"), value: SearchStatus.DARK },
+                                    { label: t("Show Light"), value: SearchStatus.LIGHT },
+                                    { label: t("Show Enabled"), value: SearchStatus.ENABLED },
+                                    { label: t("Show Disabled"), value: SearchStatus.DISABLED },
                                 ]}
                                 // @ts-ignore
                                 value={searchValue.status}
@@ -260,11 +262,11 @@ function ThemeTab() {
                                 <p style={{
                                     fontSize: "1em",
                                     color: "var(--text-default)"
-                                }}> No theme found. </p>
+                                }}>{t("No theme found.")}</p>
                                 <p style={{
                                     fontSize: ".75em",
                                     color: "var(--text-muted)"
-                                }}> Try narrowing your search down. </p>
+                                }}>{t("Try narrowing your search down.")}</p>
                             </div>
                             }
                         </div>

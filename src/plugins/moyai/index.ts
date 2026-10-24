@@ -17,10 +17,10 @@
 */
 
 import { definePluginSettings } from "@api/Settings";
+import { Message, ReactionEmoji } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { sleep } from "@utils/misc";
 import definePlugin, { makeRange, OptionType } from "@utils/types";
-import { Message, ReactionEmoji } from "@endcord/discord-types";
 import { RelationshipStore, SelectedChannelStore, UserStore } from "@webpack/common";
 
 interface IMessageCreate {
@@ -51,8 +51,8 @@ interface IVoiceChannelEffectSendEvent {
 }
 
 const MOYAI = "🗿";
-const MOYAI_URL = "https://github.com/Endcord/Equibored/raw/main/sounds/moyai/moyai.mp3";
-const MOYAI_URL_HD = "https://github.com/Endcord/Equibored/raw/main/sounds/moyai/moyai.wav";
+const MOYAI_URL = "https://github.com/Equicord/Equibored/raw/main/sounds/moyai/moyai.mp3";
+const MOYAI_URL_HD = "https://github.com/Equicord/Equibored/raw/main/sounds/moyai/moyai.wav";
 
 const settings = definePluginSettings({
     volume: {
@@ -89,7 +89,7 @@ const settings = definePluginSettings({
 
 export default definePlugin({
     name: "Moyai",
-    authors: [Devs.ewlle, Devs.rootpoi, Devs.kraethis],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     description: "Plays a 🗿 sound effect whenever a moyai emoji is sent, reacted, or used as a voice effect in your current channel.",
     tags: ["Fun"],
     settings,

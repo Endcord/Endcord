@@ -90,7 +90,7 @@ export default definePlugin({
     description: "Adds a toggle button for Spotify activity visibility.",
     dependencies: ["UserAreaAPI"],
     tags: ["Activity", "Utility"],
-    authors: [Devs.thororen],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
 
     userAreaButton: {

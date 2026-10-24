@@ -5,9 +5,9 @@
  */
 
 import { sendBotMessage } from "@api/Commands";
+import { Message } from "@endcord/discord-types";
 import { insertTextIntoChatInputBox, sendMessage } from "@utils/discord";
 import { Logger } from "@utils/Logger";
-import { Message } from "@endcord/discord-types";
 import { MessageStore, showToast, Toasts, UserStore } from "@webpack/common";
 
 import { settings } from "./settings";

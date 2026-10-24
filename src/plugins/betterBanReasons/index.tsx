@@ -11,6 +11,7 @@ import { Heading } from "@components/Heading";
 import { DeleteIcon, PlusIcon } from "@components/Icons";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 import { Button, Select, TextInput, useState } from "@webpack/common";
 
@@ -50,13 +51,13 @@ function ReasonsComponent() {
 
     return (
         <section>
-            <Heading>Reasons</Heading>
+            <Heading>{t("Reasons")}</Heading>
             {reasons.map((r, i) => (
                 <div key={i} className={cl("reason-wrapper")}>
                     <TextInput
                         value={r.text}
                         onChange={v => update(reasons.map((x, j) => j === i ? { ...x, text: v } : x))}
-                        placeholder="Reason"
+                        placeholder={t("Reason")}
                     />
                     <Button
                         className={cl("remove-button")}
@@ -68,7 +69,7 @@ function ReasonsComponent() {
                         <DeleteIcon />
                     </Button>
                     <div className={cl("duration-row")}>
-                        <span className="vc-text-base vc-text-sm vc-text-normal vc-text-defaultColor vc-plugins-setting-description">Message Auto-delete duration</span>
+                        <span className="vc-text-base vc-text-sm vc-text-normal vc-text-defaultColor vc-plugins-setting-description">{t("Message Auto-delete duration")}</span>
                         <Select
                             options={DELETE_DURATION_OPTIONS}
                             select={v => update(reasons.map((x, j) => j === i ? { ...x, deleteSeconds: v === null ? undefined : v } : x))}
@@ -85,8 +86,7 @@ function ReasonsComponent() {
                     size={Button.Sizes.LARGE}
                     color={Button.Colors.TRANSPARENT}
                 >
-                    <PlusIcon /> Add another reason
-                </Button>
+                    <PlusIcon />{" "}{t("Add another reason")}</Button>
             </div>
         </section>
     );
@@ -109,7 +109,7 @@ export default definePlugin({
     name: "BetterBanReasons",
     description: "Create custom reasons to use in the Discord ban modal, and/or show a text input by default instead of the options.",
     tags: ["Appearance", "Customisation"],
-    authors: [Devs.ewlle, Devs.rootpoi, Devs.kraethis],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
 
     durationSetter: null as ((v: number) => void) | null,
 

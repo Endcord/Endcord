@@ -10,6 +10,7 @@ import { ImageIcon } from "@components/Icons";
 import type { Channel, Guild, User } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { copyWithToast, openImageModal } from "@utils/discord";
+import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 import { ContextMenuApi, GuildMemberStore, IconUtils, Menu, React, UserProfileStore } from "@webpack/common";
 
@@ -160,29 +161,29 @@ const UserContext: NavContextMenuPatchCallback = (children, { user, guildId }: U
     const bannerUrl = getBannerUrl(user, guildId);
     const serverBannerUrl = getGuildMemberBannerUrl(user.id, guildId);
 
-    const items = [];
+    const items: React.ReactNode[] = [];
 
     // Avatar
     items.push(
         <Menu.MenuItem
             id="view-avatar-menu"
-            label="Avatar"
+            label={t("Avatar")}
             action={() => openAvatar(avatarUrl)}
             icon={ImageIcon}
         >
             <Menu.MenuItem
                 id="view-avatar"
-                label="View Avatar"
+                label={t("View Avatar")}
                 action={() => openAvatar(avatarUrl)}
             />
             <Menu.MenuItem
                 id="copy-avatar-url"
-                label="Copy Avatar Link"
+                label={t("Copy Avatar Link")}
                 action={() => copyWithToast(getFullSizeUrl(avatarUrl), "Avatar link copied!")}
             />
             <Menu.MenuItem
                 id="save-avatar"
-                label="Save Avatar"
+                label={t("Save Avatar")}
                 action={() => downloadImage(getFullSizeUrl(avatarUrl), `${user.username}_avatar`)}
             />
         </Menu.MenuItem>
@@ -193,23 +194,23 @@ const UserContext: NavContextMenuPatchCallback = (children, { user, guildId }: U
         items.push(
             <Menu.MenuItem
                 id="view-server-avatar-menu"
-                label="Server Avatar"
+                label={t("Server Avatar")}
                 action={() => openAvatar(serverAvatarUrl)}
                 icon={ImageIcon}
             >
                 <Menu.MenuItem
                     id="view-server-avatar"
-                    label="View Server Avatar"
+                    label={t("View Server Avatar")}
                     action={() => openAvatar(serverAvatarUrl)}
                 />
                 <Menu.MenuItem
                     id="copy-server-avatar-url"
-                    label="Copy Server Avatar Link"
+                    label={t("Copy Server Avatar Link")}
                     action={() => copyWithToast(getFullSizeUrl(serverAvatarUrl), "Server avatar link copied!")}
                 />
                 <Menu.MenuItem
                     id="save-server-avatar"
-                    label="Save Server Avatar"
+                    label={t("Save Server Avatar")}
                     action={() => downloadImage(getFullSizeUrl(serverAvatarUrl), `${user.username}_server_avatar`)}
                 />
             </Menu.MenuItem>
@@ -221,23 +222,23 @@ const UserContext: NavContextMenuPatchCallback = (children, { user, guildId }: U
         items.push(
             <Menu.MenuItem
                 id="view-banner-menu"
-                label="Banner"
+                label={t("Banner")}
                 action={() => openBanner(bannerUrl)}
                 icon={ImageIcon}
             >
                 <Menu.MenuItem
                     id="view-banner"
-                    label="View Banner"
+                    label={t("View Banner")}
                     action={() => openBanner(bannerUrl)}
                 />
                 <Menu.MenuItem
                     id="copy-banner-url"
-                    label="Copy Banner Link"
+                    label={t("Copy Banner Link")}
                     action={() => copyWithToast(getFullSizeUrl(bannerUrl), "Banner link copied!")}
                 />
                 <Menu.MenuItem
                     id="save-banner"
-                    label="Save Banner"
+                    label={t("Save Banner")}
                     action={() => downloadImage(getFullSizeUrl(bannerUrl), `${user.username}_banner`)}
                 />
             </Menu.MenuItem>
@@ -249,23 +250,23 @@ const UserContext: NavContextMenuPatchCallback = (children, { user, guildId }: U
         items.push(
             <Menu.MenuItem
                 id="view-server-banner-menu"
-                label="Server Banner"
+                label={t("Server Banner")}
                 action={() => openBanner(serverBannerUrl)}
                 icon={ImageIcon}
             >
                 <Menu.MenuItem
                     id="view-server-banner"
-                    label="View Server Banner"
+                    label={t("View Server Banner")}
                     action={() => openBanner(serverBannerUrl)}
                 />
                 <Menu.MenuItem
                     id="copy-server-banner-url"
-                    label="Copy Server Banner Link"
+                    label={t("Copy Server Banner Link")}
                     action={() => copyWithToast(getFullSizeUrl(serverBannerUrl), "Server banner link copied!")}
                 />
                 <Menu.MenuItem
                     id="save-server-banner"
-                    label="Save Server Banner"
+                    label={t("Save Server Banner")}
                     action={() => downloadImage(getFullSizeUrl(serverBannerUrl), `${user.username}_server_banner`)}
                 />
             </Menu.MenuItem>
@@ -281,30 +282,30 @@ const GuildContext: NavContextMenuPatchCallback = (children, { guild }: GuildCon
     const { id, icon, banner, splash } = guild;
     if (!banner && !icon && !splash) return;
 
-    const items = [];
+    const items: React.ReactNode[] = [];
 
     if (icon) {
         const iconUrl = IconUtils.getGuildIconURL({ id, icon, canAnimate: true })!;
         items.push(
             <Menu.MenuItem
                 id="view-guild-icon-menu"
-                label="Server Icon"
+                label={t("Server Icon")}
                 action={() => openAvatar(iconUrl)}
                 icon={ImageIcon}
             >
                 <Menu.MenuItem
                     id="view-guild-icon"
-                    label="View Icon"
+                    label={t("View Icon")}
                     action={() => openAvatar(iconUrl)}
                 />
                 <Menu.MenuItem
                     id="copy-guild-icon-url"
-                    label="Copy Icon Link"
+                    label={t("Copy Icon Link")}
                     action={() => copyWithToast(getFullSizeUrl(iconUrl), "Server icon link copied!")}
                 />
                 <Menu.MenuItem
                     id="save-guild-icon"
-                    label="Save Icon"
+                    label={t("Save Icon")}
                     action={() => downloadImage(getFullSizeUrl(iconUrl), `${guild.name}_icon`)}
                 />
             </Menu.MenuItem>
@@ -316,23 +317,23 @@ const GuildContext: NavContextMenuPatchCallback = (children, { guild }: GuildCon
         items.push(
             <Menu.MenuItem
                 id="view-guild-banner-menu"
-                label="Server Banner"
+                label={t("Server Banner")}
                 action={() => openBanner(bannerUrl)}
                 icon={ImageIcon}
             >
                 <Menu.MenuItem
                     id="view-guild-banner"
-                    label="View Banner"
+                    label={t("View Banner")}
                     action={() => openBanner(bannerUrl)}
                 />
                 <Menu.MenuItem
                     id="copy-guild-banner-url"
-                    label="Copy Banner Link"
+                    label={t("Copy Banner Link")}
                     action={() => copyWithToast(getFullSizeUrl(bannerUrl), "Server banner link copied!")}
                 />
                 <Menu.MenuItem
                     id="save-guild-banner"
-                    label="Save Banner"
+                    label={t("Save Banner")}
                     action={() => downloadImage(getFullSizeUrl(bannerUrl), `${guild.name}_banner`)}
                 />
             </Menu.MenuItem>
@@ -344,23 +345,23 @@ const GuildContext: NavContextMenuPatchCallback = (children, { guild }: GuildCon
         items.push(
             <Menu.MenuItem
                 id="view-guild-splash-menu"
-                label="Server Splash"
+                label={t("Server Splash")}
                 action={() => openBanner(splashUrl)}
                 icon={ImageIcon}
             >
                 <Menu.MenuItem
                     id="view-guild-splash"
-                    label="View Splash"
+                    label={t("View Splash")}
                     action={() => openBanner(splashUrl)}
                 />
                 <Menu.MenuItem
                     id="copy-guild-splash-url"
-                    label="Copy Splash Link"
+                    label={t("Copy Splash Link")}
                     action={() => copyWithToast(splashUrl, "Server splash link copied!")}
                 />
                 <Menu.MenuItem
                     id="save-guild-splash"
-                    label="Save Splash"
+                    label={t("Save Splash")}
                     action={() => downloadImage(splashUrl, `${guild.name}_splash`)}
                 />
             </Menu.MenuItem>
@@ -379,23 +380,23 @@ const GroupDMContext: NavContextMenuPatchCallback = (children, { channel }: Grou
         <Menu.MenuGroup>
             <Menu.MenuItem
                 id="view-group-channel-icon-menu"
-                label="Group Icon"
+                label={t("Group Icon")}
                 action={() => openAvatar(iconUrl)}
                 icon={ImageIcon}
             >
                 <Menu.MenuItem
                     id="view-group-icon"
-                    label="View Icon"
+                    label={t("View Icon")}
                     action={() => openAvatar(iconUrl)}
                 />
                 <Menu.MenuItem
                     id="copy-group-icon-url"
-                    label="Copy Icon Link"
+                    label={t("Copy Icon Link")}
                     action={() => copyWithToast(getFullSizeUrl(iconUrl), "Group icon link copied!")}
                 />
                 <Menu.MenuItem
                     id="save-group-icon"
-                    label="Save Icon"
+                    label={t("Save Icon")}
                     action={() => downloadImage(getFullSizeUrl(iconUrl), `${channel.name || "group"}_icon`)}
                 />
             </Menu.MenuItem>
@@ -412,17 +413,17 @@ function openAvatarContextMenu(e: React.MouseEvent, avatarUrl: string) {
         <Menu.Menu navId="vc-viewicons-avatar-context" onClose={ContextMenuApi.closeContextMenu} aria-label="Avatar Options">
             <Menu.MenuItem
                 id="viewicons-view-avatar"
-                label="View Avatar"
+                label={t("View Avatar")}
                 action={() => openAvatar(avatarUrl)}
             />
             <Menu.MenuItem
                 id="viewicons-copy-avatar-url"
-                label="Copy Avatar Link"
+                label={t("Copy Avatar Link")}
                 action={() => copyWithToast(fullUrl, "Avatar link copied!")}
             />
             <Menu.MenuItem
                 id="viewicons-save-avatar"
-                label="Save Avatar"
+                label={t("Save Avatar")}
                 action={() => downloadImage(fullUrl, "avatar")}
             />
         </Menu.Menu>
@@ -438,17 +439,17 @@ function openBannerContextMenu(e: React.MouseEvent, bannerUrl: string) {
         <Menu.Menu navId="vc-viewicons-banner-context" onClose={ContextMenuApi.closeContextMenu} aria-label="Banner Options">
             <Menu.MenuItem
                 id="viewicons-view-banner"
-                label="View Banner"
+                label={t("View Banner")}
                 action={() => openBanner(bannerUrl)}
             />
             <Menu.MenuItem
                 id="viewicons-copy-banner-url"
-                label="Copy Banner Link"
+                label={t("Copy Banner Link")}
                 action={() => copyWithToast(fullUrl, "Banner link copied!")}
             />
             <Menu.MenuItem
                 id="viewicons-save-banner"
-                label="Save Banner"
+                label={t("Save Banner")}
                 action={() => downloadImage(fullUrl, "banner")}
             />
         </Menu.Menu>
@@ -457,7 +458,7 @@ function openBannerContextMenu(e: React.MouseEvent, bannerUrl: string) {
 
 export default definePlugin({
     name: "ViewIcons",
-    authors: [Devs.Ven, Devs.TheKodeToad, Devs.Nuckyz, Devs.nyx],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     description: "Makes avatars and banners in user profiles clickable, adds View/Copy/Save Icon and Banner entries in user, server and group channel context menus.",
     tags: ["Media", "Servers", "Appearance"],
     searchTerms: ["ImageUtilities"],
@@ -481,16 +482,16 @@ export default definePlugin({
         {
             find: "return{avatarProps:{",
             replacement: {
-                match: /(?<=avatarProps:(\i),eventHandlers:(\i).{0,50}?)return null==/,
-                replace: 'Object.assign($2,{style:{cursor:"pointer"},onClick:()=>$self.openAvatar($1.src),onContextMenu:e=>$self.openAvatarContextMenu(e,$1.src)});$&',
+                match: /(?<=onClick:.{0,30}?)null!=(\i)(?=.{0,200}children:.{0,50}...(\i),imageClassName:)/,
+                replace: "null!=($1&&=$self.openAvatar.bind(undefined,$2.src))",
             }
         },
         // Banners
         {
-            find: 'backgroundColor:"COMPLETE"',
+            find: '"--custom-cutout-radius":',
             replacement: {
-                match: /(overflow:"visible",.{0,125}?!1\),)style:{(?=.+?backgroundImage:null!=(\i)\?`url\(\$\{\2\}\))/,
-                replace: (_, rest, bannerSrc) => `${rest}onClick:()=>${bannerSrc}!=null&&$self.openBanner(${bannerSrc}),onContextMenu:e=>${bannerSrc}!=null&&$self.openBannerContextMenu(e,${bannerSrc}),style:{cursor:${bannerSrc}!=null?"pointer":void 0,`
+                match: /style:{(?=\.\.\.\i,backgroundImage:null!=(\i).{0,20}?\?`url\(\$\{\1\}\)`)/,
+                replace: (_, bannerSrc) => `onClick:()=>${bannerSrc}!=null&&$self.openBanner(${bannerSrc}),onContextMenu:e=>${bannerSrc}!=null&&$self.openBannerContextMenu(e,${bannerSrc}),style:{cursor:${bannerSrc}!=null?"pointer":void 0,`
             }
         },
         // Group DMs top small & large icon
@@ -499,7 +500,7 @@ export default definePlugin({
             replacement: {
                 match: /null==\i\.icon\?.+?src:(\(0,\i\.\i\).+?\))(?=[,}])/,
                 // We have to check that icon is not an unread GDM in the server bar
-                replace: (m, iconUrl) => `${m},onClick:()=>arguments[0]?.size!=="SIZE_48"&&$self.openAvatar(${iconUrl})`
+                replace: (m, iconUrl) => `${m},onClick:()=>arguments[0]?.size!=="SIZE_40"&&$self.openAvatar(${iconUrl})`
             }
         },
         // User DMs top small icon

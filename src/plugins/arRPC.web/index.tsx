@@ -7,6 +7,7 @@
 import { popNotice, showNotice } from "@api/Notices";
 import { Link } from "@components/Link";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import definePlugin, { ReporterTestable } from "@utils/types";
 import { findByCodeLazy } from "@webpack";
 import { ApplicationAssetUtils, FluxDispatcher, Forms, Toasts } from "@webpack/common";
@@ -29,16 +30,15 @@ export default definePlugin({
     name: "WebRichPresence (arRPC)",
     description: "Client plugin for arRPC to enable RPC on Discord Web (experimental)",
     tags: ["Activity", "Utility"],
-    authors: [Devs.Ducko],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     reporterTestable: ReporterTestable.None,
     hidden: IS_VESKTOP || "legcord" in window,
 
     settingsAboutComponent: () => (
         <>
-            <Forms.FormTitle tag="h3">How to use arRPC</Forms.FormTitle>
+            <Forms.FormTitle tag="h3">{t("How to use arRPC")}</Forms.FormTitle>
             <Forms.FormText>
-                <Link href="https://github.com/OpenAsar/arrpc/tree/main#server">Follow the instructions in the GitHub repo</Link> to get the server running, and then enable the plugin.
-            </Forms.FormText>
+                <Link href="https://github.com/OpenAsar/arrpc/tree/main#server">{t("Follow the instructions in the GitHub repo")}</Link>{" "}{t("to get the server running, and then enable the plugin.")}</Forms.FormText>
         </>
     ),
 

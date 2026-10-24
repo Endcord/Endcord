@@ -23,7 +23,8 @@ export default definePlugin({
             find: ".setGuildsTree(",
             replacement: [
                 {
-                    match: /(?<=#{intl::SERVERS}\),gap:"xs",children:)\i\.map\(.{0,50}\.length\)/,
+                    // The optional call allows HideServers, which wraps the guild list in its own filter
+                    match: /(?<=#{intl::SERVERS}\),gap:"xs",children:)(?:[\w$.[\]"]+\(\i\)|\i)\.map\(.{0,50}\.length\)/,
                     replace: "Endcord.Api.ServerList.renderAll(Endcord.Api.ServerList.ServerListRenderPosition.In).concat($&)"
                 },
                 {

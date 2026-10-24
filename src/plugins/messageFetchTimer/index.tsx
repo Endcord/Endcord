@@ -6,7 +6,7 @@
 
 import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
 import { definePluginSettings } from "@api/Settings";
-import { EquicordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
 import { getCurrentChannel } from "@utils/discord";
 import definePlugin, { OptionType } from "@utils/types";
 import { FluxDispatcher, React } from "@webpack/common";
@@ -149,7 +149,7 @@ export default definePlugin({
     description: "Shows how long it took to fetch messages for the current channel",
     dependencies: ["ChatInputButtonAPI"],
     tags: ["Chat", "Utility"],
-    authors: [EquicordDevs.GroupXyz],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
 
     chatBarButton: {

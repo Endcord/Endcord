@@ -15,13 +15,17 @@ import * as $MessageDecorations from "./MessageDecorations";
 import * as $MessageEventsAPI from "./MessageEvents";
 import * as $MessagePopover from "./MessagePopover";
 import * as $MessageUpdater from "./MessageUpdater";
+import * as $NicknameIcons from "./NicknameIcons";
 import * as $Notices from "./Notices";
 import * as $Notifications from "./Notifications";
 export * as PluginManager from "./PluginManager";
 import * as $HeaderBar from "./HeaderBar";
+import * as $ProfileCollections from "./ProfileCollections";
+import * as $ProfileSections from "./ProfileSections";
 import * as $ServerList from "./ServerList";
 import * as $Settings from "./Settings";
 import * as $Styles from "./Styles";
+import * as $SurfaceClasses from "./SurfaceClasses";
 import * as $Themes from "./Themes";
 import * as $UserArea from "./UserArea";
 import * as $UserSettings from "./UserSettings";
@@ -123,3 +127,11 @@ export const Themes = $Themes;
 export const UserArea = $UserArea;
 
 export const HeaderBar = $HeaderBar;
+
+export const NicknameIcons = $NicknameIcons;
+
+export const ProfileCollections = $ProfileCollections;
+
+export const ProfileSections = $ProfileSections;
+
+export const SurfaceClasses = $SurfaceClasses;

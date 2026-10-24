@@ -5,14 +5,15 @@
  */
 
 import { QuestRewardType, QuestTaskType } from "@endcord/discord-types/enums";
+import { getQuestifySettings, useQuestifySettings } from "@plugins/questify/settings/access";
+import { type QuestButtonAction, type QuestButtonDisplayMode, type QuestButtonIncludedTypes, type QuestButtonIndicatorMode } from "@plugins/questify/settings/def";
+import { startAutoFetchingQuests } from "@plugins/questify/settings/fetching";
+import { validateIgnoredQuests } from "@plugins/questify/settings/ignoredQuests";
+import { canShowBadge, canShowButton, canShowPill } from "@plugins/questify/utils/ui";
+import { t } from "@utils/i18n";
 import type { JSX } from "react";
 
 import { enabledOnStartup } from "..";
-import { getQuestifySettings, useQuestifySettings } from "../settings/access";
-import { type QuestButtonAction, type QuestButtonDisplayMode, type QuestButtonIncludedTypes, type QuestButtonIndicatorMode } from "../settings/def";
-import { startAutoFetchingQuests } from "../settings/fetching";
-import { validateIgnoredQuests } from "../settings/ignoredQuests";
-import { canShowBadge, canShowButton, canShowPill } from "../utils/ui";
 import { DummyQuestButton } from "./questButton";
 import { type ManaSelectOption, SettingsCard, SettingsColorPicker, SettingsDescription, SettingsHeader, SettingsRow, SettingsRowItem, SettingsSelect, SettingsSubheader } from "./shared";
 
@@ -140,8 +141,8 @@ export function QuestButtonSetting(): JSX.Element {
         <SettingsCard>
             <SettingsRow>
                 <SettingsRowItem>
-                    <SettingsHeader> Quest Button </SettingsHeader>
-                    <SettingsDescription> Show a Quest Button in the server list with an optional indicator for unclaimed and unignored Quests. </SettingsDescription>
+                    <SettingsHeader>{" "}{t("Quest Button")}{" "}</SettingsHeader>
+                    <SettingsDescription>{" "}{t("Show a Quest Button in the server list with an optional indicator for unclaimed and unignored Quests.")}{" "}</SettingsDescription>
                 </SettingsRowItem>
                 {enabledOnStartup && <SettingsRowItem width="content">
                     <DummyQuestButton
@@ -155,11 +156,11 @@ export function QuestButtonSetting(): JSX.Element {
                     />
                 </SettingsRowItem>}
             </SettingsRow>
-            <SettingsSubheader className="no-top-margin"> Button Behavior </SettingsSubheader>
+            <SettingsSubheader className="no-top-margin">{" "}{t("Button Behavior")}{" "}</SettingsSubheader>
             <SettingsRow>
                 <SettingsRowItem>
                     <SettingsSelect
-                        label="Left Click Action:"
+                        label={t("Left Click Action:")}
                         options={questButtonClickManaOptions}
                         value={questButton.questButtonLeftClickAction}
                         selectionMode="single"
@@ -170,7 +171,7 @@ export function QuestButtonSetting(): JSX.Element {
                 </SettingsRowItem>
                 <SettingsRowItem>
                     <SettingsSelect
-                        label="Middle Click Action:"
+                        label={t("Middle Click Action:")}
                         options={questButtonClickManaOptions}
                         value={questButton.questButtonMiddleClickAction}
                         selectionMode="single"
@@ -181,7 +182,7 @@ export function QuestButtonSetting(): JSX.Element {
                 </SettingsRowItem>
                 <SettingsRowItem>
                     <SettingsSelect
-                        label="Right Click Action:"
+                        label={t("Right Click Action:")}
                         options={questButtonClickManaOptions}
                         value={questButton.questButtonRightClickAction}
                         selectionMode="single"
@@ -194,7 +195,7 @@ export function QuestButtonSetting(): JSX.Element {
             <SettingsRow>
                 <SettingsRowItem>
                     <SettingsSelect
-                        label="Button Visibility:"
+                        label={t("Button Visibility:")}
                         options={questButtonDisplayManaOptions}
                         value={questButton.questButtonDisplay}
                         selectionMode="single"
@@ -211,7 +212,7 @@ export function QuestButtonSetting(): JSX.Element {
                 </SettingsRowItem>
                 <SettingsRowItem>
                     <SettingsSelect
-                        label="Unclaimed Indicator:"
+                        label={t("Unclaimed Indicator:")}
                         options={questButtonIndicatorManaOptions}
                         value={questButton.questButtonIndicator}
                         selectionMode="single"
@@ -229,7 +230,7 @@ export function QuestButtonSetting(): JSX.Element {
                 </SettingsRowItem>
                 <SettingsRowItem>
                     <SettingsColorPicker
-                        label="Badge Color:"
+                        label={t("Badge Color:")}
                         className="quest-button-color-picker"
                         color={questButton.questButtonBadgeColor}
                         disabled={disabled}
@@ -238,9 +239,9 @@ export function QuestButtonSetting(): JSX.Element {
                     />
                 </SettingsRowItem>
             </SettingsRow>
-            <SettingsSubheader> Quest Relevancy </SettingsSubheader>
+            <SettingsSubheader>{" "}{t("Quest Relevancy")}{" "}</SettingsSubheader>
             <SettingsSelect
-                label="Included Reward Types:"
+                label={t("Included Reward Types:")}
                 wrapTags={true}
                 options={questButtonRewardTypeManaOptions}
                 value={selectedRewardTypes}
@@ -256,7 +257,7 @@ export function QuestButtonSetting(): JSX.Element {
                 }}
             />
             <SettingsSelect
-                label="Included Quest Types:"
+                label={t("Included Quest Types:")}
                 labelClassName="margin-top-9"
                 wrapTags={true}
                 options={questButtonQuestTypeManaOptions}

@@ -6,8 +6,9 @@
 
 import "./styles.css";
 
-import { EquicordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
 import { getIntlMessage, openUserProfile } from "@utils/discord";
+import { t } from "@utils/i18n";
 import definePlugin from "@utils/types";
 import { Button, React, RelationshipStore, TextInput, UserStore } from "@webpack/common";
 
@@ -18,7 +19,7 @@ export default definePlugin({
     name: "BetterBlockedUsers",
     description: "Allows you to search in blocked users list and makes names selectable in settings.",
     tags: ["Appearance", "Shortcuts"],
-    authors: [EquicordDevs.TheArmagan],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     patches: [
         {
             find: '"],{numberOfBlockedUsers:',
@@ -53,7 +54,7 @@ export default definePlugin({
 
         return <div className="vc-bbu-search">
             <TextInput
-                placeholder="Search users..."
+                placeholder={t("Search users...")}
                 style={{ width: "200px" }}
                 onInput={e => {
                     const search = (e.target as HTMLInputElement).value.toLowerCase().trim();

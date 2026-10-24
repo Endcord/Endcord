@@ -5,8 +5,9 @@
  */
 
 import { Flex } from "@components/Flex";
-import { characters } from "@equicordplugins/sekaiStickers/characters.json";
 import { RenderModalProps } from "@endcord/discord-types";
+import { characters } from "@equicordplugins/sekaiStickers/characters.json";
+import { t } from "@utils/i18n";
 import { Modal,React, ScrollerThin, TextInput } from "@webpack/common";
 
 export default function CharSelectModal({ modalProps, setCharacter }: { modalProps: RenderModalProps; setCharacter?: any; }) {
@@ -29,9 +30,9 @@ export default function CharSelectModal({ modalProps, setCharacter }: { modalPro
         });
     }, [search, characters]);
     return (
-        <Modal {...modalProps} size="lg" title="Select character menu">
+        <Modal {...modalProps} size="lg" title={t("Select character menu")}>
             <Flex flexDirection="column" style={{ paddingTop: 12 }}>
-                <TextInput content="mafuyu" placeholder="Mafuyu" onChange={(e: string) => setSearch(e)} />
+                <TextInput content="mafuyu" placeholder={t("Mafuyu")} onChange={(e: string) => setSearch(e)} />
                 <ScrollerThin style={{ height: 520 }}>
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 330px)", rowGap: 6, columnGap: 5, gridTemplateRows: "repeat(3, 256px)" }}>
                         {memoedSearchChar}

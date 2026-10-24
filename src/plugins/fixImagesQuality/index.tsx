@@ -10,6 +10,7 @@ import { Flex } from "@components/Flex";
 import { Margins } from "@components/margins";
 import { Paragraph } from "@components/Paragraph";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType } from "@utils/types";
 
@@ -25,7 +26,7 @@ export default definePlugin({
     name: "FixImagesQuality",
     description: "Improves quality of images by loading them at their original resolution",
     tags: ["Media", "Appearance"],
-    authors: [Devs.Nuckyz, Devs.Ven],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
 
     patches: [
@@ -42,18 +43,18 @@ export default definePlugin({
         return (
             <Card variant="normal">
                 <Flex flexDirection="column" gap="4px">
-                    <Paragraph size="md" weight="semibold">The default behaviour is the following:</Paragraph>
+                    <Paragraph size="md" weight="semibold">{t("The default behaviour is the following:")}</Paragraph>
                     <Paragraph>
                         <ul>
-                            <li>&mdash; In chat, optimised but full resolution images will be loaded.</li>
-                            <li>&mdash; In the image modal, the original image will be loaded.</li>
+                            <li>{"— "}{t("In chat, optimised but full resolution images will be loaded.")}</li>
+                            <li>{"— "}{t("In the image modal, the original image will be loaded.")}</li>
                         </ul>
                     </Paragraph>
-                    <Paragraph size="md" weight="semibold" className={Margins.top8}>You can also enable original image in chat, but beware of the following caveats:</Paragraph>
+                    <Paragraph size="md" weight="semibold" className={Margins.top8}>{t("You can also enable original image in chat, but beware of the following caveats:")}</Paragraph>
                     <Paragraph>
                         <ul>
-                            <li>&mdash; Animated images (GIF, WebP, etc.) in chat will always animate, regardless of if the App is focused.</li>
-                            <li>&mdash; May cause lag.</li>
+                            <li>{"— "}{t("Animated images (GIF, WebP, etc.) in chat will always animate, regardless of if the App is focused.")}</li>
+                            <li>{"— "}{t("May cause lag.")}</li>
                         </ul>
                     </Paragraph>
                 </Flex>

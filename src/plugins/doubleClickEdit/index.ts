@@ -17,7 +17,7 @@ function onDoubleClick(e: MouseEvent) {
     const messageEl = target.closest("[data-message-id]") as HTMLElement | null;
     if (!messageEl) return;
 
-    const messageId = messageEl.dataset.messageId;
+    const { messageId } = messageEl.dataset;
     if (!messageId) return;
 
     const channelId = SelectedChannelStore.getChannelId();
@@ -37,7 +37,7 @@ export default definePlugin({
     name: "DoubleClickEdit",
     description: "Double-click your own messages to edit them instantly.",
     tags: ["Chat", "Utility"],
-    authors: [Devs.ewlle, Devs.rootpoi, Devs.kraethis],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
 
     start() {
         document.addEventListener("dblclick", onDoubleClick);

@@ -39,7 +39,7 @@ export const settings = definePluginSettings({
     },
     tryHljs: {
         type: OptionType.SELECT,
-        displayName: "Try Highlight.js",
+        displayName: "Use Discord's highlighter",
         description: "Use the more lightweight default Discord highlighter and theme.",
         options: [
             {
@@ -47,12 +47,12 @@ export const settings = definePluginSettings({
                 value: HljsSetting.Never,
             },
             {
-                label: "Prefer Shiki instead of Highlight.js",
+                label: "Prefer Shiki over Discord's highlighter",
                 value: HljsSetting.Secondary,
                 default: true,
             },
             {
-                label: "Prefer Highlight.js instead of Shiki",
+                label: "Prefer Discord's highlighter over Shiki",
                 value: HljsSetting.Primary,
             },
             {

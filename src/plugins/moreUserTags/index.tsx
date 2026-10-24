@@ -1,0 +1,230 @@
+/*
+ * Endcord, a Discord client mod
+ * Copyright (c) 2026 Vendicated and contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+import "./styles.css";
+
+import { migratePluginToSettings } from "@api/Settings";
+import { Devs } from "@utils/constants";
+import { classNameFactory } from "@utils/css";
+import { getCurrentChannel, getIntlMessage } from "@utils/discord";
+import definePlugin from "@utils/types";
+import { Channel, Message, User } from "@vencord/discord-types";
+import { ChannelStore, GuildStore, PermissionsBits, SelectedChannelStore, UserStore } from "@webpack/common";
+
+import { computePermissions, Tag, tags } from "./consts";
+import { settings } from "./settings";
+import { TagSettings } from "./types";
+
+const cl = classNameFactory("vc-mut-");
+
+const permCache = new Map<string, { perms: bigint; at: number; }>();
+const MAX_CACHE = 500;
+const CACHE_TTL_MS = 10_000;
+
+function cacheKey(userId: string, guildId: string): string {
+    return `${userId}:${guildId}`;
+}
+
+const genTagTypes = () => {
+    let i = 100;
+    const obj = {};
+
+    for (const { name } of tags) {
+        obj[name] = ++i;
+        obj[i] = name;
+    }
+
+    return obj;
+};
+
+migratePluginToSettings(true, "MoreUserTags", "NoAppsAllowed", "noAppsAllowed");
+
+export default definePlugin({
+    name: "MoreUserTags",
+    description: "Adds tags for webhooks and moderative roles (owner, admin, etc.)",
+    dependencies: ["MemberListDecoratorsAPI", "MessageDecorationsAPI", "NicknameIconsAPI"],
+    tags: ["Appearance", "Chat"],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    settings,
+    patches: [
+        // Make discord actually use our tags
+        {
+            find: ".STAFF_ONLY_DM:",
+            replacement: [
+                {
+                    match: /(?<=type:(\i).*?\.BOT:.{0,25})default:(\i)=/,
+                    replace: "default:$2=$self.getTagText($self.localTags[$1]);",
+                },
+                {
+                    match: /(?<=type:\i.*?)\.BOT:(?=default:)/,
+                    replace: "$&return null;",
+                    predicate: () => settings.store.dontShowBotTag
+                },
+            ],
+        },
+        {
+            find: '"#{intl::APP_TAG::hash}":',
+            // This matches the intl bundle, english is always loaded as a fallback bundle
+            // if the users language is not english, we need to apply to both because the load order is random
+            all: true,
+            predicate: () => settings.store.noAppsAllowed,
+            replacement: {
+                match: /(#{intl::APP_TAG::hash}":\[").{0,30}("\])/,
+                replace: "$1BOT$2",
+            }
+        }
+    ],
+    flux: {
+        // Role changes affect permissions guild-wide, so a full clear is warranted.
+        // These are rare compared to message/channel sync events.
+        GUILD_ROLE_UPDATE() { permCache.clear(); },
+        GUILD_ROLE_CREATE() { permCache.clear(); },
+        GUILD_ROLE_DELETE() { permCache.clear(); },
+        // A single member's roles changed: drop only that member's cached entries.
+        GUILD_MEMBER_UPDATE({ member }: { member?: { userId?: string; }; }) {
+            const userId = member?.userId;
+            if (userId == null) return;
+            for (const key of permCache.keys()) {
+                if (key.startsWith(`${userId}:`)) permCache.delete(key);
+            }
+        },
+    },
+    stop() {
+        permCache.clear();
+    },
+    start() {
+        const tagSettings = settings.store.tagSettings || {} as TagSettings;
+        for (const tag of Object.values(tags)) {
+            tagSettings[tag.name] ??= {
+                showInChat: true,
+                showInNotChat: true,
+                text: tag.displayName
+            };
+        }
+
+        settings.store.tagSettings = tagSettings;
+    },
+    localTags: genTagTypes(),
+    getChannelId() {
+        return SelectedChannelStore.getChannelId();
+    },
+    renderNicknameIcon(props) {
+        const tagId = this.getTag({
+            user: UserStore.getUser(props.userId),
+            channel: getCurrentChannel(),
+            channelId: this.getChannelId(),
+            isChat: false
+        });
+
+        return tagId && <Tag
+            type={tagId}
+            verified={false}>
+        </Tag>;
+
+    },
+    renderMessageDecoration(props) {
+        const tagId = this.getTag({
+            message: props.message,
+            user: props.message.author,
+            channelId: props.message.channel_id,
+            isChat: true
+        });
+
+        return tagId && <Tag
+            useRemSizes={true}
+            className={cl("message-tag", props.message.author.isVerifiedBot() && "message-verified")}
+            type={tagId}
+            verified={false}>
+        </Tag>;
+    },
+    renderMemberListDecorator(props) {
+        const tagId = this.getTag({
+            user: props.user,
+            channel: getCurrentChannel(),
+            channelId: this.getChannelId(),
+            isChat: false
+        });
+
+        return tagId && <Tag
+            type={tagId}
+            verified={false}>
+        </Tag>;
+    },
+
+    getTagText(tagName: string) {
+        if (!tagName) return getIntlMessage("APP_TAG");
+        const tag = tags.find(({ name }) => tagName === name);
+        if (!tag) return tagName || getIntlMessage("APP_TAG");
+
+        return settings.store.tagSettings?.[tag.name]?.text || tag.displayName;
+    },
+
+    getTag({
+        message, user, channelId, isChat, channel
+    }: {
+        message?: Message,
+        user?: User,
+        channel?: Channel & { isForumPost(): boolean; isMediaPost(): boolean; },
+        channelId?: string;
+        isChat?: boolean;
+    }): number | null {
+        const settings = this.settings.store;
+
+        if (!user) return null;
+        if (isChat && user.id === "1") return null;
+        if (user.bot && settings.dontShowForBots) return null;
+
+        channel ??= ChannelStore.getChannel(channelId!) as any;
+        if (!channel) return null;
+
+        const perms = this.getPermissions(user, channel);
+        const isGuildOwner = GuildStore.getGuild(channel?.guild_id)?.ownerId === user.id;
+
+        for (const tag of tags) {
+            if (isChat && !settings.tagSettings[tag.name]?.showInChat)
+                continue;
+            if (!isChat && !settings.tagSettings[tag.name]?.showInNotChat)
+                continue;
+
+            // If the owner tag is disabled, and the user is the owner of the guild,
+            // avoid adding other tags because the owner will always match the condition for them
+            if (
+                (tag.name !== "OWNER" &&
+                    isGuildOwner &&
+                    isChat &&
+                    !settings.tagSettings.OWNER.showInChat) ||
+                (isGuildOwner &&
+                    !isChat &&
+                    !settings.tagSettings.OWNER.showInNotChat)
+            )
+                continue;
+
+            if ("permissions" in tag ?
+                tag.permissions.some(perm => (perms & PermissionsBits[perm as keyof typeof PermissionsBits]) !== 0n) :
+                tag.condition(message!, user, channel)) {
+
+                return this.localTags[tag.name];
+            }
+        }
+
+        return null;
+    },
+    getPermissions(user: User, channel: Channel): bigint {
+        const guild = GuildStore.getGuild(channel?.guild_id);
+        if (!guild) return 0n;
+        const key = cacheKey(user.id, guild.id);
+        const cached = permCache.get(key);
+        const now = Date.now();
+        if (cached !== undefined && now - cached.at < CACHE_TTL_MS) return cached.perms;
+        const perms = computePermissions({ user, context: guild, overwrites: channel.permissionOverwrites });
+        if (permCache.size >= MAX_CACHE) {
+            const first = permCache.keys().next().value;
+            if (first !== undefined) permCache.delete(first);
+        }
+        permCache.set(key, { perms, at: now });
+        return perms;
+    },
+});

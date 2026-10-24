@@ -8,6 +8,7 @@ import { definePluginSettings } from "@api/Settings";
 import { disableStyle, enableStyle } from "@api/Styles";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 
 import hoverOnlyStyle from "./hoverOnly.css?managed";
@@ -40,7 +41,7 @@ export default definePlugin({
     name: "SpotifyControls",
     description: "Adds a Spotify player above the account panel",
     tags: ["Media", "Activity"],
-    authors: [Devs.Ven, Devs.afn, Devs.KraXen72, Devs.Av32000, Devs.nin0dev],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     patches: [
         {
@@ -90,8 +91,8 @@ export default definePlugin({
                 <ErrorBoundary
                     fallback={() => (
                         <div className="vc-spotify-fallback">
-                            <p>Failed to render Spotify Modal :(</p>
-                            <p >Check the console for errors</p>
+                            <p>{t("Failed to render Spotify Modal :(")}</p>
+                            <p >{t("Check the console for errors")}</p>
                         </div>
                     )}
                 >

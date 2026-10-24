@@ -5,6 +5,7 @@
  */
 
 import type { ModalOptions, ModalProps, RenderModalProps } from "@endcord/discord-types";
+import { t } from "@utils/i18n";
 import { Modal, openModal, useEffect, useState } from "@webpack/common";
 import type { ComponentType, JSX } from "react";
 
@@ -47,16 +48,14 @@ const oneTimeNotices = [
         title: "Questify Notice - August 7th, 2026",
         renderBody: () => <div className="questify-startup-notice-body">
             <p>
-                Discord has implemented a Quest Ban system which will temporarily or permanently limit your access to completing Quests and claiming their rewards if you are found to be completing them through unofficial means. Modifying the completion of Quests is against their <a href="https://discord.com/safety/platform-manipulation-policy-explainer" target="_blank" rel="noreferrer">Terms of Service</a>.
+                {t("Discord has implemented a Quest Ban system which will temporarily or permanently limit your access to completing Quests and claiming their rewards if you are found to be completing them through unofficial means. Modifying the completion of Quests is against their")}{" "}<a href="https://discord.com/safety/platform-manipulation-policy-explainer" target="_blank" rel="noreferrer">{t("Terms of Service")}</a>.
             </p>
             <br />
             <p>
-                The punishment appears limited to loss of access to Quests and their rewards, but Discord may escalate at any time.
-            </p>
+                {t("The punishment appears limited to loss of access to Quests and their rewards, but Discord may escalate at any time.")}</p>
             <br />
             <p>
-                Due to the various methods Discord uses to track users, there's no way to realistically evade detection. If you proceed, understand that Discord likely will detect it at some point.
-            </p>
+                {t("Due to the various methods Discord uses to track users, there's no way to realistically evade detection. If you proceed, understand that Discord likely will detect it at some point.")}</p>
         </div>,
         condition: () => {
             const settings = getQuestifySettings();
@@ -83,16 +82,15 @@ const oneTimeNotices = [
         dismissable: false,
         renderBody: () => <div className="questify-startup-notice-body">
             <p>
-                Discord has begun punishing users of scripts and plugins that modify the completion of Quests. Modifying the completion of Quests is against their <a href="https://discord.com/safety/platform-manipulation-policy-explainer" target="_blank" rel="noreferrer">Terms of Service</a>.
+                {t("Discord has begun punishing users of scripts and plugins that modify the completion of Quests. Modifying the completion of Quests is against their")}{" "}<a href="https://discord.com/safety/platform-manipulation-policy-explainer" target="_blank" rel="noreferrer">{t("Terms of Service")}</a>.
             </p>
             <br />
             <p>
-                The punishment consists of a temporary or permanent loss of access to Quests and their rewards. <strong>The punishment also consists of an account standing violation which lasts 2 years per violation.</strong>
+                {t("The punishment consists of a temporary or permanent loss of access to Quests and their rewards.")}{" "}<strong>{t("The punishment also consists of an account standing violation which lasts 2 years per violation.")}</strong>
             </p>
             <br />
             <p>
-                Due to the various methods Discord uses to track users, there's no way to realistically evade detection. If you proceed, understand that Discord likely will detect your use at some point.
-            </p>
+                {t("Due to the various methods Discord uses to track users, there's no way to realistically evade detection. If you proceed, understand that Discord likely will detect your use at some point.")}</p>
         </div>,
         condition: () => {
             const settings = getQuestifySettings();

@@ -9,7 +9,8 @@ import { updateMessage } from "@api/MessageUpdater";
 import { definePluginSettings } from "@api/Settings";
 import { getUserSettingLazy } from "@api/UserSettings";
 import { Channel, Message } from "@endcord/discord-types";
-import { Devs } from "@utils/constants.js";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import { Queue } from "@utils/Queue";
 import definePlugin, { OptionType } from "@utils/types";
@@ -111,8 +112,7 @@ const settings = definePluginSettings({
         type: OptionType.COMPONENT,
         component: () => (
             <Button onClick={() => messageCache.clear()}>
-                Clear the linked message cache
-            </Button>
+                {t("Clear the linked message cache")}</Button>
         )
     }
 });
@@ -357,7 +357,7 @@ export default definePlugin({
     name: "MessageLinkEmbeds",
     description: "Adds a preview to messages that link another message",
     tags: ["Chat", "Appearance"],
-    authors: [Devs.TheSun, Devs.Ven, Devs.RyanCaoDev],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     dependencies: ["MessageAccessoriesAPI", "MessageUpdaterAPI", "UserSettingsAPI"],
 
     settings,

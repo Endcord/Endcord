@@ -7,8 +7,9 @@
 import ErrorBoundary from "@components/ErrorBoundary";
 import { HeadingTertiary } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
-import { openInviteModal } from "@utils/discord";
 import { RenderModalProps, User } from "@endcord/discord-types";
+import { openInviteModal } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { Modal, openModal, React, Tooltip } from "@webpack/common";
 
 import { cl, GlobalBadges, INVITE_LINK } from "./utils";
@@ -64,8 +65,7 @@ export function openBadgeModal(user: User) {
                     {badgeDataElements.length ? (
                         <>
                             <Paragraph className={cl("modal-text")}>
-                                {badgeDataElements.length} global badge
-                                {badgeDataElements.length > 1 ? "s" : ""}.
+                                {badgeDataElements.length}{" "}{t("global badge")}{badgeDataElements.length > 1 ? "s" : ""}.
                             </Paragraph>
                             <div className={cl("modal-badges")}>
                                 {badgeDataElements}
@@ -73,8 +73,7 @@ export function openBadgeModal(user: User) {
                         </>
                     ) : (
                         <Paragraph>
-                            No global badges.
-                        </Paragraph>
+                            {t("No global badges.")}</Paragraph>
                     )}
                 </div>
             </ErrorBoundary>

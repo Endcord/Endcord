@@ -1,3 +1,14 @@
+/* Same spacing as Discord's own Add Friend header; its CSS module can't be found reliably by class name */
+.vc-friend-codes-header {
+    flex-shrink: 0;
+    padding: 20px 30px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.vc-friend-codes-title {
+    margin-bottom: 8px;
+}
+
 .vc-friend-codes-card {
     padding: 20px;
     margin-bottom: var(--custom-margin-margin-small);

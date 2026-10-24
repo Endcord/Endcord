@@ -4,12 +4,13 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { classes } from "@utils/misc";
 import { Channel, RenderModalProps } from "@endcord/discord-types";
+import { clearLogs, getVcLogs, vcLogSubscribe } from "@plugins/voiceChannelLog/logs";
+import { cl } from "@plugins/voiceChannelLog/utils";
+import { t } from "@utils/i18n";
+import { classes } from "@utils/misc";
 import { AccessibilityStore, Modal, openModal, React, ScrollerThin } from "@webpack/common";
 
-import { clearLogs, getVcLogs, vcLogSubscribe } from "../logs";
-import { cl } from "../utils";
 import { VoiceChannelLogEntryComponent } from "./VoiceChannelLogEntryComponent";
 
 export function openVoiceChannelLog(channel: Channel) {
@@ -52,7 +53,7 @@ export function VoiceChannelLogModal({ channel, props }: { channel: Channel; pro
 
                     return elements;
                 }) : (
-                    <div className={cl("empty")}>No logs to display.</div>
+                    <div className={cl("empty")}>{t("No logs to display.")}</div>
                 )}
             </ScrollerThin>
         </Modal>

@@ -5,6 +5,7 @@
  */
 
 import { Paragraph } from "@components/Paragraph";
+import { t } from "@utils/i18n";
 import { useState } from "@webpack/common";
 
 import { makeDevBanner, settings, settingVariables } from ".";
@@ -29,18 +30,17 @@ export function FormatSetting(setValue) {
     return (
         <section>
             <Paragraph className={"vc-discord-dev-banner-text"}>
-                The format for the Discord Dev Banner. You can use the following variables:
-                {"\n\n"}
+                {t("The format for the Discord Dev Banner. You can use the following variables:")}{"\n\n"}
                 {settingVariables.join("\n")}
             </Paragraph>
 
-            <Paragraph className="vc-discord-dev-banner-text">Preview:</Paragraph>
+            <Paragraph className="vc-discord-dev-banner-text">{t("Preview:")}</Paragraph>
             <Paragraph style={{ padding: "2px" }}>{preview}</Paragraph>
             <textarea
                 className="vc-discord-dev-banner-input"
                 value={state}
                 onChange={e => handleChange(e.target.value)}
-                placeholder="{buildChannel} {buildNumber} ({buildHash}) | {endcordName} {endcordVersion} ({endcordHash})"
+                placeholder={t("{buildChannel} {buildNumber} ({buildHash}) | {endcordName} {endcordVersion} ({endcordHash})")}
                 rows={1}
                 ref={el => {
                     if (el) {

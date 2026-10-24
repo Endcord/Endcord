@@ -50,7 +50,7 @@ export default definePlugin({
     description: "Converts metric units to Imperal units and vice versa",
     dependencies: ["MessagePopoverAPI"],
     tags: ["Utility"],
-    authors: [Devs.sadan],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     messagePopoverButton: {
         icon: ConvertIcon,
         render(message) {

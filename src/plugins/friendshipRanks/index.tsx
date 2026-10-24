@@ -12,10 +12,11 @@ import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
 import { Paragraph } from "@components/Paragraph";
-import { Devs, EquicordDevs } from "@utils/constants";
-import { classNameFactory } from "@utils/css";
-import definePlugin, { OptionType } from "@utils/types";
 import { RenderModalProps } from "@endcord/discord-types";
+import { Devs } from "@utils/constants";
+import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
+import definePlugin, { OptionType } from "@utils/types";
 import { Forms, Modal, openModal, RelationshipStore, Tooltip, useStateFromStores } from "@webpack/common";
 
 interface rankInfo {
@@ -154,7 +155,7 @@ const FriendDecoration = ErrorBoundary.wrap(({ userId }: { userId: string; }) =>
     if (!isFriend) return null;
 
     return (
-        <Tooltip text="Friend">
+        <Tooltip text={t("Friend")}>
             {tooltipProps => (
                 <span {...tooltipProps} className={cl("decoration")}>
                     <svg className={cl("icon")} aria-hidden="true" viewBox="0 0 24 24">
@@ -171,7 +172,7 @@ export default definePlugin({
     name: "FriendshipRanks",
     description: "Adds badges showcasing how long you have been friends with a user for",
     tags: ["Friends"],
-    authors: [Devs.Samwich, EquicordDevs.lucabeyer],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     renderMessageDecoration({ message }) {
         if (!settings.store.showFriendsInChat || !message?.author) return null;

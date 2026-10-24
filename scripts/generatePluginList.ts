@@ -20,7 +20,7 @@ import { Dirent, readdirSync, readFileSync, writeFileSync } from "fs";
 import { access, readFile } from "fs/promises";
 import { join, sep } from "path";
 import { normalize as posixNormalize, sep as posixSep } from "path/posix";
-import { BigIntLiteral, createSourceFile, Identifier, isArrayLiteralExpression, isCallExpression, isExportAssignment, isIdentifier, isObjectLiteralExpression, isPropertyAccessExpression, isPropertyAssignment, isSatisfiesExpression, isStringLiteral, isVariableStatement, NamedDeclaration, NodeArray, ObjectLiteralExpression, ScriptTarget, StringLiteral, SyntaxKind } from "typescript";
+import { BigIntLiteral, createSourceFile, Identifier, isArrayLiteralExpression, isAsExpression, isCallExpression, isExportAssignment, isIdentifier, isNewExpression, isNoSubstitutionTemplateLiteral, isObjectLiteralExpression, isPropertyAccessExpression, isPropertyAssignment, isSatisfiesExpression, isStringLiteral, isVariableStatement, NamedDeclaration, NodeArray, Node, ObjectLiteralExpression, ScriptTarget, StringLiteral, SyntaxKind } from "typescript";
 
 import { getPluginTarget } from "./utils.mjs";
 
@@ -67,13 +67,17 @@ function parseDevs() {
         if (!isVariableStatement(child)) continue;
 
         const devsDeclaration = child.declarationList.declarations.find(d => hasName(d, "Devs"));
-        if (!devsDeclaration?.initializer || !isCallExpression(devsDeclaration.initializer)) continue;
+        if (!devsDeclaration?.initializer) continue;
 
-        const value = devsDeclaration.initializer.arguments[0];
+        // Vencord: Object.freeze({...} satisfies ...). Endcord: new Proxy({...} as any, handler) as any.
+        let value: Node | undefined = devsDeclaration.initializer;
+        while (value && (isAsExpression(value) || isSatisfiesExpression(value))) value = value.expression;
+        if (value && (isCallExpression(value) || isNewExpression(value))) value = value.arguments?.[0];
+        while (value && (isAsExpression(value) || isSatisfiesExpression(value))) value = value.expression;
 
-        if (!isSatisfiesExpression(value) || !isObjectLiteralExpression(value.expression)) throw new Error("Failed to parse devs: not an object literal");
+        if (!value || !isObjectLiteralExpression(value)) throw new Error("Failed to parse devs: not an object literal");
 
-        for (const prop of value.expression.properties) {
+        for (const prop of value.properties) {
             const name = (prop.name as Identifier).text;
             const value = isPropertyAssignment(prop) ? prop.initializer : prop;
 
@@ -124,7 +128,7 @@ async function parseFile(fileName: string) {
                 case "name":
                 case "description":
                     let text = "";
-                    if (isStringLiteral(value)) {
+                    if (isStringLiteral(value) || isNoSubstitutionTemplateLiteral(value)) {
                         text = value.text;
                     } else if (isCallExpression(value) && isIdentifier(value.expression) && value.expression.text === "t" && isStringLiteral(value.arguments[0])) {
                         text = (value.arguments[0] as StringLiteral).text;

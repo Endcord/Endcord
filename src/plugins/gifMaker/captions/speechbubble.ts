@@ -6,7 +6,7 @@
 
 // Based on https://github.com/TheLazySquid/BetterDiscordPlugins/blob/main/plugins/GifCaptioner/src/render/speechbubble.ts
 
-import type { CaptionDefinition } from "../types";
+import type { CaptionDefinition } from "@plugins/gifMaker/types";
 
 type Point = [number, number];
 

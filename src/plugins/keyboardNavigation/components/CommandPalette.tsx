@@ -6,10 +6,11 @@
 
 import "./style.css";
 
+import { RenderModalProps } from "@endcord/discord-types";
 import { actions } from "@equicordplugins/keyboardNavigation/commands";
 import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
-import { RenderModalProps } from "@endcord/discord-types";
 import { closeAllModals, Modal,openModal, React, TextInput, useEffect, useState } from "@webpack/common";
 
 import { settings } from "..";
@@ -100,13 +101,13 @@ export function CommandPalette({ modalProps }: { modalProps: RenderModalProps; }
     }, [queryEh]);
 
     return (
-        <Modal {...modalProps} size="md" title="Command Palette">
+        <Modal {...modalProps} size="md" title={t("Command Palette")}>
             <div className={cl("root")} onKeyDown={handleKeyDown} onWheel={handleWheel}>
                 <TextInput
                     value={queryEh}
                     onChange={e => setQuery(e)}
                     style={{ width: "100%", borderBottomLeftRadius: "0", borderBottomRightRadius: "0", paddingLeft: "0.9rem" }}
-                    placeholder="Search the Command Palette"
+                    placeholder={t("Search the Command Palette")}
                 />
                 <div className={cl("option-container")}>
                     {visibleActions.map((action, index) => (

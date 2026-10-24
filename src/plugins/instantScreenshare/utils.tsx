@@ -9,6 +9,7 @@ import { Heading } from "@components/Heading";
 import { Margins } from "@components/margins";
 import { Paragraph } from "@components/Paragraph";
 import { IS_WINDOWS } from "@utils/constants";
+import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import { OptionType } from "@utils/types";
 import { findByCodeLazy, findByPropsLazy } from "@webpack";
@@ -103,7 +104,7 @@ function StreamSimplePicker({ streamMediaSelection, streamMedia }: PickerProps) 
 
     return (
         <SearchableSelect
-            placeholder="Select a media source to stream "
+            placeholder={t("Select a media source to stream ")}
             maxVisibleItems={5}
             options={options}
             value={options.find(o => o.value === streamMedia)?.value}
@@ -148,8 +149,8 @@ function ScreenSetting() {
         return () => { active = false; };
     }, [includeVideoDevices]);
 
-    if (loading) return <Paragraph>Loading media sources...</Paragraph>;
-    if (!streamMediaSelection.length) return <Paragraph>No Media found.</Paragraph>;
+    if (loading) return <Paragraph>{t("Loading media sources...")}</Paragraph>;
+    if (!streamMediaSelection.length) return <Paragraph>{t("No Media found.")}</Paragraph>;
 
     return <StreamSimplePicker streamMediaSelection={streamMediaSelection} streamMedia={streamMedia} />;
 }
@@ -157,8 +158,8 @@ function ScreenSetting() {
 function SettingSection() {
     return (
         <section>
-            <Heading>Media source to stream</Heading>
-            <Paragraph className={Margins.bottom20}>Resets to main screen if not found</Paragraph>
+            <Heading>{t("Media source to stream")}</Heading>
+            <Paragraph className={Margins.bottom20}>{t("Resets to main screen if not found")}</Paragraph>
             <ScreenSetting />
         </section>
     );

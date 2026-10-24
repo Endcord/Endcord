@@ -5,9 +5,9 @@
  */
 
 import ErrorBoundary from "@components/ErrorBoundary";
+import type { PageEntry } from "@plugins/commandPalette/api/types";
 import { closeModal, openModal } from "@webpack/common";
 
-import type { PageEntry } from "../api/types";
 import { Palette } from "./Palette";
 
 const SafePalette = ErrorBoundary.wrap(Palette, { noop: true });

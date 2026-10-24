@@ -6,11 +6,12 @@
 
 import { BaseText } from "@components/BaseText";
 import { Heading } from "@components/Heading";
+import { Guild, RenderModalProps } from "@endcord/discord-types";
 import { HiddenServersStore } from "@equicordplugins/hideServers/HiddenServersStore";
 import { classNameFactory } from "@utils/css";
 import { getGuildAcronym } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
-import { Guild, RenderModalProps } from "@endcord/discord-types";
 import { findCssClassesLazy } from "@webpack";
 import { Button, closeModal, IconUtils, Modal, openModal, SortedGuildStore, useStateFromStores } from "@webpack/common";
 
@@ -20,7 +21,7 @@ const IconClasses = findCssClassesLazy("icon", "acronym", "childWrapper");
 function HiddenServersModal({ modalProps, close }: { modalProps: RenderModalProps; close(): void; }) {
     const guilds = useStateFromStores([HiddenServersStore], () => HiddenServersStore.hiddenGuildsDetail());
     return (
-        <Modal {...modalProps} size="lg" title="Hidden Servers">
+        <Modal {...modalProps} size="lg" title={t("Hidden Servers")}>
             <HiddenServersMenu guilds={guilds} />
         </Modal>
     );
@@ -80,8 +81,7 @@ function GuildRow({ guild }) {
                 color={Button.Colors.PRIMARY}
                 onClick={() => restoreGuild(guild, SortedGuildStore)}
             >
-                Remove
-            </Button>
+                {t("Remove")}</Button>
         </div>
     );
 }
@@ -118,8 +118,7 @@ export function HiddenServersMenu({ guilds }: { guilds: Guild[]; }) {
                             size={Button.Sizes.SMALL}
                             className={cl("restore-all")}
                         >
-                            Remove All
-                        </Button>
+                            {t("Remove All")}</Button>
                     </div>
                     {folderGuilds.map(guild => (
                         <GuildRow
@@ -131,7 +130,7 @@ export function HiddenServersMenu({ guilds }: { guilds: Guild[]; }) {
             );
         })}
 
-        <BaseText size="sm" weight="medium">Guilds</BaseText>
+        <BaseText size="sm" weight="medium">{t("Guilds")}</BaseText>
         {guildsWithoutFolder.map(guild => (
             <GuildRow
                 key={guild.id}
@@ -139,7 +138,7 @@ export function HiddenServersMenu({ guilds }: { guilds: Guild[]; }) {
             />
         ))}
 
-        {hiddenGuilds.length === 0 && <BaseText size="sm" weight="medium">No hidden servers</BaseText>}
+        {hiddenGuilds.length === 0 && <BaseText size="sm" weight="medium">{t("No hidden servers")}</BaseText>}
     </div>;
 }
 

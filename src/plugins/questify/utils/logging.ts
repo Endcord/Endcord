@@ -5,8 +5,8 @@
  */
 
 import { showNotification } from "@api/Notifications";
-import { Logger } from "@utils/Logger";
 import type { Quest } from "@endcord/discord-types";
+import { Logger } from "@utils/Logger";
 import { NavigationRouter } from "@webpack/common/utils";
 
 import { normalizeQuestName } from "./filtering";

@@ -10,6 +10,7 @@ import ErrorBoundary from "@components/ErrorBoundary";
 import { ErrorCard } from "@components/ErrorCard";
 import { Paragraph } from "@components/Paragraph";
 import { Devs, IS_MAC } from "@utils/constants";
+import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import definePlugin, { OptionType } from "@utils/types";
 import { findByPropsLazy } from "@webpack";
@@ -35,13 +36,7 @@ export default definePlugin({
     name: "Experiments",
     description: "Enable Access to Experiments & other dev-only features in Discord!",
     tags: ["Developers", "Utility"],
-    authors: [
-        Devs.Megu,
-        Devs.Ven,
-        Devs.Nickyux,
-        Devs.BanTheNons,
-        Devs.Nuckyz,
-    ],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
 
     settings,
 
@@ -124,9 +119,9 @@ export default definePlugin({
     settingsAboutComponent: () => {
         return (
             <React.Fragment>
-                <Forms.FormTitle tag="h3">More Information</Forms.FormTitle>
+                <Forms.FormTitle tag="h3">{t("More Information")}</Forms.FormTitle>
                 <Paragraph size="md">
-                    You can open Discord's DevTools via {" "}
+                    {t("You can open Discord's DevTools via")}{" "}{" "}
                     <div className={KbdStyles.combo} style={{ display: "inline-flex" }}>
                         <kbd className={KbdStyles.key}>{modKey}</kbd>{" "}
                         <kbd className={KbdStyles.key}>{altKey}</kbd>{" "}
@@ -139,21 +134,16 @@ export default definePlugin({
 
     WarningCard: ErrorBoundary.wrap(() => (
         <ErrorCard id="vc-experiments-warning-card" className={Margins.bottom16}>
-            <Forms.FormTitle tag="h2">Hold on!!</Forms.FormTitle>
+            <Forms.FormTitle tag="h2">{t("Hold on!!")}</Forms.FormTitle>
 
             <Forms.FormText>
-                Experiments are unreleased Discord features. They might not work, or even break your client or get your account disabled.
-            </Forms.FormText>
+                {t("Experiments are unreleased Discord features. They might not work, or even break your client or get your account disabled.")}</Forms.FormText>
 
             <Forms.FormText className={Margins.top8}>
-                Only use experiments if you know what you're doing. Endcord is not responsible for any damage caused by enabling experiments.
-
-                If you don't know what an experiment does, ignore it. Do not ask us what experiments do either, we probably don't know.
-            </Forms.FormText>
+                {t("Only use experiments if you know what you're doing. Endcord is not responsible for any damage caused by enabling experiments. If you don't know what an experiment does, ignore it. Do not ask us what experiments do either, we probably don't know.")}</Forms.FormText>
 
             <Forms.FormText className={Margins.top8}>
-                No, you cannot use server-side features like checking the "Send to Client" box.
-            </Forms.FormText>
+                {t("No, you cannot use server-side features like checking the \"Send to Client\" box.")}</Forms.FormText>
         </ErrorCard>
     ), { noop: true })
 });

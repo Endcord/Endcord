@@ -14,6 +14,7 @@ import ErrorBoundary from "@components/ErrorBoundary";
 import { Message } from "@endcord/discord-types";
 import { Devs, SUPPORT_CATEGORY_ID, VENBOT_USER_ID } from "@utils/constants";
 import { getIntlMessage } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import { classes } from "@utils/misc";
 import definePlugin, { OptionType } from "@utils/types";
@@ -122,7 +123,7 @@ const patchMessageContextMenu: NavContextMenuPatchCallback = (children, props) =
             <Menu.MenuItem
                 id={TOGGLE_DELETE_STYLE_ID}
                 key={TOGGLE_DELETE_STYLE_ID}
-                label="Toggle Deleted Highlight"
+                label={t("Toggle Deleted Highlight")}
                 action={() => domElement.classList.toggle("messagelogger-deleted")}
             />
         ));
@@ -132,7 +133,7 @@ const patchMessageContextMenu: NavContextMenuPatchCallback = (children, props) =
         <Menu.MenuItem
             id={REMOVE_HISTORY_ID}
             key={REMOVE_HISTORY_ID}
-            label="Remove Message History"
+            label={t("Remove Message History")}
             color="danger"
             action={() => {
                 if (deleted) {
@@ -158,7 +159,7 @@ const patchChannelContextMenu: NavContextMenuPatchCallback = (children, { channe
     group.push(
         <Menu.MenuItem
             id="vc-ml-clear-channel"
-            label="Clear Message Log"
+            label={t("Clear Message Log")}
             color="danger"
             action={() => {
                 messages.forEach(msg => {
@@ -195,7 +196,7 @@ export default definePlugin({
     name: "MessageLogger",
     description: "Temporarily logs deleted and edited messages.",
     tags: ["Chat", "Utility"],
-    authors: [Devs.rushii, Devs.Ven, Devs.AutumnVN, Devs.Nickyux, Devs.Kyuuhachi],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     dependencies: ["MessageUpdaterAPI"],
     settings,
     contextMenus: {
@@ -241,6 +242,23 @@ export default definePlugin({
             timestamp: new Date(newMessage.edited_timestamp),
             content: oldMessage.content
         };
+    },
+
+    handleUpdateAttachments(newMessage: any): any[] {
+        const oldMessage = MessageStore.getMessage(newMessage.channel_id, newMessage.id) as any;
+        // No previous message means this is a new message, so its attachments are untouched
+        if (!oldMessage || this.shouldIgnore(newMessage, true)) {
+            return newMessage.attachments;
+        }
+        if (!newMessage.attachments?.length) {
+            return oldMessage.attachments.map((a: any) => ({ ...a, deleted: true }));
+        }
+        return oldMessage.attachments
+            .map((oldAttachment: any) =>
+                newMessage.attachments.find((a: any) => a.id === oldAttachment.id)
+                ?? { ...oldAttachment, deleted: true }
+            )
+            .concat(newMessage.attachments.filter((a: any) => !oldMessage.attachments.some((o: any) => o.id === a.id)));
     },
 
     handleDelete(cache: any, data: { ids: string[], id: string; mlDeleted?: boolean; }, isBulk: boolean) {
@@ -408,30 +426,9 @@ export default definePlugin({
                 },
 
                 {
-                    // Construct new edited message and add editHistory & deleted (ref above)
-                    // Pass in custom data to attachment parser to mark attachments deleted as well
-                    match: /attachments:(\i)\((\i)\)/,
-                    replace:
-                        "attachments: $1((() => {" +
-                        "   if ($self.shouldIgnore($2)) return $2;" +
-                        "   let old = arguments[1]?.attachments;" +
-                        "   if (!old) return $2;" +
-                        "   let new_ = $2.attachments?.map(a => a.id) ?? [];" +
-                        "   let diff = old.filter(a => !new_.includes(a.id));" +
-                        "   old.forEach(a => a.deleted = true);" +
-                        "   $2.attachments = [...diff, ...$2.attachments];" +
-                        "   return $2;" +
-                        "})())," +
-                        "deleted: arguments[1]?.deleted," +
-                        "editHistory: arguments[1]?.editHistory," +
-                        "firstEditTimestamp: new Date(arguments[1]?.firstEditTimestamp ?? $2.editedTimestamp ?? $2.timestamp)"
-                },
-                {
-                    // Preserve deleted attribute on attachments
-                    match: /(\((\i)\){return null==\2\.attachments.+?)spoiler:/,
-                    replace:
-                        "$1deleted: arguments[0]?.deleted," +
-                        "spoiler:"
+                    // Mark attachments removed by an edit as deleted on MESSAGE_UPDATE
+                    match: /attachments:(\i)\.attachments\?\?\[\],/,
+                    replace: "attachments: $self.handleUpdateAttachments($1),"
                 }
             ]
         },
@@ -464,7 +461,8 @@ export default definePlugin({
             find: ".SEND_FAILED,",
             replacement: {
                 // Render editHistory behind the message content
-                match: /\]:\i.isUnsupported.{0,20}?,children:\[/,
+                // The optional style allows RoleColorEverywhere, which adds one at the same spot
+                match: /\]:\i.isUnsupported.{0,20}?,(?:style:[^,]{0,120}?\(\i\),)?children:\[/,
                 replace: "$&arguments[0]?.message?.editHistory?.length>0&&$self.renderEdits(arguments[0]),"
             }
         },

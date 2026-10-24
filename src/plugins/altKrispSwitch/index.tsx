@@ -11,7 +11,7 @@ export default definePlugin({
     name: "AltKrispSwitch",
     description: "Makes the Noise Suppression Popout switch between None and Krisp instead of Krisp and Standard",
     tags: ["Customisation", "Voice"],
-    authors: [Devs.newwares],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     patches: [
         {
             find: ",setNoiseCancellation(",

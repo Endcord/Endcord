@@ -6,9 +6,9 @@
 
 import { definePluginSettings } from "@api/Settings";
 import { getUserSettingLazy } from "@api/UserSettings";
-import { EquicordDevs } from "@utils/constants";
-import definePlugin, { OptionType } from "@utils/types";
 import { VoiceState } from "@endcord/discord-types";
+import { Devs } from "@utils/constants";
+import definePlugin, { OptionType } from "@utils/types";
 import { UserStore, VoiceStateStore } from "@webpack/common";
 
 let savedStatus: string | null;
@@ -57,7 +57,7 @@ export default definePlugin({
     name: "StatusWhileActive",
     description: "Automatically updates your online status when in a voice channel.",
     tags: ["Activity", "Customisation", "Voice"],
-    authors: [EquicordDevs.smuki],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     flux: {
         VOICE_STATE_UPDATES({ voiceStates }: { voiceStates: VoiceState[]; }) {

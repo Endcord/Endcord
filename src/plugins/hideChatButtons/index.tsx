@@ -6,7 +6,7 @@
 
 import { ChatBarButton } from "@api/ChatButtons";
 import { definePluginSettings, migratePluginSetting } from "@api/Settings";
-import { EquicordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
 import definePlugin, { OptionType, StartAt } from "@utils/types";
 import { useEffect, useState } from "@webpack/common";
 import type { MouseEventHandler, ReactNode } from "react";
@@ -57,13 +57,13 @@ function ButtonsInnerComponent({ buttons }: { buttons: ReactNode; }) {
             ? []
             : [buttons];
 
-    if (buttonItems.length === 0 || buttonItems.every(button => (button as any)?.props?.disabled === true)) return null;
-
     const [open, setOpen] = useState(hidechatbuttonsopen);
 
     useEffect(() => {
         hidechatbuttonsopen = open;
     }, [open]);
+
+    if (buttonItems.length === 0 || buttonItems.every(button => (button as any)?.props?.disabled === true)) return null;
 
     return (
         <div key="chat-bar-buttons-menu" id="chat-bar-buttons-menu" style={{
@@ -84,7 +84,7 @@ export default definePlugin({
     name: "HideChatButtons",
     description: "Able to hide the chat buttons",
     tags: ["Chat", "Utility"],
-    authors: [EquicordDevs.iamme],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     dependencies: ["ChatInputButtonAPI"],
     settings: settings,
     startAt: StartAt.Init,

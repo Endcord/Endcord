@@ -1,0 +1,174 @@
+{
+  "endcord": {
+    "runs": 6,
+    "ramMB": {
+      "median": 698,
+      "min": 631,
+      "max": 727
+    },
+    "rendererRamMB": {
+      "median": 400.5,
+      "min": 363,
+      "max": 407
+    },
+    "jsHeapMB": {
+      "median": 107.1,
+      "min": 106.3,
+      "max": 107.4
+    },
+    "idleCpuPct": {
+      "median": 1.795,
+      "min": 1.28,
+      "max": 1.93
+    },
+    "readyMs": {
+      "median": 3744.5,
+      "min": 3398,
+      "max": 7255
+    },
+    "cpuFirst30sMs": {
+      "median": 29218.5,
+      "min": 25328,
+      "max": 30281
+    },
+    "domNodes": {
+      "median": 3700.5,
+      "min": 3571,
+      "max": 3789
+    },
+    "cssRules": {
+      "median": 35294,
+      "min": 35294,
+      "max": 35294
+    }
+  },
+  "vencord": {
+    "runs": 6,
+    "ramMB": {
+      "median": 687,
+      "min": 633,
+      "max": 708
+    },
+    "rendererRamMB": {
+      "median": 396.5,
+      "min": 367,
+      "max": 404
+    },
+    "jsHeapMB": {
+      "median": 106.45,
+      "min": 105.7,
+      "max": 107.2
+    },
+    "idleCpuPct": {
+      "median": 1.865,
+      "min": 1.38,
+      "max": 2.79
+    },
+    "readyMs": {
+      "median": 3420,
+      "min": 3316,
+      "max": 3917
+    },
+    "cpuFirst30sMs": {
+      "median": 28445.5,
+      "min": 27172,
+      "max": 30078
+    },
+    "domNodes": {
+      "median": 3674,
+      "min": 3554,
+      "max": 3712
+    },
+    "cssRules": {
+      "median": 35357,
+      "min": 35357,
+      "max": 35357
+    }
+  },
+  "equicord": {
+    "runs": 6,
+    "ramMB": {
+      "median": 727,
+      "min": 704,
+      "max": 753
+    },
+    "rendererRamMB": {
+      "median": 414.5,
+      "min": 407,
+      "max": 419
+    },
+    "jsHeapMB": {
+      "median": 109.9,
+      "min": 109.4,
+      "max": 110.6
+    },
+    "idleCpuPct": {
+      "median": 1.875,
+      "min": 1.51,
+      "max": 2.97
+    },
+    "readyMs": {
+      "median": 3434,
+      "min": 3273,
+      "max": 3676
+    },
+    "cpuFirst30sMs": {
+      "median": 28312.5,
+      "min": 27047,
+      "max": 29719
+    },
+    "domNodes": {
+      "median": 3695.5,
+      "min": 3600,
+      "max": 3773
+    },
+    "cssRules": {
+      "median": 36946,
+      "min": 36946,
+      "max": 36946
+    }
+  },
+  "vanilla": {
+    "runs": 6,
+    "ramMB": {
+      "median": 671.5,
+      "min": 628,
+      "max": 702
+    },
+    "rendererRamMB": {
+      "median": 366,
+      "min": 343,
+      "max": 389
+    },
+    "jsHeapMB": {
+      "median": 98.30000000000001,
+      "min": 97.5,
+      "max": 99.2
+    },
+    "idleCpuPct": {
+      "median": 1.51,
+      "min": 1.17,
+      "max": 3.65
+    },
+    "readyMs": {
+      "median": 3378.5,
+      "min": 2900,
+      "max": 8144
+    },
+    "cpuFirst30sMs": {
+      "median": 28508,
+      "min": 25484,
+      "max": 29359
+    },
+    "domNodes": {
+      "median": 3658.5,
+      "min": 3540,
+      "max": 3752
+    },
+    "cssRules": {
+      "median": 34891,
+      "min": 34891,
+      "max": 34891
+    }
+  }
+}

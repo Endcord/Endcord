@@ -18,12 +18,13 @@ import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
 import { ChangeList } from "@utils/ChangeList";
 import { classNameFactory } from "@utils/css";
 import { isTruthy } from "@utils/guards";
+import { t, useI18n } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import { Margins } from "@utils/margins";
 import { classes } from "@utils/misc";
 import { useAwaiter, useCleanupEffect } from "@utils/react";
 import { PluginTag, PluginTags } from "@utils/types";
-import { Button, ConfirmModal,lodash, openModal, Parser, React, SearchableSelect, Select, TextInput, Tooltip, useMemo, useRef, useState } from "@webpack/common";
+import { Button, ConfirmModal, lodash, openModal, Parser, React, SearchableSelect, Select, TextInput, Tooltip, useMemo, useRef, useState } from "@webpack/common";
 import { JSX } from "react";
 
 import Plugins, { ExcludedPlugins, PluginMeta } from "~plugins";
@@ -57,25 +58,26 @@ function popularRank(name: string) {
 }
 
 function ReloadRequiredCard({ required }: { required: boolean; }) {
+    const { t } = useI18n();
     return (
         <Card variant={required ? "warning" : "normal"} className={cl("info-card")}>
             {required
                 ? (
                     <>
-                        <HeadingTertiary>Restart required!</HeadingTertiary>
+                        <HeadingTertiary>{t("Restart required")}</HeadingTertiary>
                         <Paragraph className={cl("dep-text")}>
-                            Restart now to apply new plugins and their settings
+                            {t("Restart now to apply new plugins and their settings")}
                         </Paragraph>
                         <Button onClick={() => location.reload()} className={cl("restart-button")}>
-                            Restart
+                            {t("Restart")}
                         </Button>
                     </>
                 )
                 : (
                     <>
-                        <HeadingTertiary>Plugin Management</HeadingTertiary>
-                        <Paragraph>Press the cog wheel or info icon to get more info on a plugin</Paragraph>
-                        <Paragraph>Plugins with a cog wheel have settings you can modify!</Paragraph>
+                        <HeadingTertiary>{t("Plugin Management")}</HeadingTertiary>
+                        <Paragraph>{t("Press the cog wheel or info icon to get more info on a plugin")}</Paragraph>
+                        <Paragraph>{t("Plugins with a cog wheel have settings you can change.")}</Paragraph>
                     </>
                 )}
         </Card>
@@ -92,39 +94,41 @@ const enum SearchStatus {
 }
 
 function ExcludedPluginsList({ search }: { search: string; }) {
+    const { t } = useI18n();
     const matchingExcludedPlugins = search
         ? Object.entries(ExcludedPlugins)
             .filter(([name]) => name.toLowerCase().includes(search))
         : [];
 
     const ExcludedReasons: Record<"web" | "discordDesktop" | "vesktop" | "desktop" | "dev", string> = {
-        desktop: "Discord Desktop app or Vesktop",
-        discordDesktop: "Discord Desktop app",
-        vesktop: "Vesktop app",
-        web: "Vesktop app and the Web version of Discord",
-        dev: "Developer version of Endcord"
+        desktop: t("Discord Desktop app or Vesktop"),
+        discordDesktop: t("Discord Desktop app"),
+        vesktop: t("Vesktop app"),
+        web: t("Vesktop app and the Web version of Discord"),
+        dev: t("Developer version of Endcord")
     };
 
     return (
         <Paragraph className={Margins.top16}>
             {matchingExcludedPlugins.length
                 ? <>
-                    <Paragraph>Are you looking for:</Paragraph>
+                    <Paragraph>{t("Are you looking for:")}</Paragraph>
                     <ul>
                         {matchingExcludedPlugins.map(([name, reason]) => (
                             <li key={name}>
-                                <b>{name}</b>: Only available on the {ExcludedReasons[reason]}
+                                <b>{name}</b>: {t("Only available on the {reason}", { reason: ExcludedReasons[reason] })}
                             </li>
                         ))}
                     </ul>
                 </>
-                : "No plugins meet the search criteria."
+                : t("No plugins meet the search criteria.")
             }
         </Paragraph>
     );
 }
 
 function PluginSettings() {
+    const { t, tPluginDesc } = useI18n();
     const settings = useSettings();
     const changeRef = useRef<ChangeList<string>>(null);
     const changes = changeRef.current ??= new ChangeList<string>();
@@ -134,14 +138,14 @@ function PluginSettings() {
             openModal(props => (
                 <ConfirmModal
                     {...props}
-                    title="Restart required"
-                    confirmText="Restart now"
-                    cancelText="Later!"
+                    title={t("Restart required")}
+                    confirmText={t("Restart now")}
+                    cancelText={t("Later")}
                     variant="primary"
                     onConfirm={() => location.reload()}
                 >
                     <>
-                        <p>The following plugins require a restart:</p>
+                        <p>{t("The following plugins require a restart:")}</p>
                         <div>{changes.map((s, i) => (
                             <>
                                 {i > 0 && ", "}
@@ -213,6 +217,7 @@ function PluginSettings() {
             plugin.name.toLowerCase().includes(search) ||
             plugin.name.match(/[A-Z]/g)?.join("").toLowerCase().includes(search) || // acronyms like BF for BetterFolders
             plugin.description.toLowerCase().includes(search) ||
+            tPluginDesc(plugin.name, plugin.description).toLowerCase().includes(search) ||
             plugin.searchTerms?.some(t => t.toLowerCase().includes(search))
         );
     };
@@ -248,7 +253,7 @@ function PluginSettings() {
 
         if (isRequired) {
             const tooltipText = p.required || !depMap[p.name]
-                ? "This plugin is required for Endcord to function."
+                ? t("This plugin is required for Endcord to function.")
                 : makeDependencyList(depMap[p.name]?.filter(d => settings.plugins[d].enabled));
 
             requiredPlugins.push(
@@ -287,23 +292,23 @@ function PluginSettings() {
 
             <div className={cl("stats-bar")}>
                 <div className={cl("stat-badge")}>
-                    <span className={cl("stat-label")}>Total Plugins:</span>
+                    <span className={cl("stat-label")}>{t("Total Plugins:")}</span>
                     <span className={cl("stat-val")}>{sortedPlugins.length}</span>
                 </div>
                 <div className={cl("stat-badge")}>
-                    <span className={cl("stat-label")}>Enabled Plugins:</span>
+                    <span className={cl("stat-label")}>{t("Enabled Plugins:")}</span>
                     <span className={classes(cl("stat-val"), cl("stat-val-enabled"))}>{enabledCount}</span>
                 </div>
             </div>
 
             <HeadingTertiary className={classes(Margins.top20, Margins.bottom8)}>
-                Filters
+                {t("Filters")}
             </HeadingTertiary>
 
             <ErrorBoundary noop>
                 <TextInput
                     inputClassName={cl("filter-control")}
-                    placeholder="Search for a plugin..."
+                    placeholder={t("Search for a plugin...")}
                     value={searchValue.value}
                     onChange={onSearch}
                     autoFocus
@@ -314,38 +319,38 @@ function PluginSettings() {
                 <div className={classes(Margins.bottom20, Margins.top8, cl("filter-controls"))}>
                     <Select
                         options={[
-                            { label: "Show All", value: SearchStatus.ALL, default: true },
-                            { label: "Show Enabled", value: SearchStatus.ENABLED },
-                            { label: "Show Disabled", value: SearchStatus.DISABLED },
-                            { label: "Show New", value: SearchStatus.NEW },
-                            hasUserPlugins && { label: "Show UserPlugins", value: SearchStatus.USER_PLUGINS },
-                            { label: "Show API Plugins", value: SearchStatus.API_PLUGINS },
+                            { label: t("Show All"), value: SearchStatus.ALL, default: true },
+                            { label: t("Show Enabled"), value: SearchStatus.ENABLED },
+                            { label: t("Show Disabled"), value: SearchStatus.DISABLED },
+                            { label: t("Show New"), value: SearchStatus.NEW },
+                            hasUserPlugins && { label: t("Show UserPlugins"), value: SearchStatus.USER_PLUGINS },
+                            { label: t("Show API Plugins"), value: SearchStatus.API_PLUGINS },
                         ].filter(isTruthy)}
                         serialize={String}
                         select={status => setSearchValue(prev => ({ ...prev, status }))}
                         isSelected={v => v === searchValue.status}
                         closeOnSelect={true}
-                        placeholder="Filter by Type"
+                        placeholder={t("Filter by Type")}
                     />
                     <SearchableSelect
-                        options={PluginTags.map(tag => ({ label: tag, value: tag }))}
+                        options={PluginTags.map(tag => ({ label: t(tag), value: tag }))}
                         value={searchValue.tags}
                         onChange={tags => setSearchValue(prev => ({ ...prev, tags }))}
                         closeOnSelect={false}
-                        placeholder="Filter by Tags"
+                        placeholder={t("Filter by Tags")}
                         multi
                     />
                 </div>
             </ErrorBoundary>
 
-            <HeadingTertiary className={Margins.top20}>Plugins</HeadingTertiary>
+            <HeadingTertiary className={Margins.top20}>{t("Plugins")}</HeadingTertiary>
 
             {plugins.length || requiredPlugins.length
                 ? (
                     <div className={cl("grid")}>
                         {plugins.length
                             ? plugins
-                            : <Paragraph>No plugins meet the search criteria.</Paragraph>
+                            : <Paragraph>{t("No plugins meet the search criteria.")}</Paragraph>
                         }
                     </div>
                 )
@@ -356,13 +361,13 @@ function PluginSettings() {
             <Divider className={Margins.top20} />
 
             <HeadingTertiary className={classes(Margins.top20, Margins.bottom8)}>
-                Required Plugins
+                {t("Required Plugins")}
             </HeadingTertiary>
 
             <div className={cl("grid")}>
                 {requiredPlugins.length
                     ? requiredPlugins
-                    : <Paragraph>No plugins meet the search criteria.</Paragraph>
+                    : <Paragraph>{t("No plugins meet the search criteria.")}</Paragraph>
                 }
             </div>
         </SettingsTab >
@@ -372,7 +377,7 @@ function PluginSettings() {
 function makeDependencyList(deps: string[]) {
     return (
         <>
-            <Paragraph>This plugin is required by:</Paragraph>
+            <Paragraph>{t("This plugin is required by:")}</Paragraph>
             {deps.map((dep: string) => <Paragraph key={dep} className={cl("dep-text")}>{dep}</Paragraph>)}
         </>
     );
@@ -382,9 +387,10 @@ export default wrapTab(PluginSettings, "Plugins");
 
 
 export function PluginDependencyList({ deps }: { deps: string[]; }) {
+    const { t } = useI18n();
     return (
         <>
-            <Paragraph>This plugin is required by:</Paragraph>
+            <Paragraph>{t("This plugin is required by:")}</Paragraph>
             {deps.map((dep: string) => <Paragraph key={dep} className={cl("dep-text")}>{dep}</Paragraph>)}
         </>
     );

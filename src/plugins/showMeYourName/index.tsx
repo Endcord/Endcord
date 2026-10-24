@@ -57,7 +57,7 @@ export default definePlugin({
     name: "ShowMeYourName",
     description: "Display usernames next to nicks, or no nicks at all",
     tags: ["Appearance", "Customisation"],
-    authors: [Devs.Rini, Devs.TheKodeToad, Devs.rae],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     patches: [
         {
             find: '="SYSTEM_TAG"',

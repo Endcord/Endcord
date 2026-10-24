@@ -4,9 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { DEFAULT_OPTIONS } from "@plugins/gifMaker/types";
 import { lodash } from "@webpack/common";
-
-import { DEFAULT_OPTIONS } from "../types";
 
 export const MEDIA_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/gif", "video/mp4", "video/webm", "video/quicktime"];
 export const MEDIA_EXT_RE = /\.(png|jpe?g|webp|gif|mp4|webm|mov)([?#]|$)/i;

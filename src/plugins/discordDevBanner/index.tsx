@@ -6,16 +6,16 @@
 
 import "./styles.css";
 
-import { Devs, EquicordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 
 import { makeDevBanner, settings } from "./components";
 
 export default definePlugin({
     name: "DiscordDevBanner",
-    description: "Enables the Discord developer banner, in which displays the build-ID",
+    description: "Enables Discord's developer banner, which shows the build ID",
     tags: ["Appearance", "Console", "Developers"],
-    authors: [EquicordDevs.KrystalSkull, Devs.thororen],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     patches: [
         {

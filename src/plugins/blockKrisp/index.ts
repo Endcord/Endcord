@@ -11,7 +11,7 @@ export default definePlugin({
     name: "BlockKrisp",
     description: "Prevent Krisp from loading",
     tags: ["Privacy", "Utility", "Voice"],
-    authors: [Devs.D3SOX],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     patches: [
         // Block loading modules on Desktop
         {

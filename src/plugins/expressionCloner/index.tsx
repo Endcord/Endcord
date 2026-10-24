@@ -13,6 +13,7 @@ import { Guild, GuildSticker } from "@endcord/discord-types";
 import { StickerFormatType } from "@endcord/discord-types/enums";
 import { Devs } from "@utils/constants";
 import { getGuildAcronym } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import definePlugin from "@utils/types";
 import { findByCodeLazy } from "@webpack";
@@ -216,7 +217,7 @@ function CloneModal({ data }: { data: Sticker | Emoji; }) {
 
     return (
         <>
-            <Forms.FormTitle>Custom Name</Forms.FormTitle>
+            <Forms.FormTitle>{t("Custom Name")}</Forms.FormTitle>
             <CheckedTextInput
                 initialValue={name}
                 onChange={v => {
@@ -329,7 +330,7 @@ function buildMenuItem(type: "Emoji" | "Sticker", fetchData: () => Promisable<Om
                                         height={24}
                                         width={24}
                                     />
-                                    <BaseText tag="h3" size="md" weight="medium">Clone {data.name}</BaseText>
+                                    <BaseText tag="h3" size="md" weight="medium">{t("Clone")}{" "}{data.name}</BaseText>
                                 </Flex>
                             }
                         >
@@ -400,7 +401,7 @@ export default definePlugin({
     description: "Allows you to clone Emotes & Stickers to your own server (right click them)",
     tags: ["Emotes", "Servers"],
     searchTerms: ["StickerCloner", "EmoteCloner", "EmojiCloner"],
-    authors: [Devs.Ven, Devs.Nuckyz],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     contextMenus: {
         "message": messageContextMenuPatch,
         "expression-picker": expressionPickerPatch

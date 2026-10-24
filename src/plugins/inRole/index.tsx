@@ -10,10 +10,11 @@ import { ApplicationCommandInputType, ApplicationCommandOptionType, sendBotMessa
 import { getUserSettingLazy } from "@api/UserSettings";
 import { InfoIcon } from "@components/Icons";
 import { Paragraph } from "@components/Paragraph";
+import { GuildMember } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { getCurrentChannel, getCurrentGuild } from "@utils/discord";
+import { t } from "@utils/i18n";
 import definePlugin from "@utils/types";
-import { GuildMember } from "@endcord/discord-types";
 import { GuildMemberStore, GuildRoleStore, Menu, Parser } from "@webpack/common";
 
 import { showInRoleModal } from "./RoleMembersModal";
@@ -35,7 +36,7 @@ export default definePlugin({
     name: "InRole",
     description: "Know who is in a role with the role context menu or /inrole command (read plugin info!)",
     tags: ["Commands", "Roles"],
-    authors: [Devs.nin0dev],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     dependencies: ["UserSettingsAPI", "CommandsAPI"],
     start() {
         // DeveloperMode needs to be enabled for the context menu to be shown
@@ -44,11 +45,11 @@ export default definePlugin({
     settingsAboutComponent: () => {
         return (
             <>
-                <Paragraph style={{ fontSize: "1.2rem", marginTop: "15px", fontWeight: "bold" }}>{Parser.parse(":warning:")} Limitations</Paragraph>
-                <Paragraph style={{ marginTop: "10px", fontWeight: "500" }} >If you don't have mod permissions on the server, and that server is large (over 100 members), the plugin may be limited in the following ways:</Paragraph>
-                <Paragraph>• Offline members won't be listed</Paragraph>
-                <Paragraph>• Up to 100 members will be listed by default. To get more, scroll down in the member list to load more members.</Paragraph>
-                <Paragraph>• However, friends will always be shown regardless of their status.</Paragraph>
+                <Paragraph style={{ fontSize: "1.2rem", marginTop: "15px", fontWeight: "bold" }}>{Parser.parse(":warning:")}{" "}{t("Limitations")}</Paragraph>
+                <Paragraph style={{ marginTop: "10px", fontWeight: "500" }} >{t("If you don't have mod permissions on the server, and that server is large (over 100 members), the plugin may be limited in the following ways:")}</Paragraph>
+                <Paragraph>{t("• Offline members won't be listed")}</Paragraph>
+                <Paragraph>{t("• Up to 100 members will be listed by default. To get more, scroll down in the member list to load more members.")}</Paragraph>
+                <Paragraph>{t("• However, friends will always be shown regardless of their status.")}</Paragraph>
             </>
         );
     },
@@ -90,7 +91,7 @@ export default definePlugin({
             children.push(
                 <Menu.MenuItem
                     id="vc-view-inrole"
-                    label="View Members in Role"
+                    label={t("View Members in Role")}
                     action={() => {
                         showInRoleModal(getMembersInRole(role.id, guild.id), role.id, channel.id);
                     }}
@@ -117,7 +118,7 @@ export default definePlugin({
             children.push(
                 <Menu.MenuItem
                     id="vc-view-inrole"
-                    label="View Members in Role"
+                    label={t("View Members in Role")}
                     action={() => {
                         showInRoleModal(getMembersInRole(role.id, guild.id), role.id, channel.id);
                     }}

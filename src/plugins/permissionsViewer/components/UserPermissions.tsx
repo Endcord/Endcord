@@ -10,6 +10,7 @@ import type { Guild, GuildMember, RoleOrUserPermission } from "@endcord/discord-
 import { PermissionOverwriteType } from "@endcord/discord-types/enums";
 import { cl, getGuildPermissionSpecMap, getSortedRolesForMember, sortUserRoles } from "@plugins/permissionsViewer/utils";
 import { getIntlMessage } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import { findCssClassesLazy } from "@webpack";
 import { PermissionsBits, Text, Tooltip, useMemo, UserStore } from "@webpack/common";
@@ -63,7 +64,7 @@ interface GrantedByTooltipProps {
 function GrantedByTooltip({ roleName, roleColor }: GrantedByTooltipProps) {
     return (
         <>
-            <Text variant="text-sm/medium">Granted By</Text>
+            <Text variant="text-sm/medium">{t("Granted By")}</Text>
             <FakeRole text={roleName} color={roleColor} />
         </>
     );
@@ -123,7 +124,7 @@ function UserPermissionsComponent({ guild, guildMember, closePopout }: { guild: 
 
     return <div>
         <div className={cl("user-header-container")}>
-            <HeadingTertiary>Permissions</HeadingTertiary>
+            <HeadingTertiary>{t("Permissions")}</HeadingTertiary>
             <div className={cl("user-header-btns")}>
                 <Tooltip text={`Sorting by ${permissionsSortOrder === PermissionsSortOrder.HighestRole ? "Highest Role" : "Lowest Role"}`}>
                     {tooltipProps => (
@@ -147,7 +148,7 @@ function UserPermissionsComponent({ guild, guildMember, closePopout }: { guild: 
                         </div>
                     )}
                 </Tooltip>
-                <Tooltip text="Role Details">
+                <Tooltip text={t("Role Details")}>
                     {tooltipProps => (
                         <div
                             {...tooltipProps}

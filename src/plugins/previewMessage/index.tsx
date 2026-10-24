@@ -8,6 +8,7 @@ import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
 import { generateId, sendBotMessage } from "@api/Commands";
 import { CloudUpload, MessageAttachment } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import definePlugin, { IconComponent, StartAt } from "@utils/types";
 import { DraftStore, DraftType, UploadAttachmentStore, UserStore, useStateFromStores } from "@webpack/common";
 
@@ -86,7 +87,7 @@ const PreviewButton: ChatBarButtonFactory = ({ isAnyChat, isEmpty, type: { attac
 
     return (
         <ChatBarButton
-            tooltip="Preview Message"
+            tooltip={t("Preview Message")}
             onClick={async () =>
                 sendBotMessage(
                     channelId,
@@ -112,7 +113,7 @@ export default definePlugin({
     name: "PreviewMessage",
     description: "Lets you preview your message before sending it.",
     tags: ["Chat", "Utility"],
-    authors: [Devs.Aria],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     // start early to ensure we're the first plugin to add our button
     // This makes the popping in less awkward
     startAt: StartAt.Init,

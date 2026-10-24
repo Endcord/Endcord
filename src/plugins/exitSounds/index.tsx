@@ -12,6 +12,7 @@ import { definePluginSettings } from "@api/Settings";
 import { Button } from "@components/Button";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 import { findComponentByCodeLazy } from "@webpack";
 import { Constants, GuildStore, IconUtils, MediaEngineStore, Menu, RestAPI, SearchableSelect, SelectedChannelStore, TextInput, Toasts } from "@webpack/common";
@@ -31,7 +32,7 @@ function GuildSelector() {
         <SearchableSelect
             options={options}
             value={options.find(o => o.value === soundGuildId)?.value}
-            placeholder="Select a server..."
+            placeholder={t("Select a server...")}
             maxVisibleItems={6}
             closeOnSelect={true}
             onChange={v => settings.store.soundGuildId = v}
@@ -58,7 +59,7 @@ function SoundIdInput() {
                 <TextInput
                     value={soundId}
                     onChange={v => settings.store.soundId = v}
-                    placeholder="Enter sound ID..."
+                    placeholder={t("Enter sound ID...")}
                 />
             </div>
             <Button
@@ -89,7 +90,7 @@ const SoundButtonContext: NavContextMenuPatchCallback = (children, { sound }: { 
         <Menu.MenuGroup>
             <Menu.MenuItem
                 id="set-global-exit-sound"
-                label="Set as global exit sound"
+                label={t("Set as global exit sound")}
                 action={() => {
                     settings.store.soundGuildId = sound.guildId;
                     settings.store.soundId = sound.soundId;
@@ -103,7 +104,7 @@ export default definePlugin({
     name: "ExitSounds",
     description: "Play soundboard sounds when you disconnect from voice.",
     tags: ["Fun", "Voice"],
-    authors: [Devs.prism],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     dependencies: ["AudioPlayerAPI"],
     settings,
     contextMenus: {

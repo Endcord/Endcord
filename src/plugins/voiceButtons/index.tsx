@@ -5,9 +5,9 @@
  */
 
 import { Flex } from "@components/Flex";
+import { User } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
-import { User } from "@endcord/discord-types";
 import { React } from "@webpack/common";
 
 import { settings } from "./settings";
@@ -17,7 +17,7 @@ export default definePlugin({
     name: "VoiceButtons",
     description: "Quickly DM, mute, or deafen any user right from the voice-call panel.",
     tags: ["Servers", "Utility", "Voice"],
-    authors: [Devs.ewlle, Devs.rootpoi, Devs.kraethis],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     patches: [
         {

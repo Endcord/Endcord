@@ -48,7 +48,7 @@ export default definePlugin({
     name: "MessageClickActions",
     description: "Hold Backspace and click to delete, double click to edit/reply",
     tags: ["Chat", "Shortcuts"],
-    authors: [Devs.Ven],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
 
     settings,
 

@@ -4,14 +4,14 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import type { FormField, FormFieldOption, FormPageSpec, FormSubmitExtras, FormValues, PaletteContext } from "@plugins/commandPalette/api/types";
+import { tryMaskedLinkPaste } from "@plugins/commandPalette/ui/markdownPaste";
+import { MessageMarkdownPreview } from "@plugins/commandPalette/ui/MessageMarkdownPreview";
+import { PaletteIcon } from "@plugins/commandPalette/ui/PaletteIcon";
 import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import { ChannelStore, useEffect, useLayoutEffect, useMemo, useRef, useState } from "@webpack/common";
 import type { KeyboardEvent } from "react";
-
-import type { FormField, FormFieldOption, FormPageSpec, FormSubmitExtras, FormValues, PaletteContext } from "../../api/types";
-import { tryMaskedLinkPaste } from "../markdownPaste";
-import { MessageMarkdownPreview } from "../MessageMarkdownPreview";
-import { PaletteIcon } from "../PaletteIcon";
 
 const cl = classNameFactory("vc-cmdpal-");
 
@@ -281,8 +281,7 @@ export function FormPage({ spec, ctx, formRef }: FormPageProps) {
                                                 }}
                                                 onMouseDown={stopModalCapture}
                                             />
-                                            Add file
-                                        </label>
+                                            {t("Add file")}</label>
                                         {(files[field.key]?.length ?? 0) > 0 && (
                                             <div className={cl("attachments-list")}>
                                                 {files[field.key]?.map((file, index) => (
@@ -293,8 +292,7 @@ export function FormPage({ spec, ctx, formRef }: FormPageProps) {
                                                             className={cl("attachments-remove")}
                                                             onClick={() => setFieldFiles(field.key, files[field.key]?.filter((_, i) => i !== index) ?? [])}
                                                         >
-                                                            Remove
-                                                        </button>
+                                                            {t("Remove")}</button>
                                                     </span>
                                                 ))}
                                             </div>

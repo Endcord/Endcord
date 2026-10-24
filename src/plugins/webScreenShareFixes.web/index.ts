@@ -9,7 +9,7 @@ import definePlugin from "@utils/types";
 
 export default definePlugin({
     name: "WebScreenShareFixes",
-    authors: [Devs.Kaitlyn],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     description: "Removes 2500kbps bitrate cap on chromium and vesktop clients.",
     tags: ["Voice"],
     enabledByDefault: true,

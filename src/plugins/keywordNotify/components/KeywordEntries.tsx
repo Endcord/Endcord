@@ -12,6 +12,7 @@ import { Heading } from "@components/Heading";
 import { DeleteIcon } from "@components/Icons";
 import { Margins } from "@components/margins";
 import { Paragraph } from "@components/Paragraph";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import { useForceUpdater } from "@utils/react";
 import { TextInput, useState } from "@webpack/common";
@@ -68,7 +69,7 @@ export function KeywordEntries() {
                     <Flex flexDirection="row">
                         <div style={{ flexGrow: 1 }}>
                             <TextInput
-                                placeholder="example|regex"
+                                placeholder={t("example|regex")}
                                 spellCheck={false}
                                 value={values[i].regex}
                                 onChange={e => setRegex(i, e)} />
@@ -86,24 +87,24 @@ export function KeywordEntries() {
                         onChange={() => {
                             setIgnoreCase(i, !values[i].ignoreCase);
                         }}
-                        title="Ignore Case"
+                        title={t("Ignore Case")}
                         className={cl("ignoreCaseSwitch")} />
                     <FormSwitch
                         value={values[i].ignoreBots ?? false}
                         onChange={() => {
                             setIgnoreBots(i, !values[i].ignoreBots);
                         }}
-                        title="Ignore Bots"
-                        description="Ignore messages from bots"
+                        title={t("Ignore Bots")}
+                        description={t("Ignore messages from bots")}
                         className={cl("ignoreCaseSwitch")} />
                     <Flex flexDirection="row">
                         <div style={{ flexGrow: 1 }}>
-                            <Heading tag="h5">Whitelist</Heading>
+                            <Heading tag="h5">{t("Whitelist")}</Heading>
                         </div>
                         <Button onClick={() => {
                             values[i].whitelist.push("");
                             update();
-                        }}>Add ID</Button>
+                        }}>{t("Add ID")}</Button>
                     </Flex>
                     {!!values[i].whitelist.length && <>
                         <div className={classes(Margins.top8, Margins.bottom8)} />
@@ -116,12 +117,12 @@ export function KeywordEntries() {
                     <div className={classes(Margins.top8, Margins.bottom8)} />
                     <Flex flexDirection="row">
                         <div style={{ flexGrow: 1 }}>
-                            <Heading tag="h5">Blacklist</Heading>
+                            <Heading tag="h5">{t("Blacklist")}</Heading>
                         </div>
                         <Button onClick={() => {
                             values[i].blacklist.push("");
                             update();
-                        }}>Add ID</Button>
+                        }}>{t("Add ID")}</Button>
                     </Flex>
                     {!!values[i].blacklist.length && <>
                         <div className={classes(Margins.top8, Margins.bottom8)} />
@@ -133,14 +134,12 @@ export function KeywordEntries() {
                     </>}
                     <div className={classes(Margins.top8, Margins.bottom8)} />
                     <FormGenericLabel
-                        title="List priority (Advanced)"
+                        title={t("List priority (Advanced)")}
                         description={<>
                             <Paragraph>
-                                Which list to prioritize in case a message triggers both lists
-                            </Paragraph>
+                                {t("Which list to prioritize in case a message triggers both lists")}</Paragraph>
                             <Paragraph>
-                                If you are not sure, in most common scenarios it is usually set to Blacklist
-                            </Paragraph>
+                                {t("If you are not sure, in most common scenarios it is usually set to Blacklist")}</Paragraph>
                         </>}
                         hideBorder
                     >
@@ -154,7 +153,7 @@ export function KeywordEntries() {
     return (
         <>
             {elements}
-            <div><Button onClick={() => addKeywordEntry(update)}>Add Keyword Entry</Button></div>
+            <div><Button onClick={() => addKeywordEntry(update)}>{t("Add Keyword Entry")}</Button></div>
         </>
     );
 }

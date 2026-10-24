@@ -1,0 +1,45 @@
+{
+  "mod": "vanilla",
+  "detected": "none",
+  "readyMs": 8144,
+  "pageStartMs": 5075,
+  "inPageReadyMs": 3069,
+  "domContentLoadedMs": 503,
+  "cpuFirst30sMs": 25484,
+  "cpuFirst60sMs": 35188,
+  "idleCpuPct": 1.33,
+  "ramMB": 628,
+  "rendererRamMB": 344,
+  "jsHeapMB": 97.9,
+  "domNodes": 3683,
+  "eventListeners": 1149,
+  "cssRules": 34891,
+  "styleElements": 1,
+  "processes": {
+    "browser": {
+      "count": 1,
+      "memMB": 110
+    },
+    "crashpad-handler": {
+      "count": 1,
+      "memMB": 9
+    },
+    "gpu-process": {
+      "count": 2,
+      "memMB": 134
+    },
+    "NetworkService": {
+      "count": 1,
+      "memMB": 20
+    },
+    "renderer": {
+      "count": 1,
+      "memMB": 344
+    },
+    "AudioService": {
+      "count": 1,
+      "memMB": 11
+    }
+  },
+  "round": 3
+}

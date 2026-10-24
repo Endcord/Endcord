@@ -15,6 +15,7 @@ import { openPluginModal } from "@components/settings/tabs/plugins/PluginModal";
 import { UserThemeHeader } from "@main/themes";
 import ClientThemePlugin from "@plugins/clientTheme";
 import { classNameFactory } from "@utils/css";
+import { useI18n } from "@utils/i18n";
 import { findLazy } from "@webpack";
 import { Forms, useEffect, useRef, useState } from "@webpack/common";
 import type { ComponentType, Ref, SyntheticEvent } from "react";
@@ -68,6 +69,7 @@ async function onFileUpload(e: SyntheticEvent<HTMLInputElement>) {
 }
 
 export function LocalThemesTab() {
+    const { t } = useI18n();
     const settings = useSettings(["enabledThemes"]);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -86,24 +88,24 @@ export function LocalThemesTab() {
     return (
         <Flex flexDirection="column" gap="1em">
             <Card>
-                <Forms.FormTitle tag="h5">Find Themes:</Forms.FormTitle>
+                <Forms.FormTitle tag="h5">{t("Find Themes:")}</Forms.FormTitle>
                 <div style={{ marginBottom: ".5em", display: "flex", flexDirection: "column" }}>
                     <Link style={{ marginRight: ".5em" }} href="https://betterdiscord.app/themes">
-                        BetterDiscord Themes
+                        {t("BetterDiscord Themes")}
                     </Link>
                     <Link href="https://github.com/search?q=discord+theme">GitHub</Link>
                 </div>
-                <Forms.FormText>If using the BD site, click on "Download" and place the downloaded .theme.css file into your themes folder.</Forms.FormText>
+                <Forms.FormText>{t("If using the BD site, click on \"Download\" and place the downloaded .theme.css file into your themes folder.")}</Forms.FormText>
             </Card>
 
             <Card>
-                <Forms.FormTitle tag="h5">External Resources</Forms.FormTitle>
-                <Forms.FormText>For security reasons, loading resources (styles, fonts, images, ...) from most sites is blocked.</Forms.FormText>
-                <Forms.FormText>Make sure all your assets are hosted on GitHub, GitLab, Codeberg, Imgur, Discord or Google Fonts.</Forms.FormText>
+                <Forms.FormTitle tag="h5">{t("External Resources")}</Forms.FormTitle>
+                <Forms.FormText>{t("For security reasons, loading resources (styles, fonts, images, ...) from most sites is blocked.")}</Forms.FormText>
+                <Forms.FormText>{t("Make sure all your assets are hosted on GitHub, GitLab, Codeberg, Imgur, Discord or Google Fonts.")}</Forms.FormText>
             </Card>
 
             <section>
-                <Forms.FormTitle tag="h5">Local Themes</Forms.FormTitle>
+                <Forms.FormTitle tag="h5">{t("Local Themes")}</Forms.FormTitle>
                 <QuickActionCard>
                     <>
                         {IS_WEB ?
@@ -111,7 +113,7 @@ export function LocalThemesTab() {
                                 <QuickAction
                                     text={
                                         <span style={{ position: "relative" }}>
-                                            Upload Theme
+                                            {t("Upload Theme")}
                                             <FileInput
                                                 ref={fileInputRef}
                                                 onChange={async e => {
@@ -127,25 +129,25 @@ export function LocalThemesTab() {
                                 />
                             ) : (
                                 <QuickAction
-                                    text="Open Themes Folder"
+                                    text={t("Open Themes Folder")}
                                     action={() => EndcordNative.themes.openFolder()}
                                     Icon={FolderIcon}
                                 />
                             )}
                         <QuickAction
-                            text="Load missing Themes"
+                            text={t("Load missing Themes")}
                             action={refreshLocalThemes}
                             Icon={RestartIcon}
                         />
                         <QuickAction
-                            text="Edit QuickCSS"
+                            text={t("Edit QuickCSS")}
                             action={() => EndcordNative.quickCss.openEditor()}
                             Icon={PaintbrushIcon}
                         />
 
                         {isPluginEnabled(ClientThemePlugin.name) && (
                             <QuickAction
-                                text="Edit ClientTheme"
+                                text={t("Edit ClientTheme")}
                                 action={() => openPluginModal(ClientThemePlugin)}
                                 Icon={PencilIcon}
                             />

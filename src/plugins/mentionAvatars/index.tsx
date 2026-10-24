@@ -17,7 +17,7 @@ const settings = definePluginSettings({
     showAtSymbol: {
         type: OptionType.BOOLEAN,
         displayName: "Show @ Symbol",
-        description: "Whether the the @ symbol should be displayed on user mentions",
+        description: "Whether the @ symbol should be displayed on user mentions",
         default: true
     }
 });
@@ -47,7 +47,7 @@ export default definePlugin({
     name: "MentionAvatars",
     description: "Shows user avatars and role icons inside mentions",
     tags: ["Appearance", "Customisation"],
-    authors: [Devs.Ven, Devs.SerStars],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
 
     patches: [{
         find: ".USER_MENTION)",

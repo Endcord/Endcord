@@ -7,13 +7,14 @@
 import { Button } from "@components/Button";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Heading } from "@components/Heading";
-import { classNameFactory } from "@utils/css";
 import { RenderModalProps } from "@endcord/discord-types";
+import { ScheduledAttachment } from "@plugins/scheduledMessages/types";
+import { addScheduledMessage, getChannelDisplayInfo } from "@plugins/scheduledMessages/utils";
+import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import { findByPropsLazy } from "@webpack";
 import { ChannelStore, closeModal, DraftType, Modal, openModal, showToast, TextInput, Toasts, UploadManager, useState } from "@webpack/common";
 
-import { ScheduledAttachment } from "../types";
-import { addScheduledMessage, getChannelDisplayInfo } from "../utils";
 import { ErrorIcon } from "./Icons";
 
 const cl = classNameFactory("vc-scheduled-msg-");
@@ -72,7 +73,7 @@ function ScheduleTimeModalInner({ channelId, content, attachments, rootProps, cl
         <Modal
             {...rootProps}
             size="sm"
-            title="Schedule Message"
+            title={t("Schedule Message")}
             actions={[
                 {
                     text: "Schedule",
@@ -89,31 +90,29 @@ function ScheduleTimeModalInner({ channelId, content, attachments, rootProps, cl
             <div className={cl("channel-info")}>
                 {avatar && <img src={avatar} className={cl("channel-avatar")} alt="" />}
                 <span className={cl("channel-text")}>
-                    Scheduling for: <strong>{isDM ? name : `#${name}`}</strong>
+                    {t("Scheduling for:")}{" "}<strong>{isDM ? name : `#${name}`}</strong>
                 </span>
             </div>
 
-            <Heading tag="h5" className={cl("field-label")}>Schedule Type</Heading>
+            <Heading tag="h5" className={cl("field-label")}>{t("Schedule Type")}</Heading>
             <div className={cl("schedule-type-buttons")}>
                 <Button
                     size="small"
                     variant={scheduleType === "delay" ? "primary" : "secondary"}
                     onClick={() => setScheduleType("delay")}
                 >
-                    Delay
-                </Button>
+                    {t("Delay")}</Button>
                 <Button
                     size="small"
                     variant={scheduleType === "time" ? "primary" : "secondary"}
                     onClick={() => setScheduleType("time")}
                 >
-                    Specific Time
-                </Button>
+                    {t("Specific Time")}</Button>
             </div>
 
             {scheduleType === "delay" ? (
                 <>
-                    <Heading tag="h5" className={cl("field-label")}>Delay (minutes)</Heading>
+                    <Heading tag="h5" className={cl("field-label")}>{t("Delay (minutes)")}</Heading>
                     <TextInput
                         value={delayMinutes}
                         onChange={setDelayMinutes}
@@ -123,7 +122,7 @@ function ScheduleTimeModalInner({ channelId, content, attachments, rootProps, cl
                 </>
             ) : (
                 <>
-                    <Heading tag="h5" className={cl("field-label")}>Date & Time</Heading>
+                    <Heading tag="h5" className={cl("field-label")}>{t("Date & Time")}</Heading>
                     <input
                         type="datetime-local"
                         className={cl("datetime-input")}

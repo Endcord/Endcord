@@ -9,6 +9,7 @@ import ErrorBoundary from "@components/ErrorBoundary";
 import { User } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { getCurrentChannel } from "@utils/discord";
+import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 import { findComponentByCodeLazy } from "@webpack";
 import { ContextMenuApi, Menu } from "@webpack/common";
@@ -43,7 +44,7 @@ const AccountPanelContextMenu = ErrorBoundary.wrap(() => {
             />
             <Menu.MenuCheckboxItem
                 id="vc-ap-prioritize-server-profile"
-                label="Prioritize Server Profile"
+                label={t("Prioritize Server Profile")}
                 checked={prioritizeServerProfile}
                 action={() => settings.store.prioritizeServerProfile = !prioritizeServerProfile}
             />
@@ -63,7 +64,7 @@ export default definePlugin({
     name: "AccountPanelServerProfile",
     description: "Right click your account panel in the bottom left to view your profile in the current server",
     tags: ["Appearance", "Servers"],
-    authors: [Devs.Nuckyz, Devs.relitrix],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
 
     patches: [
@@ -80,7 +81,7 @@ export default definePlugin({
                     replace: "$&$self.onPopoutClose();"
                 },
                 {
-                    match: /ref:(\i),style:\i(?=.{0,250}#{intl::USER_PROFILE_ACCOUNT_POPOUT_BUTTON_A11Y_LABEL})/,
+                    match: /ref:(\i),style:(?:\i|\{[^}]{0,40}\})(?=.{0,250}#{intl::USER_PROFILE_ACCOUNT_POPOUT_BUTTON_A11Y_LABEL})/,
                     replace: "$&,onContextMenu:($self.grabRef($1),$self.openAccountPanelContextMenu)"
                 }
             ]

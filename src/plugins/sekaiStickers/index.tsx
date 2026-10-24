@@ -7,6 +7,7 @@
 import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 import { openModal } from "@webpack/common";
 
@@ -23,7 +24,7 @@ const settings = definePluginSettings({
 
 const SekaiStickerChatButton: ChatBarButtonFactory = () => {
     return (
-        <ChatBarButton onClick={() => openModal(props => <SekaiStickersModal modalProps={props} settings={settings} />)} tooltip="Sekai Stickers">
+        <ChatBarButton onClick={() => openModal(props => <SekaiStickersModal modalProps={props} settings={settings} />)} tooltip={t("Sekai Stickers")}>
             {kanadeSvg()}
         </ChatBarButton>
     );
@@ -35,7 +36,7 @@ export default definePlugin({
     description: "Sekai Stickers built in discord originally from github.com/TheOriginalAyaka",
     dependencies: ["ChatInputButtonAPI"],
     tags: ["Chat", "Emotes"],
-    authors: [Devs.MaiKokain],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     chatBarButton: {
         icon: kanadeSvg,

@@ -9,10 +9,11 @@ import "./styles.css";
 import { get, set } from "@api/DataStore";
 import { BaseText } from "@components/BaseText";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { EquicordDevs } from "@utils/constants";
+import { VoiceState } from "@endcord/discord-types";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import { useTimer } from "@utils/react";
 import definePlugin from "@utils/types";
-import { VoiceState } from "@endcord/discord-types";
 import { findComponentByCodeLazy, findCssClassesLazy } from "@webpack";
 import { SelectedChannelStore, UserStore, VoiceStateStore } from "@webpack/common";
 
@@ -99,7 +100,7 @@ const VoiceStatsSection = ErrorBoundary.wrap(({ userId, isSideBar }: { userId: s
     if (isSideBar) {
         return (
             <Section
-                heading="Voice Time"
+                heading={t("Voice Time")}
                 headingVariant="text-xs/semibold"
                 headingColor="text-strong"
             >
@@ -110,7 +111,7 @@ const VoiceStatsSection = ErrorBoundary.wrap(({ userId, isSideBar }: { userId: s
 
     return (
         <Section
-            heading="Voice Time"
+            heading={t("Voice Time")}
             headingVariant="text-xs/medium"
             headingColor="text-default"
             className="vc-voicestats-profile-section"
@@ -138,7 +139,7 @@ export default definePlugin({
     name: "VoiceStats",
     description: "Shows how long you've spent in voice with each user in their profile",
     tags: ["Voice", "Friends"],
-    authors: [EquicordDevs.Moowi],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     dependencies: ["ProfileSectionsAPI"],
     renderProfileSection: {
         render: VoiceStatsSection,

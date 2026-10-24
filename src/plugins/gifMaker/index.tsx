@@ -8,14 +8,15 @@ import { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { definePluginSettings, migratePluginSettings } from "@api/Settings";
 import { Button } from "@components/Button";
 import { RemixIcon } from "@components/Icons";
-import { EquicordDevs } from "@utils/constants";
+import type { RenderModalProps } from "@endcord/discord-types";
+import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import { getCurrentChannel } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import { Margins } from "@utils/margins";
 import definePlugin, { OptionType } from "@utils/types";
 import { saveFile } from "@utils/web";
-import type { RenderModalProps } from "@endcord/discord-types";
 import { Menu, Modal, openModal, React, Select, Slider, TextInput, UploadHandler, useEffect, useRef, useState } from "@webpack/common";
 
 import { CAPTIONS } from "./captions";
@@ -97,7 +98,7 @@ const messageContextMenuPatch: NavContextMenuPatchCallback = (children, props) =
     children.push(
         <Menu.MenuItem
             id={GIFMAKER_ID}
-            label="Make GIF"
+            label={t("Make GIF")}
             action={() => openModal(modalProps => (
                 <GifMakerModal url={info.url} isVideo={info.isVideo} sourceWidth={info.sourceWidth} sourceHeight={info.sourceHeight} {...modalProps} />
             ))}
@@ -116,7 +117,7 @@ const imageContextMenuPatch: NavContextMenuPatchCallback = (children, props) => 
     children.push(
         <Menu.MenuItem
             id={GIFMAKER_ID}
-            label="Make GIF"
+            label={t("Make GIF")}
             action={() => openModal(modalProps => <GifMakerModal url={info.url} isVideo={info.isVideo} sourceWidth={info.sourceWidth} sourceHeight={info.sourceHeight} {...modalProps} />)}
         />
     );
@@ -129,7 +130,7 @@ const gifPickerContextMenuPatch: NavContextMenuPatchCallback = (children, props)
         <Menu.MenuItem
             id="gif-maker-edit"
             key="gif-maker-edit"
-            label="Edit GIF"
+            label={t("Edit GIF")}
             icon={RemixIcon}
             leadingAccessory={{ type: "icon", icon: RemixIcon }}
             action={() => openGifMakerFromItem(props)}
@@ -187,12 +188,12 @@ function FontSelector({ initialFont, onSelect }: { initialFont: string; onSelect
     };
 
     if (!fonts.length) {
-        return <div>Loading fonts...</div>;
+        return <div>{t("Loading fonts...")}</div>;
     }
 
     return (
         <Select
-            placeholder="Select a font..."
+            placeholder={t("Select a font...")}
             options={options}
             maxVisibleItems={10}
             closeOnSelect={true}
@@ -326,7 +327,7 @@ function GifMakerModal({ url, isVideo, sourceWidth, sourceHeight, ...props }: Re
         <Modal
             {...props}
             size="lg"
-            title="Make GIF"
+            title={t("Make GIF")}
             actions={[
                 {
                     text: "Send",
@@ -353,8 +354,7 @@ function GifMakerModal({ url, isVideo, sourceWidth, sourceHeight, ...props }: Re
 
                         {generating && (
                             <div className={cl("generating-overlay")}>
-                                Generating GIF...
-                            </div>
+                                {t("Generating GIF...")}</div>
                         )}
 
                         {error && !generating && (
@@ -366,7 +366,7 @@ function GifMakerModal({ url, isVideo, sourceWidth, sourceHeight, ...props }: Re
                 </div>
 
                 <div className={cl("controls-section")}>
-                    <div className={cl("section-heading")}>Captions</div>
+                    <div className={cl("section-heading")}>{t("Captions")}</div>
                     <div style={{ display: "flex", gap: 8 }} className={Margins.bottom16}>
                         {CAPTIONS.map(c => (
                             <Button
@@ -383,15 +383,15 @@ function GifMakerModal({ url, isVideo, sourceWidth, sourceHeight, ...props }: Re
                     {options.captionMode === "caption" && (
                         <div className={cl("section")}>
                             <div className={Margins.bottom16}>
-                                <label className={cl("label")}>Text</label>
+                                <label className={cl("label")}>{t("Text")}</label>
                                 <TextInput
                                     value={options.captionText}
                                     onChange={v => patch({ captionText: v })}
-                                    placeholder="Enter caption..."
+                                    placeholder={t("Enter caption...")}
                                 />
                             </div>
                             <div className="vc-gifmaker-font-range">
-                                <div>Font</div>
+                                <div>{t("Font")}</div>
                                 <div className={cl("font-selector")}>
                                     <FontSelector
                                         initialFont={options.fontFamily}
@@ -402,7 +402,7 @@ function GifMakerModal({ url, isVideo, sourceWidth, sourceHeight, ...props }: Re
                                 </div>
                             </div>
                             <div className="vc-gifmaker-font-range">
-                                <div>Font size</div>
+                                <div>{t("Font size")}</div>
                                 <Slider
                                     initialValue={options.captionSize}
                                     onValueChange={v => patch({ captionSize: v })}
@@ -418,10 +418,9 @@ function GifMakerModal({ url, isVideo, sourceWidth, sourceHeight, ...props }: Re
                     {options.captionMode === "speechbubble" && (
                         <div className={cl("section")}>
                             <div className={cl("section-hint")}>
-                                Click on the preview to position the bubble tip
-                            </div>
+                                {t("Click on the preview to position the bubble tip")}</div>
                             <div className="vc-gifmaker-font-range">
-                                <div>Tip Base</div>
+                                <div>{t("Tip Base")}</div>
                                 <Slider
                                     initialValue={Math.round(options.bubbleTipBase * 100)}
                                     onValueChange={v => patch({ bubbleTipBase: v / 100 })}
@@ -433,10 +432,10 @@ function GifMakerModal({ url, isVideo, sourceWidth, sourceHeight, ...props }: Re
                         </div>
                     )}
 
-                    <div className={cl("section-heading")}>Dimensions</div>
+                    <div className={cl("section-heading")}>{t("Dimensions")}</div>
                     <div className={cl("dims-row")}>
                         <div className={cl("field")}>
-                            <label className={cl("label")}>Width</label>
+                            <label className={cl("label")}>{t("Width")}</label>
                             <input
                                 type="number"
                                 min={32}
@@ -449,7 +448,7 @@ function GifMakerModal({ url, isVideo, sourceWidth, sourceHeight, ...props }: Re
                             />
                         </div>
                         <div className={cl("field")}>
-                            <label className={cl("label")}>Height</label>
+                            <label className={cl("label")}>{t("Height")}</label>
                             <input
                                 type="number"
                                 min={32}
@@ -495,7 +494,7 @@ migratePluginSettings("GifMaker", "gifMaker");
 export default definePlugin({
     name: "GifMaker",
     description: "Create and caption GIFs from any media in chat or the GIF picker.",
-    authors: [EquicordDevs.Leon135, EquicordDevs.benjii],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     tags: ["Emotes", "Media"],
     settings,
     managedStyle: css,

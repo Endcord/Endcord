@@ -40,7 +40,7 @@ function CheckBadge({ badge, author }: { badge: string; author: User; }): JSX.El
         case "EndcordDonor":
             return (
                 <span style={{ order: settings.store.EndcordDonorPosition }}>
-                    {badges.getEndcordDonorBadges(author.id)?.map(badge => (
+                    {badges.getDonorBadges(author.id)?.map(badge => (
                         <RoleIconComponent
                             key={author.id}
                             className={roleIcon}
@@ -63,19 +63,8 @@ function CheckBadge({ badge, author }: { badge: string; author: User; }): JSX.El
                 </span>
             ) : null;
         case "VencordDonor":
-            return (
-                <span style={{ order: settings.store.VencordDonorPosition }}>
-                    {badges.getDonorBadges(author.id)?.map(badge => (
-                        <RoleIconComponent
-                            key={author.id}
-                            className={roleIcon}
-                            name={badge.description}
-                            size={20}
-                            src={badge.iconSrc}
-                        />
-                    ))}
-                </span>
-            );
+            // Same list as EndcordDonor above; rendering it twice would duplicate every donor badge
+            return null;
         case "VencordContributer":
             return isPluginDev(author.id) ? (
                 <span style={{ order: settings.store.VencordContributorPosition }}>
@@ -140,7 +129,7 @@ function ChatBadges({ author }: { author: User; }) {
 
 export default definePlugin({
     name: "ShowBadgesInChat",
-    authors: [Devs.ewlle, Devs.rootpoi, Devs.kraethis],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     description: "Shows the message author's badges beside their name in chat.",
     dependencies: ["MessageDecorationsAPI"],
     tags: ["Appearance", "Chat"],

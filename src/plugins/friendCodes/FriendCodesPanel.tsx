@@ -10,12 +10,12 @@ import { BaseText } from "@components/BaseText";
 import { Flex } from "@components/Flex";
 import { Heading, HeadingTertiary } from "@components/Heading";
 import { copyToClipboard } from "@utils/clipboard";
-import { findByPropsLazy, findCssClassesLazy } from "@webpack";
+import { t } from "@utils/i18n";
+import { findByPropsLazy } from "@webpack";
 import { Button, Parser, useEffect, useState } from "@webpack/common";
 
 import { FriendInvite } from "./types";
 
-const FormStyles = findCssClassesLazy("header", "title", "emptyState");
 const { createFriendInvite, getAllFriendInvites, revokeFriendInvites } = findByPropsLazy("createFriendInvite");
 
 function CopyButton({ copyText, copiedText, onClick }) {
@@ -48,13 +48,13 @@ function FriendInviteCard({ invite }: { invite: FriendInvite; }) {
                         {invite.code}
                     </HeadingTertiary>
                     <span>
-                        Expires {Parser.parse(`<t:${new Date(invite.expires_at).getTime() / 1000}:R>`)} • {invite.uses}/{invite.max_uses} uses
+                        {t("Expires")}{" "}{Parser.parse(`<t:${new Date(invite.expires_at).getTime() / 1000}:R>`)} • {t("{uses}/{max} uses", { uses: invite.uses, max: invite.max_uses })}
                     </span>
                 </div>
                 <Flex justifyContent="end">
                     <CopyButton
-                        copyText="Copy"
-                        copiedText="Copied!"
+                        copyText={t("Copy")}
+                        copiedText={t("Copied!")}
                         onClick={() => copyToClipboard(`https://discord.gg/${invite.code}`)}
                     />
                 </Flex>
@@ -76,36 +76,33 @@ export default function FriendCodesPanel() {
 
     return (
         <>
-            <header className={FormStyles.header}>
+            <header className="vc-friend-codes-header">
                 <Heading
                     tag="h2"
-                    className={FormStyles.title}
+                    className="vc-friend-codes-title"
                 >
-                    Your Friend Codes
-                </Heading>
+                    {t("Your Friend Codes")}</Heading>
 
                 <Flex
                     style={{ marginBottom: "16px" }}
                     justifyContent="space-between"
                 >
-                    <h2 className="vc-friend-codes-info-header">{`Friend Codes - ${invites.length}`}</h2>
+                    <h2 className="vc-friend-codes-info-header">{t("Friend Codes - {count}", { count: invites.length })}</h2>
                     <Flex justifyContent="end">
                         <Button
                             color={Button.Colors.GREEN}
                             look={Button.Looks.FILLED}
                             onClick={() => createFriendInvite().then((invite: FriendInvite) => setInvites([...invites, invite]))}
                         >
-                            Create Friend Code
-                        </Button>
+                            {t("Create Friend Code")}</Button>
                         <Button
                             style={{ marginLeft: "8px" }}
                             color={Button.Colors.RED}
                             look={Button.Looks.FILLED}
                             disabled={!invites.length}
-                            onClick={() => revokeFriendInvites().then(setInvites([]))}
+                            onClick={() => revokeFriendInvites().then(() => setInvites([]))}
                         >
-                            Revoke all Friend Codes
-                        </Button>
+                            {t("Revoke all Friend Codes")}</Button>
                     </Flex>
                 </Flex>
             </header>
@@ -115,16 +112,14 @@ export default function FriendCodesPanel() {
                     weight="semibold"
                     className="vc-friend-codes-text"
                 >
-                    Loading...
-                </BaseText>
+                    {t("Loading...")}</BaseText>
             ) : invites.length === 0 ? (
                 <BaseText
                     size="md"
                     weight="semibold"
                     className="vc-friend-codes-text"
                 >
-                    You don't have any friend codes yet
-                </BaseText>
+                    {t("You don't have any friend codes yet")}</BaseText>
             ) : (
                 <div style={{ marginTop: "16px", display: "flex", flexWrap: "wrap", gap: "16px", justifyContent: "space-evenly" }}>
                     {invites.map(invite => (

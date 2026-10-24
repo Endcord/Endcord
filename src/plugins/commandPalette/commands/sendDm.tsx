@@ -4,14 +4,13 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { CloudUploadPlatform } from "@endcord/discord-types/enums";
+import type { FormFieldOption, FormSubmitExtras, PaletteCommand } from "@plugins/commandPalette/api/types";
+import { fuzzyScore } from "@plugins/commandPalette/search/ranker";
+import { SendIcon } from "@plugins/commandPalette/ui/icons";
 import { openPrivateChannel, sendMessage } from "@utils/discord";
 import { sleep } from "@utils/misc";
-import { CloudUploadPlatform } from "@endcord/discord-types/enums";
 import { ChannelStore, CloudUploader, IconUtils, RelationshipStore, showToast, Toasts, UserStore } from "@webpack/common";
-
-import type { FormFieldOption, FormSubmitExtras, PaletteCommand } from "../api/types";
-import { fuzzyScore } from "../search/ranker";
-import { SendIcon } from "../ui/icons";
 
 function friendOptions(query: string): FormFieldOption[] {
     const options = RelationshipStore.getFriendIDs()

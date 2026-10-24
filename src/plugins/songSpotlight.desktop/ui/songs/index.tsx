@@ -29,6 +29,7 @@ import { RenderInfoEntry, RenderInfoEntryBased, RenderSongInfo } from "@song-spo
 import { Song as SongType } from "@song-spotlight/api/structs";
 import { isListLayout, sid } from "@song-spotlight/api/util";
 import { copyWithToast } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import {
     Clickable,
@@ -70,14 +71,14 @@ function SongEntry({ entry, number, isLoaded, isPlaying, big, onClick }: SongEnt
                     >
                         <Menu.MenuItem
                             id="copy-link"
-                            label="Copy link"
+                            label={t("Copy link")}
                             icon={LinkIcon}
                             leadingAccessory={{ type: "icon", icon: LinkIcon }}
                             action={() => copyWithToast(entry.link)}
                         />
                         <Menu.MenuItem
                             id="steal-song"
-                            label="Steal song"
+                            label={t("Steal song")}
                             icon={PuzzlePieceIcon}
                             leadingAccessory={{ type: "icon", icon: PuzzlePieceIcon }}
                             action={async () => {
@@ -186,7 +187,7 @@ function SongInfo({ owned, song, render, big }: SongInfoProps) {
                                         >
                                             <Menu.MenuItem
                                                 id="copy-link"
-                                                label="Copy link"
+                                                label={t("Copy link")}
                                                 icon={LinkIcon}
                                                 leadingAccessory={{ type: "icon", icon: LinkIcon }}
                                                 action={() => copyWithToast(render.link)}
@@ -195,7 +196,7 @@ function SongInfo({ owned, song, render, big }: SongInfoProps) {
                                                 ? (
                                                     <Menu.MenuItem
                                                         id="steal-song"
-                                                        label="Steal song"
+                                                        label={t("Steal song")}
                                                         icon={PuzzlePieceIcon}
                                                         leadingAccessory={{ type: "icon", icon: PuzzlePieceIcon }}
                                                         action={() => {
@@ -215,7 +216,7 @@ function SongInfo({ owned, song, render, big }: SongInfoProps) {
                                                     <Menu.MenuItem
                                                         id="remove-song"
                                                         color="danger"
-                                                        label="Remove song"
+                                                        label={t("Remove song")}
                                                         icon={TrashIcon}
                                                         leadingAccessory={{ type: "icon", icon: TrashIcon }}
                                                         action={() => {

@@ -8,11 +8,11 @@ import "./styles.css";
 
 import { useSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import { React, useEffect, useMemo, useState, useStateFromStores, WindowStore } from "@webpack/common";
 
 import { NotificationData } from "./Notifications";
-
 export default ErrorBoundary.wrap(function NotificationComponent({
     title,
     body,
@@ -87,7 +87,7 @@ export default ErrorBoundary.wrap(function NotificationComponent({
                                 role="img"
                                 aria-labelledby="vc-notification-dismiss-title"
                             >
-                                <title id="vc-notification-dismiss-title">Dismiss Notification</title>
+                                <title id="vc-notification-dismiss-title">{t("Dismiss Notification")}</title>
                                 <path fill="currentColor" d="M18.4 4L12 10.4L5.6 4L4 5.6L10.4 12L4 18.4L5.6 20L12 13.6L18.4 20L20 18.4L13.6 12L20 5.6L18.4 4Z" />
                             </svg>
                         </button>

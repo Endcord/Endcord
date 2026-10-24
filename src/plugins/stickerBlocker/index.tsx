@@ -9,6 +9,7 @@ import { DataStore } from "@api/index";
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import definePlugin, { OptionType } from "@utils/types";
 import { findCssClassesLazy } from "@webpack";
@@ -56,13 +57,13 @@ function blockedComponentRender(sticker) {
 
     if (showMessage) {
         elements.push(
-            <div key="message" id="vc-blocked-sticker" className={classes(CodeContainerClasses.markup, MessageContentClasses.messageContent)}><span>Blocked Sticker. ID: {sticker.id}, NAME: {sticker.name}</span></div>
+            <div key="message" id="vc-blocked-sticker" className={classes(CodeContainerClasses.markup, MessageContentClasses.messageContent)}><span>{t("Blocked Sticker. ID:")}{" "}{sticker.id}{t(", NAME:")}{" "}{sticker.name}</span></div>
         );
     }
 
     if (showButton) {
         elements.push(
-            <Button key="button" onClick={() => toggleBlock(sticker.id)} color={Button.Colors.RED}>Unblock {(showMessage) ? "" : sticker.name}</Button>
+            <Button key="button" onClick={() => toggleBlock(sticker.id)} color={Button.Colors.RED}>{t("Unblock")}{" "}{(showMessage) ? "" : sticker.name}</Button>
         );
     }
 
@@ -131,7 +132,7 @@ export default definePlugin({
     name: "StickerBlocker",
     description: "Allows you to block stickers from being displayed.",
     tags: ["Chat", "Emotes", "Utility"],
-    authors: [Devs.Samwich],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     patches: [
         {
             find: ".STICKERS_CONSTANTS_STICKER_DIMENSION)",
@@ -155,6 +156,6 @@ export default definePlugin({
 
         return false;
     },
-    blockedComponent: ErrorBoundary.wrap(blockedComponentRender, { fallback: () => <p style={{ color: "red" }}>Failed to render :(</p> }),
+    blockedComponent: ErrorBoundary.wrap(blockedComponentRender, { fallback: () => <p style={{ color: "red" }}>{t("Failed to render :(")}</p> }),
     settings,
 });

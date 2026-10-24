@@ -7,8 +7,9 @@
 import { ChannelToolbarButton } from "@api/HeaderBar";
 import { addSurfacePropsProvider, notifySurfaceClassesChanged, type SurfaceId, type SurfaceProvidedProps } from "@api/SurfaceClasses";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { EquicordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import definePlugin from "@utils/types";
 import { Clickable, ContextMenuApi, Menu } from "@webpack/common";
@@ -402,7 +403,7 @@ const ToolbarButtons = ErrorBoundary.wrap(() => {
     return (
         <ChannelToolbarButton
             icon={PanelsIcon}
-            tooltip="Collapsible UI"
+            tooltip={t("Collapsible UI")}
             aria-label="Collapsible UI"
             selected={anyCollapsed}
             onClick={openToolbarMenu}
@@ -444,7 +445,7 @@ export default definePlugin({
     description: "Native collapsible channel, member, chat button, and user area surfaces.",
     tags: ["Appearance", "Customisation", "Chat", "Servers"],
     dependencies: ["HeaderBarAPI", "ChatInputButtonAPI", "SurfaceClassesAPI"],
-    authors: [EquicordDevs.benjii],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     searchTerms: ["ui", "sidebar", "collapsible"],
     managedStyle,
     settings,

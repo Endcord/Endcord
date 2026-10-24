@@ -34,7 +34,7 @@ export default definePlugin({
     name: "ValidReply",
     description: 'Fixes "Message could not be loaded" upon hovering over the reply',
     tags: ["Chat", "Utility"],
-    authors: [Devs.newwares],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     patches: [
         {
             // Same find as in ReplyTimestamp

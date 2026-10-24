@@ -4,10 +4,11 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import type { PaletteAction } from "@plugins/commandPalette/api/types";
 import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import { useEffect, useRef } from "@webpack/common";
 
-import type { PaletteAction } from "../api/types";
 import { PaletteIcon } from "./PaletteIcon";
 
 const cl = classNameFactory("vc-cmdpal-");
@@ -50,7 +51,7 @@ function PanelRow({ action, selected, index, onSelect, onRun }: {
 export function ActionsPanel({ actions, selectedIndex, onSelect, onRun }: ActionsPanelProps) {
     return (
         <div className={cl("panel")}>
-            <div className={cl("panel-title")}>Actions</div>
+            <div className={cl("panel-title")}>{t("Actions")}</div>
             <div className={cl("panel-list")}>
                 {actions.map((action, i) => (
                     <PanelRow

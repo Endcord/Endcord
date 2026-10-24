@@ -5,12 +5,14 @@
  */
 
 import { QuestTaskType } from "@endcord/discord-types/enums";
+import { getQuestifySettings, useQuestifySettings } from "@plugins/questify/settings/access";
+import { resetDangerousSettings } from "@plugins/questify/settings/dangerous";
+import { autoCompleteQuestTaskTypes, defaultAutoCompleteQuestTypes, isDesktopCompatible } from "@plugins/questify/settings/def";
+import { validateIgnoredQuests } from "@plugins/questify/settings/ignoredQuests";
+import { Alerts, q } from "@plugins/questify/utils/ui";
+import { t } from "@utils/i18n";
 import type { JSX } from "react";
 
-import { getQuestifySettings, useQuestifySettings } from "../settings/access";
-import { resetDangerousSettings } from "../settings/dangerous";
-import { autoCompleteQuestTaskTypes, defaultAutoCompleteQuestTypes, isDesktopCompatible } from "../settings/def";
-import { Alerts, q } from "../utils/ui";
 import { ManaButton, type ManaSelectOption, SettingsCard, SettingsDescription, SettingsHeader, SettingsNotice, SettingsParagraph, SettingsSelect, SettingsSubheader, SettingsSubtleSwitch } from "./shared";
 
 type QuestDisableSettingKey =
@@ -27,6 +29,7 @@ type QuestModifySettingKey =
     | "resumeInterruptedQuests"
     | "completeVideoQuestsQuicker"
     | "preventVideoQuestsPausing"
+    | "hideNonAutoCompletableQuests"
     | "makeMobileVideoQuestsDesktopCompatible";
 
 interface QuestDisableOption {
@@ -93,33 +96,6 @@ const autoCompleteQuestTypeManaOptions: ManaSelectOption[] = autoCompleteQuestTy
     disabled: !isDesktopCompatible(value),
 }));
 
-interface SettingsAllowDangerousButtonProps {
-    allowed: boolean;
-    disabled?: boolean;
-    onClick?: (e: React.MouseEvent) => void;
-}
-
-function SettingsAllowDangerousButton({
-    allowed,
-    disabled,
-    onClick,
-}: SettingsAllowDangerousButtonProps): JSX.Element {
-    return (
-        <div className={q("settings-button", "allow-dangerous-button")}>
-            <ManaButton
-                text={allowed
-                    ? "Reset and disallow changing dangerous settings..."
-                    : "Allow changing dangerous settings..."}
-                variant={allowed ? "critical-secondary" : "critical-primary"}
-                fullWidth={true}
-                disabled={disabled}
-                onClick={onClick}
-                size="sm"
-            />
-        </div>
-    );
-}
-
 export function QuestFeaturesSetting(): JSX.Element {
     const questFeatures = useQuestifySettings([
         "disableQuestsEverything",
@@ -137,6 +113,7 @@ export function QuestFeaturesSetting(): JSX.Element {
         "autoCompleteQuestTypes",
         "completeVideoQuestsQuicker",
         "preventVideoQuestsPausing",
+        "hideNonAutoCompletableQuests",
     ]);
 
     const selectedDisableValues = disableFeatureOptions
@@ -157,11 +134,11 @@ export function QuestFeaturesSetting(): JSX.Element {
 
     function confirmDangerousSettingChange(body: string, onConfirm: () => void) {
         Alerts.show({
-            title: "Are you sure?",
+            title: t("Are you sure?"),
             body,
-            confirmText: "Continue",
+            confirmText: t("Continue"),
             confirmVariant: "critical-primary",
-            cancelText: "Cancel",
+            cancelText: t("Cancel"),
             onConfirm,
         });
     }
@@ -178,6 +155,7 @@ export function QuestFeaturesSetting(): JSX.Element {
         }
 
         getQuestifySettings().autoCompleteQuestTypes = nextAutoCompleteQuestTypes;
+        validateIgnoredQuests();
     }
 
     function updateDisableEverything(checked: boolean) {
@@ -216,16 +194,20 @@ export function QuestFeaturesSetting(): JSX.Element {
 
     function updateModifyValue(key: QuestModifySettingKey, checked: boolean) {
         getQuestifySettings()[key] = checked;
+
+        if (key === "hideNonAutoCompletableQuests" || key === "makeMobileVideoQuestsDesktopCompatible") {
+            validateIgnoredQuests();
+        }
     }
 
     return (
         <SettingsCard>
-            <SettingsHeader> Quest Features </SettingsHeader>
-            <SettingsDescription> Modify how Quests behave to enhance or remove functionality. </SettingsDescription>
-            <SettingsSubheader> Disable Features </SettingsSubheader>
+            <SettingsHeader>{" "}{t("Quest Features")}{" "}</SettingsHeader>
+            <SettingsDescription>{" "}{t("Modify how Quests behave to enhance or remove functionality.")}{" "}</SettingsDescription>
+            <SettingsSubheader>{" "}{t("Disable Features")}{" "}</SettingsSubheader>
             <SettingsSubtleSwitch
                 checked={questFeatures.disableQuestsEverything}
-                label="Completely disable Quest functionality:"
+                label={t("Completely disable Quest functionality:")}
                 onChange={updateDisableEverything}
                 bottomSpacing="10"
                 tooltip={{
@@ -234,7 +216,7 @@ export function QuestFeaturesSetting(): JSX.Element {
                 }}
             />
             <SettingsSelect
-                label="Disable specific features:"
+                label={t("Disable specific features:")}
                 wrapTags={true}
                 options={disableManaOptions}
                 value={selectedDisableValues}
@@ -254,35 +236,51 @@ export function QuestFeaturesSetting(): JSX.Element {
                         + "\n\nQuest & Orbs Badges are badges on user profiles for when someone has completed at least one Quest or bought the Orbs badge respectively."
                 }}
             />
-            <SettingsSubheader> Modify Features </SettingsSubheader>
+            <SettingsSubheader>{" "}{t("Modify Features")}{" "}</SettingsSubheader>
             <SettingsNotice className={["notice-card-red", questFeatures.disableQuestsEverything ? "dimmed-settings-item" : undefined, questFeatures.allowChangingDangerousSettings ? undefined : "notice-card-solo", "no-bottom-margin"].filter(c => c !== undefined)}>
                 <SettingsParagraph>
-                    Discord is known to punish users of scripts or plugins that modify the completion of Quests. Modifying the completion of Quests is against Discord's <a href="https://discord.com/safety/platform-manipulation-policy-explainer" target="_blank" rel="noreferrer">Terms of Service</a>.
+                    {t("Discord is known to punish users of scripts or plugins that modify the completion of Quests. Modifying the completion of Quests is against Discord's")}{" "}<a href="https://discord.com/safety/platform-manipulation-policy-explainer" target="_blank" rel="noreferrer">{t("Terms of Service")}</a>.
                 </SettingsParagraph>
                 <br />
                 <SettingsParagraph>
-                    The punishment consists of a temporary or permanent loss of access to Quests and their rewards. <strong>The punishment also consists of an account standing violation which lasts 2 years per violation.</strong>
+                    {t("The punishment consists of a temporary or permanent loss of access to Quests and their rewards.")}{" "}<strong>{t("The punishment also consists of an account standing violation which lasts 2 years per violation.")}</strong>
                 </SettingsParagraph>
                 <br />
                 <SettingsParagraph>
-                    Due to the various methods Discord uses to track users, there's no way to realistically evade detection. If you proceed, understand that Discord likely will detect your use at some point.
-                </SettingsParagraph>
+                    {t("Due to the various methods Discord uses to track users, there's no way to realistically evade detection. If you proceed, understand that Discord likely will detect your use at some point.")}</SettingsParagraph>
                 <br />
                 <SettingsParagraph>
-                    Use the following toggle to access potentially dangerous settings at your own risk.
-                </SettingsParagraph>
-                <SettingsAllowDangerousButton
-                    allowed={questFeatures.allowChangingDangerousSettings}
-                    disabled={questFeatures.disableQuestsEverything}
-                    onClick={() => updateDangerousAccess(!questFeatures.allowChangingDangerousSettings)}
-                />
-                {questFeatures.allowChangingDangerousSettings && <>
+                    {t("Use the following toggle to access potentially dangerous settings at your own risk.")}</SettingsParagraph>
+                <div className={q("settings-button", "allow-dangerous-button")}>
+                    <ManaButton
+                        text={questFeatures.allowChangingDangerousSettings
+                            ? "Reset and disallow changing dangerous settings..."
+                            : "Allow changing dangerous settings..."}
+                        variant={questFeatures.allowChangingDangerousSettings ? "critical-secondary" : "critical-primary"}
+                        fullWidth={true}
+                        disabled={questFeatures.disableQuestsEverything}
+                        onClick={() => updateDangerousAccess(!questFeatures.allowChangingDangerousSettings)}
+                        size="sm"
+                    />
+                </div>
+                <div style={{ display: questFeatures.allowChangingDangerousSettings ? undefined : "none" }}>
+                    <SettingsSubtleSwitch
+                        disabled={questFeatures.disableQuestsEverything || !questFeatures.allowChangingDangerousSettings}
+                        checked={questFeatures.hideNonAutoCompletableQuests}
+                        label={t("Hide Non Auto-Completable Quests:")}
+                        onChange={checked => updateModifyValue("hideNonAutoCompletableQuests", checked)}
+                        topSpacing="10"
+                        bottomSpacing="5"
+                        tooltip={{
+                            position: "top",
+                            text: "Hide incomplete Quests with an unclaimed or ignored status when no auto-complete task is supported on this platform and enabled in the Quest types dropdown. Claimed, expired, and completed Quests are exempt. Use the Status Order Hidden options to hide those Quests."
+                        }}
+                    />
                     <SettingsSubtleSwitch
                         disabled={questFeatures.disableQuestsEverything || !questFeatures.allowChangingDangerousSettings}
                         checked={questFeatures.completeVideoQuestsQuicker}
-                        label="Accelerate Video Quest auto-completion:"
+                        label={t("Accelerate Video Quest auto-completion:")}
                         onChange={checked => updateModifyValue("completeVideoQuestsQuicker", checked)}
-                        topSpacing="10"
                         bottomSpacing="5"
                         tooltip={{
                             position: "top",
@@ -294,7 +292,7 @@ export function QuestFeaturesSetting(): JSX.Element {
                     <SettingsSubtleSwitch
                         disabled={questFeatures.disableQuestsEverything || !questFeatures.allowChangingDangerousSettings}
                         checked={questFeatures.preventVideoQuestsPausing}
-                        label="Prevent Video Quests from pausing when losing focus:"
+                        label={t("Prevent Video Quests from pausing when losing focus:")}
                         onChange={checked => updateModifyValue("preventVideoQuestsPausing", checked)}
                         bottomSpacing="5"
                         tooltip={{
@@ -307,7 +305,7 @@ export function QuestFeaturesSetting(): JSX.Element {
                     <SettingsSubtleSwitch
                         disabled={questFeatures.disableQuestsEverything || !questFeatures.allowChangingDangerousSettings}
                         checked={questFeatures.makeMobileVideoQuestsDesktopCompatible}
-                        label="Make some mobile-only Video Quests completable on desktop:"
+                        label={t("Make some mobile-only Video Quests completable on desktop:")}
                         onChange={checked => updateModifyValue("makeMobileVideoQuestsDesktopCompatible", checked)}
                         bottomSpacing="5"
                         tooltip={{
@@ -320,7 +318,7 @@ export function QuestFeaturesSetting(): JSX.Element {
                     <SettingsSubtleSwitch
                         disabled={questFeatures.disableQuestsEverything || !questFeatures.allowChangingDangerousSettings}
                         checked={questFeatures.autoCompleteQuestsSimultaneously}
-                        label="Auto-complete Quests simultaneously rather than sequentially:"
+                        label={t("Auto-complete Quests simultaneously rather than sequentially:")}
                         onChange={checked => updateModifyValue("autoCompleteQuestsSimultaneously", checked)}
                         bottomSpacing="5"
                         tooltip={{
@@ -333,7 +331,7 @@ export function QuestFeaturesSetting(): JSX.Element {
                     <SettingsSubtleSwitch
                         disabled={questFeatures.disableQuestsEverything || !questFeatures.allowChangingDangerousSettings}
                         checked={questFeatures.resumeInterruptedQuests}
-                        label="Resume interrupted auto-completions after a reload or restart:"
+                        label={t("Resume interrupted auto-completions after a reload or restart:")}
                         onChange={checked => updateModifyValue("resumeInterruptedQuests", checked)}
                         bottomSpacing="5"
                         tooltip={{
@@ -342,7 +340,7 @@ export function QuestFeaturesSetting(): JSX.Element {
                         }}
                     />
                     <SettingsSelect
-                        label="Auto-complete specific Quest types:"
+                        label={t("Auto-complete specific Quest types:")}
                         labelClassName="margin-top-9"
                         wrapTags={true}
                         options={autoCompleteQuestTypeManaOptions}
@@ -364,7 +362,7 @@ export function QuestFeaturesSetting(): JSX.Element {
                                 + "\n\nAuto-completing Quests is the riskiest dangerous setting available. Enable it at your own risk."
                         }}
                     />
-                </>}
+                </div>
             </SettingsNotice>
         </SettingsCard>
     );

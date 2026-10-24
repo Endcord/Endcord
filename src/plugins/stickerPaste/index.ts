@@ -11,13 +11,13 @@ export default definePlugin({
     name: "StickerPaste",
     description: "Makes picking a sticker in the sticker picker insert it into the chatbox instead of instantly sending",
     tags: ["Emotes", "Chat"],
-    authors: [Devs.ImBanana],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
 
     patches: [
         {
-            find: ".stickers,previewSticker:",
+            find: '.STICKER_PICKER:return""',
             replacement: {
-                match: /if\(\i\.\i\.getUploadCount/,
+                match: /(?<=\){)if\(\i\.\i\.getUploadCount/,
                 replace: "return true;$&",
             }
         }

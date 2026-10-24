@@ -4,10 +4,11 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { ExtendedMessage } from "@plugins/scheduledMessages/types";
+import { phantomMessageMap } from "@plugins/scheduledMessages/utils";
 import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 
-import { ExtendedMessage } from "../types";
-import { phantomMessageMap } from "../utils";
 import { TimerIcon } from "./Icons";
 
 const cl = classNameFactory("vc-scheduled-msg-");
@@ -33,7 +34,7 @@ export function MessageAccessory({ message }: { message: ExtendedMessage; }) {
     return (
         <div className={cl("accessory")}>
             <TimerIcon width={14} height={14} />
-            <span>Scheduled for {new Date(scheduledTime).toLocaleString()}{timeLeftStr}</span>
+            <span>{t("Scheduled for")}{" "}{new Date(scheduledTime).toLocaleString()}{timeLeftStr}</span>
         </div>
     );
 }

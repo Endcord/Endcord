@@ -10,6 +10,7 @@ import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Channel } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import definePlugin, { OptionType, StartAt } from "@utils/types";
 import { findCssClassesLazy, findStoreLazy } from "@webpack";
@@ -69,7 +70,7 @@ export default definePlugin({
     name: "PinDMs",
     description: "Allows you to pin private channels to the top of your DM list. To pin/unpin or re-order pins, right click DMs",
     tags: ["Friends", "Organisation"],
-    authors: [Devs.Ven, Devs.Aria],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     contextMenus,
 
@@ -79,7 +80,7 @@ export default definePlugin({
             replacement: [
                 {
                     // Filter out pinned channels from the private channel list
-                    match: /(?<=channels:\i,)privateChannelIds:(\i)(?=,listRef:)/,
+                    match: /(?<=channels:\i,)privateChannelIds:(\i|Endcord\.Plugins\.plugins\[[^\]]+\]\.\w+\(\i\))(?=,listRef:)/,
                     replace: "privateChannelIds:$1.filter(c=>!$self.isPinned(c))"
                 },
                 {
@@ -274,7 +275,7 @@ export default definePlugin({
                         >
                             <Menu.MenuItem
                                 id="vc-pindms-edit-category"
-                                label="Edit Category"
+                                label={t("Edit Category")}
                                 action={() => openCategoryModal(category.id, null)}
                             />
 
@@ -284,14 +285,14 @@ export default definePlugin({
                                         {
                                             canMoveCategoryInDirection(category.id, -1) && <Menu.MenuItem
                                                 id="vc-pindms-move-category-up"
-                                                label="Move Up"
+                                                label={t("Move Up")}
                                                 action={() => moveCategory(category.id, -1)}
                                             />
                                         }
                                         {
                                             canMoveCategoryInDirection(category.id, 1) && <Menu.MenuItem
                                                 id="vc-pindms-move-category-down"
-                                                label="Move Down"
+                                                label={t("Move Down")}
                                                 action={() => moveCategory(category.id, 1)}
                                             />
                                         }
@@ -304,7 +305,7 @@ export default definePlugin({
                             <Menu.MenuItem
                                 id="vc-pindms-delete-category"
                                 color="danger"
-                                label="Delete Category"
+                                label={t("Delete Category")}
                                 action={() => removeCategory(category.id)}
                             />
 

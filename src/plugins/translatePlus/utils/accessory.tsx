@@ -7,6 +7,7 @@
 import { Message } from "@endcord/discord-types";
 import { languages } from "@endcordplugins/translatePlus/misc/languages";
 import { cl, Translation } from "@endcordplugins/translatePlus/misc/types";
+import { t } from "@utils/i18n";
 import { Parser, useEffect, useState } from "@webpack/common";
 
 import { SmallIcon } from "./icon";
@@ -32,7 +33,7 @@ export function Accessory({ message }: { message: Message; }) {
             <SmallIcon />
             {Parser.parse(translation.text)}
             {" "}
-            (translated from {languages[translation.src] ?? translation.src} - <button onClick={() => setTranslation(undefined)} className={cl("dismiss")}>Dismiss</button>)
+            {t("(translated from")}{" "}{languages[translation.src] ?? translation.src} - <button onClick={() => setTranslation(undefined)} className={cl("dismiss")}>{t("Dismiss")}</button>)
         </div>
     );
 }

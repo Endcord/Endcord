@@ -8,8 +8,9 @@ import "./styles.css";
 
 import * as DataStore from "@api/DataStore";
 import { definePluginSettings } from "@api/Settings";
-import { EquicordDevs, IS_MAC } from "@utils/constants";
+import { Devs, IS_MAC } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
+import { t as translateText } from "@utils/i18n";
 import definePlugin, { makeRange, OptionType } from "@utils/types";
 import { Button, ChannelRouter, ChannelStore, closeModal, IconUtils, openModal,React, RelationshipStore, SelectedChannelStore, Toasts, UserStore } from "@webpack/common";
 
@@ -78,8 +79,7 @@ const settings = definePluginSettings({
                     await DataStore.set(STORAGE_KEY, []);
                     Toasts.show({ id: Toasts.genId(), type: Toasts.Type.SUCCESS, message: "Cleared RDMS history" });
                 }}>
-                "Clear RDMS History
-            </Button>
+                {translateText("Clear RDMS History")}</Button>
         )
     }
 });
@@ -332,7 +332,7 @@ export default definePlugin({
     name: "RecentDMSwitcher",
     description: "Ctrl+Tab between most recently used DMs (Ctrl+Shift+Tab reverse)",
     tags: ["Chat", "Utility"],
-    authors: [EquicordDevs.mmeta],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
 
     flux: {

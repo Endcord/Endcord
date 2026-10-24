@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { Logger } from "@utils/Logger";
 import type { Channel } from "@endcord/discord-types";
 import { ChannelType } from "@endcord/discord-types/enums";
+import { Logger } from "@utils/Logger";
 import { ChannelStore, GuildChannelStore, GuildStore, PermissionsBits, PermissionStore, RestAPI, showToast, Toasts } from "@webpack/common";
 
 const logger = new Logger("Dragify");

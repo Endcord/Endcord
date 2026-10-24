@@ -7,6 +7,7 @@
 import { get as dsGet, set as dsSet } from "@api/DataStore";
 import { UserAreaButton, UserAreaRenderProps } from "@api/UserArea";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import { ModalCloseButton as ModalCloseButton_, ModalContent as ModalContent_, ModalFooter as ModalFooter_, ModalHeader as ModalHeader_, ModalRoot as ModalRoot_ } from "@utils/modal";
 import definePlugin, { IconComponent } from "@utils/types";
 import { FluxDispatcher, openModal, React, UserStore } from "@webpack/common";
@@ -24,7 +25,14 @@ const DS_KEY = "FakeNitroAge_months";
 let fakeMonths: number | null = null;
 let originalGetCurrentUser: (() => ReturnType<typeof UserStore.getCurrentUser>) | null = null;
 
+// Store selectors compare by reference, so returning a new clone on every call re-renders forever (React #185).
+let lastSourceUser: any = null;
+let lastMonths: number | null = null;
+let lastClone: any = null;
+
 function cloneWithPremium(user: any, months: number): any {
+    if (user === lastSourceUser && months === lastMonths) return lastClone;
+
     const clone = Object.create(Object.getPrototypeOf(user));
     for (const key of Object.getOwnPropertyNames(user)) {
         const desc = Object.getOwnPropertyDescriptor(user, key);
@@ -34,6 +42,10 @@ function cloneWithPremium(user: any, months: number): any {
     since.setMonth(since.getMonth() - months);
     clone.premiumSince = since;
     clone.premiumType = 2;
+
+    lastSourceUser = user;
+    lastMonths = months;
+    lastClone = clone;
     return clone;
 }
 
@@ -98,13 +110,12 @@ function NitroAgeModal({ modalProps }: { modalProps: any; }) {
     return (
         <ModalRoot {...modalProps} size="small">
             <ModalHeader>
-                <span style={{ fontWeight: 700, fontSize: 16, flexGrow: 1 }}>Fake Nitro Age</span>
+                <span style={{ fontWeight: 700, fontSize: 16, flexGrow: 1 }}>{t("Fake Nitro Age")}</span>
                 <ModalCloseButton onClick={modalProps.onClose} />
             </ModalHeader>
             <ModalContent style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 8 }}>
                 <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 4 }}>
-                    Sets how long your client shows you've had Nitro. Client-side only.
-                </div>
+                    {t("Sets how long your client shows you've had Nitro. Client-side only.")}</div>
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
                     {PRESETS.map(p => (
@@ -137,7 +148,7 @@ function NitroAgeModal({ modalProps }: { modalProps: any; }) {
                         type="number"
                         min={1}
                         max={999}
-                        placeholder="Custom months…"
+                        placeholder={t("Custom months…")}
                         value={custom}
                         onChange={e => { setCustom(e.currentTarget.value); setSelected(null); }}
                         style={{
@@ -170,8 +181,7 @@ function NitroAgeModal({ modalProps }: { modalProps: any; }) {
                         fontFamily: "var(--font-primary)",
                     }}
                 >
-                    Reset
-                </button>
+                    {t("Reset")}</button>
                 <button
                     onClick={() => {
                         const months = custom && customValid ? inputMonths : (selected ?? null);
@@ -191,8 +201,7 @@ function NitroAgeModal({ modalProps }: { modalProps: any; }) {
                         opacity: (!selected && !customValid) ? 0.4 : 1,
                     }}
                 >
-                    Apply
-                </button>
+                    {t("Apply")}</button>
             </ModalFooter>
         </ModalRoot>
     );
@@ -200,13 +209,13 @@ function NitroAgeModal({ modalProps }: { modalProps: any; }) {
 
 // ── User area button ──────────────────────────────────────────────────────────
 
-const NitroIcon: IconComponent = (props) => {
+const NitroIcon: IconComponent = props => {
     return (
         <svg viewBox="0 0 24 24" width={20} height={20} fill="currentColor" {...props}>
             <path d="M22 12c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2s10 4.48 10 10zm-10 6c3.31 0 6-2.69 6-6s-2.69-6-6-6-6 2.69-6 6 2.69 6 6 6zm0-9c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3z" />
         </svg>
     );
-}
+};
 
 function NitroAgeButton({ iconForeground, nameplate }: UserAreaRenderProps) {
     return (
@@ -225,7 +234,7 @@ export default definePlugin({
     name: "FakeNitroAge",
     description: "Client-side button to set how many months/years of Nitro your profile shows.",
     tags: ["Customisation", "Fun"],
-    authors: [Devs.ewlle, Devs.rootpoi, Devs.kraethis],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     dependencies: ["UserAreaAPI"],
 
     userAreaButton: {

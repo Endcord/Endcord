@@ -7,6 +7,7 @@
 import { BaseText } from "@components/BaseText";
 import { Button } from "@components/Button";
 import { Flex } from "@components/Flex";
+import { User } from "@endcord/discord-types";
 import { listData } from "@equicordplugins/songSpotlight.desktop/lib/api";
 import { useAuthorizationStore } from "@equicordplugins/songSpotlight.desktop/lib/stores/AuthorizationStore";
 import { useSongStore } from "@equicordplugins/songSpotlight.desktop/lib/stores/SongStore";
@@ -14,8 +15,8 @@ import { cl } from "@equicordplugins/songSpotlight.desktop/lib/utils";
 import { Spinner, WidgetClasses } from "@equicordplugins/songSpotlight.desktop/ui/common";
 import { openSettingsModal } from "@equicordplugins/songSpotlight.desktop/ui/settings";
 import { sid } from "@song-spotlight/api/util";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
-import { User } from "@endcord/discord-types";
 import { React, ScrollerThin, useEffect, UserStore, useState } from "@webpack/common";
 import { JSX } from "react";
 
@@ -41,15 +42,14 @@ export default function WidgetSongs({ user }: WidgetSongsProps) {
     if (failed) {
         full = (
             <BaseText size="md" weight="semibold" className={cl("errored")}>
-                Uh oh! Song Spotlight failed to load. You can check the console for more details.
-            </BaseText>
+                {t("Uh oh! Song Spotlight failed to load. You can check the console for more details.")}</BaseText>
         );
     } else if (isAuthorized() && !data) {
         full = <Spinner type={Spinner.Type.SPINNING_CIRCLE} />;
     } else if (!data?.[0]) {
         full = (
             <>
-                <BaseText size="lg" weight="semibold">Looks like there's nothing here!</BaseText>
+                <BaseText size="lg" weight="semibold">{t("Looks like there's nothing here!")}</BaseText>
                 <BaseText size="md" weight="normal">
                     {owned
                         ? "Well? What are you waiting for? Go add some songs to your Song Spotlight!"
@@ -61,8 +61,7 @@ export default function WidgetSongs({ user }: WidgetSongsProps) {
                         style={{ marginTop: "14px", flexShrink: 1 }}
                         onClick={() => openSettingsModal()}
                     >
-                        Edit songs
-                    </Button>
+                        {t("Edit songs")}</Button>
                 )}
             </>
         );

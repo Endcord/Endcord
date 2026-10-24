@@ -5,7 +5,7 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
-import { EndcordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType } from "@utils/types";
 import { FluxDispatcher, RestAPI, UserStore } from "@webpack/common";
@@ -84,7 +84,7 @@ export default definePlugin({
     name: "AutoReact",
     description: "Automatically react to messages containing specific keywords.",
     tags: ["Utility", "Chat"],
-    authors: [EndcordDevs.Sharp],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
 
     start() {

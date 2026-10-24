@@ -7,8 +7,9 @@
 import { set } from "@api/DataStore";
 import { Heading } from "@components/Heading";
 import { Margins } from "@components/margins";
-import { classNameFactory } from "@utils/css";
 import { RenderModalProps } from "@endcord/discord-types";
+import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import { IconUtils, Modal, React, TextInput, Toasts, UserStore, useState } from "@webpack/common";
 
 import { data, KEY_DATASTORE } from ".";
@@ -96,19 +97,19 @@ export function SetAvatarModal({ userId, modalProps }: { userId: string; modalPr
         <Modal
             {...modalProps}
             size="sm"
-            title="Custom Avatar"
+            title={t("Custom Avatar")}
             actions={actions}
         >
             <div onKeyDown={handleKey}>
                 {/* Preview */}
                 <div className={cl("preview-row")}>
                     <div className={cl("preview-box")}>
-                        <span className={cl("preview-label")}>Original</span>
+                        <span className={cl("preview-label")}>{t("Original")}</span>
                         <img src={originalAvatar} className={cl("avatar")} alt="original" />
                     </div>
                     <span className={cl("arrow")}>→</span>
                     <div className={cl("preview-box")}>
-                        <span className={cl("preview-label")}>Local</span>
+                        <span className={cl("preview-label")}>{t("Local")}</span>
                         <img
                             src={preview || originalAvatar}
                             className={`${cl("avatar")} ${preview ? cl("avatar-active") : ""}`}
@@ -119,7 +120,7 @@ export function SetAvatarModal({ userId, modalProps }: { userId: string; modalPr
 
                 {/* URL input */}
                 <section className={Margins.bottom8}>
-                    <Heading tag="h3">Enter PNG/GIF URL</Heading>
+                    <Heading tag="h3">{t("Enter PNG/GIF URL")}</Heading>
                     <TextInput
                         placeholder="https://example.com/image.png"
                         value={url.startsWith("data:") ? "(uploaded file)" : url}

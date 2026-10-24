@@ -5,11 +5,12 @@
  */
 
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
+import { User } from "@endcord/discord-types";
 import { copyToClipboard } from "@utils/clipboard";
-import { EquicordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import definePlugin from "@utils/types";
-import { User } from "@endcord/discord-types";
 import { Menu, SelectedGuildStore, Toasts, UserProfileStore } from "@webpack/common";
 
 const logger = new Logger("CopyProfileColors");
@@ -87,7 +88,7 @@ const userContextMenuPatch: NavContextMenuPatchCallback = (children, { user, gui
     let effectiveGuildId: string | undefined;
     let hasGuildColors = false;
     try {
-        effectiveGuildId = guildId ?? SelectedGuildStore?.getGuildId?.();
+        effectiveGuildId = guildId ?? SelectedGuildStore?.getGuildId?.() ?? undefined;
         const guildProfile = effectiveGuildId
             ? UserProfileStore?.getGuildMemberProfile?.(user.id, effectiveGuildId)
             : null;
@@ -101,7 +102,7 @@ const userContextMenuPatch: NavContextMenuPatchCallback = (children, { user, gui
             <Menu.MenuItem
                 id="CopyProfileColors"
                 icon={ColorIcon}
-                label="Copy Profile Colors"
+                label={t("Copy Profile Colors")}
                 action={() => copyProfileColors(user.id)}
             />
         );
@@ -111,7 +112,7 @@ const userContextMenuPatch: NavContextMenuPatchCallback = (children, { user, gui
                 <Menu.MenuItem
                     id="CopyServerProfileColors"
                     icon={ColorIcon}
-                    label="Copy Server Profile Colors"
+                    label={t("Copy Server Profile Colors")}
                     action={() => copyProfileColors(user.id, effectiveGuildId)}
                 />
             );
@@ -125,7 +126,7 @@ export default definePlugin({
     name: "CopyProfileColors",
     description: "A plugin to copy people's profile gradient colors to clipboard.",
     tags: ["Appearance", "Customisation"],
-    authors: [EquicordDevs.Crxa, EquicordDevs.Cortex, EquicordDevs.Gir0fa],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     contextMenus: {
         "user-context": userContextMenuPatch,
         "user-profile-actions": userContextMenuPatch

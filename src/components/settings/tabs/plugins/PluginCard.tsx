@@ -5,12 +5,14 @@
  */
 
 import { showNotice } from "@api/Notices";
-import { hasAnyVisibleSettings, isPluginEnabled, pluginRequiresRestart, startDependenciesRecursive, startPlugin, stopPlugin } from "@api/PluginManager";
+import { getEnabledConflicts } from "@api/PluginConflicts";
+import { hasAnyVisibleSettings, isPluginEnabled, pluginRequiresRestart, plugins, startDependenciesRecursive, startPlugin, stopPlugin } from "@api/PluginManager";
 import { Settings } from "@api/Settings";
 import { CogWheel, InfoIcon } from "@components/Icons";
 import { AddonCard } from "@components/settings/AddonCard";
+import { useI18n } from "@utils/i18n";
 import { Plugin } from "@utils/types";
-import { React, showToast, Toasts } from "@webpack/common";
+import { Modal, openModal, React, showToast, Toasts } from "@webpack/common";
 
 import { cl, logger } from ".";
 import { openPluginModal } from "./PluginModal";
@@ -24,11 +26,55 @@ interface PluginCardProps extends React.HTMLProps<HTMLDivElement> {
 }
 
 export function PluginCard({ plugin, disabled, onRestartNeeded, onMouseEnter, onMouseLeave, isNew, isPopular }: PluginCardProps) {
+    const { t, tPluginDesc } = useI18n();
     const settings = Settings.plugins[plugin.name];
 
     const isEnabled = () => isPluginEnabled(plugin.name);
 
+    function turnOff(name: string) {
+        const other = plugins[name];
+        if (other.started && !pluginRequiresRestart(other)) stopPlugin(other);
+        Settings.plugins[name].enabled = false;
+        onRestartNeeded(name, "enabled");
+    }
+
     function toggleEnabled() {
+        const conflicts = isEnabled() ? [] : getEnabledConflicts(plugin.name);
+        if (!conflicts.length) return applyToggle();
+
+        // Discord's Alerts no longer show a third button, so this uses a modal with its own actions
+        const vars = { name: plugin.name, others: conflicts.join(", ") };
+        openModal(props => (
+            <Modal
+                {...props}
+                size="sm"
+                title={t("{name} and {others} don't mix", vars)}
+                subtitle={t("They change the same part of Discord, so one of them would stop working. Turn off {others} and use {name} instead?", vars)}
+                actions={[
+                    { text: t("Cancel"), variant: "secondary", onClick: props.onClose },
+                    {
+                        text: t("Keep both on"),
+                        variant: "secondary",
+                        onClick() {
+                            props.onClose();
+                            applyToggle();
+                        }
+                    },
+                    {
+                        text: t("Use {name}", vars),
+                        variant: "primary",
+                        onClick() {
+                            props.onClose();
+                            conflicts.forEach(turnOff);
+                            applyToggle();
+                        }
+                    }
+                ]}
+            />
+        ));
+    }
+
+    function applyToggle() {
         const wasEnabled = isEnabled();
 
         // If we're enabling a plugin, make sure all deps are enabled recursively.
@@ -37,7 +83,7 @@ export function PluginCard({ plugin, disabled, onRestartNeeded, onMouseEnter, on
 
             if (failures.length) {
                 logger.error(`Failed to start dependencies for ${plugin.name}: ${failures.join(", ")}`);
-                showNotice("Failed to start dependencies: " + failures.join(", "), "Close", () => null);
+                showNotice(t("Some helpers this plugin needs couldn't start :( {list}", { list: failures.join(", ") }), t("Close"), () => null);
                 return;
             }
 
@@ -68,7 +114,7 @@ export function PluginCard({ plugin, disabled, onRestartNeeded, onMouseEnter, on
         if (!result) {
             settings.enabled = false;
 
-            const msg = `Error while ${wasEnabled ? "stopping" : "starting"} plugin ${plugin.name}`;
+            const msg = t(wasEnabled ? "{name} didn't want to stop :( Restart Discord and it'll be off." : "{name} couldn't start this time :( Try turning it on again, or restart Discord.", { name: plugin.name });
             showToast(msg, Toasts.Type.FAILURE, {
                 position: Toasts.Position.BOTTOM,
             });
@@ -83,7 +129,7 @@ export function PluginCard({ plugin, disabled, onRestartNeeded, onMouseEnter, on
     return (
         <AddonCard
             name={plugin.name}
-            description={plugin.description}
+            description={tPluginDesc(plugin.name, plugin.description)}
             isNew={isNew}
             isPopular={isPopular}
             enabled={isEnabled()}

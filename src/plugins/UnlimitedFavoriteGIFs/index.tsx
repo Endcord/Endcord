@@ -1,0 +1,159 @@
+/*
+ * Endcord, a Discord client mod
+ * Copyright (c) 2026 Vendicated and contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+import { DataStore } from "@api/index";
+import { isPluginEnabled } from "@api/PluginManager";
+import { definePluginSettings } from "@api/Settings";
+import { Link } from "@components/Link";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
+import definePlugin, { OptionType } from "@utils/types";
+import { wreq } from "@webpack";
+import { showToast, Toasts } from "@webpack/common";
+
+const LOCAL_FAVS_KEY = "UnlimitedFavoriteGIFs_localFavs";
+const LIMIT_RE = /\.toBinary\(t\)\.length>\d+/;
+
+function log(...args: any[]) { console.log("[UnlimitedFavoriteGIFs]", ...args); }
+function warn(...args: any[]) { console.warn("[UnlimitedFavoriteGIFs]", ...args); }
+
+async function getLocalFavs(): Promise<any[]> {
+    return (await DataStore.get(LOCAL_FAVS_KEY)) ?? [];
+}
+
+async function saveLocalFavs(list: any[]): Promise<void> {
+    await DataStore.set(LOCAL_FAVS_KEY, list);
+}
+
+function gifKey(gif: any): string {
+    if (typeof gif === "string") return gif;
+    return gif?.url ?? gif?.src ?? JSON.stringify(gif);
+}
+
+const settings = definePluginSettings({
+    exportFavs: {
+        type: OptionType.COMPONENT,
+        description: "Export local favorites to clipboard as JSON",
+        component: () => {
+            const { Button } = require("@webpack/common");
+            return (
+                <Button onClick={async () => {
+                    const favs = await getLocalFavs();
+                    if (!favs.length) {
+                        showToast("No local favorites to export.", Toasts.Type.FAILURE);
+                        return;
+                    }
+                    navigator.clipboard.writeText(JSON.stringify(favs, null, 2));
+                    showToast(`Copied ${favs.length} favorites to clipboard.`, Toasts.Type.SUCCESS);
+                }}>
+                    {t("Export Local Favorites (JSON)")}</Button>
+            );
+        }
+    },
+    clearLocalFavs: {
+        type: OptionType.COMPONENT,
+        description: "Clear all locally saved favorites",
+        component: () => {
+            const { Button } = require("@webpack/common");
+            return (
+                <Button color={Button.Colors.RED} onClick={async () => {
+                    await saveLocalFavs([]);
+                    showToast("Local favorites cleared.", Toasts.Type.SUCCESS);
+                }}>
+                    {t("Clear Local Favorites")}</Button>
+            );
+        }
+    }
+});
+
+// Patch the addFavoriteGif function directly at runtime
+function applyRuntimePatch() {
+    try {
+        const webpackReq = wreq ?? (window as any).Vencord?.Webpack?.wreq;
+        if (!webpackReq?.m) return false;
+
+        for (const key of Object.keys(webpackReq.m)) {
+            const src = webpackReq.m[key]?.toString?.();
+            if (!src || !src.includes("+XYXtZ")) continue;
+
+            if (src.includes("Number.MAX_SAFE_INTEGER")) {
+                log("Limit already lifted on module", key);
+                return true;
+            }
+
+            if (!LIMIT_RE.test(src)) continue;
+
+            const patched = src.replace(LIMIT_RE, ".toBinary(t).length>Number.MAX_SAFE_INTEGER");
+            if (patched === src) {
+                log("Limit already lifted on module", key);
+                return true;
+            }
+
+            const isArrow = patched.startsWith("(");
+            const wrapped = "0," + (isArrow ? "" : "function") + patched.slice(patched.indexOf("("));
+            webpackReq.m[key] = (0, eval)(wrapped);
+
+            delete webpackReq.c[key];
+            webpackReq(key);
+
+            log("Runtime patch applied to module", key);
+            return true;
+        }
+        log("Module not found for runtime patch, relying on webpack patch");
+        return false;
+    } catch (e) {
+        warn("Runtime patch failed:", e);
+        return false;
+    }
+}
+
+export default definePlugin({
+    name: "UnlimitedFavoriteGIFs",
+    description: "Bypasses the native GIF favorites size limit, allowing you to save unlimited GIFs.",
+    tags: ["Media", "Utility"],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    settings,
+
+    settingsAboutComponent() {
+        return (
+            <div style={{ fontSize: "14px", lineHeight: "1.8" }}>
+                <p style={{ marginBottom: "12px", color: "var(--header-secondary, #b9bbbe)" }}>
+                    {t("Patches Discord's internal")}{" "}<b style={{ color: "var(--header-primary, #fff)" }}>{t("FrecencyUserSettings")}</b>{" "}{t("to remove the GIF favorites size limit, allowing you to save as many GIFs as you want.")}</p>
+                <p style={{ marginBottom: "16px", color: "var(--header-secondary, #b9bbbe)" }}>
+                    {t("Works seamlessly with")}{" "}<b style={{ color: "var(--header-primary, #fff)" }}>{t("GifTransfer")}</b>{" "}{t("— import hundreds of GIFs without hitting Discord's limit.")}</p>
+                <Link href="https://github.com/Mixiruri" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <img
+                        src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+                        alt="GitHub"
+                        style={{ width: 20, height: 20, borderRadius: "50%", verticalAlign: "middle" }}
+                    />
+                    <span>{t("Mixiruri on GitHub")}</span>
+                </Link>
+            </div>
+        );
+    },
+
+    patches: [
+        {
+            find: "#{intl::FAVORITE_GIFS_LIMIT_REACHED_BODY}",
+            predicate: () => !isPluginEnabled("GifTransfer"),
+            replacement: {
+                match: /\.toBinary\((\i)\)\.length>\d+/,
+                replace: ".toBinary($1).length>Number.MAX_SAFE_INTEGER",
+            }
+        },
+    ],
+
+    async start() {
+        log("Plugin started.");
+        log(`Local favs in DataStore: ${(await getLocalFavs()).length}`);
+        applyRuntimePatch();
+    },
+
+    stop() {
+        log("Plugin stopped.");
+    }
+});

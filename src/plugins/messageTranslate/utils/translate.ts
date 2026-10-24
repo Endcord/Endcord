@@ -4,10 +4,9 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { settings } from "@plugins/messageTranslate/settings";
+import { CachedTranslation, TranslateResponse } from "@plugins/messageTranslate/types";
 import { Logger } from "@utils/Logger";
-
-import { settings } from "../settings";
-import { CachedTranslation, TranslateResponse } from "../types";
 
 const logger = new Logger("MessageTranslate");
 
@@ -33,7 +32,14 @@ export function clearCache(messageId: string) {
 }
 
 async function fetchTranslation(text: string, targetLang: string): Promise<TranslateResponse> {
-    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&dj=1&q=${encodeURIComponent(text)}`;
+    const url = "https://translate-pa.googleapis.com/v1/translate?" + new URLSearchParams({
+        "params.client": "gtx",
+        "dataTypes": "TRANSLATION",
+        "key": "AIzaSyDLEeFI5OtFBwYBIoK_jj5m32rZK5CkCXA", // some google API key
+        "query.sourceLanguage": "auto",
+        "query.targetLanguage": targetLang,
+        "query.text": text,
+    });
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -53,12 +59,13 @@ export async function translate(messageId: string, text: string): Promise<Cached
         const targetLang = settings.store.targetLanguage;
         const response = await fetchTranslation(text, targetLang);
 
-        if (response.src === targetLang || response.confidence < settings.store.confidenceRequirement) {
+        const confidence = response.detectedLanguages?.srclangsConfidences?.[0] ?? 1;
+        if (response.sourceLanguage === targetLang || confidence < settings.store.confidenceRequirement) {
             failed.set(messageId, text);
             return null;
         }
 
-        const translatedText = response.sentences.map(s => s.trans).filter(Boolean).join("");
+        const translatedText = response.translation?.trim();
         if (!translatedText || translatedText === text) {
             failed.set(messageId, text);
             return null;
@@ -67,7 +74,7 @@ export async function translate(messageId: string, text: string): Promise<Cached
         const entry: CachedTranslation = {
             original: text,
             translated: translatedText,
-            sourceLang: response.src,
+            sourceLang: response.sourceLanguage,
         };
         translationCache.set(messageId, entry);
         return entry;

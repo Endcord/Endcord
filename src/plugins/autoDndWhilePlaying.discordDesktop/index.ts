@@ -43,7 +43,7 @@ export default definePlugin({
     name: "AutoDNDWhilePlaying",
     description: "Automatically updates your online status (online, idle, dnd) when launching games",
     tags: ["Activity", "Utility"],
-    authors: [Devs.thororen],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     flux: {
         RUNNING_GAMES_CHANGE({ games }) {

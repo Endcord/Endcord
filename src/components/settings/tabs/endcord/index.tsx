@@ -8,66 +8,80 @@ import { openNotificationLogModal } from "@api/Notifications/notificationLog";
 import { useSettings } from "@api/Settings";
 import { Divider } from "@components/Divider";
 import { FormSwitch } from "@components/FormSwitch";
+import { Heart } from "@components/Heart";
 import { FolderIcon, GithubIcon, LogIcon, PaintbrushIcon, RestartIcon } from "@components/Icons";
 import { QuickAction, QuickActionCard } from "@components/settings/QuickAction";
-import { SpecialCard } from "@components/settings/SpecialCard";
+import { HEART_PALETTE, HEART_ROWS, PANDA_PALETTE, PANDA_ROWS, PixelArt, SpecialCard } from "@components/settings/SpecialCard";
 import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
 import { openContributorModal } from "@components/settings/tabs/plugins/ContributorModal";
 import { openPluginModal } from "@components/settings/tabs/plugins/PluginModal";
 import SettingsPlugin from "@plugins/_core/settings";
 import { IS_WINDOWS } from "@utils/constants";
+import { setEndcordLanguage, SUPPORTED_LANGUAGES, useI18n } from "@utils/i18n";
 import { Margins } from "@utils/margins";
-import { isPluginDev } from "@utils/misc";
+import { identity, isPluginDev } from "@utils/misc";
 import { relaunch } from "@utils/native";
-import { ConfirmModal, Forms, openModal, UserStore } from "@webpack/common";
+import { ConfirmModal, Forms, openModal, Select, UserStore } from "@webpack/common";
 
 import { MacOSVibrancySettings } from "./MacVibrancySettings";
 import { NotificationSection } from "./NotificationSettings";
 import { WindowsMaterialSettings } from "./WindowsMaterialSettings";
 
-const COZY_CONTRIB_IMAGE = "https://cdn.discordapp.com/emojis/1026533070955872337.png";
-const CONTRIB_BACKGROUND_IMAGE = "https://media.discordapp.net/stickers/1311070166481895484.png?size=2048";
+const REPO_URL = "https://github.com/rootpoii/Endcord";
 
 type KeysOfType<Object, Type> = {
     [K in keyof Object]: Object[K] extends Type ? K : never;
 }[keyof Object];
 
 function Switches() {
-    const settings = useSettings(["useQuickCss", "enableReactDevtools", "frameless", "winNativeTitleBar", "transparent", "winCtrlQ", "disableMinSize"]);
+    const { t } = useI18n();
+    const settings = useSettings(["useQuickCss", "enableReactDevtools", "frameless", "winNativeTitleBar", "transparent", "winCtrlQ", "disableMinSize", "disableBackgroundMemoryTrim", "gpuRasterization"]);
 
     const Switches = [
         {
             key: "useQuickCss",
-            title: "Enable Custom CSS",
+            title: t("Enable Custom CSS"),
         },
         !IS_WEB && {
             key: "enableReactDevtools",
-            title: "Enable React Developer Tools",
+            title: t("Enable React Developer Tools"),
             restartRequired: true
         },
         !IS_WEB && (!IS_DISCORD_DESKTOP || !IS_WINDOWS ? {
             key: "frameless",
-            title: "Disable the window frame",
+            title: t("Disable the window frame"),
             restartRequired: true
         } : {
             key: "winNativeTitleBar",
-            title: "Use Windows' native title bar instead of Discord's custom one",
+            title: t("Use Windows' native title bar instead of Discord's custom one"),
             restartRequired: true
         }),
         !IS_WEB && {
             key: "transparent",
-            title: "Enable window transparency",
-            description: "A theme that supports transparency is required or this will do nothing. Stops the window from being resizable as a side effect",
+            title: t("Enable window transparency"),
+            description: t("A theme that supports transparency is required or this will do nothing. Stops the window from being resizable as a side effect"),
             restartRequired: true
         },
         IS_DISCORD_DESKTOP && {
             key: "disableMinSize",
-            title: "Disable minimum window size",
+            title: t("Disable minimum window size"),
             restartRequired: true
         },
         !IS_WEB && IS_WINDOWS && {
             key: "winCtrlQ",
-            title: "Register Ctrl+Q as shortcut to close Discord (Alternative to Alt+F4)",
+            title: t("Register Ctrl+Q as shortcut to close Discord (Alternative to Alt+F4)"),
+            restartRequired: true
+        },
+        IS_DISCORD_DESKTOP && {
+            key: "gpuRasterization",
+            title: t("Paint the interface on the GPU"),
+            description: t("Can make scrolling smoother on some graphics cards, but uses 50-80 MB more memory"),
+            restartRequired: true
+        },
+        IS_DISCORD_DESKTOP && {
+            key: "disableBackgroundMemoryTrim",
+            title: t("Keep caches while Discord is minimized or in the tray"),
+            description: t("By default Endcord frees cached memory a minute after the window is hidden"),
             restartRequired: true
         },
     ] satisfies Array<false | {
@@ -97,10 +111,10 @@ function Switches() {
                         openModal(props => (
                             <ConfirmModal
                                 {...props}
-                                title="Restart Required"
-                                subtitle="A restart is required to apply this change"
-                                confirmText="Restart now"
-                                cancelText="Later!"
+                                title={t("Restart Required")}
+                                subtitle={t("A restart is required to apply this change")}
+                                confirmText={t("Restart now")}
+                                cancelText={t("Later")}
                                 variant="primary"
                                 onConfirm={relaunch}
                             />
@@ -112,56 +126,102 @@ function Switches() {
     });
 }
 
+function LanguageSection() {
+    const { lang, t } = useI18n();
+
+    return (
+        <section className={Margins.bottom20}>
+            <Forms.FormTitle tag="h5">{t("Language")}</Forms.FormTitle>
+            <Forms.FormText className={Margins.bottom8} style={{ color: "var(--text-muted)" }}>
+                {t("Select the language for Endcord and Discord.")}
+            </Forms.FormText>
+            <Select
+                options={SUPPORTED_LANGUAGES.map(l => ({
+                    label: `${l.nativeName} (${l.englishName})`,
+                    value: l.code
+                }))}
+                closeOnSelect={true}
+                select={v => setEndcordLanguage(v)}
+                isSelected={v => v === lang}
+                serialize={identity}
+            />
+        </section>
+    );
+}
+
 function EndcordSettings() {
+    const { t } = useI18n();
     const user = UserStore?.getCurrentUser();
 
     return (
         <SettingsTab>
-            {isPluginDev(user?.id) && (
+            {user && isPluginDev(user.id) && (
                 <SpecialCard
-                    title="Contributions"
-                    subtitle="Thank you for contributing!"
-                    description="Since you've contributed to Endcord you now have a cool new badge!"
-                    cardImage={COZY_CONTRIB_IMAGE}
-                    backgroundImage={CONTRIB_BACKGROUND_IMAGE}
-                    backgroundColor="#EDCC87"
-                    buttonTitle="See what you've contributed to"
-                    buttonOnClick={() => openContributorModal(user)}
+                    accent="bamboo"
+                    title={t("Contributions")}
+                    subtitle={t("Thank you for building Endcord")}
+                    description={t("Your work ships to everyone who uses Endcord, and your profile carries the Endcord Contributor badge.")}
+                    art={<PixelArt rows={PANDA_ROWS} palette={PANDA_PALETTE} pixel={4} />}
+                    actions={
+                        <button className="ec-card-button ec-card-button-primary" onClick={() => openContributorModal(user)}>
+                            {t("See your plugins")}
+                        </button>
+                    }
                 />
             )}
 
+            <SpecialCard
+                accent="honey"
+                title={t("Support Endcord")}
+                subtitle={t("Free and open source, always")}
+                description={t("Endcord is built in our spare time. If it makes Discord better for you, a donation helps us keep testing, translating and shipping new features.")}
+                art={<PixelArt rows={HEART_ROWS} palette={HEART_PALETTE} pixel={7} />}
+                actions={
+                    <>
+                        <button className="ec-card-button ec-card-button-primary" onClick={() => EndcordNative.native.openExternal(REPO_URL)}>
+                            <Heart />
+                            {t("Donate")}
+                        </button>
+                        <button className="ec-card-button ec-card-button-secondary" onClick={() => EndcordNative.native.openExternal(REPO_URL)}>
+                            <GithubIcon />
+                            {t("Star on GitHub")}
+                        </button>
+                    </>
+                }
+            />
+
             <section>
-                <Forms.FormTitle tag="h5">Quick Actions</Forms.FormTitle>
+                <Forms.FormTitle tag="h5">{t("Quick Actions")}</Forms.FormTitle>
 
                 <QuickActionCard>
                     <QuickAction
                         Icon={LogIcon}
-                        text="Notification Log"
+                        text={t("Notification Log")}
                         action={openNotificationLogModal}
                     />
                     <QuickAction
                         Icon={PaintbrushIcon}
-                        text="Edit QuickCSS"
+                        text={t("Edit QuickCSS")}
                         action={() => EndcordNative.quickCss.openEditor()}
                     />
                     {!IS_WEB && (
                         <>
                             <QuickAction
                                 Icon={RestartIcon}
-                                text="Relaunch Discord"
+                                text={t("Relaunch Discord")}
                                 action={relaunch}
                             />
                             <QuickAction
                                 Icon={FolderIcon}
-                                text="Open Settings Folder"
+                                text={t("Open Settings Folder")}
                                 action={() => EndcordNative.settings.openFolder()}
                             />
                         </>
                     )}
                     <QuickAction
                         Icon={GithubIcon}
-                        text="View Source Code"
-                        action={() => EndcordNative.native.openExternal("https://github.com/rootpoii/endcord")}
+                        text={t("View Source Code")}
+                        action={() => EndcordNative.native.openExternal(REPO_URL)}
                     />
                 </QuickActionCard>
             </section>
@@ -169,11 +229,13 @@ function EndcordSettings() {
             <Divider />
 
             <section className={Margins.top16}>
-                <Forms.FormTitle tag="h5">Settings</Forms.FormTitle>
+                <LanguageSection />
+
+                <Forms.FormTitle tag="h5">{t("Settings")}</Forms.FormTitle>
                 <Forms.FormText className={Margins.bottom20} style={{ color: "var(--text-muted)" }}>
-                    Hint: You can change the position of this settings section in the{" "}
+                    {t("Hint: You can change the position of this settings section in the")}{" "}
                     <a onClick={() => openPluginModal(SettingsPlugin)}>
-                        settings of the Settings plugin
+                        {t("settings of the Settings plugin")}
                     </a>!
                 </Forms.FormText>
 

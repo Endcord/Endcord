@@ -43,6 +43,4 @@ export const enum IpcEvents {
     PRELOAD_GET_RENDERER_JS = "EndcordPreloadGetRendererJs",
 
     SUPPORTS_WINDOWS_MATERIAL = "EndcordSupportsWindowsMaterial",
-
-    FETCH_PROFILES = "EndcordFetchProfiles",
 }

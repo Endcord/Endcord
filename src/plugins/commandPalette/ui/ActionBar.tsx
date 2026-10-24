@@ -6,6 +6,7 @@
 
 import { IS_MAC } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 
 import { formatComboKeys } from "./keyboard";
 
@@ -42,8 +43,7 @@ export function ActionBar({ hint, primaryLabel, showActionsHint }: ActionBarProp
                     <>
                         <span className={cl("footer-divider")} />
                         <span className={cl("footer-action")}>
-                            Actions
-                            <Shortcut combo={[IS_MAC ? "meta" : "ctrl", "k"]} />
+                            {t("Actions")}<Shortcut combo={[IS_MAC ? "meta" : "ctrl", "k"]} />
                         </span>
                     </>
                 )}

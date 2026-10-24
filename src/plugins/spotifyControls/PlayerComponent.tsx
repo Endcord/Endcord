@@ -13,6 +13,7 @@ import { Span } from "@components/Span";
 import { debounce } from "@shared/debounce";
 import { classNameFactory } from "@utils/css";
 import { copyWithToast, openImageModal } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import { ContextMenuApi, FluxDispatcher, Menu, React, useEffect, useState, useStateFromStores } from "@webpack/common";
 
@@ -216,14 +217,14 @@ function AlbumContextMenu({ track }: { track: Track; }) {
             <Menu.MenuItem
                 key="open-album"
                 id="open-album"
-                label="Open Album"
+                label={t("Open Album")}
                 action={() => SpotifyStore.openExternal(`/album/${track.album.id}`)}
                 icon={OpenExternalIcon}
             />
             <Menu.MenuItem
                 key="view-cover"
                 id="view-cover"
-                label="View Album Cover"
+                label={t("View Album Cover")}
                 // trolley
                 action={() => openImageModal(track.album.image)}
                 icon={ImageIcon}
@@ -231,7 +232,7 @@ function AlbumContextMenu({ track }: { track: Track; }) {
             <Menu.MenuControlItem
                 id="spotify-volume"
                 key="spotify-volume"
-                label="Volume"
+                label={t("Volume")}
                 control={(props, ref) => (
                     <Menu.MenuSliderControl
                         {...props}
@@ -301,7 +302,7 @@ function Info({ track }: { track: Track; }) {
                 </Paragraph>
                 {track.artists.some(a => a.name) && (
                     <Paragraph className={cl(["ellipoverflow", "secondary-song-info"])}>
-                        <span className={cl("song-info-prefix")}>by&nbsp;</span>
+                        <span className={cl("song-info-prefix")}>{t("by")}&nbsp;</span>
                         {track.artists.map((a, i) => (
                             <React.Fragment key={a.name}>
                                 <span
@@ -319,7 +320,7 @@ function Info({ track }: { track: Track; }) {
                 )}
                 {track.album.name && (
                     <Paragraph className={cl(["ellipoverflow", "secondary-song-info"])}>
-                        <span className={cl("song-info-prefix")}>on&nbsp;</span>
+                        <span className={cl("song-info-prefix")}>{t("on")}&nbsp;</span>
                         <span
                             id={cl("album-title")}
                             className={cl("album")}

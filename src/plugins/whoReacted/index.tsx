@@ -118,7 +118,7 @@ export default definePlugin({
     name: "WhoReacted",
     description: "Renders the avatars of users who reacted to a message",
     tags: ["Reactions", "Chat", "Appearance"],
-    authors: [Devs.Ven, Devs.KannaDev, Devs.newwares],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
 
     patches: [
         {

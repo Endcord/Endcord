@@ -8,6 +8,7 @@ import { Link } from "@components/Link";
 import { RenderModalProps } from "@endcord/discord-types";
 import { settings } from "@plugins/decor/settings";
 import { DecorationModalClasses, requireAvatarDecorationModal } from "@plugins/decor/ui";
+import { t } from "@utils/i18n";
 import { ConfirmModal, Forms, openModal } from "@webpack/common";
 
 import { openCreateDecorationModal } from "./CreateDecorationModal";
@@ -16,8 +17,8 @@ function GuidelinesModal(props: RenderModalProps) {
     return (
         <ConfirmModal
             {...props}
-            title="Hold on"
-            confirmText="Continue"
+            title={t("Hold on")}
+            confirmText={t("Continue")}
             variant="primary"
             onConfirm={() => {
                 settings.store.agreedToGuidelines = true;
@@ -27,11 +28,10 @@ function GuidelinesModal(props: RenderModalProps) {
         >
             <div className={DecorationModalClasses.modal}>
                 <Forms.FormText>
-                    By submitting a decoration, you agree to <Link
+                    {t("By submitting a decoration, you agree to")}{" "}<Link
                         href="https://github.com/decor-discord/.github/blob/main/GUIDELINES.md"
                     >
-                        the guidelines
-                    </Link>. Not reading these guidelines may get your account suspended from creating more decorations in the future.
+                        {t("the guidelines")}</Link>.{" "}{t("Not reading these guidelines may get your account suspended from creating more decorations in the future.")}
                 </Forms.FormText>
             </div>
         </ConfirmModal>

@@ -19,10 +19,10 @@
 
 // @ts-check
 
-import { readdir } from "fs/promises";
+import { readdir, readFile } from "fs/promises";
 import { join, resolve } from "path";
 
-import { BUILD_TIMESTAMP, commonOpts, exists, globPlugins, IS_DEV, IS_REPORTER, IS_ANTI_CRASH_TEST, IS_STANDALONE, IS_UPDATER_DISABLED, resolvePluginName, VERSION, commonRendererPlugins, watch, buildOrWatchAll, stringifyValues } from "./common.mjs";
+import { banner, BUILD_TIMESTAMP, commonOpts, exists, globPlugins, IS_DEV, IS_REPORTER, IS_ANTI_CRASH_TEST, IS_STANDALONE, IS_UPDATER_DISABLED, resolvePluginName, VERSION, commonRendererPlugins, watch, buildOrWatchAll, stringifyValues } from "./common.mjs";
 
 const defines = stringifyValues({
     IS_STANDALONE,
@@ -55,6 +55,11 @@ const nodeCommonOpts = {
     // @ts-expect-error this is never undefined
     external: ["electron", "original-fs", "~pluginNatives", ...commonOpts.external]
 };
+
+// Startup timing marks around the renderer bundle, readable via performance.getEntriesByName
+// "use strict" must stay the first statement so the bundle keeps running in strict mode
+const rendererBanner = { js: banner.js + '\n"use strict";performance.mark("endcord:renderer:start");' };
+const rendererFooter = s => `performance.mark("endcord:renderer:end");\n//# sourceURL=file:///${s}\n`;
 
 const sourceMapFooter = s => watch ? "" : `//# sourceMappingURL=endcord://${s}.js.map`;
 const sourcemap = watch ? "inline" : "external";
@@ -141,7 +146,8 @@ const buildConfigs = ([
         outfile: "dist/renderer.js",
         format: "iife",
         target: ["esnext"],
-        footer: { js: "//# sourceURL=file:///EndcordRenderer\n" + sourceMapFooter("renderer") },
+        banner: rendererBanner,
+        footer: { js: rendererFooter("EndcordRenderer") + sourceMapFooter("renderer") },
         globalName: "Endcord",
         sourcemap,
         plugins: [
@@ -190,7 +196,8 @@ const buildConfigs = ([
         outfile: "dist/endcordDesktopRenderer.js",
         format: "iife",
         target: ["esnext"],
-        footer: { js: "//# sourceURL=file:///EndcordDesktopRenderer\n" + sourceMapFooter("endcordDesktopRenderer") },
+        banner: rendererBanner,
+        footer: { js: rendererFooter("EndcordDesktopRenderer") + sourceMapFooter("endcordDesktopRenderer") },
         globalName: "Endcord",
         sourcemap,
         plugins: [
@@ -218,3 +225,18 @@ const buildConfigs = ([
 ]);
 
 await buildOrWatchAll(buildConfigs);
+
+// V8 stores a script's source at two bytes per character once a single character is outside Latin-1,
+// which doubles the renderer's source memory. esbuild escapes strings but not regex literals, so write
+// such characters as \uXXXX there.
+if (!watch) {
+    for (const file of ["dist/renderer.js", "dist/patcher.js", "dist/preload.js"]) {
+        if (!await exists(file)) continue;
+        const text = await readFile(file, "utf8");
+        const at = text.search(/[^\0-\xFF]/u);
+        if (at === -1) continue;
+        console.error(`${file} has a character outside Latin-1 near: ${JSON.stringify(text.slice(Math.max(0, at - 60), at + 20))}`);
+        console.error("Write it as \\uXXXX in the regex literal it comes from.");
+        process.exitCode = 1;
+    }
+}

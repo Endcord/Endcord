@@ -4,9 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import type { PaletteIcon as PaletteIconType } from "@plugins/commandPalette/api/types";
 import { classNameFactory } from "@utils/css";
-
-import type { PaletteIcon as PaletteIconType } from "../api/types";
 
 const cl = classNameFactory("vc-cmdpal-");
 

@@ -4,9 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import type { PaletteIconProps } from "@plugins/commandPalette/api/types";
 import type { JSX } from "react";
-
-import type { PaletteIconProps } from "../api/types";
 
 function makeIcon(children: () => JSX.Element) {
     return function PaletteSvgIcon({ className }: PaletteIconProps) {

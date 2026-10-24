@@ -5,6 +5,7 @@
  */
 
 import { DeleteIcon } from "@components/Icons";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import { findCssClassesLazy } from "@webpack";
 import { Tooltip } from "@webpack/common";
@@ -13,7 +14,7 @@ const iconClasses = findCssClassesLazy("button", "wrapper", "disabled", "separat
 
 export function DeleteButton({ onClick }: { onClick(): void; }) {
     return (
-        <Tooltip text="Delete Review">
+        <Tooltip text={t("Delete Review")}>
             {props => (
                 <div
                     {...props}
@@ -30,7 +31,7 @@ export function DeleteButton({ onClick }: { onClick(): void; }) {
 
 export function ReportButton({ onClick }: { onClick(): void; }) {
     return (
-        <Tooltip text="Report Review">
+        <Tooltip text={t("Report Review")}>
             {props => (
                 <div
                     {...props}

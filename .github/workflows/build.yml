@@ -44,7 +44,7 @@ jobs:
 
             - name: Clean up obsolete files
               run: |
-                  rm -rf dist/*-unpacked dist/vendor Vencord.user.css vencordDesktopRenderer.css vencordDesktopRenderer.css.map
+                  rm -rf dist/*-unpacked dist/vendor Endcord.user.css endcordDesktopRenderer.css endcordDesktopRenderer.css.map
 
             - name: Get some values needed for the release
               id: release_values
@@ -52,7 +52,7 @@ jobs:
                   echo "release_tag=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
             - name: Upload DevBuild as release
-              if: github.repository == 'rootpoii/endcord'
+              if: github.repository == 'rootpoii/Endcord'
               run: |
                   gh release create devbuild --title "DevBuild" --notes "Automated build" || true
                   gh release upload devbuild --clobber dist/*
@@ -62,7 +62,7 @@ jobs:
                   RELEASE_TAG: ${{ env.release_tag }}
 
             - name: Upload DevBuild to builds repo
-              if: github.repository == 'rootpoii/endcord'
+              if: github.repository == 'rootpoii/Endcord'
               continue-on-error: true
               run: |
                   git config --global user.name "$USERNAME"

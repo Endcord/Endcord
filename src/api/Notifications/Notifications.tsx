@@ -5,6 +5,7 @@
  */
 
 import { Settings } from "@api/Settings";
+import { t } from "@utils/i18n";
 import { Queue } from "@utils/Queue";
 import { createRoot } from "@webpack/common";
 import type { ReactNode } from "react";
@@ -81,6 +82,9 @@ export async function requestPermission() {
 }
 
 export async function showNotification(data: NotificationData) {
+    // Plugins write titles and bodies in English; show them translated when a translation exists
+    if (typeof data.title === "string") data = { ...data, title: t(data.title) };
+    if (typeof data.body === "string") data = { ...data, body: t(data.body) };
     persistNotification(data);
 
     if (shouldBeNative() && await requestPermission()) {

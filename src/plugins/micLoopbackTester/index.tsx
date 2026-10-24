@@ -5,7 +5,7 @@
  */
 
 import { UserAreaButton, UserAreaButtonFactory, UserAreaRenderProps } from "@api/UserArea";
-import { EquicordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 import { MediaEngineStore, React, UserStore, VoiceActions, VoiceStateStore } from "@webpack/common";
 
@@ -116,7 +116,7 @@ export default definePlugin({
     name: "MicLoopbackTester",
     description: "Adds mic loopback test icon to the user panel",
     tags: ["Utility", "Voice"],
-    authors: [EquicordDevs.benjii],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     dependencies: ["UserSettingsAPI", "UserAreaAPI"],
     userAreaButton: {
         icon: MicLoopbackIcon,

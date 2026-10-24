@@ -13,6 +13,7 @@ export const ConnectSrc = ["connect-src"];
 export const ImageSrc = [...ConnectSrc, "img-src"];
 export const CssSrc = ["style-src", "font-src"];
 export const ImageAndCssSrc = [...ImageSrc, ...CssSrc];
+export const ImageAndMediaSrc = [...ImageSrc, "media-src"];
 export const ImageScriptsAndCssSrc = [...ImageAndCssSrc, "script-src", "worker-src"];
 
 // Plugins can whitelist their own domains by importing this object in their native.ts
@@ -25,8 +26,10 @@ export const CspPolicies: PolicyMap = {
     "127.0.0.1:*": ImageAndCssSrc,
 
     "*.github.io": ImageAndCssSrc, // GitHub pages, used by most themes
-    "github.com": ImageAndCssSrc, // GitHub content (stuff uploaded to markdown forms), used by most themes
-    "raw.githubusercontent.com": ImageAndCssSrc, // GitHub raw, used by some themes
+    // GitHub content and raw files: used by most themes, and for the sounds of Moyai, KeyboardSounds, Jumpscare,
+    // WaitForSlot and WebcamStartNotifier (github.com/.../raw/... redirects to raw.githubusercontent.com)
+    "github.com": [...ImageAndCssSrc, "media-src"],
+    "raw.githubusercontent.com": [...ImageAndCssSrc, "media-src"],
     "*.gitlab.io": ImageAndCssSrc, // GitLab pages, used by some themes
     "gitlab.com": ImageAndCssSrc, // GitLab raw, used by some themes
     "*.codeberg.page": ImageAndCssSrc, // Codeberg pages, used by some themes
@@ -35,12 +38,12 @@ export const CspPolicies: PolicyMap = {
     "*.githack.com": ImageAndCssSrc, // githack (namely raw.githack.com), used by some themes
     "jsdelivr.net": ImageAndCssSrc, // jsDelivr, used by very few themes
 
-    "fonts.googleapis.com": CssSrc, // Google Fonts, used by many themes
+    "fonts.googleapis.com": ImageAndCssSrc, // Google Fonts, used by many themes; FontLoader and GifCaptioner also fetch the CSS
 
     "i.imgur.com": ImageSrc, // Imgur, used by some themes
     "i.ibb.co": ImageSrc, // ImgBB, used by some themes
     "i.pinimg.com": ImageSrc, // Pinterest, used by some themes
-    "*.tenor.com": ImageSrc, // Tenor, used by some themes
+    "*.tenor.com": ImageAndMediaSrc, // Tenor: themes, GifProviderSwitcher search and previews
     "files.catbox.moe": ImageAndCssSrc, // Catbox, used by some themes
 
     "cdn.discordapp.com": ImageAndCssSrc, // Discord CDN, used by Endcord and some themes to load media
@@ -55,9 +58,9 @@ export const CspPolicies: PolicyMap = {
     "api.github.com": ConnectSrc, // used for updating Endcord itself
     "ws.audioscrobbler.com": ConnectSrc, // Last.fm API
     "translate-pa.googleapis.com": ConnectSrc, // Google Translate API
-    "*.endcord.com": ImageSrc, // VenCloud (endcord.com) and Badges (badges.endcord.com)
-    "endcord.com": ConnectSrc, // apex host; *.endcord.com does not cover it
-    "api.endcord.com": ConnectSrc, // CustomProfile + badge sync
+    "translate.googleapis.com": ConnectSrc, // Google Translate romanization used by MusicControls lyrics
+    "*.endcord.com": ImageSrc, // Endcord-hosted images
+    "endcord.com": ConnectSrc, // Cloud settings sync (off by default); *.endcord.com does not cover the apex host
     "manti.vendicated.dev": ImageSrc, // ReviewDB API
     "decor.fieryflames.dev": ConnectSrc, // Decor API
     "ugc.decor.fieryflames.dev": ImageSrc, // Decor CDN
@@ -67,6 +70,38 @@ export const CspPolicies: PolicyMap = {
     "icons.duckduckgo.com": ImageSrc, // DuckDuckGo Favicon API (Reverse Image Search)
 
     "themes.equicord.org": ImageAndCssSrc, // Theme Library API, previews, and online theme CSS
+
+    // APIs that bundled plugins call from the renderer; without these the requests fail with "Failed to fetch"
+    "badges.equicord.org": ConnectSrc, // GlobalBadges
+    "timezone.creations.works": ConnectSrc, // Timezones
+    "cors.keiran0.workers.dev": ConnectSrc, // FileUpload, BetterAudioPlayer and MoreStickers CORS proxy
+    "corsproxy.io": ConnectSrc, // GifCaptioner
+    "lrclib.net": ConnectSrc, // MusicControls lyrics
+    "spotify-lyrics-api-pi.vercel.app": ConnectSrc, // MusicControls lyrics
+    "api.thecatapi.com": ConnectSrc, // MoreCommands
+    "api.thedogapi.com": ConnectSrc, // MoreCommands
+    "nekos.best": ConnectSrc, // MoreCommands
+    "www.reddit.com": ConnectSrc, // MoreCommands
+    "*.wikipedia.org": ConnectSrc, // WikiLookup
+    "free.freeipapi.com": ConnectSrc, // VoiceServerInfo
+    "huggingface.co": ConnectSrc, // VoiceMessageTranscriber model download
+    "*.huggingface.co": ConnectSrc,
+    "*.hf.co": ConnectSrc,
+    "api.stats.fm": ConnectSrc, // RichPresence
+    "dc.songspotlight.nexpid.xyz": ConnectSrc, // SongSpotlight
+    "api.imgur.com": ConnectSrc, // ChannelWallpaper uploads
+    "api.openai.com": ConnectSrc, // ChatGPT (user-supplied key)
+    "aiapi.serversmp.xyz": ConnectSrc, // TranslatePlus AI mode
+    "placeholder.nin0.dev": ImageSrc, // FavoriteAnything placeholders
+    "*.tenor.co": ImageAndMediaSrc,
+    "*.giphy.com": ImageAndMediaSrc,
+    "*.listenbrainz.org": ConnectSrc, // MusicRichPresence
+    "coverartarchive.org": ConnectSrc, // MusicRichPresence album art lookup
+    "musicbrainz.org": ConnectSrc, // MusicRichPresence track lookup
+    "fonts.google.com": ConnectSrc, // FontLoader, GifCaptioner and GifMaker font search
+    "streaks.equicord.org": ConnectSrc, // Streaks API
+    "archive.org": ConnectSrc,
+    "*.archive.org": ConnectSrc,
 };
 
 const findHeader = (headers: PolicyMap, headerName: Lowercase<string>) => {

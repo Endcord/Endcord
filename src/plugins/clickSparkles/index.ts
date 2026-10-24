@@ -1,6 +1,6 @@
 /*
- * Endcord, a vaporwave-inspired Discord client mod
- * Copyright (c) 2026 unfamiliardev
+ * Endcord, a Discord client mod
+ * Copyright (c) 2026 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -30,7 +30,7 @@ function burst(e: MouseEvent) {
 export default definePlugin({
     name: "ClickSparkles",
     description: "Sprinkles little neon sparkles wherever you click.",
-    authors: [Devs.ewlle, Devs.rootpoi, Devs.kraethis],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     start() {
         enableStyle(style);
         document.addEventListener("click", burst);

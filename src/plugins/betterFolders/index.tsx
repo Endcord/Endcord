@@ -125,7 +125,7 @@ const GRID_STYLE_NAME = "vc-betterFolders-sidebar-grid";
 export default definePlugin({
     name: "BetterFolders",
     description: "Shows server folders on dedicated sidebar and adds folder related improvements",
-    authors: [Devs.juby, Devs.AutumnVN, Devs.Nuckyz],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     tags: ["Organisation", "Servers", "Appearance"],
     settings,
 
@@ -201,8 +201,8 @@ export default definePlugin({
                 // If we are rendering the normal GuildsBar sidebar, we make Discord think the folder is always collapsed to show better icons (the mini guild icons) and avoid transitions
                 {
                     predicate: () => settings.store.keepIcons,
-                    match: /(?<=let ?(?:\i,)*?{folderNode:\i,setNodeRef:\i,.+?expanded:(\i),.+?;)(?=let)/,
-                    replace: (_, isExpanded) => `${isExpanded}=!!arguments[0]?.isBetterFolders&&${isExpanded};`
+                    match: /let ?(?:\i,)*?{folderNode:\i,setNodeRef:\i,.+?expanded:(\i),.+?;(?=let)/,
+                    replace: (m, isExpanded) => `${m}${isExpanded}=!!arguments[0]?.isBetterFolders&&${isExpanded};`
                 },
                 // Disable expanding and collapsing folders transition in the normal GuildsBar sidebar
                 {
@@ -256,7 +256,7 @@ export default definePlugin({
             predicate: () => settings.store.closeAllHomeButton,
             replacement: {
                 // Close all folders when clicking the home button
-                match: /(?<=onClick:\(\)=>{)(?=.{0,300}"discodo")/,
+                match: /(?<=onClick:(?:function)?\(\)(?:=>)?{)(?=.{0,300}"discodo")/,
                 replace: "$self.closeFolders();"
             }
         }

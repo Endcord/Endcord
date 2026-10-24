@@ -48,6 +48,12 @@ export interface ProfileBadge {
 const Badges = new Set<ProfileBadge>();
 
 /**
+ * Functions that get the final badge list of a profile (Discord's badges plus every added badge)
+ * and return it reordered or filtered. Must be pure and fast: they run on every profile render.
+ */
+export const BadgeListProcessors = new Set<(profile: BadgeUserArgs, badges: any[]) => any[]>();
+
+/**
  * Register a new badge with the Badges API
  * @param badge The badge to register
  */

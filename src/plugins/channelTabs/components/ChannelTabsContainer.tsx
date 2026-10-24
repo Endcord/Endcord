@@ -10,6 +10,7 @@ import { Paragraph } from "@components/Paragraph";
 import { BasicChannelTabsProps, ChannelTabsProps, clearStaleNavigationContext, closeTab, createTab, handleChannelSwitch, isNavigationFromSource, isTabSelected, moveToTab, openedTabs, openStartupTabs, saveTabs, settings, setUpdaterFunction, useGhostTabs } from "@equicordplugins/channelTabs/util";
 import { IS_MAC } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
+import { t as translateText } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import { useForceUpdater } from "@utils/react";
 import { findComponentByCodeLazy } from "@webpack";
@@ -359,7 +360,7 @@ export default function ChannelsTabsContainer(props: BasicChannelTabsProps) {
 
 export function ChannelTabsPreview(p: { setValue: (v: TabSet) => void; }) {
     const id = UserStore.getCurrentUser()?.id;
-    if (!id) return <Paragraph>there's no logged in account?????</Paragraph>;
+    if (!id) return <Paragraph>{translateText("there's no logged in account?????")}</Paragraph>;
 
     const { setValue } = p;
     const { tabSet }: { tabSet: TabSet; } = settings.use(["tabSet"]);
@@ -369,7 +370,7 @@ export function ChannelTabsPreview(p: { setValue: (v: TabSet) => void; }) {
 
     return (
         <>
-            <Heading>Startup tabs</Heading>
+            <Heading>{translateText("Startup tabs")}</Heading>
             <Flex flexDirection="row" style={{ gap: "2px" }}>
                 {currentTabs.map(t => <>
                     <PreviewTab {...t} />
@@ -381,7 +382,7 @@ export function ChannelTabsPreview(p: { setValue: (v: TabSet) => void; }) {
                         setCurrentTabs([...openedTabs]);
                         setValue({ ...tabSet, [id]: [...openedTabs] });
                     }}
-                >Set to currently open tabs</Button>
+                >{translateText("Set to currently open tabs")}</Button>
             </Flex>
         </>
     );

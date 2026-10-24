@@ -5,6 +5,7 @@
  */
 
 import { RenderModalProps } from "@endcord/discord-types";
+import { t } from "@utils/i18n";
 import { Modal, React } from "@webpack/common";
 
 import { sendRemix } from ".";
@@ -40,13 +41,12 @@ export default function RemixModal({ modalProps, close, url }: Props) {
         <Modal
             {...modalProps}
             size="lg"
-            title="Remix"
+            title={t("Remix")}
             actions={[
                 {
                     text: (
                         <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                            <SendIcon /> Send
-                        </span>
+                            <SendIcon />{" "}{t("Send")}</span>
                     ) as any,
                     variant: "primary",
                     onClick: () => closeModal(close, true)

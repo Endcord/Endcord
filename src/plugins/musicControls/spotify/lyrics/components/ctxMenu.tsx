@@ -7,6 +7,7 @@
 import { providers } from "@equicordplugins/musicControls/spotify/lyrics/api";
 import { lyricsAlternative } from "@equicordplugins/musicControls/spotify/lyrics/providers/store";
 import { copyWithToast } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { findComponentByCodeLazy } from "@webpack";
 import { FluxDispatcher, Menu } from "@webpack/common";
 
@@ -30,7 +31,7 @@ export function LyricsContextMenu() {
             <Menu.MenuItem
                 key="copy-lyric"
                 id="copy-lyric"
-                label="Copy current lyric"
+                label={t("Copy current lyric")}
                 disabled={!currLyric?.text}
                 action={() => copyWithToast(currLyric!.text!, "Lyric copied!")}
                 icon={CopyIcon}
@@ -40,7 +41,7 @@ export function LyricsContextMenu() {
             <Menu.MenuItem
                 navId="spotify-lyrics-provider"
                 id="spotify-lyrics-provider"
-                label="Lyrics Provider"
+                label={t("Lyrics Provider")}
             >
                 {[...providers, ...lyricsAlternative].map(provider =>
                     <Menu.MenuRadioItem

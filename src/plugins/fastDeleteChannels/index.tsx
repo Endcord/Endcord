@@ -75,7 +75,7 @@ export default definePlugin({
     name: "FastDeleteChannels",
     description: "Adds a trash icon to delete channels",
     tags: ["Servers", "Utility"],
-    authors: [Devs.thororen],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     patches: [
         // TY TypingIndicator

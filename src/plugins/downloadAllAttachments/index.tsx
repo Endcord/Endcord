@@ -6,11 +6,11 @@
 
 import { definePluginSettings } from "@api/Settings";
 import { CloudDownloadIcon } from "@components/Icons";
-import { EquicordDevs } from "@utils/constants";
+import { Message, MessageAttachment } from "@endcord/discord-types";
+import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
 import { pluralize } from "@utils/misc";
 import definePlugin, { OptionType } from "@utils/types";
-import { Message, MessageAttachment } from "@endcord/discord-types";
 import { ChannelStore, showToast, Toasts } from "@webpack/common";
 
 const logger = new Logger("DownloadAllAttachments");
@@ -80,7 +80,7 @@ export default definePlugin({
     name: "DownloadAllAttachments",
     description: "Adds a popover button to download all attachments in a message at once.",
     tags: ["Utility", "Chat"],
-    authors: [EquicordDevs.dhopcs],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     dependencies: ["MessagePopoverAPI"],
     settings,
     messagePopoverButton: {

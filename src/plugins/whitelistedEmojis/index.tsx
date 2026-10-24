@@ -9,10 +9,11 @@ import "./style.css";
 import { addContextMenuPatch, NavContextMenuPatchCallback, removeContextMenuPatch } from "@api/ContextMenu";
 import { DataStore } from "@api/index";
 import { definePluginSettings } from "@api/Settings";
-import { EquicordDevs } from "@utils/constants";
+import { CustomEmoji, UnicodeEmoji } from "@endcord/discord-types";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 import { chooseFile, saveFile } from "@utils/web";
-import { CustomEmoji, UnicodeEmoji } from "@endcord/discord-types";
 import { Alerts, Button, EmojiStore, GuildStore, IconUtils, Menu, Toasts, useEffect, useState } from "@webpack/common";
 import { JSX } from "react";
 
@@ -148,7 +149,7 @@ const buildGuildContextPatch = (guild: { id: string; name: string; }) => {
             <Menu.MenuItem
                 id="add-white-list-guild-emojis"
                 key="add-white-list-guild-emojis"
-                label="Add All Guild Emojis"
+                label={t("Add All Guild Emojis")}
                 action={() => {
                     const emojis = EmojiStore.getGuildEmoji(guild.id);
                     addBulkToAllowedList(emojis.map(emoji => ({
@@ -161,7 +162,7 @@ const buildGuildContextPatch = (guild: { id: string; name: string; }) => {
             <Menu.MenuItem
                 id="remove-white-list-guild-emojis"
                 key="remove-white-list-guild-emojis"
-                label="Remove All Guild Emojis"
+                label={t("Remove All Guild Emojis")}
                 action={() => {
                     const emojis = EmojiStore.getGuildEmoji(guild.id);
                     removeBulkFromAllowedList(emojis.map(emoji => ({
@@ -242,8 +243,7 @@ const WhiteListedEmojisComponent = (): JSX.Element => {
                             color="red"
                             onClick={() => handleRemoveAllEmojis(guildId)}
                         >
-                            Remove All
-                        </Button>
+                            {t("Remove All")}</Button>
                     </div>
                     {!collapsedGroups[guildId] && (
                         <div className="guild-emojis">
@@ -266,8 +266,7 @@ const WhiteListedEmojisComponent = (): JSX.Element => {
                                         color="red"
                                         onClick={() => handleRemoveEmoji(emoji)}
                                     >
-                                        Remove
-                                    </Button>
+                                        {t("Remove")}</Button>
                                 </div>
                             ))}
                         </div>
@@ -275,7 +274,7 @@ const WhiteListedEmojisComponent = (): JSX.Element => {
                 </div>
             ))}
             {whitelistedEmojis.length === 0 && (
-                <span className="no-emoji-message">No emojis in the whitelist.</span>
+                <span className="no-emoji-message">{t("No emojis in the whitelist.")}</span>
             )}
         </div>
     );
@@ -360,7 +359,7 @@ const settings = definePluginSettings({
         type: OptionType.COMPONENT,
         description: "Export Emojis",
         component: () => (
-            <Button onClick={exportEmojis}>Export Emojis</Button>
+            <Button onClick={exportEmojis}>{t("Export Emojis")}</Button>
         )
     },
     importEmojis: {
@@ -369,15 +368,14 @@ const settings = definePluginSettings({
         component: () => (
             <Button onClick={() =>
                 Alerts.show({
-                    title: "Are you sure?",
-                    body: "This will overwrite your current whitelist.",
-                    confirmText: "Import",
+                    title: t("Are you sure?"),
+                    body: t("This will overwrite your current whitelist."),
+                    confirmText: t("Import"),
                     confirmColor: Button.Colors.RED,
-                    cancelText: "Cancel",
+                    cancelText: t("Cancel"),
                     onConfirm: uploadEmojis
                 })}>
-                Import Emojis
-            </Button>
+                {t("Import Emojis")}</Button>
         )
     },
     resetEmojis: {
@@ -386,15 +384,14 @@ const settings = definePluginSettings({
         component: () => (
             <Button onClick={() =>
                 Alerts.show({
-                    title: "Are you sure?",
-                    body: "This will remove all emojis from your whitelist.",
-                    confirmText: "Reset",
+                    title: t("Are you sure?"),
+                    body: t("This will remove all emojis from your whitelist."),
+                    confirmText: t("Reset"),
                     confirmColor: Button.Colors.RED,
-                    cancelText: "Cancel",
+                    cancelText: t("Cancel"),
                     onConfirm: resetEmojis
                 })}>
-                Reset Emojis
-            </Button>
+                {t("Reset Emojis")}</Button>
         )
     }
 });
@@ -403,7 +400,7 @@ export default definePlugin({
     name: "WhitelistedEmojis",
     description: "Adds the ability to disable all message emojis except for a whitelisted set.",
     tags: ["Chat", "Emotes"],
-    authors: [EquicordDevs.creations],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     patches: [
         {
             find: "queryEmojiResults({query:",

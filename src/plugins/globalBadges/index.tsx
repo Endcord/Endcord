@@ -12,6 +12,7 @@ import { Button } from "@components/Button";
 import BadgeContextMenu from "@plugins/_api/badges";
 import { Devs } from "@utils/constants";
 import { openInviteModal } from "@utils/discord";
+import { t } from "@utils/i18n";
 import definePlugin from "@utils/types";
 import { ContextMenuApi, React, Toasts, UserStore } from "@webpack/common";
 
@@ -26,7 +27,7 @@ export default definePlugin({
     name: "GlobalBadges",
     description: "Adds global badges from other client mods",
     tags: ["Appearance"],
-    authors: [Devs.ewlle, Devs.rootpoi, Devs.kraethis],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     settingsAboutComponent: () => (
         <>
@@ -35,8 +36,7 @@ export default definePlugin({
                 className={cl("settings-button")}
                 onClick={() => openInviteModal(INVITE_LINK)}
             >
-                Join GlobalBadges Server
-            </Button>
+                {t("Join GlobalBadges Server")}</Button>
         </>
     ),
     async start() {

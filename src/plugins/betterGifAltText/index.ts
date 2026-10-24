@@ -9,7 +9,7 @@ import definePlugin from "@utils/types";
 
 export default definePlugin({
     name: "BetterGifAltText",
-    authors: [Devs.Ven],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     description:
         "Change GIF alt text from simply being 'GIF' to containing the gif tags / filename",
     tags: ["Media", "Accessibility", "Customisation"],

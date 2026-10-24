@@ -14,6 +14,7 @@ import { TooltipContainer } from "@components/TooltipContainer";
 import type { Guild, RoleOrUserPermission } from "@endcord/discord-types";
 import { PermissionOverwriteType } from "@endcord/discord-types/enums";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import definePlugin, { OptionType } from "@utils/types";
 import { findCssClassesLazy } from "@webpack";
@@ -53,7 +54,7 @@ function MenuItem(guildId: string, id?: string, type?: MenuItemParentType) {
     return (
         <Menu.MenuItem
             id="perm-viewer-permissions"
-            label="Permissions"
+            label={t("Permissions")}
             action={() => {
                 const guild = GuildStore.getGuild(guildId);
 
@@ -149,7 +150,7 @@ export default definePlugin({
     name: "PermissionsViewer",
     description: "View the permissions a user or channel has, and the roles of a server",
     tags: ["Servers", "Roles", "Utility"],
-    authors: [Devs.Nuckyz, Devs.Ven],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
 
     patches: [
@@ -181,7 +182,7 @@ export default definePlugin({
                 )}
             >
                 {popoutProps => (
-                    <TooltipContainer text="View Permissions">
+                    <TooltipContainer text={t("View Permissions")}>
                         <Button
                             {...popoutProps}
                             ref={buttonRef}

@@ -9,6 +9,7 @@ import { LinkIcon } from "@components/Icons";
 import type { Channel, User } from "@endcord/discord-types";
 import { copyToClipboard } from "@utils/clipboard";
 import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import definePlugin from "@utils/types";
 import { Menu } from "@webpack/common";
 
@@ -24,7 +25,7 @@ const UserContextMenuPatch: NavContextMenuPatchCallback = (children, { user }: U
     children.push(
         <Menu.MenuItem
             id="vc-copy-user-url"
-            label="Copy User URL"
+            label={t("Copy User URL")}
             action={() => copyToClipboard(`<https://discord.com/users/${user.id}>`)}
             icon={LinkIcon}
         />
@@ -33,7 +34,7 @@ const UserContextMenuPatch: NavContextMenuPatchCallback = (children, { user }: U
 
 export default definePlugin({
     name: "CopyUserURLs",
-    authors: [Devs.castdrian],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     description: "Adds a 'Copy User URL' option to the user context menu.",
     tags: ["Utility", "Friends"],
     contextMenus: {

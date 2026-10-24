@@ -5,9 +5,9 @@
  */
 
 import * as DataStore from "@api/DataStore";
-import { Logger } from "@utils/Logger";
 import { Message } from "@endcord/discord-types";
 import { CloudUploadPlatform } from "@endcord/discord-types/enums";
+import { Logger } from "@utils/Logger";
 import { ChannelStore, CloudUploader, Constants, FluxDispatcher, GuildStore, IconUtils, MessageActions, MessageStore, RestAPI, showToast, SnowflakeUtils, Toasts, UserStore } from "@webpack/common";
 
 import { settings } from ".";

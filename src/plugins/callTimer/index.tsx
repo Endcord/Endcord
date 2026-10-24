@@ -58,9 +58,9 @@ function formatDuration(ms: number) {
 
 export default definePlugin({
     name: "CallTimer",
-    description: "Adds a timer to vcs",
+    description: "Shows how long you have been in the current voice call",
     tags: ["Voice", "Utility"],
-    authors: [Devs.Ven],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     managedStyle: alignedChatInputFix,
     settings,
 
@@ -71,7 +71,7 @@ export default definePlugin({
         {
             find: '"RTCConnectionMenu"',
             replacement: {
-                match: /("RTCConnectionMenu".{0,200}?lineClamp:1,children:)(\i)(?=,|}\))/,
+                match: /("RTCConnectionMenu".{0,300}?lineClamp:1,children:)(\i)(?=,|}\))/,
                 replace: "$1[$2,$self.renderTimer({ channelId: this?.props?.channel?.id })]"
             }
         },

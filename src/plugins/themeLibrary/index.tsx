@@ -6,7 +6,7 @@
 
 import { ColorPaletteIcon } from "@components/Icons";
 import SettingsPlugin from "@plugins/_core/settings";
-import { EquicordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
 import { removeFromArray } from "@utils/misc";
 import definePlugin from "@utils/types";
 import { SettingsRouter } from "@webpack/common";
@@ -17,7 +17,7 @@ export default definePlugin({
     name: "ThemeLibrary",
     description: "A library of themes for Endcord.",
     tags: ["Appearance", "Customisation"],
-    authors: [EquicordDevs.Fafa],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     toolboxActions: {
         "Open Theme Library": () => {

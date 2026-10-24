@@ -7,6 +7,7 @@
 import { Button } from "@components/Button";
 import { Microphone } from "@components/Icons";
 import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import { useFixedTimer } from "@utils/react";
 import { formatDuration } from "@utils/text";
 import { ChannelRouter, ChannelStore, SelectedChannelStore, Slider, Tooltip, useStateFromStores } from "@webpack/common";
@@ -90,7 +91,7 @@ export function VoiceMessagesInBackgroundPlayer() {
                 onClick={() => snapshot.channelId && ChannelRouter.transitionToChannel(snapshot.channelId)}
             >
                 <span className={cl("origin-copy")}>
-                    <span className={cl("title")}>Voice message</span>
+                    <span className={cl("title")}>{t("Voice message")}</span>
                     <span className={cl("channel")}>{channelName}</span>
                 </span>
             </Button>
@@ -113,7 +114,7 @@ export function VoiceMessagesInBackgroundPlayer() {
                 />
                 <span className={cl("time")}>{time(snapshot.duration)}</span>
             </div>
-            <Tooltip text="Change playback speed">
+            <Tooltip text={t("Change playback speed")}>
                 {tooltipProps => (
                     <Button
                         {...tooltipProps}
@@ -127,7 +128,7 @@ export function VoiceMessagesInBackgroundPlayer() {
                     </Button>
                 )}
             </Tooltip>
-            <Tooltip text="Close voice message player">
+            <Tooltip text={t("Close voice message player")}>
                 {tooltipProps => (
                     <Button
                         {...tooltipProps}

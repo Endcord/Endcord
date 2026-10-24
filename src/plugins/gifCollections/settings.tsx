@@ -9,6 +9,7 @@ import { definePluginSettings } from "@api/Settings";
 import { Divider } from "@components/Divider";
 import { Heading } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
+import { t } from "@utils/i18n";
 import { OptionType } from "@utils/types";
 import { Alerts, Button, useState } from "@webpack/common";
 
@@ -84,23 +85,21 @@ export const settings = definePluginSettings({
         component: () =>
             <Button onClick={async () =>
                 (await getCollections()).length ? Alerts.show({
-                    title: "Are you sure?",
-                    body: "Importing collections will overwrite your current collections.",
-                    confirmText: "Import",
+                    title: t("Are you sure?"),
+                    body: t("Importing collections will overwrite your current collections."),
+                    confirmText: t("Import"),
                     confirmColor: Button.Colors.RED,
-                    cancelText: "Nevermind",
+                    cancelText: t("Nevermind"),
                     onConfirm: () => uploadGifCollections(),
                 }) : uploadGifCollections()}>
-                Import Collections
-            </Button>,
+                {t("Import Collections")}</Button>,
     },
     exportGifs: {
         type: OptionType.COMPONENT,
         description: "Export collections.",
         component: () =>
             <Button onClick={downloadCollections}>
-                Export Collections
-            </Button>,
+                {t("Export Collections")}</Button>,
     },
     resetCollections: {
         type: OptionType.COMPONENT,
@@ -108,18 +107,17 @@ export const settings = definePluginSettings({
         component: () =>
             <Button onClick={() =>
                 Alerts.show({
-                    title: "Are you sure?",
-                    body: "Resetting collections will remove all your collections.",
-                    confirmText: "Reset",
+                    title: t("Are you sure?"),
+                    body: t("Resetting collections will remove all your collections."),
+                    confirmText: t("Reset"),
                     confirmColor: Button.Colors.RED,
-                    cancelText: "Nevermind",
+                    cancelText: t("Nevermind"),
                     onConfirm: async () => {
                         await DataStore.set(DATA_COLLECTION_NAME, []);
                         refreshCacheCollection();
                     },
                 })}>
-                Reset Collections
-            </Button>,
+                {t("Reset Collections")}</Button>,
     },
 });
 
@@ -150,21 +148,21 @@ function SortSettingsComponent() {
 
     return (
         <div className={cl("sort-container")}>
-            <Heading className={cl("sort-title")}>Sort Collections</Heading>
+            <Heading className={cl("sort-title")}>{t("Sort Collections")}</Heading>
             <Divider className={cl("sort-divider")} />
-            <Paragraph className={cl("sort-description")}>Choose a sorting criteria for your collections</Paragraph>
+            <Paragraph className={cl("sort-description")}>{t("Choose a sorting criteria for your collections")}</Paragraph>
             <Divider className={cl("sort-divider")} />
             <div className={cl("sort-section")}>
-                <Paragraph className={cl("sort-section-title")}>Sort By</Paragraph>
-                <RadioOption name="sortType" value={SortingOptions.NAME} checked={sortType === SortingOptions.NAME} onChange={() => handleSortType(SortingOptions.NAME)} label="Name" />
-                <RadioOption name="sortType" value={SortingOptions.CREATION_DATE} checked={sortType === SortingOptions.CREATION_DATE} onChange={() => handleSortType(SortingOptions.CREATION_DATE)} label="Creation Date" />
-                <RadioOption name="sortType" value={SortingOptions.MODIFIED_DATE} checked={sortType === SortingOptions.MODIFIED_DATE} onChange={() => handleSortType(SortingOptions.MODIFIED_DATE)} label="Modified Date" />
+                <Paragraph className={cl("sort-section-title")}>{t("Sort By")}</Paragraph>
+                <RadioOption name="sortType" value={SortingOptions.NAME} checked={sortType === SortingOptions.NAME} onChange={() => handleSortType(SortingOptions.NAME)} label={t("Name")} />
+                <RadioOption name="sortType" value={SortingOptions.CREATION_DATE} checked={sortType === SortingOptions.CREATION_DATE} onChange={() => handleSortType(SortingOptions.CREATION_DATE)} label={t("Creation Date")} />
+                <RadioOption name="sortType" value={SortingOptions.MODIFIED_DATE} checked={sortType === SortingOptions.MODIFIED_DATE} onChange={() => handleSortType(SortingOptions.MODIFIED_DATE)} label={t("Modified Date")} />
             </div>
             <Divider className={cl("sort-divider")} />
             <div className={cl("sort-section")}>
-                <Paragraph className={cl("sort-section-title")}>Order</Paragraph>
-                <RadioOption name="sortOrder" value="asc" checked={sortOrder === "asc"} onChange={() => handleSortOrder("asc")} label="Ascending" />
-                <RadioOption name="sortOrder" value="desc" checked={sortOrder === "desc"} onChange={() => handleSortOrder("desc")} label="Descending" />
+                <Paragraph className={cl("sort-section-title")}>{t("Order")}</Paragraph>
+                <RadioOption name="sortOrder" value="asc" checked={sortOrder === "asc"} onChange={() => handleSortOrder("asc")} label={t("Ascending")} />
+                <RadioOption name="sortOrder" value="desc" checked={sortOrder === "desc"} onChange={() => handleSortOrder("desc")} label={t("Descending")} />
             </div>
         </div>
     );

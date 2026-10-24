@@ -10,10 +10,11 @@ import { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { definePluginSettings } from "@api/Settings";
 import { Button } from "@components/Button";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { Devs, EquicordDevs } from "@utils/constants";
-import { classNameFactory } from "@utils/css";
-import definePlugin, { OptionType } from "@utils/types";
 import { Channel } from "@endcord/discord-types";
+import { Devs } from "@utils/constants";
+import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
+import definePlugin, { OptionType } from "@utils/types";
 import { findComponentByCodeLazy } from "@webpack";
 import { FluxDispatcher, Menu, React, Tooltip, UserStore } from "@webpack/common";
 
@@ -49,7 +50,7 @@ const ContextMenuPatch: NavContextMenuPatchCallback = (children, { channel }: { 
             <Menu.MenuSeparator />
             <Menu.MenuCheckboxItem
                 id="vc-ignore-calls-temp"
-                label="Temporarily Ignore Calls"
+                label={t("Temporarily Ignore Calls")}
                 checked={tempChecked}
                 action={() => {
                     if (tempChecked)
@@ -62,7 +63,7 @@ const ContextMenuPatch: NavContextMenuPatchCallback = (children, { channel }: { 
             />
             <Menu.MenuCheckboxItem
                 id="vc-ignore-calls-perm"
-                label="Permanently Ignore Calls"
+                label={t("Permanently Ignore Calls")}
                 checked={permChecked}
                 action={() => {
                     let updated = permanentlyIgnoredUsers.slice();
@@ -83,7 +84,7 @@ const ContextMenuPatch: NavContextMenuPatchCallback = (children, { channel }: { 
 const settings = definePluginSettings({
     permanentlyIgnoredUsers: {
         type: OptionType.STRING,
-        description: "User IDs (comma + space) who should be permanetly ignored",
+        description: "User IDs (comma + space) who should be permanently ignored",
         restartNeeded: true,
         default: "",
     },
@@ -93,7 +94,7 @@ export default definePlugin({
     name: "IgnoreCalls",
     description: "Allows you to ignore calls from specific users or dm groups.",
     tags: ["Voice"],
-    authors: [EquicordDevs.TheArmagan, Devs.thororen],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     patches: [
         {
@@ -133,7 +134,7 @@ export default definePlugin({
 
         return (
             <ErrorBoundary>
-                <Tooltip text="Ignore">
+                <Tooltip text={t("Ignore")}>
                     {({ onMouseEnter, onMouseLeave }) => (
                         <Button
                             className={cl("button")}

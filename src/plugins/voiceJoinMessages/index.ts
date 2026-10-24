@@ -5,10 +5,10 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
+import { Message, User } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { humanFriendlyJoin } from "@utils/text";
 import definePlugin, { OptionType } from "@utils/types";
-import { Message, User } from "@endcord/discord-types";
 import { findByCodeLazy } from "@webpack";
 import { ChannelStore, FluxDispatcher, MessageActions, MessageStore, PermissionsBits, PermissionStore, RelationshipStore, SelectedChannelStore, UserStore } from "@webpack/common";
 
@@ -17,22 +17,22 @@ const createBotMessage = findByCodeLazy('username:"Clyde"');
 const settings = definePluginSettings({
     friendDirectMessages: {
         type: OptionType.BOOLEAN,
-        description: "Recieve notifications in your friends' DMs when they join a voice channel",
+        description: "Receive notifications in your friends' DMs when they join a voice channel",
         default: true
     },
     friendDirectMessagesShowMembers: {
         type: OptionType.BOOLEAN,
-        description: "Show a list of other members in the voice channel when recieving a DM notification of your friend joining a voice channel",
+        description: "Show a list of other members in the voice channel when receiving a DM notification of your friend joining a voice channel",
         default: true
     },
     friendDirectMessagesShowMemberCount: {
         type: OptionType.BOOLEAN,
-        description: "Show the count of other members in the voice channel when recieving a DM notification of your friend joining a voice channel",
+        description: "Show the count of other members in the voice channel when receiving a DM notification of your friend joining a voice channel",
         default: false
     },
     friendDirectMessagesSelf: {
         type: OptionType.BOOLEAN,
-        description: "Recieve notifications in your friends' DMs even if you are in the same voice channel as them",
+        description: "Receive notifications in your friends' DMs even if you are in the same voice channel as them",
         default: false
     },
     friendDirectMessagesSilent: {
@@ -110,9 +110,9 @@ let clientOldChannelId: string | undefined;
 
 export default definePlugin({
     name: "VoiceJoinMessages",
-    description: "Recieve client-side ephemeral messages when your friends join voice channels",
+    description: "Receive client-side ephemeral messages when your friends join voice channels",
     tags: ["Servers", "Utility", "Voice"],
-    authors: [Devs.Sqaaakoi, Devs.thororen],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     flux: {
         VOICE_STATE_UPDATES({ voiceStates }: { voiceStates: VoiceState[]; }) {

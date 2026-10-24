@@ -9,6 +9,7 @@ import "./AddonCard.css";
 import { AddonBadge } from "@components/settings/PluginBadge";
 import { Switch } from "@components/Switch";
 import { classNameFactory } from "@utils/css";
+import { useI18n } from "@utils/i18n";
 import { Text, useRef } from "@webpack/common";
 import type { MouseEventHandler, ReactNode } from "react";
 
@@ -31,6 +32,7 @@ interface Props {
 }
 
 export function AddonCard({ disabled, isNew, isPopular, name, infoButton, footer, author, enabled, setEnabled, description, onMouseEnter, onMouseLeave }: Props) {
+    const { t } = useI18n();
     const titleRef = useRef<HTMLDivElement>(null);
     const titleContainerRef = useRef<HTMLDivElement>(null);
 
@@ -58,8 +60,8 @@ export function AddonCard({ disabled, isNew, isPopular, name, infoButton, footer
                                 {name}
                             </div>
                         </div>
-                        {isPopular && <AddonBadge text="POPULAR" color="#5865F2" />}
-                        {isNew && <AddonBadge text="NEW" color="#ED4245" />}
+                        {isPopular && <AddonBadge text={t("POPULAR")} color="#5865F2" />}
+                        {isNew && <AddonBadge text={t("NEW")} color="#ED4245" />}
                     </Text>
 
                     {!!author && (

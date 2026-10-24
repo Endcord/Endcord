@@ -41,7 +41,7 @@ const settings = definePluginSettings({
 export default definePlugin({
     name: "BetterSessions",
     description: "Enhances the sessions (devices) menu. Allows you to view exact timestamps, give each session a custom name, and receive notifications about new sessions.",
-    authors: [Devs.amia],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     tags: ["Notifications", "Customisation", "Utility"],
     settings: settings,
 
@@ -50,16 +50,16 @@ export default definePlugin({
             find: "#{intl::AUTH_SESSIONS_OS_UNKNOWN}",
             replacement: [
                 {
-                    match: /(#{intl::AUTH_SESSIONS_ACTIVE_RECENTLY}.{0,230}role:"listitem",children:\[.{0,15},\{Icon:)\i/,
-                    replace: "$1()=>$self.renderIcon(arguments[0])"
+                    match: /(#{intl::AUTH_SESSIONS_ACTIVE_RECENTLY}.{0,230}role:"listitem",children:\[.{0,15},\{icon:)(\i)/,
+                    replace: "$1arguments[0]?.session?()=>$self.renderIcon(arguments[0]):$2"
                 },
                 {
-                    match: /("horizontal",gap:"xs",children:)\[.{0,250}"text-subtle",children:\i\}\)\]\}\),/,
-                    replace: "$1$self.renderName(arguments[0])}),"
+                    match: /("horizontal",gap:"xs",children:)(\[.{0,250}"text-subtle",children:\i\}\)\])\}\),/,
+                    replace: "$1arguments[0]?.session?$self.renderName(arguments[0]):$2}),"
                 },
                 {
-                    match: /("text-muted",children:)\i(?=\}\)\]\}\),.{0,120}\.client_info\?\.location)/,
-                    replace: "$1$self.renderDescription(arguments[0])"
+                    match: /("text-muted",children:)(\i)(?=\}\)\]\}\),.{0,120}\.client_info\?\.location)/,
+                    replace: "$1arguments[0]?.session?$self.renderDescription(arguments[0]):$2"
                 },
                 {
                     match: /:\i\(\i\.approx_last_used_time\).{0,40}\(0,\i\.jsxs?\)\(\i,\{/,

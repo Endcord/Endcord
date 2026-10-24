@@ -8,8 +8,8 @@ import "./styles.css";
 
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { Devs } from "@utils/constants";
 import { getIsEndcordHidden, onHiddenChange } from "@plugins/hideEndcord";
+import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 import { findComponentByCodeLazy } from "@webpack";
 import { Popout, useEffect, useRef, useState } from "@webpack/common";
@@ -77,7 +77,7 @@ export default definePlugin({
     name: "EndcordToolbox",
     description: "Adds a button to the titlebar that houses Endcord quick actions",
     tags: ["Utility", "Developers"],
-    authors: [Devs.Ven, Devs.AutumnVN],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
 
     settings,
 

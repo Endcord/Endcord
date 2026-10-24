@@ -8,12 +8,43 @@ import { resolveLang } from "@plugins/shikiCodeblocks.desktop/api/languages";
 import { HighlighterProps } from "@plugins/shikiCodeblocks.desktop/components/Highlighter";
 import { HljsSetting } from "@plugins/shikiCodeblocks.desktop/types";
 import { classNameFactory } from "@utils/css";
-import { DefaultExtractAndLoadChunksRegex, extractAndLoadChunksLazy, findByPropsLazy } from "@webpack";
+import { filters, mapMangledModuleLazy } from "@webpack";
 
 export const cl = classNameFactory("vc-shiki-");
 
-export const hljs: typeof import("highlight.js").default = findByPropsLazy("highlight", "registerLanguage");
-export const requireHljs = extractAndLoadChunksLazy(["codeBlock:{react("], new RegExp(`"hljs".+?${DefaultExtractAndLoadChunksRegex.source}`));
+/** Discord's own syntax highlighter, which replaced highlight.js. Languages load on demand and suspend while loading. */
+export const DiscordHighlighter: {
+    resolveLanguage(lang?: string): string | undefined;
+    useHighlightedHtml(lang: string, code: string): string | null;
+} = mapMangledModuleLazy(["highlightToHtml(", ".missingInjections", '"c++":"cpp"'], {
+    resolveLanguage: filters.byCode(".toLowerCase();"),
+    useHighlightedHtml: filters.byCode("highlightToHtml(")
+});
+
+/** The language id Discord's highlighter uses for `lang`, or undefined if it can't highlight it. */
+export function resolveDiscordLang(lang?: string) {
+    if (!lang) return undefined;
+    try {
+        const resolved = DiscordHighlighter.resolveLanguage(lang);
+        // ANSI blocks are styled by Discord's own codeblock component, not through highlighted HTML
+        return resolved === "ansi" ? undefined : resolved;
+    } catch {
+        return undefined;
+    }
+}
+
+/** Splits highlighted HTML into lines, closing and reopening tags that span a line break. */
+export function splitHighlightedLines(html: string) {
+    const open: string[] = [];
+    return html.split("\n").map(raw => {
+        const reopened = open.map(tag => `<${tag}>`).join("") + raw;
+        for (const [, closing, tag] of raw.matchAll(/<(\/?)([a-z][\w-]*)[^>]*>/gi)) {
+            if (closing) open.pop();
+            else open.push(tag);
+        }
+        return reopened + [...open].reverse().map(tag => `</${tag}>`).join("");
+    });
+}
 
 export const shouldUseHljs = ({
     lang,
@@ -22,7 +53,7 @@ export const shouldUseHljs = ({
     lang: HighlighterProps["lang"],
     tryHljs: HljsSetting,
 }) => {
-    const hljsLang = lang ? hljs?.getLanguage?.(lang) : null;
+    const discordLang = resolveDiscordLang(lang);
     const shikiLang = lang ? resolveLang(lang) : null;
     const langName = shikiLang?.name;
 
@@ -30,9 +61,9 @@ export const shouldUseHljs = ({
         case HljsSetting.Always:
             return true;
         case HljsSetting.Primary:
-            return !!hljsLang || lang === "";
+            return !!discordLang || lang === "";
         case HljsSetting.Secondary:
-            return !langName && !!hljsLang;
+            return !langName && !!discordLang;
         case HljsSetting.Never:
             return false;
         default: return false;

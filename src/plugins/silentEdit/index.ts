@@ -25,7 +25,7 @@ function onMessageUpdate({ message }: any) {
 export default definePlugin({
     name: "SilentEdit",
     description: "Hides the '(edited)' label on your own edited messages. The message stays — nothing is deleted or resent.",
-    authors: [Devs.ewlle, Devs.rootpoi, Devs.kraethis],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     tags: ["Chat", "Utility"],
 
     patches: [

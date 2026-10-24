@@ -5,7 +5,7 @@
  */
 
 import { ApplicationCommandInputType, ApplicationCommandOptionType, findOption, sendBotMessage } from "@api/Commands";
-import { EndcordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 import { findByCodeLazy } from "@webpack";
 import { GuildMemberStore, MessageActions, SnowflakeUtils, UserStore, UserUtils } from "@webpack/common";
@@ -17,7 +17,7 @@ export default definePlugin({
     name: "FakeMessage",
     description: "Send a client-side fake message posed as any user via /fakemsg. Only you can see it.",
     tags: ["Chat", "Fun"],
-    authors: [EndcordDevs.Sharp],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     dependencies: ["CommandsAPI"],
 
     commands: [

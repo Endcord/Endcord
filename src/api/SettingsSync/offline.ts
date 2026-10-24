@@ -5,6 +5,7 @@
  */
 
 import { PlainSettings } from "@api/Settings";
+import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import { chooseFile, saveFile } from "@utils/web";
 import { moment, Toasts } from "@webpack/common";
@@ -17,10 +18,10 @@ const toast = (type: string, message: string) =>
     });
 
 const toastSuccess = () =>
-    toast(Toasts.Type.SUCCESS, "Settings successfully imported. Restart to apply changes!");
+    toast(Toasts.Type.SUCCESS, t("Settings successfully imported. Restart to apply changes!"));
 
 const toastFailure = (err: any) =>
-    toast(Toasts.Type.FAILURE, `Failed to import settings: ${String(err)}`);
+    toast(Toasts.Type.FAILURE, t("Couldn't import those settings :( {error}", { error: String(err) }));
 
 const logger = new Logger("SettingsSync:Offline", "#39b7e0");
 
@@ -80,7 +81,7 @@ export async function uploadSettingsBackup(showToast = true): Promise<void> {
     if (IS_DISCORD_DESKTOP) {
         const [file] = await DiscordNative.fileManager.openFiles({
             filters: [
-                { name: "Endcord Settings Backup", extensions: ["json"] },
+                { name: t("Endcord Settings Backup"), extensions: ["json"] },
                 { name: "all", extensions: ["*"] }
             ]
         });

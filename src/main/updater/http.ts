@@ -7,17 +7,23 @@
 import { fetchBuffer, fetchJson } from "@main/utils/http";
 import { ENDCORD_USER_AGENT } from "@shared/endcordUserAgent";
 import { IpcEvents } from "@shared/IpcEvents";
+import { createHash } from "crypto";
 import { ipcMain } from "electron";
-import { writeFile } from "fs/promises";
+import { rename, writeFile } from "fs/promises";
 import { join } from "path";
 
 import gitHash from "~git-hash";
-import gitRemote from "~git-remote";
 
 import { ENDCORD_FILES,serializeErrors } from "./common";
 
 const API_BASE = "https://api.github.com/repos/rootpoii/endcord";
-let PendingUpdates = [] as [string, string][];
+
+interface PendingAsset {
+    name: string;
+    url: string;
+    sha256: string;
+}
+let PendingUpdates = [] as PendingAsset[];
 
 async function githubGet<T = any>(endpoint: string) {
     return fetchJson<T>(API_BASE + endpoint, {
@@ -62,7 +68,11 @@ async function fetchUpdates() {
 
             // Only consider it an update if the remote release timestamp is strictly greater than our build timestamp!
             if (remoteTs > localTs && apiData.hash !== gitHash) {
-                PendingUpdates = apiData.assets.map((a: any) => [a.name, a.url]);
+                // Only the four Endcord files, each with a checksum; anything else means the manifest is bad.
+                const assets = (apiData.assets as any[]).filter(a =>
+                    ENDCORD_FILES.includes(a?.name) && typeof a.url === "string" && /^[a-f0-9]{64}$/i.test(a.sha256 ?? ""));
+                if (assets.length !== apiData.assets.length) return false;
+                PendingUpdates = assets.map(a => ({ name: a.name, url: a.url, sha256: a.sha256.toLowerCase() }));
                 return true;
             }
         }
@@ -72,20 +82,25 @@ async function fetchUpdates() {
 }
 
 async function applyUpdates() {
-    const fileContents = await Promise.all(PendingUpdates.map(async ([name, url]) => {
+    // Download and verify everything before touching the installed files.
+    const files = await Promise.all(PendingUpdates.map(async ({ name, url, sha256 }) => {
         const contents = await fetchBuffer(url);
-        return [join(__dirname, name), contents] as const;
+        const actual = createHash("sha256").update(contents).digest("hex");
+        if (actual !== sha256)
+            throw new Error(`Update rejected: ${name} does not match its checksum`);
+        return { target: join(__dirname, name), contents };
     }));
 
-    await Promise.all(fileContents.map(async ([filename, contents]) =>
-        writeFile(filename, contents))
-    );
+    // Stage next to the real files, then swap them in, so a failed write never leaves a half-written Endcord.
+    await Promise.all(files.map(f => writeFile(f.target + ".update", f.contents)));
+    for (const f of files)
+        await rename(f.target + ".update", f.target);
 
     PendingUpdates = [];
     return true;
 }
 
-ipcMain.handle(IpcEvents.GET_REPO, serializeErrors(() => "https://github.com/rootpoii/endcord"));
+ipcMain.handle(IpcEvents.GET_REPO, serializeErrors(() => "https://github.com/rootpoii/Endcord"));
 ipcMain.handle(IpcEvents.GET_UPDATES, serializeErrors(calculateGitChanges));
 ipcMain.handle(IpcEvents.UPDATE, serializeErrors(fetchUpdates));
 ipcMain.handle(IpcEvents.BUILD, serializeErrors(applyUpdates));

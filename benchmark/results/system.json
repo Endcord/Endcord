@@ -1,0 +1,83 @@
+{
+  "date": "2026-10-23T09:30:44.041Z",
+  "os": "Microsoft Windows 10 Home 10.0.19045",
+  "cpu": "12th Gen Intel(R) Core(TM) i5-12400F",
+  "cpuCores": "6",
+  "cpuThreads": 12,
+  "ramGB": 32,
+  "gpu": "NVIDIA GeForce RTX 3080",
+  "storage": "SSD",
+  "powerPlan": "Dengeli",
+  "discord": {
+    "channel": "stable",
+    "version": "1.0.9265",
+    "appDir": "app-1.0.9265"
+  },
+  "node": "v22.14.0",
+  "bundles": {
+    "endcord": {
+      "renderer.js": {
+        "bytes": 5234883,
+        "sha256": "3820f97aa167dbfe"
+      },
+      "renderer.css": {
+        "bytes": 29796,
+        "sha256": "b4cbbb660f1dd8ed"
+      },
+      "patcher.js": {
+        "bytes": 197237,
+        "sha256": "67c90729c3450cd5"
+      },
+      "preload.js": {
+        "bytes": 2582,
+        "sha256": "da14a34274157247"
+      }
+    },
+    "vencord": {
+      "renderer.js": {
+        "bytes": 709219,
+        "sha256": "250a3d69ac6a3f83"
+      },
+      "renderer.css": {
+        "bytes": 42852,
+        "sha256": "4291c822779506aa"
+      },
+      "patcher.js": {
+        "bytes": 40020,
+        "sha256": "9beb72980f6b359e"
+      },
+      "preload.js": {
+        "bytes": 2403,
+        "sha256": "4a1885ce2b05b924"
+      }
+    },
+    "equicord": {
+      "renderer.js": {
+        "bytes": 3134073,
+        "sha256": "0922c655684e3432"
+      },
+      "renderer.css": {
+        "bytes": 227636,
+        "sha256": "de5eb9d457385f25"
+      },
+      "patcher.js": {
+        "bytes": 196282,
+        "sha256": "6c0146169c076dac"
+      },
+      "preload.js": {
+        "bytes": 2504,
+        "sha256": "bc44c96a2ac3ff22"
+      }
+    },
+    "vanilla": null
+  },
+  "method": {
+    "rounds": 6,
+    "durationSec": 120,
+    "idleWindowSec": [
+      60,
+      120
+    ],
+    "settings": "defaults (fresh settings folder per mod)"
+  }
+}

@@ -7,7 +7,9 @@
 import { openNotificationLogModal } from "@api/Notifications/notificationLog";
 import { isPluginEnabled, isSettingDisabled, isSettingHidden, plugins } from "@api/PluginManager";
 import { Settings, useSettings } from "@api/Settings";
-import { openPluginModal, openSettingsTabModal, PluginsTab, ThemesTab } from "@components/settings";
+import { openPluginModal, openSettingsTabModal, PluginsTab, ThemesTab, UpdaterTab } from "@components/settings";
+import { t } from "@utils/i18n";
+import { localStorage } from "@utils/localStorage";
 import { useAwaiter } from "@utils/react";
 import { wordsFromCamel, wordsToTitle } from "@utils/text";
 import { OptionType, Plugin } from "@utils/types";
@@ -40,7 +42,7 @@ async function checkForUpdates(showToastIfNew = false) {
             if (showToastIfNew) {
                 Toasts.show({
                     id: "endcord-update-available",
-                    message: `🔔 Endcord güncellemesi mevcut! (${latestVersion}) — Toolbox > Güncellemeyi Uygula`,
+                    message: t("Endcord {version} is available. Open the Toolbox to update.", { version: latestVersion }),
                     type: Toasts.Type.MESSAGE,
                     options: { duration: 8000 }
                 });
@@ -80,7 +82,7 @@ function buildPluginMenu() {
     return (
         <Menu.MenuItem
             id="plugins"
-            label="Plugins"
+            label={t("Plugins")}
             action={() => openSettingsTabModal(PluginsTab)}
         >
             {pluginEntries}
@@ -95,8 +97,9 @@ export function buildPluginMenuEntries(includeEmpty = false) {
 
     const lowerSearch = search.toLowerCase();
 
+    // Only enabled plugins are listed, and those are already loaded; reading the others would evaluate them
     const sortedPlugins = useMemo(() =>
-        Object.values(plugins).sort((a, b) => a.name.localeCompare(b.name)),
+        Object.keys(plugins).filter(name => isPluginEnabled(name)).map(name => plugins[name]).sort((a, b) => a.name.localeCompare(b.name)),
         []
     );
 
@@ -144,7 +147,7 @@ export function buildPluginMenuEntries(includeEmpty = false) {
                         const baseProps = {
                             id: `${p.name}-${key}`,
                             key: key,
-                            label: wordsToTitle(wordsFromCamel(key)),
+                            label: t(wordsToTitle(wordsFromCamel(key))),
                             disabled: isSettingDisabled(p.settings, option)
                         };
 
@@ -156,7 +159,7 @@ export function buildPluginMenuEntries(includeEmpty = false) {
                                         checked={s[key]}
                                         action={() => {
                                             s[key] = !s[key];
-                                            if (option.restartNeeded) showToast("Restart to apply the change");
+                                            if (option.restartNeeded) showToast(t("Restart to apply the change"));
                                         }}
                                     />
                                 );
@@ -173,7 +176,7 @@ export function buildPluginMenuEntries(includeEmpty = false) {
                                                 checked={s[key] === opt.value}
                                                 action={() => {
                                                     s[key] = opt.value;
-                                                    if (option.restartNeeded) showToast("Restart to apply the change");
+                                                    if (option.restartNeeded) showToast(t("Restart to apply the change"));
                                                 }}
                                             />
                                         ))}
@@ -224,7 +227,7 @@ export function buildPluginMenuEntries(includeEmpty = false) {
 
                                     <Menu.MenuItem
                                         id={`${p.name}-open`}
-                                        label={"Open Settings"}
+                                        label={t("Open Settings")}
                                         action={() => openPluginModal(p)}
                                     />
                                 </>
@@ -241,7 +244,7 @@ export function buildThemeMenu() {
     return (
         <Menu.MenuItem
             id="themes"
-            label="Themes"
+            label={t("Themes")}
             action={() => openSettingsTabModal(ThemesTab)}
         >
             {buildThemeMenuEntries()}
@@ -258,19 +261,19 @@ export function buildThemeMenuEntries() {
             <Menu.MenuCheckboxItem
                 id="toggle-quickcss"
                 checked={useQuickCss}
-                label={"Enable QuickCSS"}
+                label={t("Enable QuickCSS")}
                 action={() => {
                     Settings.useQuickCss = !useQuickCss;
                 }}
             />
             <Menu.MenuItem
                 id="edit-quickcss"
-                label="Edit QuickCSS"
+                label={t("Edit QuickCSS")}
                 action={() => EndcordNative.quickCss.openEditor()}
             />
             <Menu.MenuItem
                 id="manage-themes"
-                label="Manage Themes"
+                label={t("Manage Themes")}
                 action={() => openSettingsTabModal(ThemesTab)}
             />
             {!!themes?.length && (
@@ -299,8 +302,10 @@ export function buildThemeMenuEntries() {
 function buildCustomPluginEntries() {
     const pluginEntries = [] as { plugin: Plugin, node: ReactNode; }[];
 
-    for (const plugin of Object.values(plugins)) {
-        if (plugin.toolboxActions && isPluginEnabled(plugin.name)) {
+    for (const name of Object.keys(plugins)) {
+        if (!isPluginEnabled(name)) continue;
+        const plugin = plugins[name];
+        if (plugin.toolboxActions) {
             const entries = typeof plugin.toolboxActions === "function"
                 ? plugin.toolboxActions()
                 : Object.entries(plugin.toolboxActions).map(([text, action]) => {
@@ -358,35 +363,20 @@ export function renderPopout(onClose: () => void) {
             onClose={onClose}
         >
             {updateAvailable && (
-                <Menu.MenuGroup label={`🔔 Update Available! (${_latestVersion})`}>
+                <Menu.MenuGroup label={t("Endcord {version} is available", { version: _latestVersion })}>
                     <Menu.MenuItem
-                        id="endcord-apply-update"
-                        label="✅ Acknowledge Update (applied on restart)"
+                        id="endcord-open-updater"
+                        label={t("Update Endcord")}
+                        action={() => UpdaterTab ? openSettingsTabModal(UpdaterTab) : EndcordNative.native.openExternal(_latestUrl || "https://github.com/rootpoii/Endcord/releases")}
+                    />
+                    <Menu.MenuItem
+                        id="endcord-dismiss-update"
+                        label={t("Remind me later")}
                         action={() => {
                             localStorage.setItem(LS_LAST_SEEN_UPDATE, String(Date.now()));
                             _updateAvailable = false;
                             setUpdateAvailable(false);
-                            Toasts.show({
-                                id: "endcord-update-ack",
-                                message: "Update acknowledged! Restart Discord to apply.",
-                                type: Toasts.Type.SUCCESS
-                            });
                             onClose();
-                        }}
-                    />
-                    <Menu.MenuItem
-                        id="endcord-check-update"
-                        label="🔄 Check for Updates Now"
-                        action={async () => {
-                            await checkForUpdates(false);
-                            setUpdateAvailable(_updateAvailable);
-                            Toasts.show({
-                                id: "endcord-check-done",
-                                message: _updateAvailable
-                                    ? `New version available: ${_latestVersion}`
-                                    : "Endcord is up to date! ✅",
-                                type: _updateAvailable ? Toasts.Type.MESSAGE : Toasts.Type.SUCCESS
-                            });
                         }}
                     />
                 </Menu.MenuGroup>
@@ -394,15 +384,15 @@ export function renderPopout(onClose: () => void) {
             {!updateAvailable && (
                 <Menu.MenuItem
                     id="endcord-check-update-idle"
-                    label={`🔄 Check for Updates`}
+                    label={t("Check for Updates")}
                     action={async () => {
                         await checkForUpdates(false);
                         setUpdateAvailable(_updateAvailable);
                         Toasts.show({
                             id: "endcord-check-done",
                             message: _updateAvailable
-                                ? `🔔 New version available: ${_latestVersion}`
-                                : "Endcord is up to date! ✅",
+                                ? t("Endcord {version} is available", { version: _latestVersion })
+                                : t("Endcord is up to date"),
                             type: _updateAvailable ? Toasts.Type.MESSAGE : Toasts.Type.SUCCESS
                         });
                     }}
@@ -411,7 +401,7 @@ export function renderPopout(onClose: () => void) {
 
             <Menu.MenuItem
                 id="notifications"
-                label="Open Notification Log"
+                label={t("Open Notification Log")}
                 action={openNotificationLogModal}
             />
 

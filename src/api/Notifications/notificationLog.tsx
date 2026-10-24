@@ -9,8 +9,9 @@ import { Settings } from "@api/Settings";
 import { openNotificationSettingsModal } from "@components/settings/tabs/endcord/NotificationSettings";
 import { RenderModalProps } from "@endcord/discord-types";
 import { classNameFactory } from "@utils/css";
+import { useI18n } from "@utils/i18n";
 import { useAwaiter } from "@utils/react";
-import { ConfirmModal, Forms, ListScrollerThin, Modal,openModal, React, Timestamp, useEffect, useReducer, useState } from "@webpack/common";
+import { ConfirmModal, Forms, ListScrollerThin, Modal, openModal, React, Timestamp, useEffect, useReducer, useState } from "@webpack/common";
 import { nanoid } from "nanoid";
 import type { DispatchWithoutAction } from "react";
 
@@ -115,12 +116,13 @@ function NotificationEntry({ data }: { data: PersistentNotificationData; }) {
 }
 
 export function NotificationLog({ log, pending }: { log: PersistentNotificationData[], pending: boolean; }) {
+    const { t } = useI18n();
     if (!log.length && !pending)
         return (
             <div>
                 <div className={cl("empty")} />
                 <Forms.FormText style={{ textAlign: "center" }}>
-                    No notifications yet
+                    {t("No notifications yet")}
                 </Forms.FormText>
             </div>
         );
@@ -138,30 +140,31 @@ export function NotificationLog({ log, pending }: { log: PersistentNotificationD
 }
 
 function LogModal(props: RenderModalProps) {
+    const { t } = useI18n();
     const [log, pending] = useLogs();
 
     return (
         <Modal
             {...props}
             size="xl"
-            title="Notification Log"
+            title={t("Notification Log")}
             actions={[
                 {
-                    text: "Notification Settings",
+                    text: t("Notification Settings"),
                     variant: "primary",
                     onClick: openNotificationSettingsModal
                 },
                 {
-                    text: "Clear Notification Log",
+                    text: t("Clear Notification Log"),
                     variant: "critical-primary",
                     disabled: !log.length,
                     onClick() {
                         openModal(props =>
                             <ConfirmModal
                                 {...props}
-                                title="Are you sure?"
-                                subtitle={`This will permanently remove ${log.length} notification${log.length === 1 ? "" : "s"}. This action cannot be undone.`}
-                                confirmText="Do it!"
+                                title={t("Are you sure?")}
+                                subtitle={t("This will permanently remove {count} notification(s). This action cannot be undone.", { count: log.length })}
+                                confirmText={t("Do it!")}
                                 onConfirm={async () => {
                                     await DataStore.set(KEY, []);
                                     signals.forEach(x => x());

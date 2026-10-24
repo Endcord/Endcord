@@ -7,11 +7,11 @@
 /* Direct mention -> Green */
 div[class*="numberBadge"][data-direct-mention="true"] {
     background-color: var(--mention-direct-color, #23a55a) !important;
-    color: #ffffff !important;
+    color: #fff !important;
 }
 
 /* Broadcast @everyone / @here -> Red */
 div[class*="numberBadge"]:not([data-direct-mention="true"]) {
     background-color: var(--status-danger, #f23f43) !important;
-    color: #ffffff !important;
+    color: #fff !important;
 }

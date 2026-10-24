@@ -101,5 +101,4 @@ export default {
     },
 
     pluginHelpers: PluginHelpers,
-    fetchProfiles: (url: string, options?: any) => invoke<{ ok: boolean; status: number; text?: string; error?: string; }>(IpcEvents.FETCH_PROFILES, url, options),
 };

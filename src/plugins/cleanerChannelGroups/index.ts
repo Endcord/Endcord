@@ -4,14 +4,14 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { EquicordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 
 export default definePlugin({
     name: "CleanerChannelGroups",
     description: "Hides all channels in collapsed categories, even if they have unread messages.",
     tags: ["Appearance", "Customisation", "Chat", "Organisation", "Servers"],
-    authors: [EquicordDevs.justjxke],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     patches: [
         {
             find: '"placeholder-channel-id"',

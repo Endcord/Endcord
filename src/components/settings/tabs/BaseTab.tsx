@@ -6,8 +6,9 @@
 
 import ErrorBoundary from "@components/ErrorBoundary";
 import { handleComponentFailed } from "@components/handleComponentFailed";
+import { t } from "@utils/i18n";
 import { onlyOnce } from "@utils/onlyOnce";
-import { Modal,openModal } from "@webpack/common";
+import { Modal, openModal } from "@webpack/common";
 import type { ComponentType, PropsWithChildren } from "react";
 
 export function SettingsTab({ children }: PropsWithChildren) {
@@ -21,7 +22,7 @@ export const handleSettingsTabError = onlyOnce(handleComponentFailed);
 export function wrapTab(component: ComponentType<any>, tab: string) {
     const wrapped = ErrorBoundary.wrap(component, {
         displayName: `${tab}SettingsTab`,
-        message: `Failed to render the ${tab} tab. If this issue persists, try using the installer to reinstall!`,
+        message: t("The {tab} tab tripped over itself (｡•́︿•̀｡) If it keeps happening, reinstalling Endcord with the installer fixes it.", { tab }),
         onError: handleSettingsTabError,
     });
 
@@ -29,14 +30,16 @@ export function wrapTab(component: ComponentType<any>, tab: string) {
 }
 
 export function openSettingsTabModal(Tab: ComponentType<any>) {
-    Tab = wrapTab(Tab, Tab.displayName || "SettingsTab");
+    // Tabs are usually wrapped already; wrapping again would stack "SettingsTab" onto the name
+    const name = (Tab.displayName || "Settings").replace(/(SettingsTab)+$/, "");
+    if (!Tab.displayName?.endsWith("SettingsTab")) Tab = wrapTab(Tab, name);
 
     try {
         openModal(props => (
             <Modal
                 {...props}
                 size="lg"
-                title={Tab.displayName?.replace("SettingsTab", "") || "Settings"}
+                title={t(name)}
             >
                 <Tab />
             </Modal>

@@ -5,7 +5,7 @@
  */
 
 import { addMessagePreSendListener, removeMessagePreSendListener } from "@api/MessageEvents";
-import { EndcordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 
 function toFullwidth(text: string) {
@@ -17,7 +17,7 @@ function toFullwidth(text: string) {
 export default definePlugin({
     name: "AutoVaporwave",
     description: "Turn every message you send into ｆｕｌｌｗｉｄｔｈ text automatically.",
-    authors: [EndcordDevs.Sharp],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     start() {
         this.pre = addMessagePreSendListener((_, msg) => {
             if (msg.content) msg.content = toFullwidth(msg.content);

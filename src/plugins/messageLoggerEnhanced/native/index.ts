@@ -14,9 +14,10 @@ import { getSettings, saveSettings } from "./settings";
 export * from "./export";
 export * from "./import";
 
-import { blockedExts } from "../list";
-import { LoggedAttachment } from "../types";
-import { DEFAULT_ATTACHMENT_FILE_EXTENSIONS, LOGS_DATA_FILENAME } from "../utils/constants";
+import { blockedExts } from "@plugins/messageLoggerEnhanced/list";
+import { LoggedAttachment } from "@plugins/messageLoggerEnhanced/types";
+import { DEFAULT_ATTACHMENT_FILE_EXTENSIONS, LOGS_DATA_FILENAME } from "@plugins/messageLoggerEnhanced/utils/constants";
+
 import { ensureDirectoryExists, getAttachmentIdFromFilename, sleep } from "./utils";
 
 export { getSettings };

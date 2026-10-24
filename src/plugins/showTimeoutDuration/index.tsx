@@ -12,6 +12,7 @@ import { TooltipContainer } from "@components/TooltipContainer";
 import { Message } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { getIntlMessage } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { canonicalizeMatch } from "@utils/patches";
 import definePlugin, { OptionType } from "@utils/types";
 import { findComponentLazy } from "@webpack";
@@ -69,7 +70,7 @@ export default definePlugin({
     name: "ShowTimeoutDuration",
     description: "Shows how much longer a user's timeout will last, either in the timeout icon tooltip or next to it",
     tags: ["Servers", "Utility"],
-    authors: [Devs.Ven, Devs.Sqaaakoi],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
 
     settings,
 
@@ -93,8 +94,7 @@ export default definePlugin({
             <div className="vc-std-wrapper">
                 <TooltipContainer text={text}>{children}</TooltipContainer>
                 <Text variant="text-md/normal" color="status-danger">
-                    {renderTimeout(message, true)} timeout remaining
-                </Text>
+                    {renderTimeout(message, true)}{" "}{t("timeout remaining")}</Text>
             </div>
         );
     }, { noop: true })

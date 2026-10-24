@@ -8,6 +8,7 @@ import "./styles.css";
 
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import definePlugin from "@utils/types";
 import { ChannelStore, FluxDispatcher, MessageStore, UserStore } from "@webpack/common";
 
@@ -52,7 +53,7 @@ export default definePlugin({
     name: "MessageTranslate",
     description: "Auto translate messages to your language with caching, per-channel toggles, and more options.",
     tags: ["Chat", "Utility"],
-    authors: [Devs.ewlle, Devs.rootpoi, Devs.kraethis],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
 
     patches: [
@@ -60,12 +61,12 @@ export default definePlugin({
             find: '.CUSTOM_GIFT?""',
             replacement: [
                 {
-                    match: /message:(\i),message:\{id:\i\}.{0,200}renderContentOnly:\i.{0,30}\}=\i;/,
-                    replace: "$&$1=$self.transformMessage($1);",
-                },
-                {
                     match: /childrenMessageContent:(\i),/g,
                     replace: "childrenMessageContent:$self.wrapContent($1,arguments[0].message.id),",
+                },
+                {
+                    match: /\i\.memo\(function\((\i)\)\{(?=let \i,\i)/,
+                    replace: "$&$1.message=$self.transformMessage($1?.message);",
                 },
             ],
         },
@@ -107,7 +108,7 @@ export default definePlugin({
             <>
                 {content}
                 {settings.store.showIndicator && (
-                    <div className={cl("indicator")}>translated from {sourceLang}</div>
+                    <div className={cl("indicator")}>{t("translated from")}{" "}{sourceLang}</div>
                 )}
             </>
         );

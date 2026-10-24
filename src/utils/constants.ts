@@ -36,6 +36,8 @@ export const Devs: Record<string, Dev> & {
     ewlle: { name: "ewlle", id: 1390609041897554050n },
     rootpoi: { name: "rootpoi", id: 1390609041897554050n },
     kraethis: { name: "kraethis", id: 904384828143706164n },
+    Sharp: { name: "Sharp", id: 1527382025429061823n },
+    vpg: { name: "vpg", id: 1374807824479162369n },
     Ven: { name: "rootpoi", id: 1390609041897554050n },
     Vendicated: { name: "rootpoi", id: 1390609041897554050n }
 } as any, {
@@ -55,7 +57,9 @@ export const DevsById = /* #__PURE__*/ (() =>
         Object.entries({
             rootpoi: { name: "rootpoi", id: 1390609041897554050n },
             ewlle: { name: "ewlle", id: 1390609041897554050n },
-            kraethis: { name: "kraethis", id: 904384828143706164n }
+            kraethis: { name: "kraethis", id: 904384828143706164n },
+            Sharp: { name: "Sharp", id: 1527382025429061823n },
+            vpg: { name: "vpg", id: 1374807824479162369n }
         })
             .filter(d => d[1].id !== 0n)
             .map(([_, v]) => [v.id, v] as const)
@@ -64,6 +68,7 @@ export const DevsById = /* #__PURE__*/ (() =>
 
 export const EndcordDevs = Devs;
 export const EquicordDevs = Devs;
+export const TestcordDevs = Devs;
 
 
 

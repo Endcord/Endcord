@@ -164,7 +164,7 @@ export default definePlugin({
     name: "ValidUser",
     description: "Fix mentions for unknown users showing up as '@unknown-user' (hover over a mention to fix it)",
     tags: ["Chat", "Utility"],
-    authors: [Devs.Ven, Devs.Dolfies],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     searchTerms: ["MentionCacheFix"],
 
     patches: [

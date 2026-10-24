@@ -7,8 +7,9 @@
 import { definePluginSettings } from "@api/Settings";
 import { CodeBlock } from "@components/CodeBlock";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { EquicordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 import { waitFor } from "@webpack";
 import { Parser, useLayoutEffect, useRef, useState } from "@webpack/common";
@@ -131,8 +132,7 @@ function ToggleableTableBlock({
                     }}
                     type="button"
                 >
-                    Table
-                </button>
+                    {t("Table")}</button>
                 <button
                     aria-pressed={showRaw}
                     className={cl("toggle", { "toggle-active": showRaw })}
@@ -143,8 +143,7 @@ function ToggleableTableBlock({
                     }}
                     type="button"
                 >
-                    Raw
-                </button>
+                    {t("Raw")}</button>
             </div>
             {showRaw
                 ? (
@@ -362,7 +361,7 @@ export default definePlugin({
     name: "MarkdownTables",
     description: "Render GitHub-style markdown tables in Discord messages.",
     tags: ["Chat", "Appearance"],
-    authors: [EquicordDevs.yafyx],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     managedStyle,
     settings,
     patches: [

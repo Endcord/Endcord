@@ -1,6 +1,6 @@
 /*
- * Endcord, a vaporwave-inspired Discord client mod
- * Copyright (c) 2026 unfamiliardev
+ * Endcord, a Discord client mod
+ * Copyright (c) 2026 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -27,7 +27,7 @@ const timers = new Set<ReturnType<typeof setTimeout>>();
 
 function fire(r: Reminder) {
     showNotification({
-        title: "⏰ Reminder",
+        title: "Reminder",
         body: r.text,
         onClick: () => { }
     });
@@ -48,7 +48,7 @@ async function schedule(r: Reminder) {
 export default definePlugin({
     name: "RemindMe",
     description: "/remindme <amount> <m|h|d> <text> pings you with a desktop notification later. Survives restarts.",
-    authors: [Devs.ewlle, Devs.rootpoi, Devs.kraethis],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     dependencies: ["CommandsAPI"],
 
     async start() {

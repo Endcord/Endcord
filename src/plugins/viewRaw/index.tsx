@@ -16,6 +16,7 @@ import { Message } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { copyWithToast, getCurrentGuild, getIntlMessage } from "@utils/discord";
 import { isTruthy } from "@utils/guards";
+import { t } from "@utils/i18n";
 import definePlugin, { IconComponent, OptionType } from "@utils/types";
 import { ChannelStore, GuildRoleStore, Menu, Modal, openModal, UserProfileStore } from "@webpack/common";
 import { MouseEventHandler } from "react";
@@ -82,9 +83,9 @@ function openViewRawModal(json: string, type: string, msgContent?: string) {
             >
                 {!!msgContent && (
                     <>
-                        <HeadingSecondary>Message Content</HeadingSecondary>
+                        <HeadingSecondary>{t("Message Content")}</HeadingSecondary>
                         <CodeBlock className="vc-viewRaw-codeBlock" content={msgContent} lang="" />
-                        <HeadingSecondary className={Margins.top16}>Message Data</HeadingSecondary>
+                        <HeadingSecondary className={Margins.top16}>{t("Message Data")}</HeadingSecondary>
                     </>
                 )}
                 <CodeBlock className="vc-viewRaw-codeBlock" content={json} lang="json" />
@@ -136,7 +137,7 @@ function MakeContextCallback(name: "Guild" | "Role" | "User" | "Channel" | "Mess
         (devContainer ?? children).splice(-1, 0,
             <Menu.MenuItem
                 id={id}
-                label="View Raw"
+                label={t("View Raw")}
                 action={action}
                 icon={CopyRawIcon}
             />
@@ -154,7 +155,7 @@ const devContextCallback: NavContextMenuPatchCallback = (children, { id }: { id:
     children.push(
         <Menu.MenuItem
             id={"vc-view-role-raw"}
-            label="View Raw"
+            label={t("View Raw")}
             action={() => openViewRawModal(JSON.stringify(role, null, 4), "Role")}
             icon={CopyRawIcon}
         />
@@ -165,7 +166,7 @@ export default definePlugin({
     name: "ViewRaw",
     description: "Copy and view the raw content/data of any message, channel or guild",
     tags: ["Chat", "Developers"],
-    authors: [Devs.KingFish, Devs.Ven, Devs.rad, Devs.ImLvna],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
 
     contextMenus: {

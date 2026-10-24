@@ -17,11 +17,10 @@
 */
 
 import { isPluginEnabled } from "@api/PluginManager";
+import { settings } from "@plugins/musicControls/settings";
 import OpenInAppPlugin from "@plugins/openInApp";
 import { findByProps, findByPropsLazy, proxyLazyWebpack } from "@webpack";
 import { Flux, FluxDispatcher } from "@webpack/common";
-
-import { settings } from "../settings";
 
 export interface Track {
     id: string;

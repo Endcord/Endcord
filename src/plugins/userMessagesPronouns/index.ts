@@ -14,7 +14,7 @@ import { settings } from "./settings";
 migratePluginSettings("UserMessagesPronouns", "PronounDB");
 export default definePlugin({
     name: "UserMessagesPronouns",
-    authors: [Devs.Tyman, Devs.TheKodeToad, Devs.Ven, Devs.Elvyra],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     description: "Adds pronouns to chat user messages",
     tags: ["Chat", "Appearance"],
     settings,

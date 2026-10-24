@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { Channel } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
-import { Channel } from "@endcord/discord-types";
 import { ChannelStore } from "@webpack/common";
 
 const SMALL_CAPS: Record<string, string> = {
@@ -23,7 +23,7 @@ function computeClean(name: string, type: number): string {
     const separator = [2, 4].includes(type) ? " " : "-";
     const cleaned = name
         .normalize("NFKC")
-        .replace(/[ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀꜱᴛᴜᴠᴡxʏᴢ]/g, m => SMALL_CAPS[m])
+        .replace(/[\u1D00\u0299\u1D04\u1D05\u1D07\uA730\u0262\u029C\u026A\u1D0A\u1D0B\u029F\u1D0D\u0274\u1D0F\u1D18\u01EB\u0280\uA731\u1D1B\u1D1C\u1D20\u1D21x\u028F\u1D22]/g, m => SMALL_CAPS[m])
         .replace(/[^ -~]?\p{Extended_Pictographic}[^ -~]?/ug, "")
         .replace(/-?\|-?/g, separator)
         .replace(/-?[^\p{Letter} -~]-?/ug, separator)
@@ -34,7 +34,7 @@ function computeClean(name: string, type: number): string {
 
 export default definePlugin({
     name: "CleanChannelName",
-    authors: [Devs.AutumnVN],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     description: "Remove emoji and decoration from channel names. Reverts to the original while you're editing the channel.",
     tags: ["Appearance", "Customisation", "Chat", "Emotes", "Servers"],
     patches: [

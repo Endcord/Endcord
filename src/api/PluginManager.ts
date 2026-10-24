@@ -4,17 +4,23 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { addAudioProcessor, removeAudioProcessor } from "@api/AudioPlayer";
 import { addProfileBadge, removeProfileBadge } from "@api/Badges";
-import { addChatBarButton, removeChatBarButton } from "@api/ChatButtons";
+import { addChatBarButton, addChatBarButtonWrapper, removeChatBarButton, removeChatBarButtonWrapper } from "@api/ChatButtons";
 import { registerCommand, unregisterCommand } from "@api/Commands";
 import { addContextMenuPatch, removeContextMenuPatch } from "@api/ContextMenu";
+import { addChannelToolbarButton, addHeaderBarButton, removeChannelToolbarButton, removeHeaderBarButton } from "@api/HeaderBar";
 import { addMemberListDecorator, removeMemberListDecorator } from "@api/MemberListDecorators";
 import { addMessageAccessory, removeMessageAccessory } from "@api/MessageAccessories";
 import { addMessageDecoration, removeMessageDecoration } from "@api/MessageDecorations";
 import { addMessageClickListener, addMessagePreEditListener, addMessagePreSendListener, removeMessageClickListener, removeMessagePreEditListener, removeMessagePreSendListener } from "@api/MessageEvents";
 import { addMessagePopoverButton, removeMessagePopoverButton } from "@api/MessagePopover";
+import { addNicknameIcon, removeNicknameIcon } from "@api/NicknameIcons";
+import { addProfileCollection, removeProfileCollection } from "@api/ProfileCollections";
+import { addProfileSection, removeProfileSection } from "@api/ProfileSections";
 import { Settings, SettingsStore } from "@api/Settings";
 import { disableStyle, enableStyle } from "@api/Styles";
+import { addUserAreaButton, removeUserAreaButton } from "@api/UserArea";
 import { traceFunction } from "@debug/Tracer";
 import { FluxEvents } from "@endcord/discord-types";
 import { Logger } from "@utils/Logger";
@@ -24,9 +30,15 @@ import { DefinedSettings, Patch, Plugin, PluginDef, PluginSettingDef, ReporterTe
 import { FluxDispatcher } from "@webpack/common";
 import { patches } from "@webpack/patcher";
 
-import Plugins from "~plugins";
+import Plugins, { getPluginFlag, isPluginLoaded, PluginMeta, setPluginLoadHook } from "~plugins";
 export { Plugins as plugins };
 const logger = new Logger("PluginManager", "#a6d189");
+
+/** Plain CSS imported inside a plugin folder, registered at build time and only injected while that plugin runs */
+function getFolderStyles(name: string): string[] {
+    const folder = PluginMeta[name]?.folderName;
+    return (folder && window.EndcordPluginStyles?.[folder]) || [];
+}
 
 export const PMLogger = logger;
 
@@ -35,9 +47,11 @@ let enabledPluginsSubscribedFlux = false;
 const subscribedFluxEventsPlugins = new Set<string>();
 
 export function isPluginEnabled(p: string) {
+    // Must not load lazy plugins: this runs for every plugin at startup.
+    // A plugin can only be a dependency once something loaded it.
     return (
-        Plugins[p]?.required ||
-        Plugins[p]?.isDependency ||
+        getPluginFlag(p, "required") ||
+        (isPluginLoaded(p) && Plugins[p]?.isDependency) ||
         Settings.plugins[p]?.enabled
     ) ?? false;
 }
@@ -192,7 +206,9 @@ export const startPlugin = traceFunction("startPlugin", function startPlugin(p: 
     const {
         name, commands, contextMenus, managedStyle, userProfileBadge,
         onBeforeMessageEdit, onBeforeMessageSend, onMessageClick,
-        chatBarButton, renderMemberListDecorator, renderMessageAccessory, renderMessageDecoration, messagePopoverButton
+        chatBarButton, renderMemberListDecorator, renderMessageAccessory, renderMessageDecoration, messagePopoverButton,
+        renderNicknameIcon, headerBarButton, audioProcessor, userAreaButton, renderProfileCollection, chatBarButtonWrapper,
+        renderProfileSection
     } = p;
 
     if (p.start) {
@@ -235,6 +251,7 @@ export const startPlugin = traceFunction("startPlugin", function startPlugin(p: 
     }
 
     if (managedStyle) enableStyle(managedStyle);
+    for (const style of getFolderStyles(name)) enableStyle(style);
 
     if (userProfileBadge) addProfileBadge(userProfileBadge);
     const customBadges = (p as any).userProfileBadges;
@@ -253,6 +270,16 @@ export const startPlugin = traceFunction("startPlugin", function startPlugin(p: 
     if (renderMessageDecoration) addMessageDecoration(name, renderMessageDecoration);
     if (renderMessageAccessory) addMessageAccessory(name, renderMessageAccessory);
     if (messagePopoverButton) addMessagePopoverButton(name, messagePopoverButton.render, messagePopoverButton.icon);
+    if (renderNicknameIcon) addNicknameIcon(name, renderNicknameIcon);
+    if (headerBarButton) {
+        if (headerBarButton.location === "channeltoolbar") addChannelToolbarButton(name, headerBarButton.render, headerBarButton.priority);
+        else addHeaderBarButton(name, headerBarButton.render, headerBarButton.priority);
+    }
+    if (audioProcessor) addAudioProcessor(name, audioProcessor);
+    if (userAreaButton) addUserAreaButton(name, userAreaButton.render, userAreaButton.priority);
+    if (renderProfileCollection) addProfileCollection(name, renderProfileCollection.render, renderProfileCollection.priority);
+    if (chatBarButtonWrapper) addChatBarButtonWrapper(name, chatBarButtonWrapper.wrapper, chatBarButtonWrapper.priority);
+    if (renderProfileSection) addProfileSection(name, renderProfileSection.render, renderProfileSection.priority);
 
     return true;
 }, p => `startPlugin ${p.name}`);
@@ -261,7 +288,9 @@ export const stopPlugin = traceFunction("stopPlugin", function stopPlugin(p: Plu
     const {
         name, commands, contextMenus, managedStyle, userProfileBadge,
         onBeforeMessageEdit, onBeforeMessageSend, onMessageClick,
-        chatBarButton, renderMemberListDecorator, renderMessageAccessory, renderMessageDecoration, messagePopoverButton
+        chatBarButton, renderMemberListDecorator, renderMessageAccessory, renderMessageDecoration, messagePopoverButton,
+        renderNicknameIcon, headerBarButton, audioProcessor, userAreaButton, renderProfileCollection, chatBarButtonWrapper,
+        renderProfileSection
     } = p;
 
     if (p.stop) {
@@ -302,6 +331,7 @@ export const stopPlugin = traceFunction("stopPlugin", function stopPlugin(p: Plu
     }
 
     if (managedStyle) disableStyle(managedStyle);
+    for (const style of getFolderStyles(name)) disableStyle(style);
 
     if (userProfileBadge) removeProfileBadge(userProfileBadge);
     const customBadgesToRemove = (p as any).userProfileBadges;
@@ -320,17 +350,67 @@ export const stopPlugin = traceFunction("stopPlugin", function stopPlugin(p: Plu
     if (renderMessageDecoration) removeMessageDecoration(name);
     if (renderMessageAccessory) removeMessageAccessory(name);
     if (messagePopoverButton) removeMessagePopoverButton(name);
+    if (renderNicknameIcon) removeNicknameIcon(name);
+    if (headerBarButton) {
+        if (headerBarButton.location === "channeltoolbar") removeChannelToolbarButton(name);
+        else removeHeaderBarButton(name);
+    }
+    if (audioProcessor) removeAudioProcessor(name);
+    if (userAreaButton) removeUserAreaButton(name);
+    if (renderProfileCollection) removeProfileCollection(name);
+    if (chatBarButtonWrapper) removeChatBarButtonWrapper(name);
+    if (renderProfileSection) removeProfileSection(name);
 
     return true;
 }, p => `stopPlugin ${p.name}`);
 
+function bindPluginSettings(p: Plugin) {
+    if (!p.settings) return;
+    p.settings.pluginName = p.name;
+
+    try {
+        for (const [key, def] of Object.entries(p.settings.def ?? {})) {
+            if (def.onChange)
+                SettingsStore.addChangeListener(`plugins.${p.name}.${key}`, def.onChange);
+        }
+    } catch (e) {
+        logger.error(`Failed to bind settings for ${p.name}\n`, e);
+    }
+}
+
+let pluginNameByFolder: Map<string, string> | undefined;
+
+function onPluginLoaded(p: Plugin) {
+    bindPluginSettings(p);
+
+    // Code imported from another plugin's folder may use that plugin's settings, so load it alongside
+    const loadsWith = PluginMeta[p.name]?.loadsWith;
+    if (!loadsWith) return;
+
+    pluginNameByFolder ??= new Map(Object.entries(PluginMeta).map(([name, meta]) => [meta.folderName, name]));
+    for (const folder of loadsWith) {
+        const name = pluginNameByFolder.get(folder);
+        if (name) void Plugins[name];
+    }
+}
+
 export const initPluginManager = onlyOnce(function init() {
-    const pluginsValues = Object.values(Plugins);
     const settings = Settings.plugins;
+
+    // Lazy plugins only get evaluated when something reads them, so bind their settings at that moment.
+    // Iterate names below and only read plugin objects that are enabled, to keep disabled ones unloaded.
+    setPluginLoadHook(onPluginLoaded);
+
+    // A lazy plugin that renames or absorbs another plugin's settings runs that migration when its module loads.
+    // Load it now if those old settings exist, so it is seen as enabled below.
+    const { plugins: storedPlugins } = SettingsStore.plain;
+    for (const name in PluginMeta) {
+        if (PluginMeta[name].migratesFrom?.some(old => old in storedPlugins)) void Plugins[name];
+    }
 
     const pluginKeysToBind: Array<keyof PluginDef & `${"on" | "render"}${string}`> = [
         "onBeforeMessageEdit", "onBeforeMessageSend", "onMessageClick",
-        "renderMemberListDecorator", "renderMessageAccessory", "renderMessageDecoration"
+        "renderMemberListDecorator", "renderMessageAccessory", "renderMessageDecoration", "renderNicknameIcon"
     ];
 
     const neededApiPlugins = new Set<string>();
@@ -339,7 +419,8 @@ export const initPluginManager = onlyOnce(function init() {
     //
     // FIXME: might need to revisit this if there's ever nested (dependencies of dependencies) dependencies since this only
     // goes for the top level and their children, but for now this works okay with the current API plugins
-    for (const p of pluginsValues) if (isPluginEnabled(p.name)) {
+    for (const name in Plugins) if (isPluginEnabled(name)) {
+        const p = Plugins[name];
         p.dependencies?.forEach(d => {
             const dep = Plugins[d];
 
@@ -366,9 +447,16 @@ export const initPluginManager = onlyOnce(function init() {
         if (p.renderMessageDecoration) neededApiPlugins.add("MessageDecorationsAPI");
         if (p.messagePopoverButton) neededApiPlugins.add("MessagePopoverAPI");
         if (p.userProfileBadge || (p as any).userProfileBadges) neededApiPlugins.add("BadgeAPI");
+        if (p.renderNicknameIcon) neededApiPlugins.add("NicknameIconsAPI");
+        if (p.headerBarButton) neededApiPlugins.add("HeaderBarAPI");
+        if (p.audioProcessor) neededApiPlugins.add("AudioPlayerAPI");
+        if (p.userAreaButton) neededApiPlugins.add("UserAreaAPI");
+        if (p.renderProfileCollection) neededApiPlugins.add("ProfileCollectionsAPI");
+        if (p.chatBarButtonWrapper) neededApiPlugins.add("ChatInputButtonAPI");
+        if (p.renderProfileSection) neededApiPlugins.add("ProfileSectionsAPI");
 
         for (const key of pluginKeysToBind) {
-            p[key] &&= p[key].bind(p) as any;
+            p[key] &&= (p[key] as Function).bind(p) as any;
         }
     }
 
@@ -377,21 +465,11 @@ export const initPluginManager = onlyOnce(function init() {
         settings[p].enabled = true;
     }
 
-    for (const p of pluginsValues) {
-        if (p.settings) {
-            p.settings.pluginName = p.name;
+    for (const name in Plugins) {
+        if (!isPluginEnabled(name)) continue;
+        const p = Plugins[name];
 
-            try {
-                for (const [key, def] of Object.entries(p.settings.def ?? {})) {
-                    if (def.onChange)
-                        SettingsStore.addChangeListener(`plugins.${p.name}.${key}`, def.onChange);
-                }
-            } catch (e) {
-                logger.error(`Failed to bind settings for ${p.name}\n`, e);
-            }
-        }
-
-        if (p.patches && isPluginEnabled(p.name)) {
+        if (p.patches) {
             if (!IS_REPORTER || isReporterTestable(p, ReporterTestable.Patches)) {
                 for (const patch of p.patches) {
                     addPatch(patch, p.name);

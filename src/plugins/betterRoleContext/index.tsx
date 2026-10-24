@@ -12,6 +12,7 @@ import { copyToClipboard } from "@utils/clipboard";
 import { Devs } from "@utils/constants";
 import { getCurrentChannel, getCurrentGuild, getIntlMessage, openImageModal } from "@utils/discord";
 import { isTruthy } from "@utils/guards";
+import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import definePlugin, { OptionType } from "@utils/types";
 import { findByCodeLazy, findByPropsLazy, findCssClassesLazy } from "@webpack";
@@ -94,7 +95,7 @@ export function buildExtraRoleContextMenuItems(role: Role, guild: Guild, popoutR
             <Menu.MenuItem
                 key="vc-edit-role"
                 id="vc-edit-role"
-                label="Edit Role"
+                label={t("Edit Role")}
                 action={async () => {
                     await GuildSettingsActions.open(guild.id, "ROLES");
                     GuildSettingsActions.selectRole(role.id);
@@ -106,7 +107,7 @@ export function buildExtraRoleContextMenuItems(role: Role, guild: Guild, popoutR
             <Menu.MenuItem
                 key="vc-copy-role-color"
                 id="vc-copy-role-color"
-                label="Copy Role Color"
+                label={t("Copy Role Color")}
                 action={() => copyToClipboard(role.colorString!)}
                 icon={AppearanceIcon}
             />
@@ -118,7 +119,7 @@ export function buildExtraRoleContextMenuItems(role: Role, guild: Guild, popoutR
             <Menu.MenuItem
                 key="vc-view-role-icon"
                 id="vc-view-role-icon"
-                label="View Role Icon"
+                label={t("View Role Icon")}
                 action={() => {
                     openImageModal({
                         url: `${location.protocol}//${window.GLOBAL_ENV.CDN_HOST}/role-icons/${role.id}/${role.icon}.${settings.store.roleIconFileFormat}`,
@@ -133,7 +134,7 @@ export function buildExtraRoleContextMenuItems(role: Role, guild: Guild, popoutR
             <Menu.MenuItem
                 key="vc-view-role-members"
                 id="vc-view-role-members"
-                label="View Role Members"
+                label={t("View Role Members")}
                 render={() => (
                     <Popout
                         position="right"
@@ -156,7 +157,7 @@ export function buildExtraRoleContextMenuItems(role: Role, guild: Guild, popoutR
                                 role="menuitem"
                                 {...popoutProps}
                             >
-                                <div className={MenuItemClasses.label}>View Role Members</div>
+                                <div className={MenuItemClasses.label}>{t("View Role Members")}</div>
                                 <div className={MenuItemClasses.iconContainer}>
                                     <RoleMembersIcon />
                                 </div>
@@ -206,7 +207,7 @@ export default definePlugin({
     name: "BetterRoleContext",
     description: "Adds options to copy role color / edit role / view role icon when right clicking roles in the user profile or in the member list",
     tags: ["Roles", "Appearance"],
-    authors: [Devs.Ven, Devs.goodbee, Devs.nightmaresan],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     dependencies: ["UserSettingsAPI"],
     settings,
     openRoleContextMenu,
@@ -223,7 +224,7 @@ export default definePlugin({
         {
             find: 'tutorialId:"whos-online',
             replacement: {
-                match: /(?<=#{intl::CHANNEL_MEMBERS_A11Y_LABEL}.{0,200}?"aria-hidden":!0,)children:.{0,200}?(?:—|\\u2014) ",\i\]\}\)\]/,
+                match: /(?<=#{intl::CHANNEL_MEMBERS_A11Y_LABEL}.{0,200}?"aria-hidden":!0,)children:.{0,200}?(?:\u2014|\\u2014) ",\i\]\}\)\]/,
                 replace: "onContextMenu:e=>$self.openRoleContextMenu(e,arguments[0]),$&"
             }
         }

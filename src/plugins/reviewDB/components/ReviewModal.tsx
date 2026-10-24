@@ -9,6 +9,7 @@ import { Auth } from "@plugins/reviewDB/auth";
 import { ReviewType } from "@plugins/reviewDB/entities";
 import { REVIEWS_PER_PAGE, UserReviewsData } from "@plugins/reviewDB/reviewDbApi";
 import { cl } from "@plugins/reviewDB/utils";
+import { t as translateText } from "@utils/i18n";
 import { useForceUpdater } from "@utils/react";
 import { DefaultExtractAndLoadChunksRegex, extractAndLoadChunksLazy, findComponentByCodeLazy } from "@webpack";
 import { Modal,openModalLazy, Text, useRef, useState } from "@webpack/common";
@@ -37,8 +38,7 @@ function ReviewsModal({ modalProps, modalKey, discordId, name, type }: { modalPr
             size="lg"
             title={
                 <Text variant="heading-lg/semibold" className={cl("modal-header")}>
-                    {name}'s Reviews
-                    {!!reviewCount && <span> ({reviewCount} Reviews)</span>}
+                    {name}{translateText("'s Reviews")}{!!reviewCount && <span> ({reviewCount}{" "}{translateText("Reviews)")}</span>}
                 </Text>
             }
             preview={

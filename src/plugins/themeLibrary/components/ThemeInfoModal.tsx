@@ -12,6 +12,7 @@ import { Theme, ThemeInfoModalProps } from "@equicordplugins/themeLibrary/types"
 import { ClockIcon, WarningIcon } from "@equicordplugins/themeLibrary/utils/Icons";
 import { copyToClipboard } from "@utils/clipboard";
 import { openInviteModal } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import type { PluginNative } from "@utils/types";
 import { findComponentByCodeLazy } from "@webpack";
@@ -69,7 +70,7 @@ export const ThemeInfoModal: React.FC<ThemeInfoModalProps> = ({ author, theme, .
                                 <Modal
                                     {...modalProps}
                                     size="sm"
-                                    title="Conflict!"
+                                    title={t("Conflict!")}
                                     actions={[
                                         {
                                             text: "Overwrite",
@@ -88,7 +89,7 @@ export const ThemeInfoModal: React.FC<ThemeInfoModalProps> = ({ author, theme, .
                                 >
                                     <Paragraph style={{ padding: "8px" }}>
                                         <div style={{ display: "flex", flexDirection: "column" }}>
-                                            <p>A theme with the same name <b>already exists</b> in your themes directory! Do you want to overwrite it?</p>
+                                            <p>{t("A theme with the same name")}{" "}<b>{t("already exists")}</b>{" "}{t("in your themes directory! Do you want to overwrite it?")}</p>
                                             <div className="vce-overwrite-modal">
                                                 <code style={{ wordWrap: "break-word" }}>
                                                     {fileName}
@@ -126,33 +127,31 @@ export const ThemeInfoModal: React.FC<ThemeInfoModalProps> = ({ author, theme, .
                     </div>
                     {version && (
                         <>
-                            <Heading style={{ marginTop: "10px" }}>Version</Heading>
+                            <Heading style={{ marginTop: "10px" }}>{t("Version")}</Heading>
                             <Paragraph>
                                 {version}
                             </Paragraph>
                         </>
                     )}
-                    <Heading style={{ marginTop: "10px" }}>Likes</Heading>
+                    <Heading style={{ marginTop: "10px" }}>{t("Likes")}</Heading>
                     <Paragraph>
                         {likes === 0 ? `Nobody liked this ${type} yet.` : `${likes} users liked this ${type}!`}
                     </Paragraph>
                     {donate && (
                         <>
-                            <Heading style={{ marginTop: "10px" }}>Donate</Heading>
+                            <Heading style={{ marginTop: "10px" }}>{t("Donate")}</Heading>
                             <Paragraph>
-                                You can support the author by donating below!
-                            </Paragraph>
+                                {t("You can support the author by donating below!")}</Paragraph>
                             <Paragraph style={{ marginTop: "10px" }}>
                                 <Button onClick={() => EndcordNative.native.openExternal(donate)}>
                                     <Heart />
-                                    Donate
-                                </Button>
+                                    {t("Donate")}</Button>
                             </Paragraph>
                         </>
                     )}
                     {(guild || invite) && (
                         <>
-                            <Heading style={{ marginTop: "10px" }}>Support Server</Heading>
+                            <Heading style={{ marginTop: "10px" }}>{t("Support Server")}</Heading>
                             {guild && (
                                 <Paragraph>
                                     {guild.name}
@@ -169,12 +168,11 @@ export const ThemeInfoModal: React.FC<ThemeInfoModalProps> = ({ author, theme, .
                                         useInvite != null && openInviteModal(useInvite).catch(() => showToast("Invalid or expired invite!", Toasts.Type.FAILURE));
                                     }}
                                 >
-                                    Join Discord Server
-                                </Button>
+                                    {t("Join Discord Server")}</Button>
                             </Paragraph>
                         </>
                     )}
-                    <Heading style={{ marginTop: "10px" }}>Source</Heading>
+                    <Heading style={{ marginTop: "10px" }}>{t("Source")}</Heading>
                     <Paragraph>
                         <Button
                             disabled={!theme.content || theme.id === "preview"}
@@ -182,7 +180,7 @@ export const ThemeInfoModal: React.FC<ThemeInfoModalProps> = ({ author, theme, .
                                 <Modal
                                     {...modalProps}
                                     size="lg"
-                                    title="Theme Source"
+                                    title={t("Theme Source")}
                                     actions={[
                                         {
                                             text: "Close",
@@ -205,12 +203,11 @@ export const ThemeInfoModal: React.FC<ThemeInfoModalProps> = ({ author, theme, .
                                 </Modal>
                             ))}
                         >
-                            View Theme Source
-                        </Button>
+                            {t("View Theme Source")}</Button>
                     </Paragraph>
                     {tags && (
                         <>
-                            <Heading style={{ marginTop: "10px" }}>Tags</Heading>
+                            <Heading style={{ marginTop: "10px" }}>{t("Tags")}</Heading>
                             <Paragraph>
                                 {tags.map(tag => (
                                     <span className="vce-theme-info-tag" key={"vce-theme-info-tag"}>
@@ -222,12 +219,11 @@ export const ThemeInfoModal: React.FC<ThemeInfoModalProps> = ({ author, theme, .
                     )}
                     {requiresThemeAttributes && (
                         <Paragraph style={{ marginTop: "10px" }}>
-                            <WarningIcon /> This theme requires the <b>ThemeAttributes</b> plugin!
-                        </Paragraph>
+                            <WarningIcon />{" "}{t("This theme requires the")}{" "}<b>{t("ThemeAttributes")}</b>{" "}{t("plugin!")}</Paragraph>
                     )}
                     {last_updated && (
                         <Paragraph style={{ marginTop: "10px" }}>
-                            <ClockIcon /> This theme was last updated {Parser.parse("<t:" + lastUpdated + ":F>")} ({Parser.parse("<t:" + lastUpdated + ":R>")})
+                            <ClockIcon />{" "}{t("This theme was last updated")}{" "}{Parser.parse("<t:" + lastUpdated + ":F>")} ({Parser.parse("<t:" + lastUpdated + ":R>")})
                         </Paragraph>
                     )}
                 </div>

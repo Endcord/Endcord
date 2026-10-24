@@ -4,12 +4,13 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { t } from "@utils/i18n";
+
 import gitHash from "~git-hash";
 
 import { Logger } from "./Logger";
 import { relaunch } from "./native";
 import { IpcRes } from "./types";
-
 export const UpdateLogger = /* #__PURE__*/ new Logger("Updater", "white");
 export let isOutdated = false;
 export let isNewer = false;
@@ -63,7 +64,7 @@ export async function maybePromptToUpdate(confirmMessage: string, checkForDev = 
         const isOutdated = await checkForUpdates();
         if (isOutdated) {
             const wantsUpdate = confirm(confirmMessage);
-            if (wantsUpdate && isNewer) return alert("Your local copy has more recent commits. Please stash or reset them.");
+            if (wantsUpdate && isNewer) return alert(t("Your local copy has more recent commits. Please stash or reset them."));
             if (wantsUpdate) {
                 await update();
                 relaunch();
@@ -71,6 +72,6 @@ export async function maybePromptToUpdate(confirmMessage: string, checkForDev = 
         }
     } catch (err) {
         UpdateLogger.error(err);
-        alert("That also failed :( Try updating or re-installing with the installer!");
+        alert(t("The update didn't go through :( Grab the latest installer and reinstall, that always does the trick!"));
     }
 }

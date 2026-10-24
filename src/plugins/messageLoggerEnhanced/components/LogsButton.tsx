@@ -19,6 +19,7 @@
 import { HeaderBarButton } from "@api/HeaderBar";
 import { LogsIcon } from "@components/Icons";
 import { cl } from "@equicordplugins/messageLoggerEnhanced/index";
+import { t } from "@utils/i18n";
 
 import { openLogModal } from "./LogsModal";
 
@@ -27,7 +28,7 @@ export function OpenLogsButton() {
         <HeaderBarButton
             className={cl("toolbox-btn")}
             onClick={() => openLogModal()}
-            tooltip={"Open Logs"}
+            tooltip={t("Open Logs")}
             icon={LogsIcon}
         />
     );

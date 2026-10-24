@@ -5,9 +5,9 @@
  */
 
 import type { Quest } from "@endcord/discord-types";
+import { fetchAndAlertQuests } from "@plugins/questify/utils/fetching";
+import { QL } from "@plugins/questify/utils/logging";
 
-import { fetchAndAlertQuests } from "../utils/fetching";
-import { QL } from "../utils/logging";
 import { getCurrentUserId, getQuestifySettings } from "./access";
 
 let autoFetchInterval: null | ReturnType<typeof setInterval> = null;

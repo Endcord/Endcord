@@ -11,6 +11,7 @@ import { OpenExternalIcon } from "@components/Icons";
 import { Paragraph } from "@components/Paragraph";
 import { copyToClipboard } from "@utils/clipboard";
 import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import { OptionType } from "@utils/types";
 import { Button, Toasts } from "@webpack/common";
 
@@ -57,23 +58,20 @@ export const settings = definePluginSettings({
 
             return (
                 <section>
-                    <HeadingSecondary style={{ marginTop: 0, marginBottom: 8 }}>ThemeLibrary Auth</HeadingSecondary>
+                    <HeadingSecondary style={{ marginTop: 0, marginBottom: 8 }}>{t("ThemeLibrary Auth")}</HeadingSecondary>
                     <div className={cl("button-grid")}>
                         <Button onClick={() => authorizeUser()}>
-                            Authorize with ThemeLibrary
-                        </Button>
+                            {t("Authorize with ThemeLibrary")}</Button>
                         <Button onClick={handleClick}>
-                            Copy ThemeLibrary Token
-                        </Button>
+                            {t("Copy ThemeLibrary Token")}</Button>
                         <Button color={Button.Colors.RED} onClick={() => deauthorizeUser()}>
-                            Deauthorize ThemeLibrary
-                        </Button>
+                            {t("Deauthorize ThemeLibrary")}</Button>
                     </div>
-                    <HeadingSecondary style={{ marginTop: 8, marginBottom: 8 }}>Theme Removal</HeadingSecondary>
-                    <Paragraph style={{ marginTop: 0, marginBottom: 8 }}> All Theme Authors are given credit in the theme info, no source has been modified, if you wish your theme to be removed anyway, open an Issue by clicking below.</Paragraph>
+                    <HeadingSecondary style={{ marginTop: 8, marginBottom: 8 }}>{t("Theme Removal")}</HeadingSecondary>
+                    <Paragraph style={{ marginTop: 0, marginBottom: 8 }}>{" "}{t("All Theme Authors are given credit in the theme info, no source has been modified, if you wish your theme to be removed anyway, open an Issue by clicking below.")}</Paragraph>
                     <div className={cl("button-grid")}>
                         <Button onClick={() => EndcordNative.native.openExternal("https://github.com/Faf4a/plugins/issues/new?labels=removal&projects=&template=request_removal.yml&title=Theme+Removal")}>
-                            Request Theme Removal <OpenExternalIcon height={16} width={16} />
+                            {t("Request Theme Removal")}{" "}<OpenExternalIcon height={16} width={16} />
                         </Button>
                     </div>
                 </section>

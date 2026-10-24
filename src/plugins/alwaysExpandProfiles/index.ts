@@ -11,7 +11,7 @@ export default definePlugin({
     name: "AlwaysExpandProfiles",
     description: "Always expands profile popouts to the full modal",
     tags: ["Appearance", "Utility"],
-    authors: [Devs.thororen],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     patches: [
         {
             find: '"view-profile"',

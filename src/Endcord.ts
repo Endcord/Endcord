@@ -31,11 +31,11 @@ import { NotificationData, showNotification } from "./api/Notifications";
 import { initPluginManager, PMLogger, startAllPlugins } from "./api/PluginManager";
 import { PlainSettings, Settings, SettingsStore } from "./api/Settings";
 import { areLocalSettingsDirty, getCloudSettings, getCloudSyncDirection, markLocalSettingsDirty, putCloudSettings, shouldCloudSync } from "./api/SettingsSync/cloudSync";
+import { getCurrentLang, syncDiscordLocale, t } from "./utils/i18n";
 import { relaunch } from "./utils/native";
 import { checkForUpdates, update, UpdateLogger } from "./utils/updater";
 import { onceReady } from "./webpack";
 import { patches } from "./webpack/patchWebpack";
-
 if (IS_REPORTER) {
     require("./debug/runReporter");
 }
@@ -48,7 +48,7 @@ async function syncSettings() {
     ) {
         // show a notification letting them know and tell them how to fix it
         showNotification({
-            title: "Cloud Integrations",
+            title: t("Cloud Integrations"),
             body: "We've noticed you have cloud integrations enabled in another client! Due to limitations, you will " +
                 "need to re-authenticate to continue using them. Click here to go to the settings page to do so!",
             color: "var(--yellow-360)",
@@ -70,8 +70,8 @@ async function syncSettings() {
             // there was an error to notify the user, but besides that we only want to show one notification instead of all
             // of the possible ones it has (such as when your settings are newer).
             showNotification({
-                title: "Cloud Settings",
-                body: "Your settings have been updated! Click here to restart to fully apply changes!",
+                title: t("Cloud Settings"),
+                body: t("Your settings have been updated! Click here to restart to fully apply changes!"),
                 color: "var(--green-360)",
                 onClick: relaunch
             });
@@ -114,8 +114,8 @@ async function runUpdateCheck() {
             await update();
             if (Settings.autoUpdateNotification) {
                 notify({
-                    title: "Endcord has been updated!",
-                    body: "Click here to restart",
+                    title: t("Endcord has been updated!"),
+                    body: t("Click here to restart"),
                     onClick: relaunch
                 });
             }
@@ -123,8 +123,8 @@ async function runUpdateCheck() {
         }
 
         notify({
-            title: "A Endcord update is available!",
-            body: "Click here to view the update",
+            title: t("An Endcord update is available!"),
+            body: t("Click here to view the update"),
             onClick: () => openSettingsTabModal(UpdaterTab!)
         });
     } catch (err) {
@@ -135,6 +135,10 @@ async function runUpdateCheck() {
 async function init() {
     await onceReady;
     startAllPlugins(StartAt.WebpackReady);
+
+    try {
+        syncDiscordLocale(getCurrentLang());
+    } catch { }
 
     syncSettings();
 
@@ -157,6 +161,11 @@ async function init() {
                 "\n\n" + pendingPatches.map(p => `${p.plugin}: ${p.find}`).join("\n")
             );
     }
+}
+
+if (typeof window !== "undefined") {
+    (window as any).Vencord ??= (window as any).Endcord;
+    (window as any).Equicord ??= (window as any).Endcord;
 }
 
 initPluginManager();

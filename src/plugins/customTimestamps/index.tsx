@@ -11,7 +11,8 @@ import { Divider } from "@components/Divider";
 import { Heading, HeadingPrimary } from "@components/Heading";
 import { Link } from "@components/Link";
 import { Paragraph } from "@components/Paragraph";
-import { Devs, EquicordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import { useForceUpdater } from "@utils/react";
 import definePlugin, { OptionType } from "@utils/types";
@@ -92,10 +93,9 @@ const settings = definePluginSettings({
                             {key === "sameDayFormat" && (
                                 <div className={Margins.bottom20}>
                                     <Divider style={{ marginBottom: "10px" }} />
-                                    <Heading tag="h1">Calendar formats</Heading>
+                                    <Heading tag="h1">{t("Calendar formats")}</Heading>
                                     <Paragraph>
-                                        How to format the [calendar] value if used in the above timestamps.
-                                    </Paragraph>
+                                        {t("How to format the [calendar] value if used in the above timestamps.")}</Paragraph>
                                 </div>
                             )}
                             <TimeRow
@@ -126,18 +126,17 @@ export default definePlugin({
     name: "CustomTimestamps",
     description: "Custom timestamps on messages and tooltips",
     tags: ["Appearance", "Customisation"],
-    authors: [Devs.Rini, EquicordDevs.nvhhr, EquicordDevs.Suffocate, Devs.Obsidian],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
     settingsAboutComponent: () => (
         <div className={"vc-cmt-info-card"}>
-            <HeadingPrimary>How to use:</HeadingPrimary>
+            <HeadingPrimary>{t("How to use:")}</HeadingPrimary>
             <Paragraph>
-                <Link href="https://momentjs.com/docs/#/displaying/format/">Moment.js formatting documentation</Link>
+                <Link href="https://momentjs.com/docs/#/displaying/format/">{t("Moment.js formatting documentation")}</Link>
                 <div className={Margins.top8}>
-                    Additionally you can use these in your inputs:<br />
-                    <b>[calendar]</b> enables dynamic date formatting such
-                    as &quot;Today&quot; or &quot;Yesterday&quot;.<br />
-                    <b>[relative]</b> gives you times such as &quot;4 hours ago&quot;.<br />
+                    {t("Additionally you can use these in your inputs:")}<br />
+                    <b>{t("[calendar]")}</b> {" "}{t("enables dynamic date formatting such as \"Today\" or \"Yesterday\".")}<br />
+                    <b>{t("[relative]")}</b> {" "}{t("gives you times such as \"4 hours ago\".")}<br />
                 </div>
             </Paragraph>
         </div>

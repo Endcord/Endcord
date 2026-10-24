@@ -5,13 +5,13 @@
  */
 
 import { findOption, RequiredMessageOption, sendBotMessage } from "@api/Commands";
-import { EndcordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 
 export default definePlugin({
     name: "Calculator",
     description: "/calc does quick maths right in the chat box.",
-    authors: [EndcordDevs.Dann],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     dependencies: ["CommandsAPI"],
     commands: [
         {

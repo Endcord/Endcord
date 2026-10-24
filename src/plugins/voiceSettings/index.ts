@@ -5,8 +5,8 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
-import { Logger } from "@utils/Logger";
 import { Devs } from "@utils/constants";
+import { Logger } from "@utils/Logger";
 import definePlugin, { makeRange, OptionType } from "@utils/types";
 import { findByPropsLazy } from "@webpack";
 import { FluxDispatcher } from "@webpack/common";
@@ -104,16 +104,16 @@ export default definePlugin({
     name: "VoiceSettings",
     description: "Fine-grained voice audio controls: Opus bitrate, stereo capture, noise suppression mode, echo cancellation, auto gain control, and extended PTT delay.",
     tags: ["Voice", "Utility"],
-    authors: [Devs.ewlle, Devs.rootpoi, Devs.kraethis],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     settings,
 
     patches: [
 
         {
-            find: "mediaBitrate:",
+            find: ".setTransportOptions({encodingVoiceBitRate:",
             replacement: {
-                match: /(?<=mediaBitrate:)\d+/,
-                replace: "$self.settings.store.voiceBitrateKbps*1000",
+                match: /setVoiceBitRate\((\i)\)\{/,
+                replace: "$&$1=$self.settings.store.voiceBitrateKbps*1000;",
             },
             noWarn: true,
         },

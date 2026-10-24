@@ -4,13 +4,12 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { Logger } from "@utils/Logger";
-import { PluginNative } from "@utils/types";
 import { Activity } from "@endcord/discord-types";
 import { ActivityFlags, ActivityType } from "@endcord/discord-types/enums";
+import { settings } from "@plugins/richPresence/settings";
+import { Logger } from "@utils/Logger";
+import { PluginNative } from "@utils/types";
 import { ApplicationAssetUtils, FluxDispatcher } from "@webpack/common";
-
-import { settings } from "../settings";
 
 const Native = EndcordNative.pluginHelpers.RichPresence as PluginNative<typeof import("../native")>;
 const logger = new Logger("RichPresence:GensokyoRadio");

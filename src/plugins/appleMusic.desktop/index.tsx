@@ -9,6 +9,7 @@ import { Paragraph } from "@components/Paragraph";
 import { Activity, ActivityAssets, ActivityButton } from "@endcord/discord-types";
 import { ActivityFlags, ActivityStatusDisplayType, ActivityType } from "@endcord/discord-types/enums";
 import { Devs, IS_MAC } from "@utils/constants";
+import { t } from "@utils/i18n";
 import definePlugin, { OptionType, PluginNative, ReporterTestable } from "@utils/types";
 import { ApplicationAssetUtils, FluxDispatcher } from "@webpack/common";
 
@@ -207,16 +208,15 @@ export default definePlugin({
     name: "AppleMusicRichPresence",
     description: "Discord rich presence for your Apple Music!",
     tags: ["Activity", "Media"],
-    authors: [Devs.RyanCaoDev],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     hidden: !IS_MAC,
     reporterTestable: ReporterTestable.None,
 
     settingsAboutComponent() {
         return <>
             <Paragraph>
-                For the customizable activity format strings, you can use several special strings to include track data in activities!{" "}
-                <code>{"{name}"}</code> is replaced with the track name; <code>{"{artist}"}</code> is replaced with the artist(s)' name(s); and <code>{"{album}"}</code> is replaced with the album name.
-            </Paragraph>
+                {t("For the customizable activity format strings, you can use several special strings to include track data in activities!")}{" "}
+                <code>{"{name}"}</code>{" "}{t("is replaced with the track name;")}{" "}<code>{"{artist}"}</code>{" "}{t("is replaced with the artist(s)' name(s); and")}{" "}<code>{"{album}"}</code>{" "}{t("is replaced with the album name.")}</Paragraph>
         </>;
     },
 

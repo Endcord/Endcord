@@ -6,6 +6,7 @@
 
 import { showNotification } from "@api/Notifications";
 import { PlainSettings, Settings } from "@api/Settings";
+import { t } from "@utils/i18n";
 import { localStorage } from "@utils/localStorage";
 import { Logger } from "@utils/Logger";
 import { relaunch } from "@utils/native";
@@ -13,7 +14,6 @@ import { deflateSync, inflateSync } from "fflate";
 
 import { checkCloudUrlCsp, deauthorizeCloud, getCloudAuth, getCloudUrl } from "./cloudSetup";
 import { exportSettings, importSettings } from "./offline";
-
 const logger = new Logger("SettingsSync:Cloud", "#39b7e0");
 
 const SYNC_DIRECTION_KEY = "Endcord_cloudSyncDirection";
@@ -48,7 +48,7 @@ export async function putCloudSettings(manual?: boolean) {
         if (!res.ok) {
             logger.error(`Failed to sync up, API returned ${res.status}`);
             showNotification({
-                title: "Cloud Settings",
+                title: t("Cloud Settings"),
                 body: `Could not synchronize settings to cloud (API returned ${res.status}).`,
                 color: "var(--red-360)"
             });
@@ -63,8 +63,8 @@ export async function putCloudSettings(manual?: boolean) {
 
         if (manual) {
             showNotification({
-                title: "Cloud Settings",
-                body: "Synchronized settings to the cloud!",
+                title: t("Cloud Settings"),
+                body: t("Synchronized settings to the cloud!"),
                 noPersist: true,
             });
         }
@@ -73,7 +73,7 @@ export async function putCloudSettings(manual?: boolean) {
     } catch (e: any) {
         logger.error("Failed to sync up", e);
         showNotification({
-            title: "Cloud Settings",
+            title: t("Cloud Settings"),
             body: `Could not synchronize settings to the cloud (${e.toString()}).`,
             color: "var(--red-360)"
         });
@@ -97,8 +97,8 @@ export async function getCloudSettings(shouldNotify = true, force = false) {
             logger.info("No settings on the cloud");
             if (shouldNotify)
                 showNotification({
-                    title: "Cloud Settings",
-                    body: "There are no settings in the cloud.",
+                    title: t("Cloud Settings"),
+                    body: t("There are no settings in the cloud."),
                     noPersist: true
                 });
             return false;
@@ -108,8 +108,8 @@ export async function getCloudSettings(shouldNotify = true, force = false) {
             logger.info("Settings up to date");
             if (shouldNotify)
                 showNotification({
-                    title: "Cloud Settings",
-                    body: "Your settings are up to date.",
+                    title: t("Cloud Settings"),
+                    body: t("Your settings are up to date."),
                     noPersist: true
                 });
             return false;
@@ -118,7 +118,7 @@ export async function getCloudSettings(shouldNotify = true, force = false) {
         if (!res.ok) {
             logger.error(`Failed to sync down, API returned ${res.status}`);
             showNotification({
-                title: "Cloud Settings",
+                title: t("Cloud Settings"),
                 body: `Could not synchronize settings from the cloud (API returned ${res.status}).`,
                 color: "var(--red-360)"
             });
@@ -132,8 +132,8 @@ export async function getCloudSettings(shouldNotify = true, force = false) {
         if (!force && written < localWritten) {
             if (shouldNotify)
                 showNotification({
-                    title: "Cloud Settings",
-                    body: "Your local settings are newer than the cloud ones.",
+                    title: t("Cloud Settings"),
+                    body: t("Your local settings are newer than the cloud ones."),
                     noPersist: true,
                 });
             return;
@@ -151,8 +151,8 @@ export async function getCloudSettings(shouldNotify = true, force = false) {
         logger.info("Settings loaded from cloud successfully");
         if (shouldNotify)
             showNotification({
-                title: "Cloud Settings",
-                body: "Your settings have been updated! Click here to restart to fully apply changes!",
+                title: t("Cloud Settings"),
+                body: t("Your settings have been updated! Click here to restart to fully apply changes!"),
                 color: "var(--green-360)",
                 onClick: IS_WEB ? () => location.reload() : relaunch,
                 noPersist: true
@@ -164,7 +164,7 @@ export async function getCloudSettings(shouldNotify = true, force = false) {
     } catch (e: any) {
         logger.error("Failed to sync down", e);
         showNotification({
-            title: "Cloud Settings",
+            title: t("Cloud Settings"),
             body: `Could not synchronize settings from the cloud (${e.toString()}).`,
             color: "var(--red-360)"
         });
@@ -185,7 +185,7 @@ export async function deleteCloudSettings() {
         if (!res.ok) {
             logger.error(`Failed to delete, API returned ${res.status}`);
             showNotification({
-                title: "Cloud Settings",
+                title: t("Cloud Settings"),
                 body: `Could not delete settings (API returned ${res.status}).`,
                 color: "var(--red-360)"
             });
@@ -194,14 +194,14 @@ export async function deleteCloudSettings() {
 
         logger.info("Settings deleted from cloud successfully");
         showNotification({
-            title: "Cloud Settings",
-            body: "Settings deleted from cloud!",
+            title: t("Cloud Settings"),
+            body: t("Settings deleted from cloud!"),
             color: "var(--green-360)"
         });
     } catch (e: any) {
         logger.error("Failed to delete", e);
         showNotification({
-            title: "Cloud Settings",
+            title: t("Cloud Settings"),
             body: `Could not delete settings (${e.toString()}).`,
             color: "var(--red-360)"
         });
@@ -219,7 +219,7 @@ export async function eraseAllCloudData() {
     if (!res.ok) {
         logger.error(`Failed to erase data, API returned ${res.status}`);
         showNotification({
-            title: "Cloud Integrations",
+            title: t("Cloud Integrations"),
             body: `Could not erase all data (API returned ${res.status}), please contact support.`,
             color: "var(--red-360)"
         });
@@ -230,8 +230,8 @@ export async function eraseAllCloudData() {
     await deauthorizeCloud();
 
     showNotification({
-        title: "Cloud Integrations",
-        body: "Successfully erased all data.",
+        title: t("Cloud Integrations"),
+        body: t("Successfully erased all data."),
         color: "var(--green-360)"
     });
 }

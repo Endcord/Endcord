@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import type { User } from "@endcord/discord-types";
 import { Logger } from "@utils/Logger";
 import { isObject } from "@utils/misc";
 import type { PluginNative } from "@utils/types";
-import type { User } from "@endcord/discord-types";
 import { Constants, MediaEngineStore, RestAPI, showToast, SnowflakeUtils, Toasts } from "@webpack/common";
 
 import { convertClipToMp4 } from "./ffmpeg";

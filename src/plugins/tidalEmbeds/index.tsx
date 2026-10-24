@@ -4,14 +4,15 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { EquicordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import definePlugin from "@utils/types";
 
 export default definePlugin({
     name: "TidalEmbeds",
     description: "Embeds TIDAL songs to make them playable in Discord.",
     tags: ["Appearance", "Chat", "Media"],
-    authors: [EquicordDevs.vmohammad],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     dependencies: ["MessageUpdaterAPI", "MessageAccessoriesAPI"],
     patches: [
         {
@@ -53,7 +54,7 @@ export default definePlugin({
                     height={height}
                     allow="encrypted-media"
                     sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
-                    title="TIDAL Embed Player"
+                    title={t("TIDAL Embed Player")}
                 />
             </div>
         );

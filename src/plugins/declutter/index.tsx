@@ -12,8 +12,9 @@ import { Divider } from "@components/Divider";
 import { HeadingSecondary } from "@components/Heading";
 import { Notice } from "@components/Notice";
 import decor from "@plugins/decor";
-import { Devs, EquicordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 
 migratePluginSetting("Declutter", "removeShopAboveDms", "removeShopAboveDM");
@@ -78,9 +79,7 @@ export const settings = definePluginSettings({
         type: OptionType.COMPONENT,
         component: () => (
             <Notice.Info className={cl("accessibility-notice")}>
-                Discord already has a built-in username style option in
-                Accessibility settings.
-            </Notice.Info>
+                {t("Discord already has a built-in username style option in Accessibility settings.")}</Notice.Info>
         ),
     },
     friendsListHeader: {
@@ -169,7 +168,7 @@ export default definePlugin({
     description:
         "Cleans up Discord by removing non-essential UI elements like profile effects, shop tabs, boosts, and more.",
     tags: ["Appearance", "Customisation"],
-    authors: [EquicordDevs.Leon135, Devs.prism, Devs.Kyuuhachi, Devs.SomeAspy],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     start() {
         if (isPluginEnabled("Decor") && settings.store.removeAvatarDecoration)
             settings.store.removeAvatarDecoration = false;
@@ -224,7 +223,7 @@ export default definePlugin({
                     predicate: () => settings.store.removeNameplate,
                 },
                 {
-                    match: /let\{ref:\i,speaking:\i,voiceDb:/,
+                    match: /let\{ref:\i,speaking:\i,(?:playingSoundboard:\i,)?voiceDb:/,
                     replace: "arguments[0].nameplate=null;$&",
                     predicate: () => settings.store.removeNameplate,
                 },

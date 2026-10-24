@@ -6,9 +6,10 @@
 
 import { generateId } from "@api/Commands";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { classNameFactory } from "@utils/css";
-import { LazyComponent } from "@utils/react";
 import type { Message, MessageAttachment } from "@endcord/discord-types";
+import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
+import { LazyComponent } from "@utils/react";
 import { find, findByCodeLazy } from "@webpack";
 import { moment, SelectedChannelStore, useEffect, useMemo, useRef, UserStore, useState } from "@webpack/common";
 
@@ -127,7 +128,7 @@ export function MessageMarkdownPreview({ content, channelId, files }: {
 
     return (
         <div className={cl("markdown-preview")}>
-            <div className={cl("markdown-preview-label")}>Preview</div>
+            <div className={cl("markdown-preview-label")}>{t("Preview")}</div>
             <div className={cl("markdown-preview-body")}>
                 {content.trim() && message && (
                     <ErrorBoundary noop>

@@ -6,18 +6,19 @@
 
 import { plugins } from "@api/PluginManager";
 import { ErrorBoundary } from "@components/index";
+import { getQuestifySettings, useQuestifySettings } from "@plugins/questify/settings/access";
+import type { QuestButtonAction, QuestButtonDisplayMode, QuestButtonIndicatorMode } from "@plugins/questify/settings/def";
+import { getIgnoredQuestIDs, ignoreAllQuests, resetIgnoredQuests } from "@plugins/questify/settings/ignoredQuests";
+import { rerenderQuests } from "@plugins/questify/settings/rerender";
+import { initialQuestDataFetched } from "@plugins/questify/state";
+import { getActiveAutoCompletes, getQueueableAutoCompleteQuests, isQuestEnrollmentRateLimited, isQueueAllAutoCompleteQuestsInProgress, queueAllAutoCompleteQuests, stopAllAutoCompletes } from "@plugins/questify/utils/completion";
+import { fetchAndAlertQuests } from "@plugins/questify/utils/fetching";
+import { decimalToRGB, formatLowerBadge, isDarkish, leftClick, middleClick, q, QUEST_PAGE, rightClick } from "@plugins/questify/utils/ui";
+import { t } from "@utils/i18n";
 import { findComponentByCodeLazy } from "@webpack";
 import { ContextMenuApi, Menu, NavigationRouter, useState } from "@webpack/common";
 import type { CSSProperties, JSX, MouseEvent } from "react";
 
-import { getQuestifySettings, useQuestifySettings } from "../settings/access";
-import type { QuestButtonAction, QuestButtonDisplayMode, QuestButtonIndicatorMode } from "../settings/def";
-import { getIgnoredQuestIDs, ignoreAllQuests, resetIgnoredQuests } from "../settings/ignoredQuests";
-import { rerenderQuests } from "../settings/rerender";
-import { initialQuestDataFetched } from "../state";
-import { getActiveAutoCompletes, getQueueableAutoCompleteQuests, isQuestEnrollmentRateLimited, isQueueAllAutoCompleteQuestsInProgress, queueAllAutoCompleteQuests, stopAllAutoCompletes } from "../utils/completion";
-import { fetchAndAlertQuests } from "../utils/fetching";
-import { decimalToRGB, formatLowerBadge, isDarkish, leftClick, middleClick, q, QUEST_PAGE, rightClick } from "../utils/ui";
 import { openQuestifySettingsModal } from "./settingsModal";
 
 const GuildlessServerListItemComponent = findComponentByCodeLazy("tooltip:", "lowerBadgeSize:");
@@ -118,7 +119,7 @@ function QuestButtonView({
                     <div className={buttonContainerClass}>
                         <GuildlessServerListItemComponent
                             icon={() => icon}
-                            tooltip="Quests"
+                            tooltip={t("Quests")}
                             showPill={false}
                             selected={selected}
                             className={buttonClass}
@@ -212,13 +213,13 @@ export function QuestButtonContextMenu({ dummy = false }: { dummy?: boolean; }):
         >
             <Menu.MenuItem
                 id={q(`${navId}-mark-all-ignored`)}
-                label="Mark All Ignored"
+                label={t("Mark All Ignored")}
                 action={ignoreAllQuests}
                 disabled={markAllIgnoredDisabled}
             />
             <Menu.MenuItem
                 id={q(`${navId}-reset-ignored-list`)}
-                label="Reset Ignored List"
+                label={t("Reset Ignored List")}
                 action={resetIgnoredQuests}
                 disabled={resetIgnoredDisabled}
             />
@@ -241,7 +242,7 @@ export function QuestButtonContextMenu({ dummy = false }: { dummy?: boolean; }):
             {clearQueueVisible && (
                 <Menu.MenuItem
                     id={q(`${navId}-clear-queue`)}
-                    label="Clear Quest Queue"
+                    label={t("Clear Quest Queue")}
                     action={() => {
                         stopAllAutoCompletes({
                             manual: true,
@@ -255,7 +256,7 @@ export function QuestButtonContextMenu({ dummy = false }: { dummy?: boolean; }):
             )}
             <Menu.MenuItem
                 id={q(`${navId}-fetch-quests`)}
-                label="Fetch Quests"
+                label={t("Fetch Quests")}
                 action={() => { void fetchAndAlertQuests("MANUAL_FETCH"); }}
                 disabled={fetchQuestsDisabled}
             />

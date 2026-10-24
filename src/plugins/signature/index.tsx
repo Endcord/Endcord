@@ -8,7 +8,8 @@ import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
 import { ApplicationCommandInputType, ApplicationCommandOptionType, findOption, sendBotMessage } from "@api/Commands";
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { definePluginSettings } from "@api/Settings";
-import { Devs, EquicordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
+import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 import { Menu, React } from "@webpack/common";
 
@@ -90,7 +91,7 @@ const ChatBarContextCheckbox: NavContextMenuPatchCallback = children => {
     group.splice(idx + 1, 0,
         <Menu.MenuCheckboxItem
             id="vc-Signature"
-            label="Enable Signature"
+            label={t("Enable Signature")}
             checked={isEnabled}
             action={() => settings.store.isEnabled = !settings.store.isEnabled}
         />
@@ -102,7 +103,7 @@ export default definePlugin({
     description: "Automated fingerprint/end text",
     dependencies: ["CommandsAPI", "ChatInputButtonAPI", "MessagePopoverAPI"],
     tags: ["Appearance", "Chat"],
-    authors: [Devs.Ven, Devs.Rini, Devs.ImBanana, EquicordDevs.KrystalSkull],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     onBeforeMessageSend(channelId, msg) {
         if (!settings.store.isEnabled) {
             msg.content = msg.content;

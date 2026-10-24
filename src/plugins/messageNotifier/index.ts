@@ -6,11 +6,11 @@
 
 import { Notifications } from "@api/index";
 import { definePluginSettings } from "@api/Settings";
-import { EquicordDevs } from "@utils/constants";
-import { getCurrentChannel } from "@utils/discord";
-import definePlugin, { OptionType } from "@utils/types";
 import { MessageJSON } from "@endcord/discord-types";
 import { MessageType } from "@endcord/discord-types/enums";
+import { Devs } from "@utils/constants";
+import { getCurrentChannel } from "@utils/discord";
+import definePlugin, { OptionType } from "@utils/types";
 import { ChannelStore, GuildStore, NavigationRouter, RelationshipStore } from "@webpack/common";
 
 interface MessageCreatePayload {
@@ -35,7 +35,7 @@ const settings = definePluginSettings({
 });
 
 export default definePlugin({
-    authors: [EquicordDevs.cassie, EquicordDevs.mochienya],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     name: "MessageNotifier",
     description: "Get toasts for when chosen users send a message",
     tags: ["Chat", "Notifications"],

@@ -6,10 +6,11 @@
 
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { definePluginSettings } from "@api/Settings";
-import { Devs, EquicordDevs } from "@utils/constants";
-import { insertTextIntoChatInputBox } from "@utils/discord";
-import definePlugin, { makeRange, OptionType } from "@utils/types";
 import type { Channel } from "@endcord/discord-types";
+import { Devs } from "@utils/constants";
+import { insertTextIntoChatInputBox } from "@utils/discord";
+import { t } from "@utils/i18n";
+import definePlugin, { makeRange, OptionType } from "@utils/types";
 import { GuildChannelStore, Menu, React, RestAPI, UserStore, VoiceStateStore } from "@webpack/common";
 
 async function runSequential<T>(promises: Promise<T>[]): Promise<T[]> {
@@ -77,21 +78,21 @@ const VoiceChannelContext: NavContextMenuPatchCallback = (children, { channel }:
         -1,
         0,
         <Menu.MenuItem
-            label="Voice Tools"
+            label={t("Voice Tools")}
             key="voice-tools"
             id="voice-tools"
         >
             <Menu.MenuItem
                 key="voice-tools-mention-all"
                 id="voice-tools-mention-all"
-                label="Mention all Users"
+                label={t("Mention all Users")}
                 action={() => mentionVoiceUsers(channel)}
             />
 
             <Menu.MenuItem
                 key="voice-tools-disconnect-all"
                 id="voice-tools-disconnect-all"
-                label="Disconnect all"
+                label={t("Disconnect all")}
                 action={() => sendPatch(channel, {
                     channel_id: null,
                 })}
@@ -100,7 +101,7 @@ const VoiceChannelContext: NavContextMenuPatchCallback = (children, { channel }:
             <Menu.MenuItem
                 key="voice-tools-mute-all"
                 id="voice-tools-mute-all"
-                label="Mute all"
+                label={t("Mute all")}
                 action={() => sendPatch(channel, {
                     mute: true,
                 })}
@@ -109,7 +110,7 @@ const VoiceChannelContext: NavContextMenuPatchCallback = (children, { channel }:
             <Menu.MenuItem
                 key="voice-tools-unmute-all"
                 id="voice-tools-unmute-all"
-                label="Unmute all"
+                label={t("Unmute all")}
                 action={() => sendPatch(channel, {
                     mute: false,
                 })}
@@ -118,7 +119,7 @@ const VoiceChannelContext: NavContextMenuPatchCallback = (children, { channel }:
             <Menu.MenuItem
                 key="voice-tools-deafen-all"
                 id="voice-tools-deafen-all"
-                label="Deafen all"
+                label={t("Deafen all")}
                 action={() => sendPatch(channel, {
                     deaf: true,
                 })}
@@ -127,14 +128,14 @@ const VoiceChannelContext: NavContextMenuPatchCallback = (children, { channel }:
             <Menu.MenuItem
                 key="voice-tools-undeafen-all"
                 id="voice-tools-undeafen-all"
-                label="Undeafen all"
+                label={t("Undeafen all")}
                 action={() => sendPatch(channel, {
                     deaf: false,
                 })}
             />
 
             <Menu.MenuItem
-                label="Move all"
+                label={t("Move all")}
                 key="voice-tools-move-all"
                 id="voice-tools-move-all"
             >
@@ -175,7 +176,7 @@ export default definePlugin({
     name: "VoiceChatUtilities",
     description: "This plugin allows you to perform multiple actions on an entire channel (move, mute, disconnect, etc.) (originally by dutake)",
     tags: ["Chat", "Servers", "Voice"],
-    authors: [Devs.D3SOX, EquicordDevs.nickwoah],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
 
     settings,
 

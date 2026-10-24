@@ -5,14 +5,14 @@
  */
 
 import { ApplicationCommandOptionType, findOption, sendBotMessage } from "@api/Commands";
-import { EndcordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 import { IconUtils, UserStore } from "@webpack/common";
 
 export default definePlugin({
     name: "AvatarGrabber",
     description: "/avatar grabs the full-resolution avatar of any user (or yourself).",
-    authors: [EndcordDevs.Sharp],
+    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
     dependencies: ["CommandsAPI"],
     commands: [
         {

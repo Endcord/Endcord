@@ -8,11 +8,12 @@ import { BaseText } from "@components/BaseText";
 import { Heading } from "@components/Heading";
 import { BookCheckIcon, OpenExternalIcon, PencilIcon, StarFilled, StarOutlined, TrashIcon, UnsendIcon, WindowTopOutlineIcon, XLargeBoldIcon } from "@components/Icons";
 import { Paragraph } from "@components/Paragraph";
+import { RenderModalProps } from "@endcord/discord-types";
 import { bookmarkFolderColors, bookmarkPlaceholderName, closeOtherTabs, closeTab, closeTabsToTheLeft, closeTabsToTheRight, createTab, getDiscordFolderIcon, getDiscordFolderIconNames, hasClosedTabs, isBookmarkFolder, openedTabs, reopenClosedTab, settings, toggleCompactTab } from "@equicordplugins/channelTabs/util";
 import { Bookmark, BookmarkFolder, Bookmarks, ChannelTabsProps, UseBookmarkMethods } from "@equicordplugins/channelTabs/util/types";
 import { getIntlMessage } from "@utils/discord";
+import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
-import { RenderModalProps } from "@endcord/discord-types";
 import { Button, ChannelStore, closeModal, ColorPicker, FluxDispatcher, Menu, Modal, openModal, ReadStateStore, ReadStateUtils, Select, TextInput, useMemo, useState } from "@webpack/common";
 
 const legacyFolderColors: Record<string, string> = {
@@ -55,7 +56,7 @@ export function BasicContextMenu() {
                 <Menu.MenuCheckboxItem
                     checked={showBookmarkBar}
                     id="show-bookmark-bar"
-                    label="Bookmark Bar"
+                    label={t("Bookmark Bar")}
                     action={() => {
                         settings.store.showBookmarkBar = !settings.store.showBookmarkBar;
                     }}
@@ -137,7 +138,7 @@ function FolderIconPickerModal({ modalProps, modalKey, name, color, iconName, on
         <Modal
             {...modalProps}
             size="sm"
-            title={<BaseText size="lg" weight="semibold">Choose Folder Icon</BaseText>}
+            title={<BaseText size="lg" weight="semibold">{t("Choose Folder Icon")}</BaseText>}
             actions={[
                 {
                     text: "Close",
@@ -146,9 +147,9 @@ function FolderIconPickerModal({ modalProps, modalKey, name, color, iconName, on
                 }
             ]}
         >
-            <Heading className={Margins.top16}>Preview</Heading>
+            <Heading className={Margins.top16}>{t("Preview")}</Heading>
             <FolderChipPreview name={name} color={localColor} iconName={iconName} />
-            <Heading className={Margins.top16}>Icon Color</Heading>
+            <Heading className={Margins.top16}>{t("Icon Color")}</Heading>
             <div className={Margins.top8}>
                 <ColorPicker
                     color={colorToInt(localColor)}
@@ -160,7 +161,7 @@ function FolderIconPickerModal({ modalProps, modalKey, name, color, iconName, on
                     showEyeDropper={false}
                 />
             </div>
-            <Heading className={Margins.top16}>Search</Heading>
+            <Heading className={Margins.top16}>{t("Search")}</Heading>
             <TextInput
                 value={search}
                 placeholder={`Search ${iconNames.length} icons...`}
@@ -221,13 +222,13 @@ function FolderAppearanceFields({
     placeholder?: string;
 }) {
     return <>
-        <Heading className={Margins.top16}>Folder Name</Heading>
+        <Heading className={Margins.top16}>{t("Folder Name")}</Heading>
         <TextInput
             value={name === placeholder ? undefined : name}
             placeholder={placeholder}
             onChange={setName}
         />
-        <Heading className={Margins.top16}>Folder Color</Heading>
+        <Heading className={Margins.top16}>{t("Folder Color")}</Heading>
         <div className={Margins.top8}>
             <ColorPicker
                 color={colorToInt(color)}
@@ -235,7 +236,7 @@ function FolderAppearanceFields({
                 showEyeDropper={false}
             />
         </div>
-        <Heading className={Margins.top16}>Folder Icon</Heading>
+        <Heading className={Margins.top16}>{t("Folder Icon")}</Heading>
         <FolderChipPreview name={name} color={color} iconName={iconName} />
         <Button
             className={Margins.top8}
@@ -252,13 +253,13 @@ function FolderAppearanceFields({
                     />
                 ));
             }}
-        >Choose Icon</Button>
+        >{t("Choose Icon")}</Button>
         {iconName && <Button
             className={Margins.top8}
             color={Button.Colors.TRANSPARENT}
             look={Button.Looks.FILLED}
             onClick={() => setIconName(undefined)}
-        >Use Default Icon</Button>}
+        >{t("Use Default Icon")}</Button>}
     </>;
 }
 
@@ -277,7 +278,7 @@ export function EditModal({ modalProps, modalKey, bookmark, onSave }: {
         <Modal
             {...modalProps}
             size="sm"
-            title={<BaseText size="lg" weight="semibold">Edit Bookmark</BaseText>}
+            title={<BaseText size="lg" weight="semibold">{t("Edit Bookmark")}</BaseText>}
             actions={[
                 {
                     text: "Save",
@@ -302,7 +303,7 @@ export function EditModal({ modalProps, modalKey, bookmark, onSave }: {
                     placeholder={placeholder}
                 />
                 : <>
-                    <Heading className={Margins.top16}>Bookmark Name</Heading>
+                    <Heading className={Margins.top16}>{t("Bookmark Name")}</Heading>
                     <TextInput
                         value={name === placeholder ? undefined : name}
                         placeholder={placeholder}
@@ -328,7 +329,7 @@ function AddToFolderModal({ modalProps, modalKey, bookmarks, onSave }: {
         <Modal
             {...modalProps}
             size="sm"
-            title={<BaseText size="lg" weight="semibold">Add Bookmark to Folder</BaseText>}
+            title={<BaseText size="lg" weight="semibold">{t("Add Bookmark to Folder")}</BaseText>}
             actions={[
                 {
                     text: "Save",
@@ -342,7 +343,7 @@ function AddToFolderModal({ modalProps, modalKey, bookmarks, onSave }: {
                 }
             ]}
         >
-            <Heading className={Margins.top16}>Select a folder</Heading>
+            <Heading className={Margins.top16}>{t("Select a folder")}</Heading>
             <Select
                 options={[...Object.entries(bookmarks)
                     .filter(([, bookmark]) => isBookmarkFolder(bookmark))
@@ -380,7 +381,7 @@ function DeleteFolderConfirmationModal({ modalProps, modalKey, onConfirm }: {
         <Modal
             {...modalProps}
             size="sm"
-            title={<BaseText size="lg" weight="semibold">Are you sure?</BaseText>}
+            title={<BaseText size="lg" weight="semibold">{t("Are you sure?")}</BaseText>}
             actions={[
                 {
                     text: "Delete",
@@ -395,8 +396,7 @@ function DeleteFolderConfirmationModal({ modalProps, modalKey, onConfirm }: {
             ]}
         >
             <Paragraph className={Margins.top16}>
-                Deleting a bookmark folder will also delete all bookmarks within it.
-            </Paragraph>
+                {t("Deleting a bookmark folder will also delete all bookmarks within it.")}</Paragraph>
         </Modal>
     );
 }
@@ -426,14 +426,14 @@ export function BookmarkContextMenu({ bookmarks, index, methods }: { bookmarks: 
                 {isFolder
                     ? <Menu.MenuItem
                         id="open-all-in-folder"
-                        label={"Open All Bookmarks"}
+                        label={t("Open All Bookmarks")}
                         icon={StarFilled}
                         leadingAccessory={{ type: "icon", icon: StarFilled }}
                         action={() => bookmark.bookmarks.forEach(b => createTab(b))}
                     />
                     : < Menu.MenuItem
                         id="open-in-tab"
-                        label={"Open in New Tab"}
+                        label={t("Open in New Tab")}
                         icon={OpenExternalIcon}
                         leadingAccessory={{ type: "icon", icon: OpenExternalIcon }}
                         action={() => createTab(bookmark)}
@@ -443,7 +443,7 @@ export function BookmarkContextMenu({ bookmarks, index, methods }: { bookmarks: 
             <Menu.MenuGroup>
                 <Menu.MenuItem
                     id="edit-bookmark"
-                    label="Edit Bookmark"
+                    label={t("Edit Bookmark")}
                     icon={PencilIcon}
                     leadingAccessory={{ type: "icon", icon: PencilIcon }}
                     action={() => {
@@ -466,7 +466,7 @@ export function BookmarkContextMenu({ bookmarks, index, methods }: { bookmarks: 
                 />
                 <Menu.MenuItem
                     id="delete-bookmark"
-                    label="Delete Bookmark"
+                    label={t("Delete Bookmark")}
                     icon={TrashIcon}
                     leadingAccessory={{ type: "icon", icon: TrashIcon }}
                     action={() => {
@@ -486,7 +486,7 @@ export function BookmarkContextMenu({ bookmarks, index, methods }: { bookmarks: 
                 />
                 <Menu.MenuItem
                     id="add-to-folder"
-                    label="Add Bookmark to Folder"
+                    label={t("Add Bookmark to Folder")}
                     icon={PencilIcon}
                     leadingAccessory={{ type: "icon", icon: PencilIcon }}
                     disabled={isFolder}
@@ -515,7 +515,7 @@ export function BookmarkContextMenu({ bookmarks, index, methods }: { bookmarks: 
                 <Menu.MenuCheckboxItem
                     checked={showBookmarkBar}
                     id="show-bookmark-bar"
-                    label="Bookmark Bar"
+                    label={t("Bookmark Bar")}
                     icon={StarOutlined}
                     leadingAccessory={{ type: "icon", icon: StarOutlined }}
                     action={() => {
@@ -552,7 +552,7 @@ export function TabContextMenu({ tab }: { tab: ChannelTabsProps; }) {
                 <Menu.MenuCheckboxItem
                     checked={compact}
                     id="toggle-compact-tab"
-                    label="Compact"
+                    label={t("Compact")}
                     icon={WindowTopOutlineIcon}
                     leadingAccessory={{ type: "icon", icon: WindowTopOutlineIcon }}
                     action={() => {
@@ -564,21 +564,21 @@ export function TabContextMenu({ tab }: { tab: ChannelTabsProps; }) {
             {openedTabs.length !== 1 && <Menu.MenuGroup>
                 <Menu.MenuItem
                     id="close-tab"
-                    label="Close Tab"
+                    label={t("Close Tab")}
                     icon={XLargeBoldIcon}
                     leadingAccessory={{ type: "icon", icon: XLargeBoldIcon }}
                     action={() => closeTab(tab.id)}
                 />
                 <Menu.MenuItem
                     id="close-other-tabs"
-                    label="Close Other Tabs"
+                    label={t("Close Other Tabs")}
                     icon={XLargeBoldIcon}
                     leadingAccessory={{ type: "icon", icon: XLargeBoldIcon }}
                     action={() => closeOtherTabs(tab.id)}
                 />
                 <Menu.MenuItem
                     id="close-right-tabs"
-                    label="Close Tabs to the Right"
+                    label={t("Close Tabs to the Right")}
                     icon={XLargeBoldIcon}
                     leadingAccessory={{ type: "icon", icon: XLargeBoldIcon }}
                     disabled={openedTabs.indexOf(tab) === openedTabs.length - 1}
@@ -586,7 +586,7 @@ export function TabContextMenu({ tab }: { tab: ChannelTabsProps; }) {
                 />
                 <Menu.MenuItem
                     id="close-left-tabs"
-                    label="Close Tabs to the Left"
+                    label={t("Close Tabs to the Left")}
                     icon={XLargeBoldIcon}
                     leadingAccessory={{ type: "icon", icon: XLargeBoldIcon }}
                     disabled={openedTabs.indexOf(tab) === 0}
@@ -594,7 +594,7 @@ export function TabContextMenu({ tab }: { tab: ChannelTabsProps; }) {
                 />
                 <Menu.MenuItem
                     id="reopen-closed-tab"
-                    label="Reopen Closed Tab"
+                    label={t("Reopen Closed Tab")}
                     icon={UnsendIcon}
                     leadingAccessory={{ type: "icon", icon: UnsendIcon }}
                     disabled={!hasClosedTabs()}
@@ -605,7 +605,7 @@ export function TabContextMenu({ tab }: { tab: ChannelTabsProps; }) {
                 <Menu.MenuCheckboxItem
                     checked={showBookmarkBar}
                     id="show-bookmark-bar"
-                    label="Bookmark Bar"
+                    label={t("Bookmark Bar")}
                     icon={StarOutlined}
                     leadingAccessory={{ type: "icon", icon: StarOutlined }}
                     action={() => {

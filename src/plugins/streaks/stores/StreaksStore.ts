@@ -5,10 +5,10 @@
  */
 
 import * as DataStore from "@api/DataStore";
+import { API_URL } from "@plugins/streaks/constants";
 import { proxyLazy } from "@utils/lazy";
 import { UserStore, zustandCreate } from "@webpack/common";
 
-import { API_URL } from "../constants";
 import { useAuthorizationStore } from "./AuthorizationStore";
 
 export interface RemoteStreak {

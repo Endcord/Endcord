@@ -4,14 +4,20 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import type { AudioProcessor } from "@api/AudioPlayer";
 import { ProfileBadge } from "@api/Badges";
-import { ChatBarButtonData } from "@api/ChatButtons";
+import { ChatBarButtonData, ChatBarButtonWrapperData } from "@api/ChatButtons";
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
+import type { HeaderBarButtonData } from "@api/HeaderBar";
 import { MemberListDecoratorFactory } from "@api/MemberListDecorators";
 import { MessageAccessoryFactory } from "@api/MessageAccessories";
 import { MessageDecorationFactory } from "@api/MessageDecorations";
 import { MessageClickListener, MessageEditListener, MessageSendListener } from "@api/MessageEvents";
 import { MessagePopoverButtonData } from "@api/MessagePopover";
+import type { NicknameIconFactory } from "@api/NicknameIcons";
+import type { ProfileCollectionData } from "@api/ProfileCollections";
+import type { ProfileSectionData } from "@api/ProfileSections";
+import type { UserAreaButtonData } from "@api/UserArea";
 import { Command, FluxEvents } from "@endcord/discord-types";
 import { ReactNode } from "react";
 import { LiteralUnion } from "type-fest";
@@ -206,6 +212,14 @@ export interface PluginDef {
     renderMessageDecoration?: MessageDecorationFactory;
 
     renderMemberListDecorator?: MemberListDecoratorFactory;
+
+    renderNicknameIcon?: NicknameIconFactory;
+    headerBarButton?: HeaderBarButtonData;
+    audioProcessor?: AudioProcessor;
+    userAreaButton?: UserAreaButtonData;
+    renderProfileCollection?: ProfileCollectionData;
+    chatBarButtonWrapper?: ChatBarButtonWrapperData;
+    renderProfileSection?: ProfileSectionData;
 }
 
 export const enum StartAt {

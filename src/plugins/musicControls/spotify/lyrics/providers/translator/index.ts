@@ -10,6 +10,11 @@ import { Provider, SyncedLyric } from "@equicordplugins/musicControls/spotify/ly
 // stolen from src/plugins/translate/utils.ts
 
 interface GoogleData {
+    translation: string;
+    sourceLanguage: string;
+}
+
+interface GoogleRomanizeData {
     src: string;
     sentences: {
         // 🏳️‍⚧️
@@ -19,17 +24,36 @@ interface GoogleData {
     }[];
 }
 
-async function googleTranslate(text: string, targetLang: string, romanize: boolean): Promise<GoogleData | null> {
+async function googleTranslate(text: string, targetLang: string): Promise<string | null> {
+    const url = "https://translate-pa.googleapis.com/v1/translate?" + new URLSearchParams({
+        "params.client": "gtx",
+        "dataTypes": "TRANSLATION",
+        "key": "AIzaSyDLEeFI5OtFBwYBIoK_jj5m32rZK5CkCXA", // some google API key
+        "query.sourceLanguage": "auto",
+        "query.targetLanguage": targetLang,
+        "query.text": text,
+    });
+
+    const res = await fetch(url).catch(() => null);
+    if (!res?.ok)
+        return null;
+
+    const { translation }: GoogleData = await res.json();
+    return translation || null;
+}
+
+// translate-pa can't romanize, so romanization still uses the old endpoint
+async function googleRomanize(text: string): Promise<GoogleRomanizeData | null> {
     const url = "https://translate.googleapis.com/translate_a/single?" + new URLSearchParams({
         // see https://stackoverflow.com/a/29537590 for more params
         // holy shidd nvidia
         client: "gtx",
         // source language
         sl: "auto",
-        // target language
-        tl: targetLang,
-        // what to return, t = translation probably
-        dt: romanize ? "rm" : "t",
+        // target language, romanization doesn't need one
+        tl: "",
+        // what to return, rm = romanization
+        dt: "rm",
         // Send json object response instead of weird array
         dj: "1",
         source: "input",
@@ -37,8 +61,8 @@ async function googleTranslate(text: string, targetLang: string, romanize: boole
         q: text
     });
 
-    const res = await fetch(url);
-    if (!res.ok)
+    const res = await fetch(url).catch(() => null);
+    if (!res?.ok)
         return null;
 
     return await res.json();
@@ -59,11 +83,13 @@ async function processLyrics(
         nonDuplicatedLyrics.map(async lyric => {
             if (!lyric.text) return [lyric.text, null];
 
-            const translation = await googleTranslate(lyric.text, targetLang, romanize);
+            if (!romanize) return [lyric.text, await googleTranslate(lyric.text, targetLang)];
 
-            if (!translation || !translation.sentences || translation.sentences.length === 0) return [lyric.text, null];
+            const romanization = await googleRomanize(lyric.text);
 
-            return [lyric.text, romanize ? translation.sentences[0].src_translit : translation.sentences[0].trans];
+            if (!romanization || !romanization.sentences || romanization.sentences.length === 0) return [lyric.text, null];
+
+            return [lyric.text, romanization.sentences[0].src_translit];
         })
     );
 

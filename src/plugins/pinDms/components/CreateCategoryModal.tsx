@@ -8,6 +8,7 @@ import { RenderModalProps } from "@endcord/discord-types";
 import { DEFAULT_COLOR, SWATCHES } from "@plugins/pinDms/constants";
 import { categoryLen, createCategory, getCategory } from "@plugins/pinDms/data";
 import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import { extractAndLoadChunksLazy, findComponentByCodeLazy } from "@webpack";
 import { ColorPicker, Forms, Modal,openModalLazy, TextInput, Toasts, useMemo, useState } from "@webpack/common";
 
@@ -89,14 +90,14 @@ export function NewCategoryModal({ categoryId, modalProps, initialChannelId }: P
                 }}
             >
                 <section>
-                    <Forms.FormTitle>Name</Forms.FormTitle>
+                    <Forms.FormTitle>{t("Name")}</Forms.FormTitle>
                     <TextInput
                         value={name}
                         onChange={e => setName(e)}
                     />
                 </section>
                 <section>
-                    <Forms.FormTitle>Color</Forms.FormTitle>
+                    <Forms.FormTitle>{t("Color")}</Forms.FormTitle>
                     <ColorPickerWithSwatches
                         className={cl("color-picker")}
                         key={category.id}

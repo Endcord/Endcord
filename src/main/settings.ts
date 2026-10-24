@@ -10,8 +10,9 @@ import { SettingsStore } from "@shared/SettingsStore";
 import { mergeDefaults } from "@utils/mergeDefaults";
 import { ipcMain } from "electron";
 import { mkdirSync, readFileSync, writeFileSync } from "fs";
+import { join } from "path";
 
-import { NATIVE_SETTINGS_FILE, SETTINGS_DIR, SETTINGS_FILE } from "./utils/constants";
+import { DATA_DIR, NATIVE_SETTINGS_FILE, SETTINGS_DIR, SETTINGS_FILE } from "./utils/constants";
 
 mkdirSync(SETTINGS_DIR, { recursive: true });
 
@@ -26,7 +27,36 @@ function readSettings<T = object>(name: string, file: string): Partial<T> {
     }
 }
 
-export const RendererSettings = new SettingsStore(readSettings<Settings>("renderer", SETTINGS_FILE));
+const initialRendererSettings = readSettings<Settings>("renderer", SETTINGS_FILE);
+try {
+    if (!initialRendererSettings.language) {
+        const installerStateFile = join(DATA_DIR, "installer-state.json");
+        try {
+            const installerState = JSON.parse(readFileSync(installerStateFile, "utf-8"));
+            if (installerState?.language && typeof installerState.language === "string") {
+                const lang = installerState.language.toLowerCase().trim();
+                if (["en", "tr", "ru", "es", "fr"].includes(lang)) {
+                    initialRendererSettings.language = lang as Settings["language"];
+                }
+            }
+        } catch { }
+    }
+    if (!initialRendererSettings.language) {
+        const prefsIniFile = join(DATA_DIR, "installer", "prefs.ini");
+        try {
+            const iniText = readFileSync(prefsIniFile, "utf-8");
+            const match = iniText.match(/^\s*language\s*=\s*([a-zA-Z-]+)/m);
+            if (match?.[1]) {
+                const lang = match[1].toLowerCase().trim().slice(0, 2);
+                if (["en", "tr", "ru", "es", "fr"].includes(lang)) {
+                    initialRendererSettings.language = lang as Settings["language"];
+                }
+            }
+        } catch { }
+    }
+} catch { }
+
+export const RendererSettings = new SettingsStore(initialRendererSettings);
 
 RendererSettings.addGlobalChangeListener(() => {
     try {

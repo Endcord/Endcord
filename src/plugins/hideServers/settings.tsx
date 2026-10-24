@@ -5,6 +5,7 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
+import { t } from "@utils/i18n";
 import { OptionType } from "@utils/types";
 import { Button, useStateFromStores } from "@webpack/common";
 
@@ -43,8 +44,7 @@ export default definePluginSettings({
                     color={Button.Colors.RED}
                     onClick={() => HiddenServersStore.clearHidden()}
                 >
-                    Reset Hidden Servers
-                </Button>
+                    {t("Reset Hidden Servers")}</Button>
             </div>
         ),
     },

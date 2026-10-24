@@ -6,9 +6,10 @@
 
 import { set } from "@api/DataStore";
 import { HeadingSecondary } from "@components/Heading";
-import { classNameFactory } from "@utils/css";
-import { Margins } from "@utils/margins";
 import { RenderModalProps } from "@endcord/discord-types";
+import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
+import { Margins } from "@utils/margins";
 import { ColorPicker, Modal, React, useState } from "@webpack/common";
 
 import { colors, DATASTORE_KEY } from "./index";
@@ -47,7 +48,7 @@ export function SetColorModal({ id, modalProps }: { id: string, modalProps: Rend
         <Modal
             {...modalProps}
             size="sm"
-            title="Custom Color"
+            title={t("Custom Color")}
             actions={[
                 {
                     text: "Save",
@@ -64,8 +65,7 @@ export function SetColorModal({ id, modalProps }: { id: string, modalProps: Rend
             <div onKeyDown={handleKey} className={cl("modal-content")}>
                 <section className={Margins.bottom16}>
                     <HeadingSecondary>
-                        Pick a Color
-                    </HeadingSecondary>
+                        {t("Pick a Color")}</HeadingSecondary>
                     <ColorPicker
                         color={colorPickerColor}
                         onChange={setUserColor}

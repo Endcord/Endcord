@@ -6,9 +6,10 @@
 
 import { BaseText } from "@components/BaseText";
 import { Button, TextButton } from "@components/Button";
+import { RenderModalProps } from "@endcord/discord-types";
 import { images } from "@equicordplugins/loginWithQR/images";
 import { getIntlMessage } from "@utils/discord";
-import { RenderModalProps } from "@endcord/discord-types";
+import { t as translateText } from "@utils/i18n";
 import { findByPropsLazy } from "@webpack";
 import {
     Modal,
@@ -106,7 +107,7 @@ function VerifyModal({
     }, [state]);
 
     return (
-        <Modal size="sm" {...props} title="Verify Login">
+        <Modal size="sm" {...props} title={translateText("Verify Login")}>
             <div className={cl("device-content")}>
                 {state === VerifyState.LoggedIn ? (
                     <>
@@ -178,8 +179,7 @@ function VerifyModal({
                             {getIntlMessage("QR_CODE_LOGIN_CONFIRM")}
                         </BaseText>
                         <BaseText size="md" weight="semibold" color="text-danger">
-                            Never scan a login QR code from another user or application.
-                        </BaseText>
+                            {translateText("Never scan a login QR code from another user or application.")}</BaseText>
                         <Button
                             size="medium"
                             variant="dangerPrimary"
@@ -192,8 +192,7 @@ function VerifyModal({
                             ref={buttonRef}
                             disabled={inProgress}
                         >
-                            Hold to confirm login
-                        </Button>
+                            {translateText("Hold to confirm login")}</Button>
                     </>
                 )}
             </div>

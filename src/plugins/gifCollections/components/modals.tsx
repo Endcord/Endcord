@@ -7,18 +7,18 @@
 import { Flex } from "@components/Flex";
 import { Heading } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
-import { classes } from "@utils/misc";
 import { RenderModalProps } from "@endcord/discord-types";
+import { settings } from "@plugins/gifCollections/settings";
+import { Collection, Gif } from "@plugins/gifCollections/types";
+import { cache_collections, createCollection, getItemCollectionNameFromId, moveGifToCollection, renameCollection } from "@plugins/gifCollections/utils/collectionManager";
+import { cl, stripPrefix } from "@plugins/gifCollections/utils/misc";
+import { t } from "@utils/i18n";
+import { classes } from "@utils/misc";
 import { Button, FluxDispatcher, Modal, openModal, TextInput, useCallback, useState } from "@webpack/common";
-
-import { settings } from "../settings";
-import { Collection, Gif } from "../types";
-import { cache_collections, createCollection, getItemCollectionNameFromId, moveGifToCollection, renameCollection } from "../utils/collectionManager";
-import { cl, stripPrefix } from "../utils/misc";
 
 export function openCollectionInfoModal(collection: Collection) {
     openModal(props => (
-        <InfoModal props={props} title="Collection Information" rows={[
+        <InfoModal props={props} title={t("Collection Information")} rows={[
             { label: "Name", value: stripPrefix(collection.name) },
             { label: "Gifs", value: String(collection.gifs.length) },
             { label: "Created At", value: collection.createdAt ? new Date(collection.createdAt).toLocaleString() : "Unknown" },
@@ -29,7 +29,7 @@ export function openCollectionInfoModal(collection: Collection) {
 
 export function openGifInfoModal(gif: Gif) {
     openModal(props => (
-        <InfoModal props={props} title="Information" rows={[
+        <InfoModal props={props} title={t("Information")} rows={[
             { label: "Added At", value: gif.addedAt ? new Date(gif.addedAt).toLocaleString() : "Unknown" },
             { label: "Width", value: String(gif.width) },
             { label: "Height", value: String(gif.height) },
@@ -76,12 +76,12 @@ function MoveToCollectionModal({ props, gifId }: { props: RenderModalProps; gifI
         <Modal
             {...props}
             size="sm"
-            title="Move To Collection"
+            title={t("Move To Collection")}
             actions={[
                 { text: "Close", variant: "secondary", onClick: props.onClose }
             ]}
         >
-            <Heading style={{ marginBottom: "10px" }}>Select a collection to move the item to</Heading>
+            <Heading style={{ marginBottom: "10px" }}>{t("Select a collection to move the item to")}</Heading>
             <div className={cl("buttons")}>
                 {cache_collections
                     .filter(col => col.name !== getItemCollectionNameFromId(gifId))
@@ -119,13 +119,13 @@ function CreateCollectionModal({ props, gif }: { props: RenderModalProps; gif: G
         <Modal
             {...props}
             size="sm"
-            title="Create Collection"
+            title={t("Create Collection")}
             actions={[
                 { text: "Create", onClick: onSubmit, disabled: !name.length, variant: "primary" }
             ]}
         >
             <form onSubmit={onSubmit}>
-                <Heading className={cl("rename-text")}>Collection Name</Heading>
+                <Heading className={cl("rename-text")}>{t("Collection Name")}</Heading>
                 <TextInput onChange={setName} />
             </form>
         </Modal>
@@ -149,15 +149,15 @@ function RenameCollectionModal({ props, name }: { props: RenderModalProps; name:
         <Modal
             {...props}
             size="sm"
-            title="Rename Collection"
+            title={t("Rename Collection")}
             actions={[
                 { text: "Rename", onClick: onSubmit, disabled: !newName.length || tooLong, variant: "primary" }
             ]}
         >
             <form onSubmit={onSubmit}>
-                <Paragraph className={cl("rename-text")}>New Collection Name</Paragraph>
+                <Paragraph className={cl("rename-text")}>{t("New Collection Name")}</Paragraph>
                 <TextInput value={newName} className={classes(cl("rename-input"), tooLong ? cl("input-warning") : "")} onChange={setNewName} />
-                {tooLong && <Paragraph className={cl("warning-text")}>Name can't be longer than 24 characters</Paragraph>}
+                {tooLong && <Paragraph className={cl("warning-text")}>{t("Name can't be longer than 24 characters")}</Paragraph>}
             </form>
         </Modal>
     );

@@ -16,8 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { classNameFactory } from "@utils/css";
 import { Message } from "@endcord/discord-types";
+import { classNameFactory } from "@utils/css";
+import { t } from "@utils/i18n";
 import { useState } from "@webpack/common";
 
 export const conversions = new Map<string, (conv: string) => void>();
@@ -28,8 +29,7 @@ function Dismiss({ onDismiss }: { onDismiss: () => void; }) {
             onClick={onDismiss}
             className={cl("dismiss")}
         >
-            Dismiss
-        </button>
+            {t("Dismiss")}</button>
     );
 }
 // thanks <@408047304864432139>

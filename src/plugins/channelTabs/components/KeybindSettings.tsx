@@ -10,6 +10,7 @@ import { Heading } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
 import { settings } from "@equicordplugins/channelTabs/util";
 import { IS_MAC } from "@utils/constants";
+import { t } from "@utils/i18n";
 import { Button, React, Text, useEffect, useRef, useState } from "@webpack/common";
 import { JSX } from "react";
 
@@ -121,8 +122,7 @@ function KeybindInput({ label, description, settingKey, enabledKey }: KeybindInp
                 </Text>
                 {!isEnabled && (
                     <Text variant="text-xs/normal" style={{ color: "var(--text-feedback-critical)" }}>
-                        This shortcut is currently disabled
-                    </Text>
+                        {t("This shortcut is currently disabled")}</Text>
                 )}
                 {error && (
                     <Text variant="text-xs/normal" className="channelTabs-keybind-conflict">
@@ -145,8 +145,7 @@ function KeybindInput({ label, description, settingKey, enabledKey }: KeybindInp
                     onClick={handleReset}
                     disabled={!isEnabled}
                 >
-                    Reset
-                </Button>
+                    {t("Reset")}</Button>
             </div>
         </div>
     );
@@ -181,35 +180,34 @@ export function KeybindSettings(): JSX.Element {
         <ErrorBoundary>
             <Divider />
             <div className="channelTabs-keybind-settings">
-                <Heading>Keyboard Shortcuts</Heading>
+                <Heading>{t("Keyboard Shortcuts")}</Heading>
                 <Paragraph>
-                    Click a button and press your desired key combination. Modifiers like CTRL, SHIFT, and ALT are supported.
-                </Paragraph>
+                    {t("Click a button and press your desired key combination. Modifiers like CTRL, SHIFT, and ALT are supported.")}</Paragraph>
 
                 <KeybindInput
-                    label="Close Tab"
-                    description="Close the currently active tab"
+                    label={t("Close Tab")}
+                    description={t("Close the currently active tab")}
                     settingKey="closeTabKeybind"
                     enabledKey="enableCloseTabShortcut"
                 />
 
                 <KeybindInput
-                    label="New Tab"
-                    description="Open a new tab with the current channel"
+                    label={t("New Tab")}
+                    description={t("Open a new tab with the current channel")}
                     settingKey="newTabKeybind"
                     enabledKey="enableNewTabShortcut"
                 />
 
                 <KeybindInput
-                    label="Cycle Tabs Forward"
-                    description="Switch to the next tab (wraps around to first)"
+                    label={t("Cycle Tabs Forward")}
+                    description={t("Switch to the next tab (wraps around to first)")}
                     settingKey="cycleTabForwardKeybind"
                     enabledKey="enableTabCycleShortcut"
                 />
 
                 <KeybindInput
-                    label="Cycle Tabs Backward"
-                    description="Switch to the previous tab (wraps around to last)"
+                    label={t("Cycle Tabs Backward")}
+                    description={t("Switch to the previous tab (wraps around to last)")}
                     settingKey="cycleTabBackwardKeybind"
                     enabledKey="enableTabCycleShortcut"
                 />
@@ -219,8 +217,7 @@ export function KeybindSettings(): JSX.Element {
                         color={Button.Colors.RED}
                         onClick={handleResetAll}
                     >
-                        Reset All to Defaults
-                    </Button>
+                        {t("Reset All to Defaults")}</Button>
                 </div>
             </div>
         </ErrorBoundary>
