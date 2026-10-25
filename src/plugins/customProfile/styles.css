@@ -379,6 +379,41 @@
     font-weight: 700;
 }
 
+/* ── Profile effects (from the Discord shop) ── */
+.cp-effects {
+    flex-shrink: 0;
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 2px;
+    scrollbar-width: thin;
+    scrollbar-color: rgb(255 255 255 / 20%) transparent;
+}
+
+.cp-badge.cp-effect {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 86px;
+    padding: 2px;
+    border-radius: 8px;
+    overflow: hidden;
+    line-height: 0;
+}
+
+.cp-effect img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.cp-effect span {
+    font-size: 10px;
+    line-height: 1.2;
+    text-align: center;
+}
+
 /* ── Hint ── */
 .cp-hint {
     font-size: 11px;

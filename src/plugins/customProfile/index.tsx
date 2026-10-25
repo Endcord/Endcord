@@ -22,7 +22,8 @@ import {
 } from "@utils/modal";
 import { safeRecordMerge } from "@utils/safeRecordMerge";
 import definePlugin from "@utils/types";
-import { AuthenticationStore, Button, FluxDispatcher, IconUtils, React, Select, showToast, SnowflakeUtils, Toasts, UserProfileStore, UserStore } from "@webpack/common";
+import { findByCodeLazy, findStoreLazy } from "@webpack";
+import { AuthenticationStore, Button, FluxDispatcher, IconUtils, React, Select, showToast, SnowflakeUtils, Toasts, UserProfileStore, UserStore, useStateFromStores } from "@webpack/common";
 
 import { profileBadgeId, reloadBadgeLayout, setManagedBadges, startBadgeManagement, stopBadgeManagement } from "./badgeManagement";
 
@@ -237,38 +238,43 @@ function getDecorationUrl(assetId: string, animated = false): string {
     return `https://cdn.discordapp.com/media/v1/collectibles-shop/${assetId}/${animated ? "animated" : "static"}`;
 }
 
-const PROFILE_EFFECTS = [
-    { id: "1139323092645183591", label: "Hydro Blast" },
-    { id: "1139323093991575696", label: "Sakura Dreams" },
-    { id: "1139323099251232828", label: "Mystic Vines" },
-    { id: "1139323099687436419", label: "Pixie Dust" },
-    { id: "1212582298893946880", label: "Dreamy" },
-    { id: "1212582372877541427", label: "Ki Detonate" },
-    { id: "1212582452640350238", label: "Sushi Mania" },
-    { id: "1139323100568244355", label: "Magic Hearts" },
-    { id: "1139323093551165533", label: "Shatter" },
-    { id: "1139323101008642101", label: "Shuriken Strike" },
-    { id: "1139323101881061466", label: "Power Surge" },
-    { id: "1158572178179108968", label: "Ghoulish Graffiti" },
-    { id: "1158572275507937342", label: "Dark Omens" },
-    { id: "1197344693630009424", label: "Nightrunner" },
-    { id: "1197344764174008452", label: "Uplink Error" },
-    { id: "1217626509737459852", label: "Petal Serenade" },
-    { id: "1217627051217911848", label: "Fellowship of the Spring" },
-    { id: "1217627230818009171", label: "Spring Bloom" },
-    { id: "1228233390260486164", label: "Study Spot" },
-    { id: "1228234634379132958", label: "All Nighter" },
-    { id: "1237654783209508904", label: "Jolly Roger" },
-    { id: "1237654867330469949", label: "Forgotten Treasure" },
-    { id: "1237654942202990602", label: "Haunted Man O' War" },
-    { id: "1232073286582538261", label: "Shooting Stars" },
-    { id: "1232073608168472638", label: "Twilight" },
-    { id: "1207049115339591681", label: "Rock Slide" },
-    { id: "1207049364464345158", label: "Vortex" },
-    { id: "1207049498065375343", label: "Mastery" },
-    { id: "1245088205330710539", label: "Turbo Drive" },
-    { id: "1245088254647205991", label: "Twinkle Trails" },
-];
+// Discord draws a profile effect only when profileEffect.skuId is a shop product it can look up, so the
+// choices come from its own shop catalog: always current, in the user's language, with previews
+const CollectiblesCategoryStore = findStoreLazy("CollectiblesCategoryStore");
+const fetchCollectiblesCategories = findByCodeLazy('type:"COLLECTIBLES_CATEGORIES_FETCH"');
+const COLLECTIBLE_PROFILE_EFFECT = 1;
+
+interface ShopProfileEffect {
+    skuId: string;
+    name: string;
+    thumbnail?: string;
+}
+
+function useShopProfileEffects() {
+    const fetchedAt = useStateFromStores([CollectiblesCategoryStore], () => CollectiblesCategoryStore.lastSuccessfulFetch);
+    const [failed, setFailed] = React.useState(false);
+
+    React.useEffect(() => {
+        if (CollectiblesCategoryStore.products?.size) return;
+        Promise.resolve()
+            .then(() => fetchCollectiblesCategories({}))
+            .catch(() => setFailed(true));
+    }, []);
+
+    const effects = React.useMemo(() => {
+        const seen = new Set<string>();
+        const list: ShopProfileEffect[] = [];
+        for (const product of CollectiblesCategoryStore.products?.values() ?? []) {
+            const item = product.items?.length === 1 ? product.items[0] : null;
+            if (item?.type !== COLLECTIBLE_PROFILE_EFFECT || seen.has(product.skuId)) continue;
+            seen.add(product.skuId);
+            list.push({ skuId: product.skuId, name: product.name, thumbnail: item.thumbnailPreviewSrc });
+        }
+        return list;
+    }, [fetchedAt]);
+
+    return { effects, loading: !failed && !effects.length, failed: failed && !effects.length };
+}
 
 interface CustomProfileData {
     username?: string;
@@ -1216,6 +1222,7 @@ function forceAccountPanelRerender() {
 
 function CustomProfileModal({ rootProps }: { rootProps: any; }) {
     const { t } = useI18n();
+    const shopEffects = useShopProfileEffects();
     const myId = AuthenticationStore?.getId?.() || "";
     const [selectedAccountId, setSelectedAccountId] = React.useState(myId);
     const [data, setData] = React.useState<CustomProfileData>(() => ({ ...(allAccountsData[myId] || storedData || {}) }));
@@ -1477,20 +1484,24 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
                     <SectionLabel>{t("Profile Effect")}</SectionLabel>
                 </div>
 
-                <div className="cp-badges" style={{ flexWrap: "wrap", gap: 6 }}>
+                <div className="cp-badges cp-effects">
                     <button onClick={() => set("profileEffectId", undefined)}
                         className={`cp-badge ${!data.profileEffectId ? "cp-badge--on" : ""}`} style={{ minWidth: 60 }}>
                         {t("None")}
                     </button>
-                    {PROFILE_EFFECTS.map(eff => (
-                        <button key={eff.id}
-                            onClick={() => set("profileEffectId", data.profileEffectId === eff.id ? undefined : eff.id)}
-                            className={`cp-badge ${data.profileEffectId === eff.id ? "cp-badge--on" : ""}`}
-                            title={eff.label} style={{ padding: 4, minWidth: 60, fontSize: 11, textAlign: "center" }}>
-                            {eff.label}
+                    {shopEffects.effects.map(eff => (
+                        <button key={eff.skuId}
+                            onClick={() => set("profileEffectId", data.profileEffectId === eff.skuId ? undefined : eff.skuId)}
+                            className={`cp-badge cp-effect ${data.profileEffectId === eff.skuId ? "cp-badge--on" : ""}`}
+                            title={eff.name}>
+                            {eff.thumbnail
+                                ? <img src={eff.thumbnail} alt={eff.name} loading="lazy" />
+                                : <span>{eff.name}</span>}
                         </button>
                     ))}
                 </div>
+                {shopEffects.loading && <div className="cp-hint">{t("Loading effects from the Discord shop…")}</div>}
+                {shopEffects.failed && <div className="cp-hint">{t("Couldn't load effects from the Discord shop. Close this window and try again.")}</div>}
                 <div className="cp-hint">{t("Visual and local modifications only — persistent between restarts.")}</div>
             </ModalContent>
             <ModalFooter className="cp-footer">
@@ -1678,7 +1689,9 @@ export default definePlugin({
                     asset: pd.decorationAsset,
                     skuId: pd.decorationAsset
                 };
-                setProp("avatarDecoration", null);
+                // Discord reads user.avatarDecoration (a getter for avatarDecorationData on the record),
+                // so the clone needs the data under both names
+                setProp("avatarDecoration", decoData);
                 setProp("avatarDecorationData", decoData);
             }
 
@@ -1747,7 +1760,7 @@ export default definePlugin({
                     asset: pd.decorationAsset,
                     skuId: pd.decorationAsset
                 };
-                merged.avatarDecoration = null;
+                merged.avatarDecoration = decoData;
                 merged.avatarDecorationData = decoData;
             }
 

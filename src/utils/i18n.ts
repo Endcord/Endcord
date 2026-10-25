@@ -5067,6 +5067,10 @@ const buildDict = (): LangTables => ({
         // Final check: Decor guidelines and CustomProfile placeholder
         "optional": "isteğe bağlı",
         "Not reading these guidelines may get your account suspended from creating more decorations in the future.": "Kuralları okumazsan hesabının ileride yeni dekorasyon oluşturması engellenebilir.",
+
+        // CustomProfile profile effects
+        "Loading effects from the Discord shop…": "Efektler Discord mağazasından yükleniyor…",
+        "Couldn't load effects from the Discord shop. Close this window and try again.": "Efektler Discord mağazasından yüklenemedi. Bu pencereyi kapatıp tekrar dene.",
     }),
 
     ru: () => ({
@@ -10038,6 +10042,10 @@ const buildDict = (): LangTables => ({
         // Final check: Decor guidelines and CustomProfile placeholder
         "optional": "необязательно",
         "Not reading these guidelines may get your account suspended from creating more decorations in the future.": "Если не прочитать правила, вашему аккаунту могут запретить создавать новые украшения.",
+
+        // CustomProfile profile effects
+        "Loading effects from the Discord shop…": "Загрузка эффектов из магазина Discord…",
+        "Couldn't load effects from the Discord shop. Close this window and try again.": "Не удалось загрузить эффекты из магазина Discord. Закройте окно и попробуйте снова.",
     }),
 
     es: () => ({
@@ -15009,6 +15017,10 @@ const buildDict = (): LangTables => ({
         // Final check: Decor guidelines and CustomProfile placeholder
         "optional": "opcional",
         "Not reading these guidelines may get your account suspended from creating more decorations in the future.": "Si no lees las normas, tu cuenta podría quedar sin permiso para crear más decoraciones en el futuro.",
+
+        // CustomProfile profile effects
+        "Loading effects from the Discord shop…": "Cargando efectos de la tienda de Discord…",
+        "Couldn't load effects from the Discord shop. Close this window and try again.": "No se pudieron cargar los efectos de la tienda de Discord. Cierra esta ventana e inténtalo de nuevo.",
     }),
 
     fr: () => ({
@@ -19980,6 +19992,10 @@ const buildDict = (): LangTables => ({
         // Final check: Decor guidelines and CustomProfile placeholder
         "optional": "facultatif",
         "Not reading these guidelines may get your account suspended from creating more decorations in the future.": "Ne pas lire ces règles peut empêcher votre compte de créer d'autres décorations à l'avenir.",
+
+        // CustomProfile profile effects
+        "Loading effects from the Discord shop…": "Chargement des effets depuis la boutique Discord…",
+        "Couldn't load effects from the Discord shop. Close this window and try again.": "Impossible de charger les effets depuis la boutique Discord. Fermez cette fenêtre et réessayez.",
     })
 });
 

@@ -1,7 +1,7 @@
 {
     "name": "endcord",
     "private": "true",
-    "version": "4.0.27",
+    "version": "4.0.28",
     "description": "A Discord client mod with plugins, themes and a settings panel",
     "homepage": "https://github.com/rootpoii/Endcord#readme",
     "bugs": {
