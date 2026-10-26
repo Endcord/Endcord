@@ -109,7 +109,7 @@ export default definePlugin({
     name: "BetterBanReasons",
     description: "Create custom reasons to use in the Discord ban modal, and/or show a text input by default instead of the options.",
     tags: ["Appearance", "Customisation"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     durationSetter: null as ((v: number) => void) | null,
 

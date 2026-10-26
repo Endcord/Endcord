@@ -149,7 +149,7 @@ export default definePlugin({
     description: "Splits oversized messages into Discord-sized chunks before sending.",
     dependencies: ["MessageEventsAPI"],
     tags: ["Chat", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     onBeforeMessageSend: listener,
 

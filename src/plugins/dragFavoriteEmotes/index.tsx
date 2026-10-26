@@ -43,7 +43,7 @@ type EmojiDescriptor = {
 
 export default definePlugin({
     name: "DragFavoriteEmotes",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     description: "Adds the ability to change the order of your favourite emotes",
     tags: ["Customisation", "Chat", "Emotes"],
     patches: [

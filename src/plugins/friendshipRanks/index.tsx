@@ -172,7 +172,7 @@ export default definePlugin({
     name: "FriendshipRanks",
     description: "Adds badges showcasing how long you have been friends with a user for",
     tags: ["Friends"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     renderMessageDecoration({ message }) {
         if (!settings.store.showFriendsInChat || !message?.author) return null;

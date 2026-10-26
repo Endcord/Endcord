@@ -104,7 +104,7 @@ export default definePlugin({
     name: "VoiceSettings",
     description: "Fine-grained voice audio controls: Opus bitrate, stereo capture, noise suppression mode, echo cancellation, auto gain control, and extended PTT delay.",
     tags: ["Voice", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     patches: [

@@ -103,7 +103,7 @@ export default definePlugin({
     name: "CustomUserColors",
     description: "Give any user a custom name color, everywhere. Works best with TypingTweaks and RoleColorEverywhere",
     tags: ["Appearance", "Customisation", "Chat"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     contextMenus: {
         "user-context": userContextMenuPatch,
         "gdm-context": channelContextMenuPatch,

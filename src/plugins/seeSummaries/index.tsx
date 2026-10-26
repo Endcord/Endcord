@@ -67,7 +67,7 @@ export default definePlugin({
     name: "Summaries",
     description: "Enables Discord's experimental Summaries feature on every server, displaying AI generated summaries of conversations",
     tags: ["Chat", "Fun"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     patches: [
         {

@@ -149,7 +149,7 @@ export default definePlugin({
     description: "Shows how long it took to fetch messages for the current channel",
     dependencies: ["ChatInputButtonAPI"],
     tags: ["Chat", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     chatBarButton: {

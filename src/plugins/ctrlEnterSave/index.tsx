@@ -113,7 +113,7 @@ export default definePlugin({
     name: "CtrlEnterSave",
     description: "Adds a keybind to save settings. YOU HAVE TO SET THE KEYBIND IN SETTINGS.",
     tags: ["Chat", "Shortcuts"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     patches: [
         {
             // The notice text key is shared with another component that loads first

@@ -12,7 +12,7 @@ export default definePlugin({
     name: "Unindent",
     description: "Trims leading indentation from codeblocks",
     tags: ["Chat", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     patches: [
         {

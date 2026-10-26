@@ -96,7 +96,7 @@ export default definePlugin({
     name: "WebRTCLeakPrevent",
     description: "Prevents WebRTC IP leaks by forcing ICE policy to relay-only mode. Blocks Discord from exposing your real IP address during voice calls.",
     tags: ["Privacy", "Voice"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     start() {

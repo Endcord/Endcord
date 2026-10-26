@@ -208,7 +208,7 @@ export default definePlugin({
     name: "AppleMusicRichPresence",
     description: "Discord rich presence for your Apple Music!",
     tags: ["Activity", "Media"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     hidden: !IS_MAC,
     reporterTestable: ReporterTestable.None,
 

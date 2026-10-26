@@ -54,7 +54,7 @@ export default definePlugin({
     name: "Translate",
     description: "Translate messages with Google Translate, DeepL or Kagi.",
     tags: ["Chat", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     contextMenus: {
         "message": messageCtxPatch

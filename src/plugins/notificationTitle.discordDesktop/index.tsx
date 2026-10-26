@@ -21,7 +21,7 @@ export default definePlugin({
     name: "NotificationTitle",
     description: "Makes desktop notifications more informative",
     tags: ["Appearance", "Notifications"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     patches: [
         {

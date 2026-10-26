@@ -458,7 +458,7 @@ function openBannerContextMenu(e: React.MouseEvent, bannerUrl: string) {
 
 export default definePlugin({
     name: "ViewIcons",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     description: "Makes avatars and banners in user profiles clickable, adds View/Copy/Save Icon and Banner entries in user, server and group channel context menus.",
     tags: ["Media", "Servers", "Appearance"],
     searchTerms: ["ImageUtilities"],

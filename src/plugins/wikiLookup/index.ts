@@ -11,7 +11,7 @@ import definePlugin from "@utils/types";
 export default definePlugin({
     name: "WikiLookup",
     description: "/wiki pulls a short Wikipedia summary for anything (sent only to you).",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     dependencies: ["CommandsAPI"],
     commands: [
         {

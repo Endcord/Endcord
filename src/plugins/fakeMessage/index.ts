@@ -17,7 +17,7 @@ export default definePlugin({
     name: "FakeMessage",
     description: "Send a client-side fake message posed as any user via /fakemsg. Only you can see it.",
     tags: ["Chat", "Fun"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     dependencies: ["CommandsAPI"],
 
     commands: [

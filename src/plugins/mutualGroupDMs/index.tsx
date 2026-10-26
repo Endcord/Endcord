@@ -77,7 +77,7 @@ export default definePlugin({
     name: "MutualGroupDMs",
     description: "Shows mutual group dms in profiles",
     tags: ["Friends", "Appearance"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     patches: [
         // User Profile Modal

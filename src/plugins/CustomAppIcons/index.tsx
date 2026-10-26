@@ -56,7 +56,7 @@ export default definePlugin({
     name: "CustomAppIcons",
     description: "Add/upload your own custom (In-)App Icon(s).",
     tags: ["Customisation", "Appearance"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     patches: [
         {
             find: /\i\.\i\.APP_ICON_UPSELL/,

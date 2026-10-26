@@ -323,7 +323,7 @@ const profilePopoutComponent = ErrorBoundary.wrap(
 export default definePlugin({
     name: "FakeConnections",
     description: "Add fake connections to your own profile, visible only to you. Supports custom display names, optional clickable links, and per-theme text color. Manage in plugin settings.",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     tags: ["Appearance", "Customisation"],
     settings,
 

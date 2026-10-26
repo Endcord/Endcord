@@ -30,7 +30,7 @@ export default definePlugin({
     name: "Title",
     description: "Replaces the window title prefix",
     tags: ["Customisation"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     patches: [

@@ -187,7 +187,7 @@ const settings = definePluginSettings({
 export default definePlugin({
     name: "VoiceFakeDetector",
     description: "Flags people in your voice channel who fake their voice state with any client mod: shown as muted or deafened but still talking, or showing a camera icon without sending video. The mark clears when they leave or genuinely unmute.",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     dependencies: ["MemberListDecoratorsAPI", "NicknameIconsAPI"],
     tags: ["Voice", "Utility"],
     settings,

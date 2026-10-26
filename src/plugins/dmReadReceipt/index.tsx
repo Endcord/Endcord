@@ -40,7 +40,7 @@ export default definePlugin({
     name: "DmReadReceipt",
     description: "Shows a Seen indicator on your messages in DMs when the other person has read them.",
     tags: ["Chat", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     dependencies: ["MessageDecorationsAPI"],
 
     renderMessageDecoration: props => {

@@ -11,7 +11,7 @@ export default definePlugin({
     name: "1FA",
     description: "Hides the warning that asks moderators to enable two-factor authentication",
     tags: ["Privacy", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     patches: [
         {
             find: "APPLICATION_SUBSCRIPTION_EXPIRATION:",

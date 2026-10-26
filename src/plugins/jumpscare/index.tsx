@@ -49,7 +49,7 @@ export default definePlugin({
     name: "Jumpscare",
     description: "Adds a configurable chance of jumpscaring you whenever you open a channel. Inspired by Geometry Dash Mega Hack",
     tags: ["Fun"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     dependencies: ["AudioPlayerAPI"],
     settings,
 

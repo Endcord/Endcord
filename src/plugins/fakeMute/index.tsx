@@ -129,7 +129,7 @@ const FakeMuteButton: ChatBarButtonFactory = () => {
 export default definePlugin({
     name: "FakeMute",
     description: "Appear muted to others in voice channels while keeping your microphone active. Toggle from user panel or chat bar.",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     tags: ["Voice", "Utility"],
     dependencies: ["ChatInputButtonAPI", "UserAreaAPI"],
 

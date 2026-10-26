@@ -22,7 +22,7 @@ const settings = definePluginSettings({
 export default definePlugin({
     name: "FixSpotifyEmbeds",
     description: "Fixes spotify embeds being incredibly loud by letting you customise the volume",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     tags: ["Media", "Customisation"],
     settings,
 });

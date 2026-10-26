@@ -114,7 +114,7 @@ function handlePaste(e: ClipboardEvent) {
 export default definePlugin({
     name: "AddAttachments",
     description: "Allows you to add new attachments while editing messages",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     start() {
         document.addEventListener("paste", handlePaste, { capture: true });

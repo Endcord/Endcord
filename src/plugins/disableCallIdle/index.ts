@@ -11,7 +11,7 @@ export default definePlugin({
     name: "DisableCallIdle",
     description: "Disables automatically getting kicked from a DM voice call after 3 minutes and being moved to an AFK voice channel.",
     tags: ["Voice", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     patches: [
         {
             find: "this.idleTimeout.start(",

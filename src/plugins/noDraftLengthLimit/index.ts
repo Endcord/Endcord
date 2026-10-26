@@ -11,7 +11,7 @@ export default definePlugin({
     name: "NoDraftLengthLimit",
     description: "Removes the 4500 character saved draft message truncation",
     tags: ["Chat", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     patches: [
         {
             find: "ApplicationLauncherCommand=3",

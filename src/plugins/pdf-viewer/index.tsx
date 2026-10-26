@@ -511,7 +511,7 @@ function isPdf(att: MessageAttachment) {
 export default definePlugin({
     name: "PdfViewer",
     description: "Preview PDF attachments inline without downloading them first",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     tags: ["Media", "Utility", "Chat"],
     managedStyle,
     settings,

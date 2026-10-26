@@ -11,7 +11,7 @@ import definePlugin from "@utils/types";
 export default definePlugin({
     name: "Starify",
     description: "Adds /starify to wrap your message in sparkles ｡ﾟ☆.",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     dependencies: ["CommandsAPI"],
     commands: [
         {

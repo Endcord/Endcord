@@ -13,7 +13,7 @@ import style from "./style.css?managed";
 export default definePlugin({
     name: "NeonGlow",
     description: "Adds a neon glow to avatars, links and buttons when you hover them.",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     start: () => enableStyle(style),
     stop: () => disableStyle(style),
 });

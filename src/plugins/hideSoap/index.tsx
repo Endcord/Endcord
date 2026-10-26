@@ -157,7 +157,7 @@ const HEBREW_CACHE_MAX = 500;
 export default definePlugin({
     name: "AntiSoap (hideSoap)",
     description: "basically hide all messages from j*ws",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     tags: ["Customisation", "Appearance"],
     settings,
     shouldHideUser,

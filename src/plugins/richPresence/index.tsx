@@ -76,7 +76,7 @@ export default definePlugin({
     name: "RichPresence",
     description: "Unified rich presence hub for AudioBookShelf, osu!, stats.fm, Jellyfin, Navidrome, and Gensokyo Radio.",
     tags: ["Activity"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     reporterTestable: ReporterTestable.None,
 
     settings,

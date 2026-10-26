@@ -44,7 +44,7 @@ export default definePlugin({
     name: "CopyMediaLink",
     description: "Adds working Copy Media Link and Copy Link actions to the image context menu, copying through the clipboard fallback chain instead of Discord's own handler.",
     tags: ["Media", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     contextMenus: {
         "image-context": imageContextMenuPatch

@@ -11,7 +11,7 @@ export default definePlugin({
     name: "NormalizeMessageLinks",
     description: "Strip canary/ptb from message links",
     tags: ["Chat"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     patches: [
         {
             find: "#{intl::COPY_MESSAGE_LINK}",

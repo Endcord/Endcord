@@ -360,7 +360,7 @@ function restoreChannelStore() {
 export default definePlugin({
     name: "SurfaceTranslate",
     description: "Translate channel names, channel topics, and search result text.",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     tags: ["Chat", "Utility"],
     settings,
 

@@ -72,7 +72,7 @@ export default definePlugin({
     name: "RemixRevived",
     description: "Revives Remix and breings it to Desktop",
     tags: ["Customisation", "Fun"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     contextMenus: {
         "channel-attach": UploadContextMenuPatch,
         "message": MessageContextMenuPatch,

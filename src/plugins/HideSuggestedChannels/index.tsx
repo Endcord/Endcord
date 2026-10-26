@@ -43,7 +43,7 @@ function queueScan() {
 export default definePlugin({
     name: "HideSuggestedChannels",
     description: "Automatically dismisses the \"Suggested\" channels section",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     start() {
         dismissSuggested();

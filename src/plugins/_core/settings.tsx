@@ -92,7 +92,7 @@ const settings = definePluginSettings({
 export default definePlugin({
     name: "Settings",
     description: "Adds Settings UI and debug info",
-    authors: [Devs.Ven, Devs.Megu],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     required: true,
 
     settings,

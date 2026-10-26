@@ -453,7 +453,7 @@ export default definePlugin({
     name: "Snowfall",
     description: "Let it snow on Discord",
     tags: ["Appearance"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     settingsAboutComponent: () => (
         <>

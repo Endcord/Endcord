@@ -196,7 +196,7 @@ export default definePlugin({
     name: "XSOverlay",
     description: "Forwards discord notifications to XSOverlay, for easy viewing in VR",
     tags: ["Notifications"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     searchTerms: ["vr", "notify"],
     reporterTestable: ReporterTestable.None,
     settings,

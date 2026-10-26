@@ -38,7 +38,7 @@ export default definePlugin({
     name: "FrequentQuickSwitcher",
     description: "Rewrites and filters the quick switcher results to be your most frequent channels",
     tags: ["Shortcuts", "Servers"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     generateSearchResults: generateSearchResults,
     patches: [
         {

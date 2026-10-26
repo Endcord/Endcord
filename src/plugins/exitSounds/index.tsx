@@ -104,7 +104,7 @@ export default definePlugin({
     name: "ExitSounds",
     description: "Play soundboard sounds when you disconnect from voice.",
     tags: ["Fun", "Voice"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     dependencies: ["AudioPlayerAPI"],
     settings,
     contextMenus: {

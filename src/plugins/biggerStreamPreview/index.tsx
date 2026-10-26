@@ -79,7 +79,7 @@ export default definePlugin({
     name: "BiggerStreamPreview",
     description: "Lets you enlarge stream previews",
     tags: ["Media", "Appearance"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     contextMenus: {
         "user-context": userContextPatch,
         "stream-context": streamContextPatch

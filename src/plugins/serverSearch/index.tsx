@@ -27,7 +27,7 @@ function SearchIcon() {
 
 export default definePlugin({
     name: "ServerSearch",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     description: "Navigate your servers better with a quick search button",
     tags: ["Shortcuts", "Servers"],
 

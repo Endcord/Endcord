@@ -17,7 +17,7 @@ export default definePlugin({
     name: "DefaultStatusForever",
     description: "Make statuses default to last forever",
     tags: ["Activity", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     patches: [],
 

@@ -400,7 +400,7 @@ export default definePlugin({
     name: "GifCaptioner",
     description: "Add captions to GIFs in the GIF picker.",
     tags: ["Media", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     managedStyle,
     patches: [
         {

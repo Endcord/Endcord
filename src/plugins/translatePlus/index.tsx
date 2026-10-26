@@ -37,7 +37,7 @@ export default definePlugin({
     description: "Endcord's translate plugin but with support for artistic languages!",
     dependencies: ["MessageAccessoriesAPI", "MessagePopoverAPI"],
     tags: ["Chat", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     contextMenus: {
         "message": messageCtxPatch

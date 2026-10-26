@@ -111,7 +111,7 @@ export default definePlugin({
     name: "FixScreenshare",
     description: "Prevents Discord from crashing and reloading when screensharing by intercepting media-related errors and blocking reloads.",
     tags: ["Voice", "Media"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     required: true,
 
     patches: [],

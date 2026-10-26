@@ -84,7 +84,7 @@ export default definePlugin({
     name: "AutoReact",
     description: "Automatically react to messages containing specific keywords.",
     tags: ["Utility", "Chat"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     start() {

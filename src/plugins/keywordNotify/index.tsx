@@ -155,7 +155,7 @@ const settings = definePluginSettings({
 
 export default definePlugin({
     name: "KeywordNotify",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     description: "Sends a notification if a given message matches certain keywords or regexes",
     settings,
     keywordTabId: KEYWORD_TAB_ID,

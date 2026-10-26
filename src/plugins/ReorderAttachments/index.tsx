@@ -137,7 +137,7 @@ const DraggableList = ({
 export default definePlugin({
     name: "ReorderAttachments",
     description: "Allows you to reorder attachments before sending them",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     tags: ["Accessibility"],
     patches: [
         {

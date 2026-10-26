@@ -11,7 +11,7 @@ import definePlugin from "@utils/types";
 export default definePlugin({
     name: "ClapText",
     description: "Adds /clap to 👏 put 👏 claps 👏 between 👏 your 👏 words.",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     dependencies: ["CommandsAPI"],
     commands: [
         {

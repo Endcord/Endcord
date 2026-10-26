@@ -227,7 +227,7 @@ export default definePlugin({
     name: "MentionColors",
     description: "Distinguishes direct mentions from @everyone/@here pings. Direct personal tags show a green +1 badge across all servers and channels, while broadcast pings stay red.",
     tags: ["Notifications", "Appearance", "Servers"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     start() {

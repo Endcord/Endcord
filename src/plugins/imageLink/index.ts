@@ -11,7 +11,7 @@ export default definePlugin({
     name: "ImageLink",
     description: "Never hide image links in messages, even if it's the only content",
     tags: ["Media", "Appearance"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     patches: [
         {

@@ -41,7 +41,7 @@ export default definePlugin({
     name: "SpotifyControls",
     description: "Adds a Spotify player above the account panel",
     tags: ["Media", "Activity"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     patches: [
         {

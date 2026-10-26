@@ -15,7 +15,7 @@ export default definePlugin({
     name: "SortReactions",
     description: "Sorts reactions by count in chat.",
     tags: ["Reactions", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     patches: [
         {
             find: "visibleReactionsCount:",

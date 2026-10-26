@@ -21,7 +21,7 @@ export default definePlugin({
     name: "AutoJumpToMessage",
     description: "Automatically opens the channel from new messages.",
     tags: ["Chat", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     flux: {
         RPC_NOTIFICATION_CREATE({ channelId }) {

@@ -72,7 +72,7 @@ export default definePlugin({
     name: "OpenInApp",
     description: "Open links in their respective apps instead of your browser",
     tags: ["Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings: pluginSettings,
 
     patches: [

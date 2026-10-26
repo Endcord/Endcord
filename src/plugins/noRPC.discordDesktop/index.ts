@@ -11,7 +11,7 @@ export default definePlugin({
     name: "NoRPC",
     description: "Disables Discord's RPC server.",
     tags: ["Privacy", "Servers"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     patches: [
         {
             find: '.ensureModule("discord_rpc")',

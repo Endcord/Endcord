@@ -240,7 +240,7 @@ export default definePlugin({
   description:
     "Automatically translates Discord IDs to clickable @ mentions or # references",
     tags: ["Chat", "Utility"],
-  authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+  authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
   isModified: true,
   testcordModified: true,
 

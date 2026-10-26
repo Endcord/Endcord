@@ -15,7 +15,7 @@ export default definePlugin({
     name: "NewPluginsManager",
     description: "Utility that notifies you when new plugins are added to Endcord",
     tags: ["Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     enabledByDefault: true,
     flux: {
         async POST_CONNECTION_OPEN() {

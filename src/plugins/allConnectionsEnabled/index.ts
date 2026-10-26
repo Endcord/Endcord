@@ -13,7 +13,7 @@ export default definePlugin({
     name: "AllConnectionsEnabled",
     description: "Enables all connections",
     tags: ["Utility", "Customisation"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     patches: [
         {
             find: "getPlatformUserUrl:",

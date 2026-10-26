@@ -582,7 +582,7 @@ export default definePlugin({
     name: "RecentChannelSwitcher",
     description: "Use Ctrl+Tab to preview and switch between recently opened channels and DMs.",
     tags: ["Shortcuts", "Chat", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     async start() {

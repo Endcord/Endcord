@@ -16,7 +16,7 @@ export default definePlugin({
     name: "TextScreenshot",
     description: "Send text as a screenshot of a Discord message with your profile",
     tags: ["Commands", "Fun"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     dependencies: ["CommandsAPI"],
 
     commands: [

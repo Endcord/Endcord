@@ -11,7 +11,7 @@ import { MessageStore } from "@webpack/common";
 
 export default definePlugin({
     name: "BetterPlusReacts",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     description: "React to an earlier message by typing +:emoji:, with one + per message back",
     tags: ["Chat", "Emotes"],
     patches: [

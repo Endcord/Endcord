@@ -49,7 +49,7 @@ const messageContextMenuPatch: NavContextMenuPatchCallback = (
 
 export default definePlugin({
     name: "UnsuppressEmbeds",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     description: "Allows you to unsuppress embeds in messages",
     tags: ["Chat", "Utility"],
     contextMenus: {

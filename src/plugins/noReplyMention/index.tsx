@@ -51,7 +51,7 @@ export default definePlugin({
     name: "NoReplyMention",
     description: "Disables reply pings by default",
     tags: ["Chat", "Notifications"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     shouldMention(message: Message, isHoldingShift: boolean) {

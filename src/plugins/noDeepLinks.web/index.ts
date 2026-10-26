@@ -11,7 +11,7 @@ export default definePlugin({
     name: "DisableDeepLinks",
     description: "Disables Discord's stupid deep linking feature which tries to force you to use their Desktop App",
     tags: ["Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     required: true,
 
     noop: () => { },

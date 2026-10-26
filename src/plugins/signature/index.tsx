@@ -103,7 +103,7 @@ export default definePlugin({
     description: "Automated fingerprint/end text",
     dependencies: ["CommandsAPI", "ChatInputButtonAPI", "MessagePopoverAPI"],
     tags: ["Appearance", "Chat"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     onBeforeMessageSend(channelId, msg) {
         if (!settings.store.isEnabled) {
             msg.content = msg.content;

@@ -11,7 +11,7 @@ export default definePlugin({
     name: "FixCodeblockGap",
     description: "Removes the gap between codeblocks and text below it",
     tags: ["Appearance"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     patches: [
         {
             find: String.raw`/^${"```"}(?:([a-z0-9_+\-.#]+?)\n)?\n*([^\n][^]*?)\n*${"```"}`,

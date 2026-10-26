@@ -46,7 +46,7 @@ export default definePlugin({
     name: "LoadingQuotes",
     description: "Replace Discords loading quotes",
     tags: ["Appearance", "Fun", "Customisation"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     settings,
 

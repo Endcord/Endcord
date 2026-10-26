@@ -15,7 +15,7 @@ export default definePlugin({
     name: "RelationshipNotifier",
     description: "Notifies you when a friend, group chat, or server removes you.",
     tags: ["Friends", "Notifications"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     patches: [

@@ -41,7 +41,7 @@ export default definePlugin({
     name: "StreamingCodecDisabler",
     description: "Disable video codecs of your choice for streaming and cameras.",
     tags: ["Utility", "Voice"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     patches: [

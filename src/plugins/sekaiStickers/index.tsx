@@ -36,7 +36,7 @@ export default definePlugin({
     description: "Sekai Stickers built in discord originally from github.com/TheOriginalAyaka",
     dependencies: ["ChatInputButtonAPI"],
     tags: ["Chat", "Emotes"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     chatBarButton: {
         icon: kanadeSvg,

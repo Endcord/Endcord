@@ -31,7 +31,7 @@ export default definePlugin({
     name: "WordCount",
     description: "Shows the word count of a message below it",
     tags: ["Chat", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     dependencies: ["MessageAccessoriesAPI"],
     async start() {
         addMessageAccessory("word-count", (props: Record<string, any>) => (

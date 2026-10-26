@@ -541,7 +541,7 @@ export default definePlugin({
     name: "ZIP+",
     description: "Preview and navigate inside zip files, plus auto-zip uploads.",
     tags: ["Utility", "Chat"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     settings,
 

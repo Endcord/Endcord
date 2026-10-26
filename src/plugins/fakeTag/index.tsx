@@ -209,7 +209,7 @@ export default definePlugin({
     name: "FakeTag",
     description: "Adds a fake clan tag and badge emoji next to your username. Client-side only.",
     tags: ["Customisation", "Fun"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     async start() {

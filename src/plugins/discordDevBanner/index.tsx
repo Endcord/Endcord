@@ -15,7 +15,7 @@ export default definePlugin({
     name: "DiscordDevBanner",
     description: "Enables Discord's developer banner, which shows the build ID",
     tags: ["Appearance", "Console", "Developers"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     patches: [
         {

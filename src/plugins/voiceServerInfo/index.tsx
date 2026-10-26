@@ -203,7 +203,7 @@ const SafeVoiceServerButton = ErrorBoundary.wrap(VoiceServerButton, { noop: true
 export default definePlugin({
     name: "VoiceServerInfo",
     description: "Shows the Discord voice relay IP address, location, organization and ping.",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     tags: ["Voice", "Utility"],
     dependencies: ["HeaderBarAPI"],
     settings,

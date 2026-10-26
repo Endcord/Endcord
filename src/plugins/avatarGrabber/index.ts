@@ -12,7 +12,7 @@ import { IconUtils, UserStore } from "@webpack/common";
 export default definePlugin({
     name: "AvatarGrabber",
     description: "/avatar grabs the full-resolution avatar of any user (or yourself).",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     dependencies: ["CommandsAPI"],
     commands: [
         {

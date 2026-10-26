@@ -60,7 +60,7 @@ export default definePlugin({
     name: "CallTimer",
     description: "Shows how long you have been in the current voice call",
     tags: ["Voice", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     managedStyle: alignedChatInputFix,
     settings,
 

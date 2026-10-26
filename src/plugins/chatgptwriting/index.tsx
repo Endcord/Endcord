@@ -245,7 +245,7 @@ export default definePlugin({
     name: "ChatGPTWriting",
     description: "Enhance your messages with kaomoji, emoji, and autocorrect",
     tags: ["Chat", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     dependencies: ["MessageEventsAPI", "HeaderBarAPI"],
     settings,
 

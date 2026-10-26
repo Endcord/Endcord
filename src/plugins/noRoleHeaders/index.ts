@@ -11,7 +11,7 @@ export default definePlugin({
     name: "NoRoleHeaders",
     description: "We are all equal!! Removes the role headers in the member list.",
     tags: ["Appearance", "Fun", "Roles"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     patches: [
         {
             find: "this.updateMaxContentFeedRowSeen()",

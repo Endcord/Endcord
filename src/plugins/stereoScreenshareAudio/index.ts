@@ -41,7 +41,7 @@ export default definePlugin({
     name: "StereoScreenshareAudio",
     description: "Patches Discord's WebRTC SDP to enable stereo audio while watching streams (should only be necessary with vesktop & co.)",
     tags: ["Voice", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     async start() {
         const SRD = RTCPeerConnection.prototype.setRemoteDescription as any;

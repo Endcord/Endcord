@@ -246,7 +246,7 @@ export default definePlugin({
     name: "QuickThemeSwitcher",
     description: "Quickly switch between themes using keyboard shortcuts.",
     tags: ["Appearance", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     startAt: StartAt.DOMContentLoaded,
     settingsAboutComponent: () => (

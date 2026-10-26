@@ -26,7 +26,7 @@ const opt = (name: string) => ({
 export default definePlugin({
     name: "ShipCalc",
     description: "/ship rates the love between two people.",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     dependencies: ["CommandsAPI"],
     commands: [
         {

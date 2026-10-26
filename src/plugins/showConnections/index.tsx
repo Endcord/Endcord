@@ -144,7 +144,7 @@ export default definePlugin({
     name: "ShowConnections",
     description: "Show connected accounts in user popouts",
     tags: ["Friends", "Appearance"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     patches: [

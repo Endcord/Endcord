@@ -14,7 +14,7 @@ export default definePlugin({
     name: "FavoriteMedia",
     description: "Favorite any type of media",
     tags: ["Media", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     patches: [
         {

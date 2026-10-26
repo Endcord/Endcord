@@ -235,7 +235,7 @@ export default definePlugin({
     name: "DevCompanion",
     description: "Dev Companion Plugin",
     tags: ["Developers", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     reporterTestable: ReporterTestable.None,
     settings,
 

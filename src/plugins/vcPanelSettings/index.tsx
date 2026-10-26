@@ -245,7 +245,7 @@ export default definePlugin({
     name: "VCPanelSettings",
     description: "Control voice settings right from the voice panel",
     tags: ["Utility", "Voice"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     renderVoiceSettings() { return <VoiceSettings />; },
     patches: [

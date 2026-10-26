@@ -271,7 +271,7 @@ export function playAudio(sound: string, options?: AudioPlayerOptions): AudioPla
 export default definePlugin({
     name: "AudioPlayerAPI",
     description: "API to play internal Discord audio files or external audio links.",
-    authors: [EndcordDevs.ewlle, EndcordDevs.rootpoi, EndcordDevs.kraethis],
+    authors: [EndcordDevs.rootpoi, EndcordDevs.kraethis, EndcordDevs.ewlle],
     playAudio,
     createAudioPlayer,
     resolveDiscordSound,

@@ -210,7 +210,7 @@ export default definePlugin({
     name: "FriendTags",
     description: "Allows you to filter by custom tags in the quick switcher by starting a search with &",
     tags: ["Shortcuts"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     contextMenus: {
         "user-context": userPatch

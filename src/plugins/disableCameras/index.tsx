@@ -11,7 +11,7 @@ export default definePlugin({
     name: "DisableCameras",
     description: "Disables cameras in a call by default",
     tags: ["Appearance", "Customisation", "Media", "Privacy"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     patches: [
         {
             find: ".identifyStartTime))",

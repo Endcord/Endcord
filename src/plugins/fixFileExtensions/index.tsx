@@ -27,7 +27,7 @@ export const reverseExtensionMap = Object.entries(extensionMap).reduce((acc, [ta
 
 export default definePlugin({
     name: "FixFileExtensions",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     description: "Fixes file extensions by renaming them to a compatible supported format if possible",
     tags: ["Media", "Utility"],
     reporterTestable: ReporterTestable.None,

@@ -13,7 +13,7 @@ export default definePlugin({
     name: "NeverPausePreviews",
     description: "Prevents in-call/PiP previews (screenshare, streams, etc) from pausing even if the client loses focus",
     tags: ["Media"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settingsAboutComponent: () => (
         <Notice.Warning>
             {t("This plugin will cause discord to use more resources than normal")}</Notice.Warning>

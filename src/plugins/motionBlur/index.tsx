@@ -107,7 +107,7 @@ export default definePlugin({
     name: "MotionBlur",
     description: "Adds lightweight, hardware-accelerated 60+ FPS motion blur across the entire Discord app during scrolling and navigation.",
     tags: ["Appearance", "Customisation", "Fun"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     start() {

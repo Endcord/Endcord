@@ -101,7 +101,7 @@ export default definePlugin({
     description: "Decode base64 content of any message and copy the decoded content.",
     dependencies: ["MessagePopoverAPI"],
     tags: ["Appearance", "Customisation", "Chat"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     messagePopoverButton: {
         icon: DecodeIcon,

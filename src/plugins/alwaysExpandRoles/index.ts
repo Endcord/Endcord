@@ -13,7 +13,7 @@ export default definePlugin({
     name: "AlwaysExpandRoles",
     description: "Always expands the role list in profile popouts",
     tags: ["Appearance", "Roles"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     patches: [
         {
             find: "hasDeveloperContextMenu:",

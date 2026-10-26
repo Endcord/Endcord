@@ -126,7 +126,7 @@ migratePluginSettings("GifProviderSwitcher", "TenorGifSearch");
 export default definePlugin({
     name: "GifProviderSwitcher",
     description: "Allows you to use Tenor or Giphy GIF search instead of Klipy",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     tags: ["Media", "Chat", "Emotes"],
     searchTerms: ["TenorGifSearch"],
     settings,

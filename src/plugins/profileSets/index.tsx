@@ -32,7 +32,7 @@ export default definePlugin({
     name: "ProfileSets",
     description: "Allows you to save and load different profile presets.",
     tags: ["Appearance", "Customisation", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     toolboxActions: {
         "Open Profile Sets": () => {

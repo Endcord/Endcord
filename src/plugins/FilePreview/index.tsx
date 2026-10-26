@@ -39,7 +39,7 @@ export default definePlugin({
     name: "FileViewer",
     description: "View PDF and Office files directly inside Discord messages.",
     tags: ["Media", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     start() {

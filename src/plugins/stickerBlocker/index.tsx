@@ -132,7 +132,7 @@ export default definePlugin({
     name: "StickerBlocker",
     description: "Allows you to block stickers from being displayed.",
     tags: ["Chat", "Emotes", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     patches: [
         {
             find: ".STICKERS_CONSTANTS_STICKER_DIMENSION)",

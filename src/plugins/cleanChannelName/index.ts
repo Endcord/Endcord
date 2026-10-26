@@ -34,7 +34,7 @@ function computeClean(name: string, type: number): string {
 
 export default definePlugin({
     name: "CleanChannelName",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     description: "Remove emoji and decoration from channel names. Reverts to the original while you're editing the channel.",
     tags: ["Appearance", "Customisation", "Chat", "Emotes", "Servers"],
     patches: [

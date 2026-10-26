@@ -124,7 +124,7 @@ function RemindersModal({ rootProps }: { rootProps: RenderModalProps; }) {
 export default definePlugin({
     name: "MessageReminders",
     description: "Right-click a message to be reminded about it later. A notification brings you right back to it.",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     tags: ["Utility", "Chat"],
 
     contextMenus: {

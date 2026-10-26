@@ -57,7 +57,7 @@ export default definePlugin({
     name: "ToggleVideoBind",
     description: "Adds a customizable bind to toggle webcam.",
     tags: ["Utility", "Voice", "Shortcuts"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     start() {
         document.addEventListener("keydown", handleKeydown);

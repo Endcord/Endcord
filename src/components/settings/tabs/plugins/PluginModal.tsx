@@ -74,12 +74,9 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
     const hasSettings = hasAnyVisibleSettings(plugin);
 
     const customAuthors = useMemo(() => {
-        if (plugin.authors && plugin.authors.length > 0) return plugin.authors;
-        return [
-            Devs.ewlle,
-            Devs.rootpoi,
-            Devs.kraethis
-        ];
+        const list = plugin.authors?.length ? plugin.authors : [Devs.rootpoi, Devs.kraethis, Devs.ewlle];
+        // Several author names can point at the same account; show each person once
+        return list.filter((a, i) => list.findIndex(b => String(b.id) === String(a.id)) === i);
     }, [plugin.authors]);
 
     // avoid layout shift by showing dummy users while loading users

@@ -61,7 +61,7 @@ export default definePlugin({
     name: "BetterScreenShare",
     description: "Unlock higher stream bitrates, custom frame rates, and resolutions for screen share on Discord Desktop, without requiring Nitro.",
     tags: ["Voice", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     patches: [

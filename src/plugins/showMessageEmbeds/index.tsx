@@ -195,7 +195,7 @@ export default definePlugin({
     name: "ShowMessageEmbeds",
     description: "Adds a context menu option to show embeds for links that don't have one",
     tags: ["Appearance", "Chat"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     patches: [
         {

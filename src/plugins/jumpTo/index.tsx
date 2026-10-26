@@ -115,7 +115,7 @@ export default definePlugin({
     name: "JumpTo",
     description: "Adds context menu options to jump to the start or bottom of a channel/DM.",
     tags: ["Chat", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     contextMenus: {
         "channel-context": ChannelMenuPatch,
         "gdm-context": ChannelMenuPatch,

@@ -11,7 +11,7 @@ export default definePlugin({
     name: "NoF1",
     description: "Disables F1 help bind.",
     tags: ["Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     patches: [
         {
             find: ',"f1"],comboKeysBindGlobal:',

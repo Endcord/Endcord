@@ -391,7 +391,7 @@ export default definePlugin({
     name: "MutualServerMembers",
     description: "Compare two servers you're in and see which members are in both. Right-click a server, use dropdowns, or enter IDs manually.",
     tags: ["Servers", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     contextMenus: {
         "guild-context": ctxMenuPatch,

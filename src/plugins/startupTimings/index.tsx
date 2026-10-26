@@ -16,7 +16,7 @@ export default definePlugin({
     name: "StartupTimings",
     description: "Adds Startup Timings to the Settings menu",
     tags: ["Developers"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     start() {
         SettingsPlugin.customEntries.push({
             key: "endcord_startup_timings",

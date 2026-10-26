@@ -35,7 +35,7 @@ import { stopTidalStore } from "./tidal/TidalStore";
 export default definePlugin({
     name: "MusicControls",
     description: "Music Controls and Lyrics for multiple services ",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     tags: ["Media", "Activity"],
     searchTerms: [

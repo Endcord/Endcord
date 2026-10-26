@@ -37,7 +37,7 @@ function tick() {
 export default definePlugin({
     name: "Wellbeing",
     description: "A gentle, private dashboard of how you use Discord — screen time, messages and calm controls. Everything stays on your computer.",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     flux: {

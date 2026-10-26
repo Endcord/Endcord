@@ -234,7 +234,7 @@ export default definePlugin({
     name: "FakeNitroAge",
     description: "Client-side button to set how many months/years of Nitro your profile shows.",
     tags: ["Customisation", "Fun"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     dependencies: ["UserAreaAPI"],
 
     userAreaButton: {

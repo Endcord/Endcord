@@ -23,7 +23,7 @@ export default definePlugin({
     name: "CopyFileContents",
     description: "Adds a button to text file attachments to copy their contents",
     tags: ["Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     patches: [
         {
             find: "#{intl::PREVIEW_BYTES_LEFT}",

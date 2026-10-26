@@ -19,7 +19,7 @@ export default definePlugin({
     name: "HomeTyping",
     description: "Changes the home button to a typing indicator if someone in your dms is typing",
     tags: ["Chat"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     TypingIcon() {
         return <ThreeDots className={cl("dots")} dotRadius={3} themed={true} />;
     },

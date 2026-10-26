@@ -104,7 +104,7 @@ export default definePlugin({
     name: "ServerPinner",
     description: "Pin servers to the top of your server list from their right-click menu, without changing your folders.",
     tags: ["Servers", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     dependencies: ["ContextMenuAPI", "ServerListAPI"],
     settings,
 

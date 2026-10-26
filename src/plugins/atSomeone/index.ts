@@ -11,7 +11,7 @@ import { ChannelStore, GuildMemberStore, SelectedChannelStore, SelectedGuildStor
 
 export default definePlugin({
     name: "AtSomeone",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     description: "Mention a random member of the channel",
     tags: ["Chat", "Fun"],
     patches: [

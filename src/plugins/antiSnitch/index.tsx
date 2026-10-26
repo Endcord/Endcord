@@ -39,7 +39,7 @@ export default definePlugin({
     name: "AntiSnitch",
     description: "Alerts you with a sound and toast whenever selected users start typing in your current channel.",
     tags: ["Privacy", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     start() {
         FluxDispatcher.subscribe("VOICE_STATE_UPDATES", cb);

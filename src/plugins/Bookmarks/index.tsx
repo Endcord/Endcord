@@ -132,7 +132,7 @@ function openBookmarks() {
 export default definePlugin({
     name: "Bookmarks",
     description: "Privately bookmark messages (beyond Discord's 50-pin limit) with a hover button, then view and jump to them from the Endcord Toolbox in the title bar.",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     tags: ["Utility", "Chat"],
     dependencies: ["MessagePopoverAPI", "MessageUpdaterAPI"],
 

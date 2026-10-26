@@ -37,7 +37,7 @@ export default definePlugin({
     name: "DoubleClickEdit",
     description: "Double-click your own messages to edit them instantly.",
     tags: ["Chat", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     start() {
         document.addEventListener("dblclick", onDoubleClick);

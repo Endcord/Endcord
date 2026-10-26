@@ -47,7 +47,7 @@ export default definePlugin({
     name: "MentionAvatars",
     description: "Shows user avatars and role icons inside mentions",
     tags: ["Appearance", "Customisation"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     patches: [{
         find: ".USER_MENTION)",

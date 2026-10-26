@@ -118,7 +118,7 @@ export default definePlugin({
     name: "MessageVault",
     description: "Search everything you have read by keyword, person, channel and date, browse it as a timeline, and keep messages in your own collections. Indexed on your device only.",
     tags: ["Utility", "Chat"],
-    authors: [Devs.rootpoi, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     searchTerms: ["search", "find", "archive", "timeline", "collections", "bookmark", "arama"],
     dependencies: ["HeaderBarAPI"],
     settings,

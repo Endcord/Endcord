@@ -74,7 +74,7 @@ export default definePlugin({
     name: "RPCEditor",
     description: "Edit the type and content of any Rich Presence",
     tags: ["Customisation"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     patches: [
         {
             find: '"LocalActivityStore"',

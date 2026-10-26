@@ -58,7 +58,7 @@ export default definePlugin({
     name: "Quoter",
     description: "Adds the ability to create an inspirational quote image from a message.",
     tags: ["Chat"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     async start() {

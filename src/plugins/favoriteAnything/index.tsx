@@ -36,7 +36,7 @@ export default definePlugin({
     name: "FavoriteAnything",
     description: "Favorite any image, video, or file attachment",
     tags: ["Chat", "Media", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     searchTerms: ["favorite"],
     managedStyle,
     settings,

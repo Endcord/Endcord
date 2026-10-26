@@ -33,7 +33,7 @@ export default definePlugin({
     name: "WebpackTarball",
     description: "Converts Discord's webpack sources into a tarball.",
     tags: ["Developers", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     toolboxActions: {

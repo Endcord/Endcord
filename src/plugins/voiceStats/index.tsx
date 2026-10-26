@@ -139,7 +139,7 @@ export default definePlugin({
     name: "VoiceStats",
     description: "Shows how long you've spent in voice with each user in their profile",
     tags: ["Voice", "Friends"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     dependencies: ["ProfileSectionsAPI"],
     renderProfileSection: {
         render: VoiceStatsSection,

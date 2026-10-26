@@ -35,7 +35,7 @@ export default definePlugin({
     name: "WebcamStartNotifier",
     description: "Plays a sound when someone enables/disables their camera in a voice channel",
     tags: ["Voice", "Notifications"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     flux: (() => {

@@ -71,7 +71,7 @@ export const settings = definePluginSettings({
 
 export default definePlugin({
     name: "FavoriteGifSearch",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     description: "Adds a search bar to favorite gifs. Discord now has this built in, so the plugin no longer changes anything.",
     tags: ["Media", "Customisation"],
 

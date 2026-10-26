@@ -77,7 +77,7 @@ export default definePlugin({
     name: "EndcordToolbox",
     description: "Adds a button to the titlebar that houses Endcord quick actions",
     tags: ["Utility", "Developers"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     settings,
 

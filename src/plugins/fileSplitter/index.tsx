@@ -299,7 +299,7 @@ export default definePlugin({
     description:
         "Split large files into multiple parts to bypass size limits and share them easily.",
     tags: ["Utility", "Chat"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     toolboxActions: {

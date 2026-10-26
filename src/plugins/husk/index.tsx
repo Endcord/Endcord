@@ -101,7 +101,7 @@ export default definePlugin({
     description: "Adds Husk button (check settings to change used emoji)",
     dependencies: ["MessagePopoverAPI"],
     tags: ["Emotes", "Fun"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     messagePopoverButton: {
         icon: Husk,

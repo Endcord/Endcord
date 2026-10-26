@@ -10,7 +10,7 @@ import definePlugin from "@utils/types";
 export default definePlugin({
     name: "MessageEventsAPI",
     description: "Api required by anything using message events.",
-    authors: [Devs.Arjix, Devs.hunt, Devs.Ven],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     patches: [
         {
             find: "#{intl::EDIT_TEXTAREA_HELP}",

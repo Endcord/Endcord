@@ -397,7 +397,7 @@ export default definePlugin({
     description: "Customize Discord's sounds.",
     dependencies: ["AudioPlayerAPI"],
     tags: ["Customisation", "Notifications", "Voice"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     startAt: StartAt.Init,
     audioProcessor: getCustomSoundURL,

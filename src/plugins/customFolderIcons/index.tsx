@@ -15,7 +15,7 @@ export default definePlugin({
     name: "CustomFolderIcons",
     description: "Customize server folder icons with any PNG",
     tags: ["Appearance", "Customisation", "Organisation"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     patches: [
         {

@@ -11,7 +11,7 @@ export default definePlugin({
     name: "F8Break",
     description: "Pause the client when you press F8 with DevTools (+ breakpoints) open.",
     tags: ["Developers", "Shortcuts"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     start() {
         window.addEventListener("keydown", this.event);

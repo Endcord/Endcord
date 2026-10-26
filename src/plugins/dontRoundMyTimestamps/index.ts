@@ -10,7 +10,7 @@ import { moment } from "@webpack/common";
 
 export default definePlugin({
     name: "DontRoundMyTimestamps",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     description: "Always rounds relative timestamps down, so 7.6y becomes 7y instead of 8y",
     tags: ["Appearance", "Utility"],
 

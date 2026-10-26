@@ -74,7 +74,7 @@ export default definePlugin({
     name: "FollowVoiceUser",
     description: "Follow a friend in voice chat.",
     tags: ["Voice"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     settingsAboutComponent: () => (
         <Notice.Info>

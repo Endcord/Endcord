@@ -13,7 +13,7 @@ import style from "./style.css?managed";
 export default definePlugin({
     name: "CompactCompose",
     description: "Slims down the message box and hides the upload/gift clutter until you focus it.",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     tags: ["Appearance"],
     start: () => enableStyle(style),
     stop: () => disableStyle(style),

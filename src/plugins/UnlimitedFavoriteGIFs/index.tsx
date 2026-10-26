@@ -114,7 +114,7 @@ export default definePlugin({
     name: "UnlimitedFavoriteGIFs",
     description: "Bypasses the native GIF favorites size limit, allowing you to save unlimited GIFs.",
     tags: ["Media", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     settingsAboutComponent() {

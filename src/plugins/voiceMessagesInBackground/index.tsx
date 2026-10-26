@@ -25,7 +25,7 @@ migratePluginSettings("VoiceMessagesInBackground", "Voice Messages In-Background
 export default definePlugin({
     name: "VoiceMessagesInBackground",
     description: "Keeps voice messages playing across chats with a synchronized mini player.",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     tags: ["Voice", "Media", "Chat"],
     dependencies: ["AudioPlayerAPI", "HeaderBarAPI"],
 

@@ -27,7 +27,7 @@ function Icon({ height = 24, width = 24, className = "icon" }: { height?: number
 
 export default definePlugin({
     name: "QuickMention",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     description: "Adds a quick mention button to the message actions bar",
     tags: ["Chat", "Shortcuts"],
 

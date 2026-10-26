@@ -38,7 +38,7 @@ function getCachedUsers(): User[] {
 
 export default definePlugin({
     name: "UniversalMention",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     description: "Mention any user, regardless of channel access.",
     tags: ["Chat", "Servers", "Utility"],
     settings,

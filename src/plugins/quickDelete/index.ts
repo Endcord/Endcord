@@ -62,7 +62,7 @@ export default definePlugin({
     name: "QuickDelete",
     description: "Delete your last message in the current channel with a keyboard shortcut.",
     tags: ["Chat", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     start() {

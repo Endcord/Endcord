@@ -117,7 +117,7 @@ export default definePlugin({
     name: "ToastNotifications",
     description: "Show a pop-up toast notification, configurable for DMs, group, friends, or guild channels.",
     tags: ["Appearance", "Customisation", "Notifications"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     flux: {
         MESSAGE_CREATE({ message }: { message: Message; }) {

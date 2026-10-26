@@ -50,7 +50,7 @@ export default definePlugin({
     name: "MediaPlaybackSpeed",
     description: "Allows changing the (default) playback speed of media embeds",
     tags: ["Chat", "Media"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     patches: [
         // replace voice message embed speed control because ours provides more speeds

@@ -181,7 +181,7 @@ export default definePlugin({
     name: "LastOnline",
     description: "Adds a last online indicator under usernames in your DM list",
     tags: ["Friends", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     flux: {
         PRESENCE_UPDATES({ updates }: { updates?: Array<{ user?: { id?: string; }; status?: string; }>; }) {

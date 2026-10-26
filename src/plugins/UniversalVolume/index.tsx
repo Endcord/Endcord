@@ -66,7 +66,7 @@ function relevelAll() {
 export default definePlugin({
     name: "UniversalVolume",
     description: "Sets everyone in your voice channel to the same volume, and keeps new people who join at that level too.",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     tags: ["Utility", "Voice"],
     settings,
 

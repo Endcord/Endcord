@@ -38,7 +38,7 @@ let spellObserver: MutationObserver | null = null;
 export default definePlugin({
     name: "NoMiddleClickPaste",
     description: "Stops Linux middle-click paste and spellcheck from scrambling the chat box",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     hidden: !IS_LINUX,
     required: IS_LINUX,
 

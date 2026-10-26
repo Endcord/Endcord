@@ -138,7 +138,7 @@ export default definePlugin({
     name: "ShowRolesInChat",
     description: "Shows a user's highest role next to their name in chat messages. Hide/show specific roles in their context menu (right-click).",
     tags: ["Appearance", "Chat", "Roles", "Servers"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     contextMenus: {
         "dev-context"(children, { id }: { id: string; }) {

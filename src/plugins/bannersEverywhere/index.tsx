@@ -44,7 +44,7 @@ export default definePlugin({
     name: "BannersEverywhere",
     description: "Displays banners in the member list",
     tags: ["Appearance", "Customisation"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     patches: [
         {

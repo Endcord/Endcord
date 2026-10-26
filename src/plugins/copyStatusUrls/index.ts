@@ -24,7 +24,7 @@ export default definePlugin({
     name: "CopyStatusUrls",
     description: "Copy a user's status URL when you right-click it",
     tags: ["Activity", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     patches: [
         {

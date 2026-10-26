@@ -148,7 +148,7 @@ export default definePlugin({
     name: "ClickableRoles",
     description: "Click on roles in user profiles and the member list to see which members have them.",
     tags: ["Appearance", "Roles"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     patches: [
         {

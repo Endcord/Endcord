@@ -17,7 +17,7 @@ export default definePlugin({
     name: "ThemeLibrary",
     description: "A library of themes for Endcord.",
     tags: ["Appearance", "Customisation"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     toolboxActions: {
         "Open Theme Library": () => {

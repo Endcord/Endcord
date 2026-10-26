@@ -24,7 +24,7 @@ export default definePlugin({
     required: true,
     hidden: true,
     description: "Stops Discord from asking for administrator permission to install Discord System Helper.",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     startAt: StartAt.Init,
     patches: [{
         find: "System service installed",

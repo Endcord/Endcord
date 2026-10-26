@@ -112,7 +112,7 @@ export default definePlugin({
     name: "VoiceJoinMessages",
     description: "Receive client-side ephemeral messages when your friends join voice channels",
     tags: ["Servers", "Utility", "Voice"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     flux: {
         VOICE_STATE_UPDATES({ voiceStates }: { voiceStates: VoiceState[]; }) {

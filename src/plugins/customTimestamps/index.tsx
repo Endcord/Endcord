@@ -126,7 +126,7 @@ export default definePlugin({
     name: "CustomTimestamps",
     description: "Custom timestamps on messages and tooltips",
     tags: ["Appearance", "Customisation"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     settingsAboutComponent: () => (
         <div className={"vc-cmt-info-card"}>

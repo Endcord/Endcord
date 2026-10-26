@@ -127,7 +127,7 @@ export default definePlugin({
     name: "CancelFriendRequestNC",
     description: "Cancels a pending friend request by clicking the button again.",
     tags: ["Friends"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     start() {
         this.observer = new MutationObserver(() => {

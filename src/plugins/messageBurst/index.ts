@@ -68,7 +68,7 @@ export default definePlugin({
     description: "Merges messages sent within a time period with your previous sent message if no one else sends a message before you.",
     dependencies: ["MessagePopoverAPI"],
     tags: ["Chat"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     onBeforeMessageSend(channelId, message) {
         const messages = MessageStore.getMessages(channelId)._map;

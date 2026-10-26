@@ -223,7 +223,7 @@ export default definePlugin({
     name: "FastGifPicker",
     description: "Makes the GIF picker load lighter previews, retry failures, and avoid starting too many GIFs at once.",
     tags: ["Media", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     patches: [

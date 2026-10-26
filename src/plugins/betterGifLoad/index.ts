@@ -53,7 +53,7 @@ export default definePlugin({
     name: "BetterGifLoad",
     description: "Change the quality of GIFs in the GIF picker. Improves performance and lowers internet usage.",
     tags: ["Media", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     patches: [
         {

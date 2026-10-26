@@ -141,7 +141,7 @@ export default definePlugin({
         plugins: []
     }),
     settings,
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     renderMessageAccessory: props => {
         return <UserpluginInstallButton props={props} />;
     }

@@ -26,7 +26,7 @@ export default definePlugin({
     name: "FixImagesQuality",
     description: "Improves quality of images by loading them at their original resolution",
     tags: ["Media", "Appearance"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     patches: [

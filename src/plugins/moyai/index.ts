@@ -89,7 +89,7 @@ const settings = definePluginSettings({
 
 export default definePlugin({
     name: "Moyai",
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     description: "Plays a 🗿 sound effect whenever a moyai emoji is sent, reacted, or used as a voice effect in your current channel.",
     tags: ["Fun"],
     settings,

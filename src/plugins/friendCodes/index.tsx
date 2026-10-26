@@ -13,7 +13,7 @@ export default definePlugin({
     name: "FriendCodes",
     description: "Generate FriendCodes to easily add friends",
     tags: ["Friends", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     patches: [
         {
             find: "#{intl::ADD_FRIEND})}),(",

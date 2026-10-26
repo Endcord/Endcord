@@ -11,7 +11,7 @@ export default definePlugin({
     name: "ShowSongName",
     description: "Shows song name instead of artist for Spotify activity",
     tags: ["Activity"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
     patches: [
         {

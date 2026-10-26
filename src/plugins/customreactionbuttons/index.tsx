@@ -170,7 +170,7 @@ export default definePlugin({
     name: "CustomReactionButtons",
     description: "Add custom reaction buttons to the message popover, either use the windows emoji picker or you have to copy the custom server emojis markdown.",
     tags: ["Chat", "Utility", "Reactions"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     async start() {

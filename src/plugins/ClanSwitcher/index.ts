@@ -46,7 +46,7 @@ export default definePlugin({
     name: "ClanSwitcher",
     description: "Automatically switches your Discord server tag",
     tags: ["Servers", "Utility"],
-    authors: [Devs.ewlle, Devs.kraethis, Devs.Sharp],
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
     start() {
