@@ -6,8 +6,10 @@ $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $cscPath = "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
 $outExe = Join-Path $repoRoot "EndcordInstaller.exe"
-$desktopExe = "C:\Users\qwe\Desktop\EndcordInstaller.exe"
-$siteDir = "C:\Users\qwe\Desktop\Endcord-site"
+# The installer copy and the site folder sit next to this repo
+$workDir = Split-Path -Parent $repoRoot
+$desktopExe = Join-Path $workDir "EndcordInstaller.exe"
+$siteDir = Join-Path $workDir "Endcord-site"
 $distInstallerDir = Join-Path $repoRoot "dist\Installer"
 
 try {

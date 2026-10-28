@@ -29,8 +29,9 @@ import { fileURLToPath } from "url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const DIST = join(ROOT, "dist");
 const NODE_DIR = dirname(process.execPath);
-const SITE_DIR = process.env.ENDCORD_SITE_DIR ?? "C:\\Users\\qwe\\Desktop\\Endcord-site";
-const PUBLIC_REPO = process.env.ENDCORD_PUBLIC_REPO ?? "C:\\Users\\qwe\\Desktop\\endcord";
+// The site folder and the public clone sit next to this repo
+const SITE_DIR = process.env.ENDCORD_SITE_DIR ?? join(ROOT, "..", "Endcord-site");
+const PUBLIC_REPO = process.env.ENDCORD_PUBLIC_REPO ?? join(ROOT, "..", "endcord");
 // The updater reads version.json from here and rejects files that don't match their checksum
 const RAW_BASE = "https://raw.githubusercontent.com/rootpoii/endcord/main";
 const UPDATE_FILES = ["patcher.js", "preload.js", "renderer.js", "renderer.css"];

@@ -1715,7 +1715,9 @@ export default definePlugin({
                     setProp("premiumGuildSince", null);
                 }
             } else if (pd && pd.nitro === false) {
-                setProp("premiumType", 0);
+                // "No Nitro" is null to Discord. 0 isn't a premium type, and its file size limit lookup
+                // (limits[premiumType].fileSize) throws on it, which leaves every upload stuck
+                setProp("premiumType", null);
                 setProp("premiumSince", null);
                 setProp("premiumGuildSince", null);
             }
@@ -1798,7 +1800,7 @@ export default definePlugin({
                     merged.badges = [];
                 }
             } else if (pd.nitro === false) {
-                merged.premiumType = profile.premiumType ?? 0;
+                merged.premiumType = profile.premiumType ?? null;
                 merged.premiumSince = profile.premiumSince ?? null;
                 merged.premiumGuildSince = profile.premiumGuildSince ?? null;
                 if (hasCustomBadgesConfigured(pd)) {
