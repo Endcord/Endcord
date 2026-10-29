@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { popNotice, showNotice } from "@api/Notices";
 import { isPluginEnabled } from "@api/PluginManager";
 import { definePluginSettings } from "@api/Settings";
 import { getUserSettingLazy } from "@api/UserSettings";
@@ -13,7 +14,7 @@ import { Flex } from "@components/Flex";
 import { Link } from "@components/Link";
 import { Channel, RenderModalProps } from "@endcord/discord-types";
 import { CONTRIB_ROLE_ID, Devs, DONOR_ROLE_ID, ENDCORD_GUILD_ID,KNOWN_ISSUES_CHANNEL_ID, REGULAR_ROLE_ID, SUPPORT_CATEGORY_ID, SUPPORT_CHANNEL_ID, VENBOT_USER_ID } from "@utils/constants";
-import { sendMessage } from "@utils/discord";
+import { openInviteModal, sendMessage } from "@utils/discord";
 import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import { Margins } from "@utils/margins";
@@ -23,7 +24,7 @@ import { onlyOnce } from "@utils/onlyOnce";
 import { makeCodeblock } from "@utils/text";
 import definePlugin from "@utils/types";
 import { checkForUpdates, update } from "@utils/updater";
-import { Button, ChannelStore, ConfirmModal, Forms, Parser, PermissionsBits, PermissionStore, RelationshipStore, showToast, Text, Toasts, UserStore } from "@webpack/common";
+import { Button, ChannelStore, ConfirmModal, Forms, GuildStore, Parser, PermissionsBits, PermissionStore, RelationshipStore, showToast, Text, Toasts, UserStore } from "@webpack/common";
 import { JSX } from "react";
 
 import gitHash from "~git-hash";
@@ -122,7 +123,44 @@ const checkForUpdatesOnce = onlyOnce(checkForUpdates);
 const settings = definePluginSettings({}).withPrivateSettings<{
     dismissedDevBuildWarning?: boolean;
     dismissedDonateWarning?: boolean;
+    invitePromptShown?: boolean;
+    firstSeenAt?: number;
+    starPromptShown?: boolean;
 }>();
+
+// Vanity invite, it doesn't expire
+const ENDCORD_INVITE_CODE = "endcord";
+const REPO_URL = "https://github.com/rootpoii/Endcord";
+const STAR_PROMPT_DELAY = 7 * 24 * 60 * 60 * 1000;
+
+// Asks once whether to join the Endcord server. Discord's own invite dialog does the joining, so nothing happens without a click
+async function promptServerInvite() {
+    if (settings.store.invitePromptShown) return;
+    settings.store.invitePromptShown = true;
+    if (GuildStore.getGuild(ENDCORD_GUILD_ID)) return;
+
+    try {
+        await openInviteModal(ENDCORD_INVITE_CODE);
+    } catch (e) {
+        // Most likely offline; ask again on the next connection
+        settings.store.invitePromptShown = false;
+        new Logger("SupportHelper").error("Couldn't open the Endcord server invite", e);
+    }
+}
+
+// Asks for a GitHub star once, after Endcord has been in use for a week
+function promptStar() {
+    const s = settings.store;
+    if (s.starPromptShown) return;
+    s.firstSeenAt ??= Date.now();
+    if (Date.now() - s.firstSeenAt < STAR_PROMPT_DELAY) return;
+
+    s.starPromptShown = true;
+    showNotice(t("Enjoying Endcord? A star on GitHub helps more people find it."), t("Star on GitHub"), () => {
+        popNotice();
+        EndcordNative.native.openExternal(REPO_URL);
+    });
+}
 
 function DevBuildConfirmModal(props: RenderModalProps) {
     const s = settings.use(["dismissedDevBuildWarning"]);
@@ -214,6 +252,13 @@ export default definePlugin({
     ],
 
     flux: {
+        CONNECTION_OPEN() {
+            // Give Discord a moment to finish loading before showing anything
+            setTimeout(() => {
+                promptServerInvite();
+                promptStar();
+            }, 5000);
+        },
 
         async MESSAGE_CREATE({ message }) {
             if (!message || !message.content) return;
