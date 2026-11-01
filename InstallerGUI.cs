@@ -12,9 +12,9 @@ using EndcordInstaller.UI;
 [assembly: AssemblyCopyright("Copyright © 2026 Endcord. Licensed under GPL-3.0-or-later.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-[assembly: AssemblyVersion("4.0.31.0")]
-[assembly: AssemblyFileVersion("4.0.31.0")]
-[assembly: AssemblyInformationalVersion("4.0.31")]
+[assembly: AssemblyVersion("4.0.32.0")]
+[assembly: AssemblyFileVersion("4.0.32.0")]
+[assembly: AssemblyInformationalVersion("4.0.32")]
 [assembly: ComVisible(false)]
 [assembly: Guid("e8760626-8dd3-498f-abb9-eeac29266e0b")]
 [assembly: System.Resources.NeutralResourcesLanguage("en-US")]
@@ -24,6 +24,10 @@ namespace EndcordInstaller
 {
     static class Program
     {
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static extern bool SetDefaultDllDirectories(uint directoryFlags);
+        const uint LOAD_LIBRARY_SEARCH_SYSTEM32 = 0x800;
+
         [DllImport("kernel32.dll")]
         static extern bool AttachConsole(int dwProcessId);
         const int ATTACH_PARENT_PROCESS = -1;
@@ -31,6 +35,9 @@ namespace EndcordInstaller
         [STAThread]
         static int Main(string[] args)
         {
+            // Installers run from Downloads, where a drive-by download can sit next to them under a DLL's name
+            SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_SYSTEM32);
+
             if (args != null && args.Length > 0 && string.Equals(args[0], "--self-test", StringComparison.OrdinalIgnoreCase))
             {
                 try { AttachConsole(ATTACH_PARENT_PROCESS); } catch { }

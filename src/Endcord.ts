@@ -136,6 +136,9 @@ async function init() {
     await onceReady;
     startAllPlugins(StartAt.WebpackReady);
 
+    // Tells the updater this release works, otherwise it goes back to the last one after a few tries
+    if (!IS_UPDATER_DISABLED && IS_STANDALONE) EndcordNative.updater.confirmUpdate().catch(() => { });
+
     try {
         syncDiscordLocale(getCurrentLang());
     } catch { }
@@ -158,7 +161,7 @@ async function init() {
                 "that all plugins are working as intended.",
                 "You are seeing this warning because this is a Development build of Endcord.",
                 "\nThe following patches have not been applied:",
-                "\n\n" + pendingPatches.map(p => `${p.plugin}: ${p.find}`).join("\n")
+                `\n\n${pendingPatches.map(p => `${p.plugin}: ${p.find}`).join("\n")}`
             );
     }
 }

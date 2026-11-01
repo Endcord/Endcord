@@ -26,7 +26,7 @@ interface PersistentNotificationData extends Pick<NotificationData, "title" | "b
 const KEY = "notification-log";
 
 const getLog = async () => {
-    const log = await DataStore.get(KEY) as PersistentNotificationData[] | undefined;
+    const log = await DataStore.get(KEY);
     return log ?? [];
 };
 

@@ -11,12 +11,19 @@ import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import { relaunch } from "@utils/native";
 import { ConfirmModal,OAuth2AuthorizeModal, openModal, UserStore } from "@webpack/common";
+
+import { isSecureCloudUrl } from "./cloudUrl";
 export const logger = new Logger("SettingsSync:CloudSetup", "#39b7e0");
 
 export const getCloudUrl = () => new URL(Settings.cloud.url);
 const getCloudUrlOrigin = () => getCloudUrl().origin;
 
 export async function checkCloudUrlCsp() {
+    if (!isSecureCloudUrl(Settings.cloud.url)) {
+        logger.error("The cloud URL has to use HTTPS");
+        return false;
+    }
+
     if (IS_WEB) return true;
 
     const { host } = getCloudUrl();

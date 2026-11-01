@@ -146,11 +146,11 @@ function applyAutocorrect(content: string): string {
     }
 
     if (corrected.length > 0 && !/[.!?]$/.test(corrected.trim())) {
-        corrected = corrected.trim() + ".";
+        corrected = `${corrected.trim()}.`;
     }
 
     corrected = corrected.replace(/([.!?])\s+([a-z])/g, (match, punct, letter) => {
-        return punct + " " + letter.toUpperCase();
+        return `${punct} ${letter.toUpperCase()}`;
     });
 
     return corrected;
@@ -229,12 +229,12 @@ const getPresend = (): MessageSendListener => {
 
         if (settings.store.useKaomoji) {
             const kaomoji = getRandomItem(kaomojis[tone] || kaomojis.default);
-            content += " " + kaomoji;
+            content += ` ${kaomoji}`;
         }
 
         if (settings.store.useEmoji) {
             const emoji = getRandomItem(emojis[tone] || emojis.default);
-            content += " " + emoji;
+            content += ` ${emoji}`;
         }
 
         msg.content = content;

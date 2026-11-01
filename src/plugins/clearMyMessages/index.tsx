@@ -15,7 +15,7 @@ interface State {
     setDeleting: (deleting: boolean) => void;
 }
 
-const useStore = proxyLazy(() => (zustandCreate as any)((set: any) => ({
+const useStore = proxyLazy(() => (zustandCreate)((set: any) => ({
     isDeleting: false,
     setDeleting: (isDeleting: boolean) => set({ isDeleting })
 }))) as { (fn: (state: State) => any): any; getState: () => State; };
@@ -26,11 +26,11 @@ function sleep(ms: number) {
 
 async function requestWithRetry(url: string, query?: any): Promise<any> {
     while (useStore.getState().isDeleting) {
-        const res = await RestAPI.get({ url, query } as any);
+        const res = await RestAPI.get({ url, query });
         if (res.ok) return res;
         if (res.status === 429) {
             const wait = (res.body?.retry_after || 5) * 1000;
-            console.log(`[ClearMyMessages] Rate limited on fetch! Waiting ${wait}ms...`);
+            console.debug(`[ClearMyMessages] Rate limited on fetch! Waiting ${wait}ms...`);
             showToast({ text: `Rate limited on fetch! Waiting (${Math.ceil(wait / 1000)}s)...`, variant: "default" });
             await sleep(wait + 1000);
             continue;
@@ -54,7 +54,7 @@ async function clearMyMessages(channelId: string) {
     const channel = (ChannelStore as any).getChannel(channelId);
     const guildId = channel?.guild_id;
 
-    console.log(`[ClearMyMessages] Starting total wipe for channel ${channelId}`);
+    console.debug(`[ClearMyMessages] Starting total wipe for channel ${channelId}`);
     showToast({ text: "Starting...", variant: "default" });
 
     let totalDeleted = 0;
@@ -64,7 +64,7 @@ async function clearMyMessages(channelId: string) {
         for (let pass = 1; pass <= 3; pass++) {
             if (!useStore.getState().isDeleting) break;
             let deletedInPass = 0;
-            console.log(`[ClearMyMessages] PASS ${pass} starting...`);
+            console.debug(`[ClearMyMessages] PASS ${pass} starting...`);
 
 
             try {
@@ -76,12 +76,12 @@ async function clearMyMessages(channelId: string) {
                     ? { channel_id: channelId, author_id: myId, include_threads: true }
                     : { author_id: myId };
 
-                console.log(`[ClearMyMessages] Pass ${pass}, Stage 1 (Search): Requesting...`);
+                console.debug(`[ClearMyMessages] Pass ${pass}, Stage 1 (Search): Requesting...`);
                 const sres = await requestWithRetry(searchUrl, query);
 
                 if (sres.ok && sres.body?.messages) {
                     const hits = sres.body.messages.flat().filter((m: any) => m && m.hit);
-                    console.log(`[ClearMyMessages] Pass ${pass}, Stage 1: Found ${hits.length} hits via search.`);
+                    console.debug(`[ClearMyMessages] Pass ${pass}, Stage 1: Found ${hits.length} hits via search.`);
                     for (const msg of hits) {
                         if (!useStore.getState().isDeleting) break;
                         try {
@@ -97,7 +97,7 @@ async function clearMyMessages(channelId: string) {
                         }
                     }
                 } else if (!sres.ok) {
-                    console.log(`[ClearMyMessages] Pass ${pass}, Stage 1: Search failed. Status: ${sres.status}`);
+                    console.debug(`[ClearMyMessages] Pass ${pass}, Stage 1: Search failed. Status: ${sres.status}`);
                 }
             } catch (e) {
                 console.error(`[ClearMyMessages] Pass ${pass}, Stage 1 error:`, e);
@@ -105,7 +105,7 @@ async function clearMyMessages(channelId: string) {
 
 
             let before: string | undefined;
-            console.log(`[ClearMyMessages] Pass ${pass}, Stage 2 (Linear): Starting scan...`);
+            console.debug(`[ClearMyMessages] Pass ${pass}, Stage 2 (Linear): Starting scan...`);
 
             while (useStore.getState().isDeleting) {
                 const url = `/channels/${channelId}/messages`;
@@ -136,10 +136,10 @@ async function clearMyMessages(channelId: string) {
             }
 
             totalDeleted += deletedInPass;
-            console.log(`[ClearMyMessages] PASS ${pass} finished. Deleted ${deletedInPass} messages total.`);
+            console.debug(`[ClearMyMessages] PASS ${pass} finished. Deleted ${deletedInPass} messages total.`);
 
             if (deletedInPass === 0) {
-                console.log(`[ClearMyMessages] Nothing more found in pass ${pass}, finishing.`);
+                console.debug(`[ClearMyMessages] Nothing more found in pass ${pass}, finishing.`);
                 break;
             }
             if (pass < 3) {
@@ -170,7 +170,7 @@ const UserContextMenuPatch: NavContextMenuPatchCallback = children => {
             label={isDeleting ? "Stop Clearing" : "Clear all"}
             color="danger"
             action={() => {
-                console.log("[ClearMyMessages] MenuItem clicked. Currently deleting:", isDeleting);
+                console.debug("[ClearMyMessages] MenuItem clicked. Currently deleting:", isDeleting);
                 if (isDeleting) {
                     useStore.getState().setDeleting(false);
                 } else {

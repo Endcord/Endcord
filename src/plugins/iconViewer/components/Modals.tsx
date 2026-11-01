@@ -164,7 +164,7 @@ function OtherContextMenu({ iconName, Icon, color }: { iconName: string; Icon: I
         const size = iconSizesInPx.lg;
         const iconEl = type === "image/svg+xml"
             ? convertToHtml(<Icon className="vc-ic-save-icon" color={colorData?.css} />)
-            : document.querySelector(".vc-ic-icon-preview .vc-ic-icon-large") as Element | null;
+            : document.querySelector(".vc-ic-icon-preview .vc-ic-icon-large");
 
         if (iconEl) saveIcon(iconName, iconEl, color, size, type);
     };
@@ -286,7 +286,7 @@ function IconModal({ iconName, Icon, onClose, transitionState }: { iconName: str
                 <BaseText size="md" weight="semibold">{t("Usage")}</BaseText>
                 <BaseText size="sm" color="text-muted">{t("Click to copy")}</BaseText>
             </div>
-            {/* for some reason i cant make this shit codeblock full width, FF 15 */}
+            {/* for some reason this codeblock can't be made full width, FF 15 */}
             <Clickable className="vc-ic-codeblock-wrapper" onClick={() => copyWithToast(findCode, "Copied!")}>
                 <CodeBlock content={findCode} lang="ts" />
             </Clickable>

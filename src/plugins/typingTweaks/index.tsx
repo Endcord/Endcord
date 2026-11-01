@@ -74,7 +74,7 @@ const TypingUser = ErrorBoundary.wrap(function TypingUser({ user, guildId }: Typ
                     size="SIZE_16"
                     src={user.getAvatarURL(guildId, 128)} />
             )}
-            {GuildMemberStore.getNick(guildId!, user.id)
+            {GuildMemberStore.getNick(guildId, user.id)
                 || (!guildId && RelationshipStore.getNickname(user.id))
                 || (user as any).globalName
                 || user.username

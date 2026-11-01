@@ -9,20 +9,20 @@ import { IpcEvents } from "@shared/IpcEvents";
 import { SettingsStore } from "@shared/SettingsStore";
 import { mergeDefaults } from "@utils/mergeDefaults";
 import { ipcMain } from "electron";
-import { mkdirSync, readFileSync, writeFileSync } from "fs";
+import { mkdirSync, readFileSync } from "fs";
 import { join } from "path";
 
 import { DATA_DIR, NATIVE_SETTINGS_FILE, SETTINGS_DIR, SETTINGS_FILE } from "./utils/constants";
+import { readJsonDurably, writeFileDurably } from "./utils/durableFile";
+import { handleIpc, isTrustedSender } from "./utils/ipc";
 
 mkdirSync(SETTINGS_DIR, { recursive: true });
 
 function readSettings<T = object>(name: string, file: string): Partial<T> {
     try {
-        return JSON.parse(readFileSync(file, "utf-8"));
-    } catch (err: any) {
-        if (err?.code !== "ENOENT")
-            console.error(`Failed to read ${name} settings`, err);
-
+        return readJsonDurably<Partial<T>>(file) ?? {};
+    } catch (err) {
+        console.error(`Failed to read ${name} settings`, err);
         return {};
     }
 }
@@ -60,15 +60,18 @@ export const RendererSettings = new SettingsStore(initialRendererSettings);
 
 RendererSettings.addGlobalChangeListener(() => {
     try {
-        writeFileSync(SETTINGS_FILE, JSON.stringify(RendererSettings.plain, null, 4));
+        writeFileDurably(SETTINGS_FILE, JSON.stringify(RendererSettings.plain, null, 4));
     } catch (e) {
         console.error("Failed to write renderer settings", e);
     }
 });
 
-ipcMain.on(IpcEvents.GET_SETTINGS, e => e.returnValue = RendererSettings.plain);
+ipcMain.on(IpcEvents.GET_SETTINGS, e => e.returnValue = isTrustedSender(e, IpcEvents.GET_SETTINGS) ? RendererSettings.plain : null);
 
-ipcMain.handle(IpcEvents.SET_SETTINGS, (_, data: Settings, pathToNotify?: string) => {
+handleIpc(IpcEvents.SET_SETTINGS, (_, data: Settings, pathToNotify?: string) => {
+    // This replaces the whole store and goes straight to disk
+    if (data === null || typeof data !== "object" || Array.isArray(data)) throw new Error("Invalid settings");
+
     RendererSettings.setData(data, pathToNotify);
 });
 
@@ -93,7 +96,7 @@ export const NativeSettings = new SettingsStore(nativeSettings as NativeSettings
 
 NativeSettings.addGlobalChangeListener(() => {
     try {
-        writeFileSync(NATIVE_SETTINGS_FILE, JSON.stringify(NativeSettings.plain, null, 4));
+        writeFileDurably(NATIVE_SETTINGS_FILE, JSON.stringify(NativeSettings.plain, null, 4));
     } catch (e) {
         console.error("Failed to write native settings", e);
     }

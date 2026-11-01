@@ -43,9 +43,11 @@ export function getIntlMessageFromHash(hashedKey: string, values?: Record<Proper
  * @param code The invite code
  * @returns Whether the invite was accepted
  */
-export async function openInviteModal(code: string) {
+export async function openInviteModal(code: string, expectedGuildId?: string) {
     const { invite } = await InviteActions.resolveInvite(code, "Desktop Modal");
-    if (!invite) throw new Error("Invalid invite: " + code);
+    if (!invite) throw new Error(`Invalid invite: ${code}`);
+    // A vanity code goes back on the market when a server loses its boosts
+    if (expectedGuildId && invite.guild?.id !== expectedGuildId) return false;
 
     FluxDispatcher.dispatch({
         type: "INVITE_MODAL_OPEN",
@@ -167,7 +169,7 @@ export function openImageModal(item: Except<MediaModalItem, "type">, mediaModalP
 
 export async function openUserProfile(id: string) {
     const user = await UserUtils.getUser(id);
-    if (!user) throw new Error("No such user: " + id);
+    if (!user) throw new Error(`No such user: ${id}`);
 
     const guildId = SelectedGuildStore.getGuildId();
     UserProfileActions.openUserProfileModal({

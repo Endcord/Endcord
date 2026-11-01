@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { IconsDef } from "@endcordplugins/iconViewer/types";
+import { IconsDef } from "@plugins/iconViewer/types";
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 

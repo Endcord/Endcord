@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+const MAX_ENTRY_BYTES = 256 * 1024 * 1024;
+
 export type ZipEntry = {
     name: string;
     isDirectory: boolean;
@@ -80,10 +82,12 @@ export async function unzipBlob(blob: Blob): Promise<{ entries: ZipEntry[]; read
     }
 
     async function readEntry(e: ZipEntry) {
+        if (e.size > MAX_ENTRY_BYTES) throw new Error("Entry is too large to preview");
+
         // read local file header to find data offset
         const LFH_SIG = 0x04034b50;
         const off = e.offset;
-        if (readLE(buf, off, 4) !== LFH_SIG) throw new Error("Invalid local header at offset " + off + ". Buffer length: " + buf.length);
+        if (readLE(buf, off, 4) !== LFH_SIG) throw new Error(`Invalid local header at offset ${off}. Buffer length: ${buf.length}`);
         const nameLen = readLE(buf, off + 26, 2);
         const extraLen = readLE(buf, off + 28, 2);
         const dataStart = off + 30 + nameLen + extraLen;
@@ -96,16 +100,21 @@ export async function unzipBlob(blob: Blob): Promise<{ entries: ZipEntry[]; read
         if (typeof (DecompressionStream) !== "undefined") {
             const ds = new DecompressionStream("deflate-raw");
             const writer = ds.writable.getWriter();
-            await writer.write(slice);
-            await writer.close();
+            // Not awaited: the output is read as it comes out, so a zip bomb can be stopped before it fills memory
+            writer.write(slice).then(() => writer.close()).catch(() => { });
             const reader = ds.readable.getReader();
             const chunks: Uint8Array[] = [];
+            let total = 0;
             while (true) {
                 const r = await reader.read();
                 if (r.done) break;
+                total += r.value.length;
+                if (total > MAX_ENTRY_BYTES) {
+                    await reader.cancel();
+                    throw new Error("Entry is too large to preview");
+                }
                 chunks.push(new Uint8Array(r.value));
             }
-            const total = chunks.reduce((s, c) => s + c.length, 0);
             const out = new Uint8Array(total);
             let pos = 0;
             for (const c of chunks) { out.set(c, pos); pos += c.length; }

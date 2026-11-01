@@ -6,6 +6,7 @@
 
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Link } from "@components/Link";
+import { Notice } from "@components/Notice";
 import { RenderModalProps } from "@endcord/discord-types";
 import { GUILD_ID, INVITE_KEY, RAW_SKU_ID } from "@plugins/decor/lib/constants";
 import { useCurrentUserDecorationsStore } from "@plugins/decor/lib/stores/CurrentUserDecorationsStore";
@@ -14,15 +15,10 @@ import { AvatarDecorationModalPreview } from "@plugins/decor/ui/components";
 import { openInviteModal } from "@utils/discord";
 import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
-import { filters, findComponentByCodeLazy, mapMangledModuleLazy } from "@webpack";
+import { findComponentByCodeLazy } from "@webpack";
 import { closeAllModals, FluxDispatcher, Forms, GuildStore, Modal, NavigationRouter, openModal, Text, TextInput, useEffect, useMemo, UserStore, useState } from "@webpack/common";
 
 const FileUpload = findComponentByCodeLazy(".currentTarget.files", "lineClamp:1");
-
-const { HelpMessage, HelpMessageTypes } = mapMangledModuleLazy('POSITIVE="positive', {
-    HelpMessageTypes: filters.byProps("POSITIVE", "WARNING", "INFO"),
-    HelpMessage: filters.byCode("messageType:")
-});
 
 function useObjectURL(object: Blob | MediaSource | null) {
     const [url, setUrl] = useState<string | null>(null);
@@ -82,11 +78,11 @@ function CreateDecorationModal(props: RenderModalProps) {
     >
         <div className={cl("create-decoration-modal-content", DecorationModalClasses.modal)}>
             <ErrorBoundary>
-                <HelpMessage messageType={HelpMessageTypes.WARNING}>
+                <Notice.Warning>
                     {t("Make sure your decoration does not violate")}{" "}<Link
                         href="https://github.com/decor-discord/.github/blob/main/GUIDELINES.md"
                     >
-                        {t("the guidelines")}</Link>{" "}{t("before submitting it.")}</HelpMessage>
+                        {t("the guidelines")}</Link>{" "}{t("before submitting it.")}</Notice.Warning>
                 <div className={cl("create-decoration-modal-form-preview-container")}>
                     <div className={cl("create-decoration-modal-form")}>
                         {error !== null && <Text color="text-danger" variant="text-xs/normal">{error.message}</Text>}
@@ -120,7 +116,7 @@ function CreateDecorationModal(props: RenderModalProps) {
                         />
                     </div>
                 </div>
-                <HelpMessage messageType={HelpMessageTypes.INFO} className={Margins.bottom8}>
+                <Notice.Info className={Margins.bottom8}>
                     {t("To receive updates on your decoration's review, join")}{" "}<Link
                         href={`https://discord.gg/${INVITE_KEY}`}
                         onClick={async e => {
@@ -138,7 +134,7 @@ function CreateDecorationModal(props: RenderModalProps) {
                             }
                         }}
                     >
-                        {t("Decor's Discord server")}</Link>{" "}{t("and allow direct messages.")}</HelpMessage>
+                        {t("Decor's Discord server")}</Link>{" "}{t("and allow direct messages.")}</Notice.Info>
             </ErrorBoundary>
         </div>
     </Modal>;

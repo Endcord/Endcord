@@ -141,7 +141,7 @@ export default definePlugin({
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     contextMenus: {
-        "dev-context"(children, { id }: { id: string; }) {
+        "dev-context": function(children, { id }: { id: string; }) {
             if (GuildRoleStore.getRole(getCurrentGuild()?.id ?? "", id)) {
                 children.push(
                     <Menu.MenuGroup>
@@ -150,7 +150,7 @@ export default definePlugin({
                 );
             }
         },
-        "guild-settings-role-context"(children, props: { role: { id: string; }; }) {
+        "guild-settings-role-context": function(children, props: { role: { id: string; }; }) {
             children.push(
                 <Menu.MenuGroup>
                     {makeToggleRoleItem(props.role.id)}

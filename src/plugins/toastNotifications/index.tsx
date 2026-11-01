@@ -6,11 +6,11 @@
 
 import { definePluginSettings } from "@api/Settings";
 import { Button } from "@components/Button";
+import { Channel, Message } from "@endcord/discord-types";
+import { UserNotificationSetting } from "@endcord/discord-types/enums";
 import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
 import definePlugin, { makeRange, OptionType } from "@utils/types";
-import { Channel, Message } from "@vencord/discord-types";
-import { UserNotificationSetting } from "@vencord/discord-types/enums";
 import { findByPropsLazy } from "@webpack";
 import { ChannelStore, IconUtils, MessageStore, NavigationRouter, PresenceStore, RelationshipStore, SelectedChannelStore, StreamerModeStore, UserGuildSettingsStore, UserStore } from "@webpack/common";
 
@@ -138,13 +138,11 @@ export default definePlugin({
             // Channel type checks.
             if (channel.guild_id) {
                 if (!shouldNotifyForGuildMessage(message, channel)) return;
-            } else {
-                if (
+            } else if (
                     (!settings.store.directMessages && channel.isDM()) // If DM notifications are disabled.
                     || (!settings.store.groupMessages && channel.isGroupDM()) // If group DM notifications are disabled.
                     || UserGuildSettingsStore.isChannelMuted(null, channel.id) // If the user has muted the DM/group channel.
                 ) return;
-            }
 
             // Retrieve the message component for the message.
             // Fast path: the reducer has usually already registered this message,

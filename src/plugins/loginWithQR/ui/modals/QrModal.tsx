@@ -7,10 +7,9 @@
 import { BaseText } from "@components/BaseText";
 import { QrCodeIcon } from "@components/Icons";
 import { wrapTab } from "@components/settings";
-import loginWithQR from "@equicordplugins/loginWithQR";
-import { images } from "@equicordplugins/loginWithQR/images";
+import loginWithQR from "@plugins/loginWithQR";
+import { images } from "@plugins/loginWithQR/images";
 import { t } from "@utils/i18n";
-import { findByPropsLazy } from "@webpack";
 import {
     RestAPI,
     useEffect,
@@ -50,13 +49,11 @@ const limitSize = (width: number, height: number) => {
     if (width > height) {
         const w = Math.min(width, 1280);
         return { w, h: (height / width) * w };
-    } else {
+    }
         const h = Math.min(height, 1280);
         return { h, w: (width / height) * h };
-    }
-};
 
-const { getVideoDeviceId } = findByPropsLazy("getVideoDeviceId");
+};
 
 const tokenRegex = /^https:\/\/discord\.com\/ra\/([\w-]+)$/;
 const verifyUrl = async (
@@ -183,7 +180,7 @@ function QrModal() {
                     );
 
                 if (!location) return res(setPreview({ source, size }));
-                else {
+
                     const combinations = [
                         [location.topLeftCorner, location.bottomRightCorner],
                         [location.topRightCorner, location.bottomLeftCorner],
@@ -233,7 +230,7 @@ function QrModal() {
 
                     setPreview({ source, size, crosses });
                     setTimeout(res, 500 + 300 + 300);
-                }
+
             }),
     });
 

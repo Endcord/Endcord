@@ -28,6 +28,7 @@ export const enum IpcEvents {
     GET_REPO = "EndcordGetRepo",
     UPDATE = "EndcordUpdate",
     BUILD = "EndcordBuild",
+    CONFIRM_UPDATE = "EndcordConfirmUpdate",
 
     OPEN_MONACO_EDITOR = "EndcordOpenMonacoEditor",
     GET_MONACO_THEME = "EndcordGetMonacoTheme",

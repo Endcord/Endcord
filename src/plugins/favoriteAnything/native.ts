@@ -4,28 +4,23 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { MessageAttachment } from "@vencord/discord-types";
+import { MessageAttachment } from "@endcord/discord-types";
+import { DISCORD_CDN_HOSTS, parseAllowedUrl, readBody } from "@main/utils/http";
 
-const allowedHosts = new Set([
-    "cdn.discordapp.com",
-    "images-ext-1.discordapp.net",
-    "images-ext-2.discordapp.net",
-    "media.discordapp.net"
-]);
+const MAX_ATTACHMENT_BYTES = 512 * 1024 * 1024;
+const ALLOWED_HOSTS = [...DISCORD_CDN_HOSTS, "images-ext-1.discordapp.net", "images-ext-2.discordapp.net"];
 
 // Discord has very strict CORS rules for which types of assets can be fetched from where (CDN/Media proxy),
 // and most binary file types are prohibited by both. This function serves as a simple bypass.
 export async function fetchAttachment(_: unknown, attachment: MessageAttachment) {
     const { content_type, filename } = attachment;
-    const url = URL.parse(attachment.url);
-    if (!url || !allowedHosts.has(url.hostname)) throw new Error("Invalid URL");
-
-    const res = await fetch(url, { headers: { Accept: "*/*" } });
+    const res = await fetch(parseAllowedUrl(attachment.url, ALLOWED_HOSTS), { headers: { Accept: "*/*" } });
     if (!res.ok) throw new Error("Server error");
 
-    const blob = await res.blob();
-    const type = blob.type || content_type || "application/octet-stream";
-    const data = await blob.arrayBuffer();
+    const data = await readBody(res, MAX_ATTACHMENT_BYTES);
+    if (!data) throw new Error("File is too large");
 
-    return { type, data, filename };
+    const type = res.headers.get("content-type") || content_type || "application/octet-stream";
+
+    return { type, data: data.buffer, filename };
 }

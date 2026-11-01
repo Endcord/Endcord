@@ -311,7 +311,7 @@ export default definePlugin({
     settings,
 
     toolboxActions: {
-        "Message Logger"() {
+        "Message Logger": function() {
             openLogModal();
         }
     },
@@ -341,9 +341,8 @@ export default definePlugin({
         catch (e) {
             Flogger.error("Failed to re-add deleted messages", e);
         }
-        finally {
-            return messages;
-        }
+
+        return messages;
     },
 
     isDeletedMessage: (id: string) => cacheSentMessages.get(id)?.deleted ?? false,

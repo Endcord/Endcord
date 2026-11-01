@@ -70,7 +70,7 @@ export default function ReviewsView({
         <>
             <ReviewList
                 refetch={refetch}
-                reviews={reviewData!.reviews}
+                reviews={reviewData.reviews}
                 hideOwnReview={hideOwnReview}
                 profileId={discordId}
                 type={type}
@@ -81,7 +81,7 @@ export default function ReviewsView({
                     name={name}
                     discordId={discordId}
                     refetch={refetch}
-                    isAuthor={reviewData!.reviews?.some(r => r.sender.discordID === UserStore.getCurrentUser().id)}
+                    isAuthor={reviewData.reviews?.some(r => r.sender.discordID === UserStore.getCurrentUser().id)}
                 />
             )}
         </>

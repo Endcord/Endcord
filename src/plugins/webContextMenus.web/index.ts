@@ -261,7 +261,7 @@ export default definePlugin({
 
         if (IS_VESKTOP && VesktopNative.clipboard) {
             VesktopNative.clipboard.copyImage(await imageData.arrayBuffer(), url);
-            return;
+
         } else {
             navigator.clipboard.write([
                 new ClipboardItem({

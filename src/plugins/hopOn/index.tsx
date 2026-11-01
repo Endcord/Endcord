@@ -17,6 +17,10 @@ interface IMessageCreate {
     message: Message;
 }
 
+// Anyone in the channel can set this off, so spamming the phrase must not keep opening the URL
+const COOLDOWN_MS = 60_000;
+let lastOpened = 0;
+
 const settings = definePluginSettings({
     regex: {
         type: OptionType.STRING,
@@ -42,7 +46,9 @@ export default definePlugin({
             if (RelationshipStore.isBlocked(message.author?.id)) return;
             if (channelId !== SelectedChannelStore.getChannelId()) return;
             if (!message.content?.match(new RegExp(settings.store.regex, "i"))) return;
+            if (Date.now() - lastOpened < COOLDOWN_MS) return;
 
+            lastOpened = Date.now();
             EndcordNative.native.openExternal(settings.store.url);
         }
     }

@@ -24,7 +24,7 @@ const getRTCPeerConnections = (): Array<{ name: string; ctor: typeof RTCPeerConn
 
     const win = window as Window & RTCPeerConnectionWithWebKit;
     if (typeof win.webkitRTCPeerConnection !== "undefined") {
-        connections.push({ name: "webkitRTCPeerConnection", ctor: win.webkitRTCPeerConnection! });
+        connections.push({ name: "webkitRTCPeerConnection", ctor: win.webkitRTCPeerConnection });
     }
 
     return connections;
@@ -55,7 +55,7 @@ function createPatchedConnection(
             }
         }
 
-        setConfiguration(configuration: RTCConfiguration): void {
+        override setConfiguration(configuration: RTCConfiguration): void {
             const patchedConfig: RTCConfiguration = {
                 ...configuration,
                 iceTransportPolicy: icePolicy as RTCIceTransportPolicy,

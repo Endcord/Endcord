@@ -6,12 +6,12 @@
 
 import { app } from "electron";
 import { mkdir, readFile, writeFile } from "fs/promises";
-import { basename, join, normalize } from "path";
+import { basename, isAbsolute, join, normalize } from "path";
 
 export async function readRecording(_: any, filePath: string) {
     filePath = normalize(filePath);
     const filename = basename(filePath);
-    const discordBaseDir = normalize(app.getPath("userData") + "/");
+    const discordBaseDir = normalize(`${app.getPath("userData")}/`);
 
     if (!/^\d*recording\.ogg$/.test(filename) || !filePath.startsWith(discordBaseDir)) {
         return null;
@@ -26,10 +26,11 @@ export async function readRecording(_: any, filePath: string) {
 }
 
 export async function saveRecording(_: any, fileBuffer: ArrayBuffer, folder: string, filename: string) {
-    folder = normalize(folder);
+    folder = normalize(folder || app.getPath("downloads"));
     filename = basename(normalize(filename));
 
-    if (!fileBuffer || !folder || !filename) {
+    // The folder comes from the renderer, so never write anything Windows could run. A UNC path would also hand the login hash to that server
+    if (!fileBuffer || !isAbsolute(folder) || folder.startsWith("\\\\") || !/^[\w.-]+\.ogg$/.test(filename)) {
         throw new Error("Invalid path");
     }
 

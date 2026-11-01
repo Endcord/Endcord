@@ -7,6 +7,7 @@ endcord_installer
 
 .idea
 .cursor/
+.claude/
 .DS_Store
 
 yarn.lock

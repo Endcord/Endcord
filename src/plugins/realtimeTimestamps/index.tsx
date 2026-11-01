@@ -65,10 +65,6 @@ function subscribeTick(callback: () => void): () => void {
     return () => { tickListeners.delete(callback); };
 }
 
-function getTickVersion() {
-    return tickVersion;
-}
-
 // ─── Hook that re-renders on the global tick ─────────────────────────────────
 
 function useGlobalTick() {

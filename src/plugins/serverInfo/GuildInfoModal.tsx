@@ -160,7 +160,7 @@ function Owner(guildId: string, owner: User) {
     const ownerAvatarUrl =
         guildAvatar
             ? IconUtils.getGuildMemberAvatarURLSimple({
-                userId: owner!.id,
+                userId: owner.id,
                 avatar: guildAvatar,
                 guildId,
                 canAnimate: true

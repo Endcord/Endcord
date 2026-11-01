@@ -33,7 +33,7 @@ const navigateTo = (path: string) => {
         // Dernier recours via le dispatcher
         Dispatcher.dispatch({
             type: "NAVIGATE_TO",
-            path: path
+            path
         });
     } catch (e) {
         console.error("Navigation error", e);
@@ -278,7 +278,7 @@ function LogRow({ e }: { e: LogEntry; }) {
         const user = e.authorId ? getUser(e.authorId) : null;
         const realUsername = user?.username || e.authorName;
 
-        ContextMenuApi.openContextMenu(event as any, () => (
+        ContextMenuApi.openContextMenu(event, () => (
             <Menu.Menu navId="log-row-context" onClose={ContextMenuApi.closeContextMenu}>
                 {e.authorId && (
                     <>
@@ -341,7 +341,7 @@ function LogRow({ e }: { e: LogEntry; }) {
                 {e.authorId
                     ? <img src={avatarUrl(e.authorId, e.authorAvatar)} className="el-avatar" alt=""
                         loading="lazy"
-                        onError={ev => { (ev.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                        onError={ev => { (ev.currentTarget).style.display = "none"; }} />
                     : <span className="el-icon-placeholder" />}
             </div>
             <div className="el-body">
@@ -805,7 +805,7 @@ export default definePlugin({
     start() {
         // Initialize current voice channel on start
         try {
-            const vcId = (SelectedChannelStore as any)?.getVoiceChannelId?.();
+            const vcId = (SelectedChannelStore)?.getVoiceChannelId?.();
             if (vcId) myVoiceChannelId = vcId;
         } catch { }
         loadPersistLogs();

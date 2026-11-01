@@ -42,14 +42,14 @@ const SnowfallCSS = `
 // SVG snowflake images as data URIs
 const SNOWFLAKE_SVGS = [
     // 6-pointed snowflake
-    "data:image/svg+xml," + encodeURIComponent(`
+    `data:image/svg+xml,${encodeURIComponent(`
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
             <path fill="white" d="M50,10 L55,45 L50,50 L45,45 Z M50,90 L55,55 L50,50 L45,55 Z M10,50 L45,55 L50,50 L45,45 Z M90,50 L55,55 L50,50 L55,45 Z M25,25 L45,45 L50,40 L40,30 Z M75,75 L55,55 L50,60 L60,70 Z M75,25 L55,45 L60,50 L70,40 Z M25,75 L45,55 L40,50 L30,60 Z"/>
             <circle cx="50" cy="50" r="8" fill="white"/>
         </svg>
-    `),
+    `)}`,
     // 8-pointed star snowflake
-    "data:image/svg+xml," + encodeURIComponent(`
+    `data:image/svg+xml,${encodeURIComponent(`
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
             <g fill="white">
                 <rect x="47" y="5" width="6" height="90" rx="2"/>
@@ -59,9 +59,9 @@ const SNOWFLAKE_SVGS = [
                 <circle cx="50" cy="50" r="10" fill="white"/>
             </g>
         </svg>
-    `),
+    `)}`,
     // Discord snowflake
-    "data:image/svg+xml," + encodeURIComponent(`
+    `data:image/svg+xml,${encodeURIComponent(`
         <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
             <defs>
                 <symbol id="discord" viewBox="0 0 24 24">
@@ -94,7 +94,7 @@ const SNOWFLAKE_SVGS = [
             <use href="#discord" fill="#FFF" x="60" y="41.7" width="30" height="30" transform="rotate(330, 75, 56.7)"/>
             <use href="#discord" fill="#FFF" x="110" y="41.7" width="30" height="30" transform="rotate(30, 125, 56.7)"/>
         </svg>
-    `),
+    `)}`,
 ];
 
 const settings = definePluginSettings({
@@ -290,7 +290,7 @@ class CopleSnow {
         const styleRules: Record<string, string | number> = {
             top: `${top}px`,
             left: `${left}px`,
-            opacity: opacity,
+            opacity,
             transform: "none",
             transition: `${duration}ms linear`
         };

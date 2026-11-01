@@ -7,11 +7,11 @@
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { OpenExternalIcon } from "@components/Icons";
+import { Message, MessageAttachment } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType, PluginNative } from "@utils/types";
-import { Message, MessageAttachment } from "@vencord/discord-types";
 import { Tooltip, useEffect, useMemo, useRef, useState } from "@webpack/common";
 
 import managedStyle from "./styles.css?managed";
@@ -109,7 +109,7 @@ async function loadBytes(att: MessageAttachment) {
         cache.set(key, hit);
         bytes = hit;
     } else {
-        bytes = await Native.fetchPdf(att.url, maxBytes()) as Uint8Array;
+        bytes = await Native.fetchPdf(att.url, maxBytes());
         if (bytes.byteLength > maxBytes()) throw new Error("PDF exceeds size limit");
 
         if (settings.store.cacheEntries > 0) {

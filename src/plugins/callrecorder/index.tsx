@@ -14,7 +14,7 @@ import definePlugin, { OptionType, type PluginNative } from "@utils/types";
 import { MediaEngineStore, UserStore, VoiceStateStore } from "@webpack/common";
 
 const logger = new Logger("CallRecorder");
-const Native = EndcordNative.pluginHelpers.CallRecorder as PluginNative<typeof import("./native")>;
+const Native = EndcordNative.pluginHelpers.RecordUrMic as PluginNative<typeof import("./native")>;
 
 const settings = definePluginSettings({
     autoStart: {
@@ -37,43 +37,6 @@ const settings = definePluginSettings({
 let isRecording = false;
 let isStopping = false;
 let discordVoiceModule: any = null;
-let tempFilePath: string | null = null;
-
-function safeRequire<T>(moduleName: string): T | null {
-    try {
-        return (window as any).require?.(moduleName) ?? require(moduleName);
-    } catch {
-        return null;
-    }
-}
-
-function getPathModule() {
-    return safeRequire<typeof import("path")>("path");
-}
-
-function getOsModule() {
-    return safeRequire<typeof import("os")>("os");
-}
-
-function resolveOutputFolder() {
-    const configured = settings.store.outputFolder.trim();
-    if (configured) return configured;
-    const path = getPathModule();
-    const os = getOsModule();
-    if (path && os) return path.join(os.homedir(), "Downloads");
-    // The renderer has no Node globals; `process` is only defined when Node integration is available
-    const username = typeof process !== "undefined" ? process.env?.USERNAME : undefined;
-    return username ? `C:/Users/${username}/Downloads` : null;
-}
-
-function getFolderToOpen(lastSavedFile: string, outputFolder: string) {
-    const configured = outputFolder.trim();
-    if (configured) return configured;
-    const savedPath = lastSavedFile.trim();
-    if (!savedPath) return null;
-    const path = getPathModule();
-    return path?.dirname(savedPath) ?? null;
-}
 
 function getFileName() {
     const formatted = new Date().toISOString().replace(/:/g, "-").replace(/\..+$/, "");
@@ -81,11 +44,8 @@ function getFileName() {
 }
 
 async function saveRecordingFile(sourcePath: string) {
-    const folder = resolveOutputFolder();
-    if (!folder) {
-        showNotification({ title: "CallRecorder", body: "No output folder." });
-        return;
-    }
+    // Left empty, the main process saves to Downloads
+    const folder = settings.store.outputFolder.trim();
     try {
         await sleep(300);
         const fileData = await Native.readRecording(sourcePath);
@@ -95,7 +55,7 @@ async function saveRecordingFile(sourcePath: string) {
             return;
         }
         logger.info("Recording:", fileData.length, "bytes");
-        const filePath = await Native.saveRecording(fileData.buffer as ArrayBuffer, folder, getFileName());
+        const filePath = await Native.saveRecording(fileData.buffer, folder, getFileName());
         settings.store.lastSavedFile = filePath;
         logger.info("Saved:", filePath);
         showNotification({ title: "CallRecorder", body: `Saved to ${filePath}` });
@@ -111,7 +71,6 @@ async function startRecording() {
     logger.info("Starting recording...");
 
     isRecording = true;
-    tempFilePath = null;
 
     try {
         discordVoiceModule = (window as any).DiscordNative?.nativeModules?.requireModule?.("discord_voice");
@@ -157,7 +116,6 @@ function stopRecording() {
     if (discordVoiceModule) {
         discordVoiceModule.stopLocalAudioRecording(filePath => {
             logger.info("Native stopped, file:", filePath);
-            tempFilePath = filePath;
             void saveRecordingFile(filePath);
             isRecording = false;
             isStopping = false;

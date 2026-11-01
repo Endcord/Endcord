@@ -13,7 +13,7 @@
 
 set -eu
 
-VERSION_URL="${ENDCORD_VERSION_URL:-https://raw.githubusercontent.com/rootpoii/Endcord/main/version.json}"
+VERSION_URL="${ENDCORD_VERSION_URL:-https://raw.githubusercontent.com/Endcord/Endcord/main/version.json}"
 SITE_VERSION_URL="${ENDCORD_SITE_VERSION_URL:-https://endcord.com/version.json}"
 FILES="patcher.js preload.js renderer.js renderer.css"
 # Discord's real app.asar is several MB; anything smaller is another mod's loader stub
@@ -192,9 +192,42 @@ checksum_of() {
     grep "^$1 " "$TMP/assets" | cut -d' ' -f3 | tr 'A-F' 'a-f'
 }
 
+# Reads a top-level key of version.json (the release script writes one key per line)
+manifest_value() {
+    sed -n "s/^  \"$2\"[[:space:]]*:[[:space:]]*\"\{0,1\}\([^\",]*\)\"\{0,1\},\{0,1\}[[:space:]]*\$/\1/p" "$1" | head -n 1
+}
+
+# The checksums come from the same place as the files, so only this proves the release is really ours.
+# Keep the payload in sync with signManifest in scripts/uploadRelease.mjs
+verify_manifest() {
+    if ! command -v openssl >/dev/null 2>&1; then
+        say "openssl isn't installed, so the release signature can't be checked. Using the checksums only."
+        return 0
+    fi
+    signature=$(manifest_value "$1" signature)
+    [ -n "$signature" ] || fail "The current release isn't signed, so it can't be verified. Try again later."
+    for key in version hash updatedAt installerSha256; do
+        [ -n "$(manifest_value "$1" "$key")" ] || fail "The current release is incomplete, so it can't be verified. Try again later."
+    done
+    cat > "$TMP/update-key.pem" <<'EOF'
+-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEJi37GlwG/uPNC4oQicUcI1bPlnri
+1pXQGzUzDQwBnxQ1+F7tFtUkOjancC1eScKb9H9eASOz7iUA3CiGgXtHaw==
+-----END PUBLIC KEY-----
+EOF
+    printf '%s' "$signature" | openssl base64 -d -A > "$TMP/signature" || fail "The release signature is damaged; nothing was installed."
+    printf '%s' "$(
+        for key in version hash updatedAt installerSha256; do manifest_value "$1" "$key"; done
+        cut -d' ' -f1,3 "$TMP/assets" | tr 'A-F' 'a-f' | LC_ALL=C sort
+    )" > "$TMP/signed-payload"
+    openssl dgst -sha256 -verify "$TMP/update-key.pem" -signature "$TMP/signature" "$TMP/signed-payload" >/dev/null 2>&1 \
+        || fail "The release signature doesn't match; nothing was installed."
+}
+
 fetch_files() {
     say "Downloading Endcord..."
     if download "$VERSION_URL?t=$(date +%s)" "$TMP/version.json" && has_checksums "$TMP/version.json"; then
+        verify_manifest "$TMP/version.json"
         for f in $FILES; do
             url=$(grep "^$f " "$TMP/assets" | cut -d' ' -f2)
             download "$url" "$TMP/$f" || fail "Could not download $f"
@@ -203,6 +236,7 @@ fetch_files() {
         # No verifiable release on GitHub yet: use the site's copy, which ships the same files in one archive
         download "$SITE_VERSION_URL?t=$(date +%s)" "$TMP/version.json" || fail "Could not reach endcord.com or GitHub. Check your connection and try again."
         has_checksums "$TMP/version.json" || fail "The current release has no checksums, so it can't be verified. Try again later."
+        verify_manifest "$TMP/version.json"
         bundle=$(sed -n 's/.*"bundle"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$TMP/version.json" | head -n 1)
         [ -n "$bundle" ] || fail "The current release has no download for macOS and Linux. Try again later."
         download "$bundle" "$TMP/bundle.tar.gz" || fail "Could not download Endcord"

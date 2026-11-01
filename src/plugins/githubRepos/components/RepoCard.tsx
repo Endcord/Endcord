@@ -5,9 +5,9 @@
  */
 
 import { BaseText } from "@components/BaseText";
-import { getLanguageColor } from "@equicordplugins/githubRepos/colors";
-import { RepoCardProps } from "@equicordplugins/githubRepos/types";
-import { getLanguageIconUrl } from "@equicordplugins/githubRepos/utils";
+import { getLanguageColor } from "@plugins/githubRepos/colors";
+import { RepoCardProps } from "@plugins/githubRepos/types";
+import { getLanguageIconUrl } from "@plugins/githubRepos/utils";
 import { React } from "@webpack/common";
 
 import { cl } from "..";

@@ -4,25 +4,9 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { getIsEndcordHidden, setEndcordHidden } from "@api/EndcordVisibility";
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
-
-let isHidden = false;
-const listeners = new Set<() => void>();
-
-function toggleHidden() {
-    isHidden = !isHidden;
-    listeners.forEach(cb => cb());
-}
-
-export function getIsEndcordHidden() {
-    return isHidden;
-}
-
-export function onHiddenChange(cb: () => void) {
-    listeners.add(cb);
-    return () => { listeners.delete(cb); };
-}
 
 export default definePlugin({
     name: "HideEndcord",
@@ -36,16 +20,13 @@ export default definePlugin({
 
     stop() {
         document.removeEventListener("keydown", this._onKeyDown);
-        if (isHidden) {
-            isHidden = false;
-            listeners.forEach(cb => cb());
-        }
+        setEndcordHidden(false);
     },
 
     _onKeyDown(e: KeyboardEvent) {
         if (e.key === "F8" && !e.ctrlKey && !e.altKey && !e.shiftKey && !e.metaKey) {
             e.preventDefault();
-            toggleHidden();
+            setEndcordHidden(!getIsEndcordHidden());
         }
     }
 });

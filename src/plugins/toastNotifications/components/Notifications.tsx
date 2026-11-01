@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { settings as PluginSettings } from "@equicordplugins/toastNotifications/index";
-import { Channel, Message } from "@vencord/discord-types";
+import { Channel, Message } from "@endcord/discord-types";
+import { settings as PluginSettings } from "@plugins/toastNotifications/index";
 import { createRoot } from "@webpack/common";
 import type { JSX } from "react";
 import type { Root } from "react-dom/client";

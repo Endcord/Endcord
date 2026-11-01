@@ -8,6 +8,7 @@ import { readdir, readFile, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { DATA_DIR } from "@main/utils/constants";
+import { fetchPublicUrl, readBody } from "@main/utils/http";
 import { dialog, IpcMainInvokeEvent, shell } from "electron";
 
 import { getSettings, saveSettings } from "./settings";
@@ -21,7 +22,11 @@ import { DEFAULT_ATTACHMENT_FILE_EXTENSIONS, LOGS_DATA_FILENAME } from "@plugins
 import { ensureDirectoryExists, getAttachmentIdFromFilename, sleep } from "./utils";
 
 export { getSettings };
-export function messageLoggerEnhancedUniqueIdThingyIdkMan() { }
+
+const MAX_ATTACHMENT_BYTES = 256 * 1024 * 1024;
+// Both of these end up in a file name, so they must not be able to leave the image folder
+const SAFE_ATTACHMENT_ID = /^[\w-]+$/;
+const SAFE_EXTENSION = /^[a-z0-9]+$/;
 
 const nativeSavedImages = new Map<string, string>();
 export const getNativeSavedImages = () => nativeSavedImages;
@@ -63,21 +68,6 @@ export async function getImageNative(_event: IpcMainInvokeEvent, attachmentId: s
     }
 }
 
-export async function writeImageNative(_event: IpcMainInvokeEvent, filename: string, content: Uint8Array) {
-    if (!filename || !content) return;
-    const imageDir = await getImageCacheDir();
-    const attachmentId = getAttachmentIdFromFilename(filename);
-
-    const existingImage = nativeSavedImages.get(attachmentId);
-    if (existingImage) return;
-
-    const imagePath = path.join(imageDir, filename);
-    await ensureDirectoryExists(imageDir);
-    await writeFile(imagePath, content);
-
-    nativeSavedImages.set(attachmentId, imagePath);
-}
-
 export async function deleteFileNative(_event: IpcMainInvokeEvent, attachmentId: string) {
     const imagePath = nativeSavedImages.get(attachmentId);
     if (!imagePath) return;
@@ -88,7 +78,7 @@ export async function deleteFileNative(_event: IpcMainInvokeEvent, attachmentId:
 export async function writeLogs(_event: IpcMainInvokeEvent, contents: string) {
     const logsDir = await getLogsDir();
 
-    writeFile(path.join(logsDir, LOGS_DATA_FILENAME), contents);
+    await writeFile(path.join(logsDir, LOGS_DATA_FILENAME), contents);
 }
 
 export async function getDefaultNativeImageDir(): Promise<string> {
@@ -107,7 +97,7 @@ export async function chooseDir(event: IpcMainInvokeEvent, logKey: "logsDir" | "
     const settings = await getSettings();
     const defaultPath = settings[logKey] || await getDefaultNativeDataDir();
 
-    const res = await dialog.showOpenDialog({ properties: ["openDirectory"], defaultPath: defaultPath });
+    const res = await dialog.showOpenDialog({ properties: ["openDirectory"], defaultPath });
     const dir = res.filePaths[0];
 
     if (!dir) throw Error("Invalid Directory");
@@ -145,7 +135,7 @@ export async function downloadAttachment(_event: IpcMainInvokeEvent, attachment:
         if (!attachment?.url || !attachment.oldUrl || !attachment?.id)
             return { error: "Invalid Attachment", path: null };
 
-        if (attachment.id.match(/[\\/.]/)) {
+        if (!SAFE_ATTACHMENT_ID.test(attachment.id)) {
             return { error: "Invalid Attachment ID", path: null };
         }
 
@@ -156,9 +146,9 @@ export async function downloadAttachment(_event: IpcMainInvokeEvent, attachment:
         }
 
         const allowedList = allowedExtensionsStr.split(",").map((ext: string) => ext.trim().toLowerCase());
-        const cleanExt = attachment.fileExtension?.replace(".", "").toLowerCase();
+        const cleanExt = attachment.fileExtension?.replace(/^\./, "").toLowerCase();
 
-        if (!cleanExt || !allowedList.includes(cleanExt)) {
+        if (!cleanExt || !SAFE_EXTENSION.test(cleanExt) || blockedExts.includes(cleanExt) || !allowedList.includes(cleanExt)) {
             return { error: `File type .${cleanExt} is blocked by settings configurations.`, path: null };
         }
 
@@ -169,7 +159,7 @@ export async function downloadAttachment(_event: IpcMainInvokeEvent, attachment:
                 path: existingImage
             };
 
-        const res = await fetch(useOldUrl ? attachment.oldUrl : attachment.url);
+        const res = await fetchPublicUrl(useOldUrl ? attachment.oldUrl : attachment.url);
 
         if (res.status !== 200) {
             if (res.status === 404 || res.status === 403 || res.status === 415)
@@ -187,12 +177,14 @@ export async function downloadAttachment(_event: IpcMainInvokeEvent, attachment:
             return downloadAttachment(_event, attachment, attempts, useOldUrl);
         }
 
-        const ab = await res.arrayBuffer();
+        const data = await readBody(res, MAX_ATTACHMENT_BYTES);
+        if (!data) return { error: `Attachment ${attachment.id} is too large to cache`, path: null };
+
         const imageCacheDir = await getImageCacheDir();
         await ensureDirectoryExists(imageCacheDir);
 
-        const finalPath = path.join(imageCacheDir, `${attachment.id}${attachment.fileExtension}`);
-        await writeFile(finalPath, Buffer.from(ab));
+        const finalPath = path.join(imageCacheDir, `${attachment.id}.${cleanExt}`);
+        await writeFile(finalPath, data);
 
         nativeSavedImages.set(attachment.id, finalPath);
 
@@ -219,8 +211,8 @@ export async function updateAllowedExtensions(_event: IpcMainInvokeEvent, cleanE
 
     const validatedExtensions = incomingRaw
         .split(",")
-        .map(ext => ext.trim().toLowerCase())
-        .filter(ext => ext.length > 0 && !blockedExts.includes(ext));
+        .map(ext => ext.trim().toLowerCase().replace(/^\./, ""))
+        .filter(ext => SAFE_EXTENSION.test(ext) && !blockedExts.includes(ext));
 
     if (validatedExtensions.length === 0) {
         settings.attachmentFileExtensions = "none";

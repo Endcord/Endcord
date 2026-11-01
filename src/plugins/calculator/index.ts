@@ -25,7 +25,7 @@ export default definePlugin({
                     return;
                 }
                 try {
-                    // expression is whitelisted to maths characters above
+                    // eslint-disable-next-line no-new-func -- expr can only hold the maths characters checked above
                     const result = Function(`"use strict";return(${expr})`)();
                     if (typeof result !== "number" || !isFinite(result)) throw new Error();
                     return { content: `\`${expr.trim()}\` = **${result}**` };

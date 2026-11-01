@@ -6,11 +6,11 @@
 
 import * as DataStore from "@api/DataStore";
 import { definePluginSettings } from "@api/Settings";
+import type { User } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType } from "@utils/types";
-import type { User } from "@vencord/discord-types";
 import { React } from "@webpack/common";
 
 import { delPresenceBatch, getAllPresence, putPresenceBatch } from "./db";

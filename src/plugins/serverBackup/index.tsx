@@ -5,10 +5,10 @@
  */
 
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
+import type { Guild } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
 import definePlugin from "@utils/types";
-import type { Guild } from "@vencord/discord-types";
 import { Menu } from "@webpack/common";
 
 import { openExportModal } from "./components/ExportModal";

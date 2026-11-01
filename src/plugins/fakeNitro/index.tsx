@@ -486,7 +486,7 @@ export default definePlugin({
                 for (const field of fieldsToPreserve) {
                     const val = (protoStoreAppearenceSettings as any)[field];
                     if (val != null) {
-                        (proto.appearance as any)[field] = val;
+                        (proto.appearance)[field] = val;
                     }
                 }
             }
@@ -916,8 +916,7 @@ export default definePlugin({
 
         if (this.canUseEmotes || isUsableTwitchSubEmote)
             return e.guildId === this.guildId || hasExternalEmojiPerms(channelId);
-        else
-            return !e.animated && e.guildId === this.guildId;
+        return !e.animated && e.guildId === this.guildId;
     },
 
     start() {
@@ -970,7 +969,7 @@ export default definePlugin({
                     }
 
                     return { cancel: true };
-                } else {
+                }
                     hasBypass = true;
 
                     const url = new URL(link);
@@ -981,7 +980,7 @@ export default definePlugin({
 
                     messageObj.content += `${getWordBoundary(messageObj.content, messageObj.content.length - 1)}${s.useHyperLinks ? `[${linkText}](${url})` : url}`;
                     options.stickerIds!.length = 0;
-                }
+
             }
 
             if (s.enableEmojiBypass) {

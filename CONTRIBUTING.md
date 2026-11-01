@@ -82,7 +82,7 @@ Plugins are the heart of Endcord's modular experience. If you are creating a new
 
 ### Translations & Localization (5-Language System)
 Endcord supports native multilingual localization across English (`en`), Turkish (`tr`), Russian (`ru`), Spanish (`es`), and French (`fr`).
-- When introducing user-facing text, register strings in `src/utils/i18n.ts`.
+- When introducing user-facing text, add the translations to each file in `src/utils/i18n/locales`.
 - Use `t("Your String")` or `useI18n()` inside components.
 - Do not call React hooks inside non-component layout callbacks (such as `useTitle` or static builders).
 
@@ -153,3 +153,7 @@ Have questions, ideas, or need guidance on writing a complex patch?
 - Connect with other developers in the `#development` channel.
 
 Thank you for contributing and helping make Endcord the most fluid Discord experience! 💙
+
+## Architecture
+
+Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) before touching a `native.ts` or anything in `src/main`. It covers the rules that lint and `pnpm test` enforce.

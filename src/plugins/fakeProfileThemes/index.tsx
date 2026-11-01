@@ -37,7 +37,7 @@ function encode(primary: number, accent: number): string {
         .map(x => String.fromCodePoint(x! + 0xe0000))
         .join("");
 
-    return (padding || "") + " " + encoded;
+    return `${padding || ""} ${encoded}`;
 }
 
 // Courtesy of Cynthia.
@@ -57,9 +57,9 @@ function decode(bio: string): Array<number> | null {
             .map(x => parseInt(x.replace("#", "0x"), 16));
 
         return colors;
-    } else {
-        return null;
     }
+        return null;
+
 }
 
 const settings = definePluginSettings({

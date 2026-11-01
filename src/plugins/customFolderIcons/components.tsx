@@ -45,7 +45,7 @@ export function ImageModal(folderProps: folderProp) {
             <Button onClick={() => {
                 setFolderData(folderProps, {
                     url: data,
-                    size: size
+                    size
                 });
                 closeModal("custom-folder-icon");
             }}

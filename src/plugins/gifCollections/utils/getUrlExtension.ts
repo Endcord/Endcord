@@ -5,6 +5,6 @@
  */
 
 export function getUrlExtension(url: string) {
-    if (!url.startsWith("https:")) url = "https:" + url;
+    if (!url.startsWith("https:")) url = `https:${url}`;
     return new URL(url).pathname.split(".").pop();
 }

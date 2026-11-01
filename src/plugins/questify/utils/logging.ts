@@ -53,7 +53,7 @@ function emitQuestifyLog(level: string, source: string, ...args: unknown[]): voi
         default:
             LOG.log(prefix, ...args);
 
-            return;
+
     }
 }
 

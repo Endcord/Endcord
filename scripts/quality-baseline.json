@@ -1,0 +1,10 @@
+{
+    "asAny": 242,
+    "typeSuppressions": 53,
+    "lintSuppressions": 19,
+    "consoleLog": 2,
+    "todos": 37,
+    "filesOverLimit": 7,
+    "longestFile": 2078,
+    "rendererKilobytes": 5724
+}

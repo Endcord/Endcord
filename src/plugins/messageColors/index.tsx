@@ -46,7 +46,7 @@ export default definePlugin({
             find: ".defaultRules.text,match",
             replacement: {
                 match: /\$\)\//,
-                replace: requiredFirstCharacters.join("|") + "|$&"
+                replace: `${requiredFirstCharacters.join("|")}|$&`
             }
         },
         // Fix the issue with [#123](https://example.com) rendered as plain text
@@ -71,7 +71,7 @@ export default definePlugin({
     start() {
         const amount = settings.store.enableShortHexCodes ? "{1,2}" : "{2}";
         regex.push({
-            reg: new RegExp("#(?:[0-9a-fA-F]{3})" + amount, "g"),
+            reg: new RegExp(`#(?:[0-9a-fA-F]{3})${amount}`, "g"),
             type: ColorType.HEX
         });
     },
@@ -121,7 +121,7 @@ export default definePlugin({
             },
             react: ErrorBoundary.wrap(({ text, colorType, color }: ParsedColorInfo) => {
                 if (settings.store.renderType === RenderType.FOREGROUND) {
-                    return <span style={{ color: color }}>{text}</span>;
+                    return <span style={{ color }}>{text}</span>;
                 }
                 const styles = {
                     "--color": color

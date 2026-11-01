@@ -206,9 +206,9 @@ export default definePlugin({
         {
             find: "PrivateChannel.renderAvatar",
             replacement: {
-                // horror but it works
-                match: /(return \i\.isMultiUserDM\(\))(?<=function\(\i,(\i),\i\){.*)/,
-                replace: "if($2.rawRecipients[0] && $2.rawRecipients[0]?.id){if($self.shouldHideUser($2.rawRecipients[0].id)) return null;}$1"
+                // Goes on the last return, after every hook, so hiding a row can't change the hook count
+                match: /return(\(0,\i\.jsx\)\(\i\.\i,\{id:(\i)\.id,children:\i=>\{let\{role:)/,
+                replace: "if($2.rawRecipients[0]?.id&&$self.shouldHideUser($2.rawRecipients[0].id))return null;return$1"
             }
         },
         // thank nick (644298972420374528) for these patches :3

@@ -109,14 +109,14 @@ function normaliseUrl(url: string): string {
                 if (unqualifiedSeconds) start += parseInt(unqualifiedSeconds[1]);
             }
         }
-        url = url.replace(youtubeRegex, `https://www.youtube.com/watch?v=$4${start ? "&start=" + start : ""}`);
+        url = url.replace(youtubeRegex, `https://www.youtube.com/watch?v=$4${start ? `&start=${start}` : ""}`);
     }
 
     // x.com links still return an embed with url twitter.com at the moment
     const xDotComRegex = /(https?:\/\/(?:www\.)?)x\.com(\/.*)?/;
 
     if (xDotComRegex.test(url)) {
-        url = url.replace(xDotComRegex, (match, p1, p2) => p1 + "twitter.com" + (p2 || ""));
+        url = url.replace(xDotComRegex, (match, p1, p2) => `${p1}twitter.com${p2 || ""}`);
     }
 
     // tiktok adds ?enable_tiktok_webview=true
@@ -125,7 +125,7 @@ function normaliseUrl(url: string): string {
     if (tiktokRegex.test(url) && !searchParams.has("enable_tiktok_webview")) {
         searchParams.append("enable_tiktok_webview", "true");
         const newSearch = searchParams.toString();
-        url = url.split("?")[0] + (newSearch ? "?" + newSearch : "");
+        url = url.split("?")[0] + (newSearch ? `?${newSearch}` : "");
     }
 
     return url;

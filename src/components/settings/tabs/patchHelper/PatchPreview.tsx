@@ -129,7 +129,7 @@ export function PatchPreview({ module, match, replacement, setReplacementError }
                     onClick={() => {
                         try {
                             const isArrowFunction = patchedCode.startsWith("(");
-                            const wrappedCode = "0," + (!isArrowFunction ? "function" : "") + patchedCode.slice(patchedCode.indexOf("("));
+                            const wrappedCode = `0,${!isArrowFunction ? "function" : ""}${patchedCode.slice(patchedCode.indexOf("("))}`;
                             Function(wrappedCode);
 
                             setCompileResult([true, "Compiled successfully"]);

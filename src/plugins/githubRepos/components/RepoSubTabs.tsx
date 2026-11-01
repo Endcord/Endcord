@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { RepoGroup, RepoSortMode } from "@equicordplugins/githubRepos/types";
+import { RepoGroup, RepoSortMode } from "@plugins/githubRepos/types";
 import { classes } from "@utils/misc";
 import { React } from "@webpack/common";
 

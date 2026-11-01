@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { LyricsData, Provider } from "@equicordplugins/musicControls/spotify/lyrics/providers/types";
-import { Track } from "@equicordplugins/musicControls/spotify/SpotifyStore";
+import { LyricsData, Provider } from "@plugins/musicControls/spotify/lyrics/providers/types";
+import { Track } from "@plugins/musicControls/spotify/SpotifyStore";
 
 const baseUrlLrclib = "https://lrclib.net/api/get";
 

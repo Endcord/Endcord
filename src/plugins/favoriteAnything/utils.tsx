@@ -4,13 +4,13 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { Channel, MessageAttachment } from "@endcord/discord-types";
 import { classNameFactory } from "@utils/css";
 import { sendMessage } from "@utils/discord";
 import { proxyLazy } from "@utils/lazy";
 import { Queue } from "@utils/Queue";
 import { useForceUpdater } from "@utils/react";
 import { PluginNative } from "@utils/types";
-import { Channel, MessageAttachment } from "@vencord/discord-types";
 import { findByCodeLazy, findByPropsLazy } from "@webpack";
 import { Constants, createRoot, DraftType, FluxDispatcher, Humanize, MessageActions, PendingReplyStore, PermissionStore, ReactDOM, RestAPI, showToast, Toasts, UploadAttachmentStore, UploadHandler, UploadManager, useCallback, useEffect, useRef, UserSettingsActionCreators, UserSettingsProtoStore, useStateFromStores } from "@webpack/common";
 import { deflateSync, inflateSync } from "fflate";
@@ -127,8 +127,8 @@ async function getThumbnailBase(item: MessageAttachment): Promise<URL | null> {
     if (settings.store.localThumbnails) {
         const html = await renderToHTML(<StaticFilePickerItem name={ name } subtitle = { subtitle } />);
         // encodeURIComponent is intentionally avoided since it would bloat the url size by replacing otherwise safe characters
-        return URL.parse("data:image/svg+xml," + html.replaceAll("%", "%25").replaceAll("#", "%23"));
-    } else {
+        return URL.parse(`data:image/svg+xml,${html.replaceAll("%", "%25").replaceAll("#", "%23")}`);
+    }
         const url = new URL("https://placeholder.nin0.dev/image");
         url.searchParams.append("name", name || " ");
         url.searchParams.append("subtitle", subtitle);
@@ -138,7 +138,7 @@ async function getThumbnailBase(item: MessageAttachment): Promise<URL | null> {
                 const [{ thumbnail } = {}] = body.embeds;
                 return thumbnail?.proxy_url ? URL.parse(thumbnail.proxy_url) : null;
             });
-    }
+
 }
 
 export async function getFileThumbnailUrl(item: MessageAttachment): Promise<URL> {

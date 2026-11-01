@@ -11,6 +11,8 @@ namespace EndcordInstaller.Tests
     {
         public static int RunAll(string logOutputPath)
         {
+            InstallationEngine.LeaveProcessesAlone = true;
+
             var logs = new List<string>();
             int passed = 0;
             int failed = 0;

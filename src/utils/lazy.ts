@@ -71,7 +71,7 @@ handler.getOwnPropertyDescriptor = (target, p) => {
  * @returns Proxy
  *
  * Note that the example below exists already as an api, see {@link findByPropsLazy}
- * @example const mod = proxyLazy(() => findByProps("blah")); console.log(mod.blah);
+ * @example const mod = proxyLazy(() => findByProps("blah")); console.debug(mod.blah);
  */
 export function proxyLazy<T>(factory: () => T, attempts = 5, isChild = false): T {
     let isSameTick = true;

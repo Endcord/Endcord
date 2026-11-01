@@ -5,10 +5,10 @@
  */
 
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
+import { Channel, Message, User } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
 import definePlugin from "@utils/types";
-import { Channel, Message, User } from "@vencord/discord-types";
 import { ChannelStore, Constants, Menu, NavigationRouter, RestAPI, SelectedChannelStore, SelectedGuildStore, showToast, Toasts } from "@webpack/common";
 
 function jumpToFirstMessage(channelId: string, guildId?: string | null) {

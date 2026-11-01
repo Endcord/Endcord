@@ -8,10 +8,10 @@ import "./style.css";
 
 import { showNotification } from "@api/Notifications";
 import { definePluginSettings } from "@api/Settings";
+import { User } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { useForceUpdater } from "@utils/react";
 import definePlugin, { OptionType } from "@utils/types";
-import { User } from "@vencord/discord-types";
 import { FluxDispatcher, React, SelectedChannelStore, Tooltip, UserStore, VoiceStateStore } from "@webpack/common";
 
 interface FakeState {

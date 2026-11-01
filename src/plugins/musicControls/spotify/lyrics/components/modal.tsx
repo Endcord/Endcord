@@ -6,7 +6,7 @@
 
 import { BaseText } from "@components/BaseText";
 import { RenderModalProps } from "@endcord/discord-types";
-import { SpotifyStore, Track } from "@equicordplugins/musicControls/spotify/SpotifyStore";
+import { SpotifyStore, Track } from "@plugins/musicControls/spotify/SpotifyStore";
 import { openImageModal } from "@utils/discord";
 import { t } from "@utils/i18n";
 import { Modal,React } from "@webpack/common";

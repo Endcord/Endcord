@@ -6,7 +6,7 @@
 
 import { showNotification } from "@api/Notifications";
 import { Settings } from "@api/Settings";
-import { gitHashShort } from "@shared/vencordUserAgent";
+import { gitHashShort } from "@shared/endcordUserAgent";
 import { copyToClipboard } from "@utils/clipboard";
 import { relaunch } from "@utils/native";
 import { checkForUpdates, getRepo } from "@utils/updater";

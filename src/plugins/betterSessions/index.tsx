@@ -43,7 +43,7 @@ export default definePlugin({
     description: "Enhances the sessions (devices) menu. Allows you to view exact timestamps, give each session a custom name, and receive notifications about new sessions.",
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     tags: ["Notifications", "Customisation", "Utility"],
-    settings: settings,
+    settings,
 
     patches: [
         {
@@ -73,7 +73,7 @@ export default definePlugin({
         const savedSession = savedSessionsCache.get(session.id_hash);
 
         const state = React.useState(savedSession?.name ? `${savedSession.name}*` : getDefaultName(session.client_info));
-        const [title, setTitle] = state;
+        const [title] = state;
         // Show a "NEW" badge if the session is seen for the first time
         return (
             <>

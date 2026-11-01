@@ -13,7 +13,7 @@ import type { TrackData } from ".";
 const exec = promisify(execFile);
 
 async function applescript(cmds: string[]) {
-    const { stdout } = await exec("osascript", cmds.map(c => ["-e", c]).flat());
+    const { stdout } = await exec("/usr/bin/osascript", cmds.map(c => ["-e", c]).flat());
     return stdout;
 }
 
@@ -79,7 +79,7 @@ async function fetchRemoteData({ id, name, artist, album }: { id: string, name: 
 
 export async function fetchTrackData(): Promise<TrackData | null> {
     try {
-        await exec("pgrep", ["^Music$"]);
+        await exec("/usr/bin/pgrep", ["^Music$"]);
     } catch (error) {
         return null;
     }

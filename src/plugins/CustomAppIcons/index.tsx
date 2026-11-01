@@ -38,7 +38,8 @@ function removeAppIcon() {
     if (index !== -1) {
         icons = icons.filter(icon => icon.id !== current_icon);
         delete AppIconData.QA[current_icon];
-        delete AppIconData.UZ[AppIconData.UZ.findIndex(icon => current_icon === icon?.id)];
+        const listIndex = AppIconData.UZ.findIndex(icon => current_icon === icon?.id);
+        if (listIndex !== -1) AppIconData.UZ.splice(listIndex, 1);
         localStorage.setItem("vc_app_icons", JSON.stringify(icons));
         showToast("Icon successfully deleted!", Toasts.Type.SUCCESS);
         FluxDispatcher.dispatch({
@@ -47,7 +48,7 @@ function removeAppIcon() {
         });
     } else {
         showToast("Cannot delete native App Icons!", Toasts.Type.FAILURE);
-        return;
+
     }
 
 }
@@ -64,7 +65,7 @@ export default definePlugin({
                 {
                     match: /\w+\.jsx\)\(\w+,{markAsDismissed:\w+,isCoachmark:\w+}\)/,
                     replace(str) {
-                        return str + ",$self.addButtons()";
+                        return `${str},$self.addButtons()`;
                     }
                 }
             ]
@@ -72,7 +73,7 @@ export default definePlugin({
     ],
 
     start() {
-        console.log("Well hello there!, CustomAppIcons has started :)");
+        console.debug("Well hello there!, CustomAppIcons has started :)");
         const appIcons = JSON.parse(localStorage.getItem("vc_app_icons") ?? "[]");
         for (const icon of appIcons) {
             AppIconData.UZ.push(icon);
@@ -87,7 +88,7 @@ export default definePlugin({
         return (
             <>
                 <Button color={Button.Colors.BRAND} size={Button.Sizes.MEDIUM} onClick={() => {
-                    openModal(props => <AppIconModal {...props as any} />);
+                    openModal(props => <AppIconModal {...props} />);
                 }}>
                     {t("Add Custom App Icon")}</Button>
                 <Button color={Button.Colors.RED} size={Button.Sizes.MEDIUM} onClick={removeAppIcon}>

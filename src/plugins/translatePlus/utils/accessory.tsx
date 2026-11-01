@@ -5,8 +5,8 @@
  */
 
 import { Message } from "@endcord/discord-types";
-import { languages } from "@endcordplugins/translatePlus/misc/languages";
-import { cl, Translation } from "@endcordplugins/translatePlus/misc/types";
+import { languages } from "@plugins/translatePlus/misc/languages";
+import { cl, Translation } from "@plugins/translatePlus/misc/types";
 import { t } from "@utils/i18n";
 import { Parser, useEffect, useState } from "@webpack/common";
 

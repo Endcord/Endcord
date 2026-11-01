@@ -354,7 +354,7 @@ export default definePlugin({
             ],
             execute: async opts => {
                 let sub = "cuteanimeboys";
-                const cat = findOption(opts, "cat") as boolean | undefined;
+                const cat = findOption(opts, "cat");
                 if (cat) sub = "animecatboys";
                 return { content: await getCuteAnimeBoys(sub) };
             },
@@ -385,7 +385,7 @@ export default definePlugin({
             description: "Sends a lenny face",
             options: [OptionalMessageOption],
             execute: opts => ({
-                content: findOption(opts, "message", "") + " ( ͡° ͜ʖ ͡°)"
+                content: `${findOption(opts, "message", "")} ( ͡° ͜ʖ ͡°)`
             }),
         },
         {
@@ -540,7 +540,7 @@ export default definePlugin({
                         try {
                             const avatarUrl = user.member?.avatar
                                 ? `https://cdn.discordapp.com/avatars/${user.member.id}/${user.member?.avatar}.webp?size=256`
-                                : `https://cdn.discordapp.com/embed/avatars/${user.member.id as any as number % 5}.png`;
+                                : `https://cdn.discordapp.com/embed/avatars/${user.member.id as number % 5}.png`;
 
                             const img = await loadFriendImage(avatarUrl);
                             const centerX = user.x + user.size / 2;
@@ -663,7 +663,7 @@ export default definePlugin({
             description: " ＞﹏＜",
             options: [OptionalMessageOption],
             execute: opts => ({
-                content: findOption(opts, "message", "") + " " + " ＞﹏＜",
+                content: `${findOption(opts, "message", "")}  ＞﹏＜`,
             }),
         },
         {
@@ -671,7 +671,7 @@ export default definePlugin({
             description: "ಠ_ಠ",
             options: [OptionalMessageOption],
             execute: opts => ({
-                content: findOption(opts, "message", "") + " " + "ಠ_ಠ",
+                content: `${findOption(opts, "message", "")} ಠ_ಠ`,
             }),
         },
         {
@@ -679,7 +679,7 @@ export default definePlugin({
             description: "ヽ(´▽`)/",
             options: [OptionalMessageOption],
             execute: opts => ({
-                content: findOption(opts, "message", "") + " " + "ヽ(´▽`)/",
+                content: `${findOption(opts, "message", "")} ヽ(´▽\`)/`,
             }),
         },
         {
@@ -687,7 +687,7 @@ export default definePlugin({
             description: "ಥ_ಥ",
             options: [OptionalMessageOption],
             execute: opts => ({
-                content: findOption(opts, "message", "") + " " + "ಥ_ಥ",
+                content: `${findOption(opts, "message", "")} ಥ_ಥ`,
             }),
         },
         {
@@ -695,7 +695,7 @@ export default definePlugin({
             description: "ヽ(｀Д´)ﾉ",
             options: [OptionalMessageOption],
             execute: opts => ({
-                content: findOption(opts, "message", "") + " " + "ヽ(｀Д´)ﾉ",
+                content: `${findOption(opts, "message", "")} ヽ(｀Д´)ﾉ`,
             }),
         },
         {
@@ -703,7 +703,7 @@ export default definePlugin({
             description: "ヽ(ｏ`皿′ｏ)ﾉ",
             options: [OptionalMessageOption],
             execute: opts => ({
-                content: findOption(opts, "message", "") + " " + "ヽ(ｏ`皿′ｏ)ﾉ",
+                content: `${findOption(opts, "message", "")} ヽ(ｏ\`皿′ｏ)ﾉ`,
             }),
         },
         {
@@ -711,7 +711,7 @@ export default definePlugin({
             description: "<(￣︶￣)>",
             options: [OptionalMessageOption],
             execute: opts => ({
-                content: findOption(opts, "message", "") + " " + "<(￣︶￣)>",
+                content: `${findOption(opts, "message", "")} <(￣︶￣)>`,
             }),
         },
         {
@@ -719,7 +719,7 @@ export default definePlugin({
             description: "૮ ˶ᵔ ᵕ ᵔ˶ ა",
             options: [OptionalMessageOption],
             execute: opts => ({
-                content: findOption(opts, "message", "") + " " + "૮ ˶ᵔ ᵕ ᵔ˶ ა",
+                content: `${findOption(opts, "message", "")} ૮ ˶ᵔ ᵕ ᵔ˶ ა`,
             }),
         },
         {
@@ -727,7 +727,7 @@ export default definePlugin({
             description: "(•ิ_•ิ)?",
             options: [OptionalMessageOption],
             execute: opts => ({
-                content: findOption(opts, "message", "") + " " + "(•ิ_•ิ)?",
+                content: `${findOption(opts, "message", "")} (•ิ_•ิ)?`,
             }),
         },
         {
@@ -735,7 +735,7 @@ export default definePlugin({
             description: "(ᴗ_ᴗ)",
             options: [OptionalMessageOption],
             execute: opts => ({
-                content: findOption(opts, "message", "") + " " + "(ᴗ_ᴗ)",
+                content: `${findOption(opts, "message", "")} (ᴗ_ᴗ)`,
             }),
         },
         {
@@ -743,7 +743,7 @@ export default definePlugin({
             description: "o(≧▽≦)o",
             options: [OptionalMessageOption],
             execute: opts => ({
-                content: findOption(opts, "message", "") + " " + "o(≧▽≦)o",
+                content: `${findOption(opts, "message", "")} o(≧▽≦)o`,
             }),
         },
         /*
@@ -754,7 +754,7 @@ export default definePlugin({
             description: "(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧",
             options: [OptionalMessageOption],
             execute: opts => ({
-                content: findOption(opts, "message", "") + " " + "(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧",
+                content: `${findOption(opts, "message", "")} (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧`,
             }),
         },
         {
@@ -762,7 +762,7 @@ export default definePlugin({
             description: "✌(◕‿-)✌",
             options: [OptionalMessageOption],
             execute: opts => ({
-                content: findOption(opts, "message", "") + " " + "✌(◕‿-)✌",
+                content: `${findOption(opts, "message", "")} ✌(◕‿-)✌`,
             }),
         },
         {
@@ -770,7 +770,7 @@ export default definePlugin({
             description: "Ꮺ ָ࣪ ۰ ͙⊹",
             options: [OptionalMessageOption],
             execute: opts => ({
-                content: findOption(opts, "message", "") + " " + "Ꮺ ָ࣪ ۰ ͙⊹",
+                content: `${findOption(opts, "message", "")} Ꮺ ָ࣪ ۰ ͙⊹`,
             }),
         },
         {
@@ -778,7 +778,7 @@ export default definePlugin({
             description: "(>⩊<)",
             options: [OptionalMessageOption],
             execute: opts => ({
-                content: findOption(opts, "message", "") + " " + "(>⩊<)",
+                content: `${findOption(opts, "message", "")} (>⩊<)`,
             }),
         },
         {
@@ -786,7 +786,7 @@ export default definePlugin({
             description: "(─‿‿─)♡",
             options: [OptionalMessageOption],
             execute: opts => ({
-                content: findOption(opts, "message", "") + " " + "(─‿‿─)♡",
+                content: `${findOption(opts, "message", "")} (─‿‿─)♡`,
             }),
         },
         {
@@ -794,7 +794,7 @@ export default definePlugin({
             description: "(*≧ω≦*)",
             options: [OptionalMessageOption],
             execute: opts => ({
-                content: findOption(opts, "message", "") + " " + "(*≧ω≦*)",
+                content: `${findOption(opts, "message", "")} (*≧ω≦*)`,
             }),
         },
         {
@@ -802,7 +802,7 @@ export default definePlugin({
             description: "(⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)",
             options: [OptionalMessageOption],
             execute: opts => ({
-                content: findOption(opts, "message", "") + " " + "(⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)",
+                content: `${findOption(opts, "message", "")} (⁄ ⁄>⁄ ▽ ⁄<⁄ ⁄)`,
             }),
         },
         {
@@ -810,7 +810,7 @@ export default definePlugin({
             description: "(ノ= ⩊ = )ノ",
             options: [OptionalMessageOption],
             execute: opts => ({
-                content: findOption(opts, "message", "") + " " + "(ノ= ⩊ = )ノ",
+                content: `${findOption(opts, "message", "")} (ノ= ⩊ = )ノ`,
             }),
         },
         {
@@ -818,7 +818,7 @@ export default definePlugin({
             description: "ღゝ◡╹)ノ♡",
             options: [OptionalMessageOption],
             execute: opts => ({
-                content: findOption(opts, "message", "") + " " + "ღゝ◡╹)ノ♡",
+                content: `${findOption(opts, "message", "")} ღゝ◡╹)ノ♡`,
             }),
         },
         {
@@ -826,7 +826,7 @@ export default definePlugin({
             description: "(￣▽￣)/♫•¨•.¸¸♪",
             options: [OptionalMessageOption],
             execute: opts => ({
-                content: findOption(opts, "message", "") + " " + "(￣▽￣)/♫•¨•.¸¸♪",
+                content: `${findOption(opts, "message", "")} (￣▽￣)/♫•¨•.¸¸♪`,
             }),
         },
         {
@@ -834,7 +834,7 @@ export default definePlugin({
             description: ".𖥔 ݁ ˖๋ ࣭ ⭑",
             options: [OptionalMessageOption],
             execute: opts => ({
-                content: findOption(opts, "message", "") + " " + ".𖥔 ݁ ˖๋ ࣭ ⭑",
+                content: `${findOption(opts, "message", "")} .𖥔 ݁ ˖๋ ࣭ ⭑`,
             }),
         },
         {
@@ -842,7 +842,7 @@ export default definePlugin({
             description: "⸜(｡˃ ᵕ ˂ )⸝♡",
             options: [OptionalMessageOption],
             execute: opts => ({
-                content: findOption(opts, "message", "") + " " + "⸜(｡˃ ᵕ ˂ )⸝♡",
+                content: `${findOption(opts, "message", "")} ⸜(｡˃ ᵕ ˂ )⸝♡`,
             }),
         }
     ],

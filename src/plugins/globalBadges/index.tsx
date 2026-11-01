@@ -48,7 +48,7 @@ export default definePlugin({
         clearInterval(intervalId);
     },
     toolboxActions: {
-        async "Refetch Global Badges"() {
+        "Refetch Global Badges": async function() {
             await loadBadges();
             Toasts.show({
                 id: Toasts.genId(),

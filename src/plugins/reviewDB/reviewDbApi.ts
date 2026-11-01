@@ -217,7 +217,7 @@ async function patchBlock(action: "block" | "unblock", userId: string) {
     const data = await rdbRequest("/blocks", {
         method: "PATCH",
         body: JSON.stringify({
-            action: action,
+            action,
             discordId: userId
         })
     });

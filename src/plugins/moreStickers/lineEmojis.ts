@@ -42,7 +42,7 @@ export function getIdFromUrl(url: string): string {
  */
 
 function toStickerPackId(id: string): string {
-    return "MoreStickers:Line:Emoji-Pack:" + id;
+    return `MoreStickers:Line:Emoji-Pack:${id}`;
 }
 
 /**
@@ -54,7 +54,7 @@ function toStickerPackId(id: string): string {
  */
 
 function toStickerId(stickerId: string, lineEmojiPackId: string): string {
-    return "MoreStickers:Line-Emoji:" + lineEmojiPackId + ":" + stickerId;
+    return `MoreStickers:Line-Emoji:${lineEmojiPackId}:${stickerId}`;
 }
 
 /**
@@ -110,7 +110,7 @@ export function parseHtml(html: string): LineEmojiPack {
         title: doc.querySelector("[data-test=emoji-name-title]")?.textContent ?? "null",
         author: {
             name: doc.querySelector("[data-test=emoji-author]")?.textContent ?? "null",
-            url: "https://store.line.me/" + (doc.querySelector("[data-test=emoji-author]")?.getAttribute("href") ?? "null")
+            url: `https://store.line.me/${doc.querySelector("[data-test=emoji-author]")?.getAttribute("href") ?? "null"}`
         },
         id,
         mainImage,

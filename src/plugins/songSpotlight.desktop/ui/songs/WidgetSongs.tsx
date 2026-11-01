@@ -8,12 +8,12 @@ import { BaseText } from "@components/BaseText";
 import { Button } from "@components/Button";
 import { Flex } from "@components/Flex";
 import { User } from "@endcord/discord-types";
-import { listData } from "@equicordplugins/songSpotlight.desktop/lib/api";
-import { useAuthorizationStore } from "@equicordplugins/songSpotlight.desktop/lib/stores/AuthorizationStore";
-import { useSongStore } from "@equicordplugins/songSpotlight.desktop/lib/stores/SongStore";
-import { cl } from "@equicordplugins/songSpotlight.desktop/lib/utils";
-import { Spinner, WidgetClasses } from "@equicordplugins/songSpotlight.desktop/ui/common";
-import { openSettingsModal } from "@equicordplugins/songSpotlight.desktop/ui/settings";
+import { listData } from "@plugins/songSpotlight.desktop/lib/api";
+import { useAuthorizationStore } from "@plugins/songSpotlight.desktop/lib/stores/AuthorizationStore";
+import { useSongStore } from "@plugins/songSpotlight.desktop/lib/stores/SongStore";
+import { cl } from "@plugins/songSpotlight.desktop/lib/utils";
+import { Spinner, WidgetClasses } from "@plugins/songSpotlight.desktop/ui/common";
+import { openSettingsModal } from "@plugins/songSpotlight.desktop/ui/settings";
 import { sid } from "@song-spotlight/api/util";
 import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
@@ -22,7 +22,7 @@ import { JSX } from "react";
 
 import Song from ".";
 
-interface WidgetSongsProps {
+export interface WidgetSongsProps {
     user: User;
 }
 

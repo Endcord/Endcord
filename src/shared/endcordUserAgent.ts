@@ -9,4 +9,5 @@ import gitRemote from "~git-remote";
 
 export { gitHash, gitRemote };
 
+export const gitHashShort = gitHash.slice(0, 9);
 export const ENDCORD_USER_AGENT = `Endcord/${gitHash}${gitRemote ? ` (https://github.com/${gitRemote})` : ""}`;

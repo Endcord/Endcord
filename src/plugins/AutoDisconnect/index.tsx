@@ -208,11 +208,6 @@ const VoiceActions: {
     setLocalVolume: (userId: string, volume: number, options?: any) => void;
 } = findByPropsLazy("toggleLocalMute", "setLocalVolume");
 
-const ChannelActions: {
-    disconnect: () => void;
-    selectVoiceChannel: (channelId: string) => void;
-} = findByPropsLazy("disconnect", "selectVoiceChannel");
-
 const VoiceStateStore: VoiceStateStore = findStoreLazy("VoiceStateStore");
 
 interface VoiceStateStore {

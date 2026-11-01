@@ -42,11 +42,11 @@ function getLang() {
 }
 
 async function fetchApi<TResult>(path: string, params: Record<string, string> = {}) {
-    const url = `https://api.giphy.com/v1${path}?` + new URLSearchParams({
+    const url = `https://api.giphy.com/v1${path}?${new URLSearchParams({
         api_key: GIPHY_KEY,
         lang: getLang(),
         ...params
-    });
+    })}`;
 
     const res = await fetch(url);
     if (!res.ok)

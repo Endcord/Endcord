@@ -134,7 +134,7 @@ function playSample(type: string) {
     const myGuildId = SelectedGuildStore.getGuildId();
 
     speak(formatText(
-        settings.store[type + "Message"],
+        settings.store[`${type}Message`],
         currentUser.username,
         "general",
         currentUser.globalName ?? currentUser.username,
@@ -171,7 +171,7 @@ export default definePlugin({
                 const [type, id] = getTypeAndChannelId(state, isMe);
                 if (!type) continue;
 
-                const template = settings.store[type + "Message"];
+                const template = settings.store[`${type}Message`];
                 const user = isMe && !settings.store.sayOwnName ? "" : UserStore.getUser(userId).username;
                 const displayName = user && ((UserStore.getUser(userId) as any).globalName ?? user);
                 const nickname = user && (GuildMemberStore.getNick(myGuildId!, userId) ?? displayName);
@@ -189,7 +189,7 @@ export default definePlugin({
             if (!s) return;
 
             const event = s.mute || s.selfMute ? "unmute" : "mute";
-            speak(formatText(settings.store[event + "Message"], "", ChannelStore.getChannel(chanId).name, "", ""));
+            speak(formatText(settings.store[`${event}Message`], "", ChannelStore.getChannel(chanId).name, "", ""));
         },
 
         AUDIO_TOGGLE_SELF_DEAF() {
@@ -198,7 +198,7 @@ export default definePlugin({
             if (!s) return;
 
             const event = s.deaf || s.selfDeaf ? "undeafen" : "deafen";
-            speak(formatText(settings.store[event + "Message"], "", ChannelStore.getChannel(chanId).name, "", ""));
+            speak(formatText(settings.store[`${event}Message`], "", ChannelStore.getChannel(chanId).name, "", ""));
         }
     },
 
@@ -207,7 +207,7 @@ export default definePlugin({
             new Logger("VcNarrator").warn(
                 "SpeechSynthesis not supported or no Narrator voices found. Thus, this plugin will not work. Check my Settings for more info"
             );
-            return;
+
         }
 
     },

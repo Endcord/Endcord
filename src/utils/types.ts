@@ -280,6 +280,11 @@ export interface PluginSettingDefCommon extends IsDisabledOrHidden, IsValid<unkn
     restartNeeded?: boolean;
     componentProps?: Record<string, any>;
     /**
+     * Keys, passwords, where those get sent, and who may act for the user. These stay out of settings backups
+     * and cloud sync, and an import can't change them once they're set
+     */
+    sensitive?: boolean;
+    /**
      * Set this if the setting only works on Browser or Desktop, not both
      */
     target?: "WEB" | "DESKTOP" | "BOTH";

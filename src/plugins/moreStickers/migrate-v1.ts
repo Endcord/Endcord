@@ -20,25 +20,25 @@ const RECENT_STICKERS_KEY_OLD = "Vencord-MoreStickers-RecentStickers";
 function migrateStickerPackId(oldStickerPackId: string): string {
     if (oldStickerPackId.startsWith("Vencord-MoreStickers-Line-Pack")) {
         const id = oldStickerPackId.replace("Vencord-MoreStickers-Line-Pack-", "");
-        return "MoreStickers:Line:Pack:" + id;
+        return `MoreStickers:Line:Pack:${id}`;
     } else if (oldStickerPackId.startsWith("Vencord-MoreStickers-Line-Emoji-Pack")) {
         const id = oldStickerPackId.replace("Vencord-MoreStickers-Line-Emoji-Pack-", "");
-        return "MoreStickers:Line:Emoji:Pack:" + id;
-    } else {
-        return oldStickerPackId;
+        return `MoreStickers:Line:Emoji:Pack:${id}`;
     }
+        return oldStickerPackId;
+
 }
 
 function migrateStickerId(oldStickerId: string): string {
     if (oldStickerId.startsWith("Vencord-MoreStickers-Line-Sticker")) {
         const [stickerPackId, stickerId] = oldStickerId.replace("Vencord-MoreStickers-Line-Sticker", "").split("-", 2);
-        return "MoreStickers:Line:Sticker:" + stickerPackId + ":" + stickerId;
+        return `MoreStickers:Line:Sticker:${stickerPackId}:${stickerId}`;
     } else if (oldStickerId.startsWith("Vencord-MoreStickers-Line-Emoji")) {
         const [stickerPackId, stickerId] = oldStickerId.replace("Vencord-MoreStickers-Line-Emoji", "").split("-", 2);
-        return "MoreStickers:Line:Emoji:" + stickerPackId + ":" + stickerId;
-    } else {
-        return oldStickerId;
+        return `MoreStickers:Line:Emoji:${stickerPackId}:${stickerId}`;
     }
+        return oldStickerId;
+
 }
 
 function migrateSticker(oldSticker: Sticker): Sticker {
@@ -135,7 +135,7 @@ export async function migrate() {
         await DataStore.del(RECENT_STICKERS_KEY_OLD);
     }
 
-    console.log("Migration complete");
+    console.debug("Migration complete");
     Toasts.show({
         message: "Sticker Pack Migration Complete",
         type: Toasts.Type.SUCCESS,

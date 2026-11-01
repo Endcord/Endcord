@@ -11,11 +11,11 @@ import { HeaderBarButton } from "@api/HeaderBar";
 import { showNotification } from "@api/Notifications";
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
+import type { CommandArgument, CommandContext } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
 import { makeCodeblock } from "@utils/text";
 import definePlugin, { OptionType, type PluginNative } from "@utils/types";
-import type { CommandArgument, CommandContext } from "@vencord/discord-types";
 import { openModal, RTCConnectionStore } from "@webpack/common";
 
 import { getLocation, type IPInfo, VoiceServerIcon, type VoiceServerInfo, VoiceServerModal } from "./VoiceServerModal";
@@ -27,7 +27,7 @@ const activeRequests = new Set<AbortController>();
 const settings = definePluginSettings({
     notifyOnConnect: {
         type: OptionType.BOOLEAN,
-        description: "Show the voice relay address and location after connecting.",
+        description: "Show the voice relay address and location after connecting. The location comes from freeipapi.com, which sees your IP address.",
         default: true
     },
     showIcon: {

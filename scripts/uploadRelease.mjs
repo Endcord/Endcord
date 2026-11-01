@@ -9,8 +9,8 @@
 //   node-v22\node.exe scripts/uploadRelease.mjs [--set-version 4.0.26] [--dry-run] [--push]
 //
 // 1. Checks the code (tsc) and that the version in InstallerGUI.cs and package.json match.
-// 2. Builds the desktop files, the browser extension, and the signed, self-tested EndcordInstaller.exe.
-// 3. Writes version.json with a SHA-256 for each of the four update files.
+// 2. Builds the desktop files, the browser extension, and the self-tested EndcordInstaller.exe.
+// 3. Writes and signs version.json, with a SHA-256 for each of the four update files.
 // 4. Copies the installer, install.sh, the update files and version.json into the local site folder.
 //    Nothing is deployed: uploading that folder to endcord.com stays a manual step.
 // 5. Commits dist/ and version.json in the local public repo clone. Only with --push is it pushed to
@@ -21,8 +21,9 @@
 // --push      also push the release commit to GitHub (without it, nothing leaves this PC)
 
 import { execFileSync } from "child_process";
-import { createHash } from "crypto";
+import { createHash, createPrivateKey, createPublicKey, sign, verify } from "crypto";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+import { homedir } from "os";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 
@@ -33,11 +34,14 @@ const NODE_DIR = dirname(process.execPath);
 const SITE_DIR = process.env.ENDCORD_SITE_DIR ?? join(ROOT, "..", "Endcord-site");
 const PUBLIC_REPO = process.env.ENDCORD_PUBLIC_REPO ?? join(ROOT, "..", "endcord");
 // The updater reads version.json from here and rejects files that don't match their checksum
-const RAW_BASE = "https://raw.githubusercontent.com/rootpoii/endcord/main";
+const RAW_BASE = "https://raw.githubusercontent.com/Endcord/Endcord/main";
 const UPDATE_FILES = ["patcher.js", "preload.js", "renderer.js", "renderer.css"];
 // The same four files in one archive on the site. install.sh uses it until GitHub has a checksummed
 // release, and Cloudflare blocks the site's .js files for scripts, so they can't be fetched one by one
 const BUNDLE = "EndcordFiles.tar.gz";
+// Signs version.json. It never goes in a repo: without it there are no more updates, and whoever has it can ship one
+const SIGNING_KEY = process.env.ENDCORD_UPDATE_KEY ?? join(homedir(), ".endcord", "update-signing-key.pem");
+const PUBLIC_KEY = join(ROOT, "src", "main", "updater", "updateKey.pem");
 
 const args = process.argv.slice(2);
 const dryRun = args.includes("--dry-run");
@@ -56,6 +60,14 @@ function run(cmd, cmdArgs, opts = {}) {
 const git = (cwd, ...gitArgs) => execFileSync("git", gitArgs, { cwd, encoding: "utf8" }).trim();
 const sha256 = file => createHash("sha256").update(readFileSync(file)).digest("hex");
 
+// Keep the payload in sync with isSignedManifest in src/main/updater/http.ts and verify_manifest in install.sh and linux/gui.py
+function signManifest({ version, hash, updatedAt, installerSha256, assets }, key) {
+    const payload = Buffer.from([version, hash, updatedAt, installerSha256, ...assets.map(a => `${a.name} ${a.sha256}`).sort()].join("\n"));
+    const signature = sign("sha256", payload, key);
+    if (!verify("sha256", payload, readFileSync(PUBLIC_KEY, "utf8"), signature)) fail("the signature doesn't match the public key clients have");
+    return signature.toString("base64");
+}
+
 // ---- 1. Checks -------------------------------------------------------------------------------------
 
 const installerSource = join(ROOT, "InstallerGUI.cs");
@@ -69,7 +81,7 @@ if (setVersion) {
         .replace(/AssemblyInformationalVersion\("[^"]+"\)/, `AssemblyInformationalVersion("${setVersion}")`));
     const pkg = JSON.parse(readFileSync(packageJsonPath, "utf8"));
     pkg.version = setVersion;
-    writeFileSync(packageJsonPath, JSON.stringify(pkg, null, 4) + "\n");
+    writeFileSync(packageJsonPath, `${JSON.stringify(pkg, null, 4)}\n`);
 }
 
 const version = readFileSync(installerSource, "utf8").match(/AssemblyInformationalVersion\("([^"]+)"\)/)?.[1];
@@ -80,18 +92,28 @@ if (version !== packageVersion) fail(`InstallerGUI.cs says ${version} but packag
 const uncommitted = git(ROOT, "status", "--porcelain", "--untracked-files=no");
 if (uncommitted && !dryRun) fail(`commit your changes first, so the release matches a commit:\n${uncommitted}`);
 
+if (!existsSync(SIGNING_KEY)) fail(`no update signing key at ${SIGNING_KEY}; set ENDCORD_UPDATE_KEY or restore it from your backup`);
+const signingKey = createPrivateKey(readFileSync(SIGNING_KEY, "utf8"));
+
+const publicKey = readFileSync(PUBLIC_KEY, "utf8").replaceAll("\r\n", "\n").trim();
+if (createPublicKey(signingKey).export({ type: "spki", format: "pem" }).trim() !== publicKey) fail(`${SIGNING_KEY} doesn't match ${PUBLIC_KEY}`);
+for (const script of ["install.sh", "linux/gui.py"]) {
+    if (!readFileSync(join(ROOT, script), "utf8").replaceAll("\r\n", "\n").includes(publicKey)) fail(`${script} has a different public key than the client`);
+}
+
 step(`Releasing Endcord ${version}${dryRun ? " (dry run)" : ""}`);
 step("Type-checking");
 run(process.execPath, ["node_modules/typescript/bin/tsc", "--noEmit", "-p", "."]);
 
 // ---- 2. Builds -------------------------------------------------------------------------------------
 
-// Taken before the build: clients built now have a later BUILD_TIMESTAMP, so they never see their own release as an update
+// Clients are built just after this, so they never see their own release as an update. Fixing the time rather than
+// using the clock is what lets anyone rebuild a release and get the same bytes: see scripts/verifyReproducible.mjs
 const releasedAt = Date.now();
 const buildHash = releasedAt.toString(16).slice(-7);
 
 step("Building the desktop files");
-run(process.execPath, ["scripts/build/build.mjs", "--standalone"], { env: { ENDCORD_HASH: buildHash, ENDCORD_REMOTE: "rootpoii/endcord" } });
+run(process.execPath, ["scripts/build/build.mjs", "--standalone"], { env: { ENDCORD_HASH: buildHash, ENDCORD_REMOTE: "Endcord/Endcord", SOURCE_DATE_EPOCH: String(releasedAt + 1) } });
 
 step("Building the browser extension");
 run(process.execPath, ["scripts/build/buildWeb.mjs"]);
@@ -101,8 +123,8 @@ git(ROOT, "archive", "--format=zip", "-o", join(DIST, "EndcordSource.zip"), "HEA
 step("Building the macOS installer app");
 run(process.execPath, ["scripts/buildMacInstaller.mjs"]);
 
-step("Building, testing and signing EndcordInstaller.exe");
-run("powershell", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "scripts/buildAndSignExe.ps1", ...(dryRun ? ["-NoSite"] : [])]);
+step("Building and testing EndcordInstaller.exe");
+run("powershell", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "scripts/buildInstaller.ps1", ...(dryRun ? ["-NoSite"] : [])]);
 
 // ---- 3. version.json -------------------------------------------------------------------------------
 
@@ -111,6 +133,12 @@ const windowsTar = join(process.env.SystemRoot ?? "C:\\Windows", "System32", "ta
 const tar = process.platform === "win32" && existsSync(windowsTar) ? windowsTar : "tar";
 execFileSync(tar, ["-czf", join(DIST, BUNDLE), "-C", DIST, ...UPDATE_FILES]);
 
+const assets = UPDATE_FILES.map(name => ({
+    name,
+    url: `${RAW_BASE}/dist/${name}`,
+    sha256: sha256(join(DIST, name))
+}));
+const installerSha256 = sha256(join(ROOT, "EndcordInstaller.exe"));
 const versionData = {
     version,
     hash: buildHash,
@@ -118,13 +146,12 @@ const versionData = {
     date: new Date(releasedAt).toISOString(),
     downloadUrl: "https://endcord.com/download",
     bundle: `https://endcord.com/${BUNDLE}`,
-    assets: UPDATE_FILES.map(name => ({
-        name,
-        url: `${RAW_BASE}/dist/${name}`,
-        sha256: sha256(join(DIST, name))
-    }))
+    // The installer isn't code-signed, so this is what people can check their download against
+    installerSha256,
+    signature: signManifest({ version, hash: buildHash, updatedAt: releasedAt, installerSha256, assets }, signingKey),
+    assets
 };
-const versionJson = JSON.stringify(versionData, null, 2) + "\n";
+const versionJson = `${JSON.stringify(versionData, null, 2)}\n`;
 writeFileSync(join(DIST, "version.json"), versionJson);
 step("version.json");
 console.log(versionJson);
@@ -142,6 +169,8 @@ mkdirSync(join(SITE_DIR, "dist"), { recursive: true });
 for (const name of UPDATE_FILES) copyFileSync(join(DIST, name), join(SITE_DIR, "dist", name));
 copyFileSync(join(DIST, BUNDLE), join(SITE_DIR, BUNDLE));
 copyFileSync(join(ROOT, "install.sh"), join(SITE_DIR, "install.sh"));
+mkdirSync(join(SITE_DIR, "linux"), { recursive: true });
+copyFileSync(join(ROOT, "linux", "gui.py"), join(SITE_DIR, "linux", "gui.py"));
 // Old download links and docs point at this name; it was always the shell installer
 copyFileSync(join(ROOT, "install.sh"), join(SITE_DIR, "EndcordInstallerCli-linux"));
 copyFileSync(join(DIST, "extension-chrome.zip"), join(SITE_DIR, "EndcordWeb.zip"));
@@ -158,7 +187,7 @@ if (siteOnly) {
 
 step(`Committing the release in ${PUBLIC_REPO}`);
 if (!existsSync(join(PUBLIC_REPO, ".git"))) fail(`${PUBLIC_REPO} is not a git clone; set ENDCORD_PUBLIC_REPO`);
-if (!/rootpoii\/endcord/i.test(git(PUBLIC_REPO, "remote", "get-url", "origin"))) fail(`${PUBLIC_REPO} doesn't point at rootpoii/Endcord`);
+if (!/\bEndcord\/Endcord\b/i.test(git(PUBLIC_REPO, "remote", "get-url", "origin"))) fail(`${PUBLIC_REPO} doesn't point at Endcord/Endcord`);
 if (git(PUBLIC_REPO, "rev-parse", "--abbrev-ref", "HEAD") !== "main") fail(`${PUBLIC_REPO} is not on the main branch`);
 git(PUBLIC_REPO, "pull", "--ff-only");
 

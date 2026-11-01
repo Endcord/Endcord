@@ -6,7 +6,7 @@
 
 import * as DataStore from "@api/DataStore";
 import { showNotification } from "@api/Notifications";
-import { logger, themeRequest } from "@equicordplugins/themeLibrary/components/ThemeTab";
+import { logger, themeRequest } from "@plugins/themeLibrary/components/ThemeTab";
 import { OAuth2AuthorizeModal, openModal,Toasts, UserStore } from "@webpack/common";
 
 export async function authorizeUser(triggerModal: boolean = true) {
@@ -108,7 +108,7 @@ export async function getAuthorization() {
 
     if (!uniqueToken) {
         return false;
-    } else {
+    }
         // check if valid
         const res = await themeRequest("/user/findUserByToken", {
             headers: {
@@ -119,11 +119,11 @@ export async function getAuthorization() {
 
         if (res.status === 400 || res.status === 500) {
             return false;
-        } else {
+        }
             logger.debug("User is already authorized, skipping");
             return uniqueToken;
-        }
-    }
+
+
 
 }
 

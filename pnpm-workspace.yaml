@@ -13,6 +13,36 @@ allowedDeprecatedVersions:
   urix: '*'
   q: '*'
 strictPeerDependencies: false
+# A compromised package is usually found within days, so new versions wait a week before they can be installed
+minimumReleaseAge: 10080
+# Packages can only come from the registry, never a git URL or tarball slipped in through a dependency
+blockExoticSubdeps: true
+# Install scripts only run for packages listed here, and an unlisted one fails the install
+strictDepBuilds: true
+auditConfig:
+  ignoreGhsas:
+    # minimatch, through ESLint and stylelint only: nothing ships it, and it only ever sees this repo's own globs.
+    # The fix and a new package it needs are days old, so they wait out minimumReleaseAge. Drop this after 2026-11-07
+    - GHSA-g3hv-75wg-m249
 allowBuilds:
   esbuild: true
 pmOnFail: warn
+minimumReleaseAgeExclude:
+  - moment@2.29.2 || 2.29.4
+  - dompurify@3.3.2 || 3.3.4 || 3.4.0 || 3.4.6 || 3.4.7 || 3.4.8 || 3.4.9 || 3.4.11 || 3.4.12 || 3.4.13 || 3.4.16 || 3.4.17
+  - fast-uri@3.1.4 || 3.1.5 || 3.1.6 || 3.1.7 || 3.1.8 || 3.1.9
+  - brace-expansion@1.1.17 || 1.1.18 || 1.1.19 || 1.1.20 || 1.1.21 || 2.1.3 || 2.1.4 || 2.1.5 || 2.1.6 || 2.1.7 || 5.0.8 || 5.0.9 || 5.0.10 || 5.0.11 || 5.0.12
+  - postcss@8.5.23 || 8.5.32
+  - js-yaml@4.3.1 || 4.3.2
+  - nanoid@3.3.18
+  - decode-uri-component@0.4.3 || 0.5.1
+  - colord@2.9.4
+  - svgo@4.1.0
+  - source-map-js@1.2.2
+  - zod@4.6.6
+  - postcss-selector-parser@7.1.6
+overrides:
+  decode-uri-component: ^0.5.1
+  dompurify: ^3.4.17
+  moment: ^2.31.0
+  zod: ^4.6.6

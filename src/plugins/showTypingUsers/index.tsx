@@ -7,7 +7,7 @@
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 import { findByPropsLazy } from "@webpack";
-import { FluxDispatcher, React, Tooltip } from "@webpack/common";
+import { FluxDispatcher } from "@webpack/common";
 
 const TypingStore = findByPropsLazy("getTypingUsers");
 const UserStore = findByPropsLazy("getUser", "getCurrentUser");
@@ -41,55 +41,6 @@ function refresh(channelId: string) {
             return { id, username: u?.username ?? id, globalName: u?.globalName ?? null };
         });
     setUsersRef?.(users);
-}
-
-function TypingBadge({ channelId }: { channelId: string; }) {
-    const [users, setUsers] = React.useState<TypingUser[]>([]);
-
-    React.useEffect(() => {
-        currentChannelId = channelId;
-        setUsersRef = setUsers;
-        refresh(channelId);
-        return () => {
-            currentChannelId = null;
-            setUsersRef = null;
-        };
-    }, [channelId]);
-
-    if (!users.length) return null;
-
-    const names = users.map(u => u.globalName ?? u.username).join(", ");
-    const label = users.length === 1
-        ? `${names} is typing…`
-        : `${names} are typing…`;
-
-    return (
-        <Tooltip text={label}>
-            {({ onMouseEnter, onMouseLeave }) => (
-                <div
-                    onMouseEnter={onMouseEnter}
-                    onMouseLeave={onMouseLeave}
-                    style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 4,
-                        padding: "2px 7px",
-                        borderRadius: 12,
-                        background: "var(--background-secondary)",
-                        fontSize: 12,
-                        color: "var(--text-muted)",
-                        cursor: "default",
-                        userSelect: "none",
-                    }}
-                >
-                    <span style={{ fontWeight: 600, color: "var(--text-normal)" }}>
-                        {users.length}
-                    </span>
-                    typing
-                </div>
-            )}
-        </Tooltip>
-    );
 }
 
 export default definePlugin({

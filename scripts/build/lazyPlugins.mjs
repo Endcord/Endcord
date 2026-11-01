@@ -13,7 +13,7 @@
 import { readdir, readFile, stat } from "fs/promises";
 import { dirname, join, relative, resolve } from "path";
 
-const PLUGIN_ALIASES = ["@plugins/", "@endcordplugins/", "@equicordplugins/"];
+const PLUGIN_ALIASES = ["@plugins/"];
 const ALIAS_FOLDER_REMAP = { equicordToolbox: "endcordToolbox" };
 // Calls that move settings between plugin names at module load. They only matter when the user still has
 // settings under the old name, so the plugin is loaded at startup in exactly that case.
@@ -114,7 +114,7 @@ async function readStaticFlags(source, fileName) {
         const name = prop.name && (ts.isIdentifier(prop.name) || ts.isStringLiteral(prop.name)) ? prop.name.text : null;
         if (name !== "required" && name !== "enabledByDefault") continue;
         if (!ts.isPropertyAssignment(prop)) return null;
-        const kind = prop.initializer.kind;
+        const { kind } = prop.initializer;
         if (kind === ts.SyntaxKind.TrueKeyword) flags[name] = true;
         else if (kind !== ts.SyntaxKind.FalseKeyword) return null;
     }

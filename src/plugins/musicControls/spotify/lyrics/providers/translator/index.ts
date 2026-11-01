@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import settings from "@equicordplugins/musicControls";
-import { Provider, SyncedLyric } from "@equicordplugins/musicControls/spotify/lyrics/providers/types";
+import settings from "@plugins/musicControls";
+import { Provider, SyncedLyric } from "@plugins/musicControls/spotify/lyrics/providers/types";
 
 // stolen from src/plugins/translate/utils.ts
 
@@ -25,14 +25,14 @@ interface GoogleRomanizeData {
 }
 
 async function googleTranslate(text: string, targetLang: string): Promise<string | null> {
-    const url = "https://translate-pa.googleapis.com/v1/translate?" + new URLSearchParams({
+    const url = `https://translate-pa.googleapis.com/v1/translate?${new URLSearchParams({
         "params.client": "gtx",
         "dataTypes": "TRANSLATION",
         "key": "AIzaSyDLEeFI5OtFBwYBIoK_jj5m32rZK5CkCXA", // some google API key
         "query.sourceLanguage": "auto",
         "query.targetLanguage": targetLang,
         "query.text": text,
-    });
+    })}`;
 
     const res = await fetch(url).catch(() => null);
     if (!res?.ok)
@@ -44,7 +44,7 @@ async function googleTranslate(text: string, targetLang: string): Promise<string
 
 // translate-pa can't romanize, so romanization still uses the old endpoint
 async function googleRomanize(text: string): Promise<GoogleRomanizeData | null> {
-    const url = "https://translate.googleapis.com/translate_a/single?" + new URLSearchParams({
+    const url = `https://translate.googleapis.com/translate_a/single?${new URLSearchParams({
         // see https://stackoverflow.com/a/29537590 for more params
         // holy shidd nvidia
         client: "gtx",
@@ -59,7 +59,7 @@ async function googleRomanize(text: string): Promise<GoogleRomanizeData | null> 
         source: "input",
         // query, duh
         q: text
-    });
+    })}`;
 
     const res = await fetch(url).catch(() => null);
     if (!res?.ok)

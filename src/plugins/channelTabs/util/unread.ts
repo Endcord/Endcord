@@ -5,7 +5,7 @@
  */
 
 import { DataStore } from "@api/index";
-import { ChannelUnreadState, reconcileUnreadFallbackCache } from "@equicordplugins/channelTabs/util/unreadState";
+import { ChannelUnreadState, reconcileUnreadFallbackCache } from "@plugins/channelTabs/util/unreadState";
 
 export interface PersistedUnreadFallbacks {
     [userId: string]: Record<string, number>;

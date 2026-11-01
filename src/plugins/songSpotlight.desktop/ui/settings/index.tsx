@@ -9,14 +9,14 @@ import { Button } from "@components/Button";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
 import { RenderModalProps } from "@endcord/discord-types";
-import { apiConstants, deleteData, getData, saveData } from "@equicordplugins/songSpotlight.desktop/lib/api";
-import { presentOAuth2Modal } from "@equicordplugins/songSpotlight.desktop/lib/oauth2";
-import { useAuthorizationStore } from "@equicordplugins/songSpotlight.desktop/lib/stores/AuthorizationStore";
-import { useSongStore } from "@equicordplugins/songSpotlight.desktop/lib/stores/SongStore";
-import { cl } from "@equicordplugins/songSpotlight.desktop/lib/utils";
-import { Native } from "@equicordplugins/songSpotlight.desktop/service";
-import { Spinner } from "@equicordplugins/songSpotlight.desktop/ui/common";
-import SongList from "@equicordplugins/songSpotlight.desktop/ui/settings/SongList";
+import { apiConstants, deleteData, getData, saveData } from "@plugins/songSpotlight.desktop/lib/api";
+import { presentOAuth2Modal } from "@plugins/songSpotlight.desktop/lib/oauth2";
+import { useAuthorizationStore } from "@plugins/songSpotlight.desktop/lib/stores/AuthorizationStore";
+import { useSongStore } from "@plugins/songSpotlight.desktop/lib/stores/SongStore";
+import { cl } from "@plugins/songSpotlight.desktop/lib/utils";
+import { Native } from "@plugins/songSpotlight.desktop/service";
+import { Spinner } from "@plugins/songSpotlight.desktop/ui/common";
+import SongList from "@plugins/songSpotlight.desktop/ui/settings/SongList";
 import type { UserData } from "@song-spotlight/api/structs";
 import { sid } from "@song-spotlight/api/util";
 import { readClipboard } from "@utils/clipboard";
@@ -35,7 +35,7 @@ function parseUserData(json: unknown, limit: number): UserData | null {
         if (!song || typeof song !== "object") return null;
         const { service, type, id } = song as Record<string, unknown>;
         if (typeof service !== "string" || typeof type !== "string" || typeof id !== "string") return null;
-        songs.push({ service, type, id } as UserData[number]);
+        songs.push({ service, type, id });
     }
     return songs;
 }

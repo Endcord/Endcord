@@ -42,7 +42,7 @@ async function loadFFmpeg(): Promise<FFmpeg> {
         });
 
         ffmpegLoaded = true;
-        console.log("[FileUpload] FFmpeg loaded");
+        console.debug("[FileUpload] FFmpeg loaded");
 
         return ffmpeg;
     })();

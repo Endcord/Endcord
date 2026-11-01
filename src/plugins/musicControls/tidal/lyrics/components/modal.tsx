@@ -6,7 +6,7 @@
 
 import { BaseText } from "@components/BaseText";
 import { RenderModalProps } from "@endcord/discord-types";
-import { TidalStore, Track } from "@equicordplugins/musicControls/tidal/TidalStore";
+import { TidalStore, Track } from "@plugins/musicControls/tidal/TidalStore";
 import { t } from "@utils/i18n";
 import { Modal,React } from "@webpack/common";
 
@@ -41,11 +41,10 @@ function getTitleNode(track: Track | null) {
 export function LyricsModal({ rootProps }: { rootProps: RenderModalProps; }) {
     const { track, lyrics, currLrcIndex } = useLyrics({ scroll: false });
     const currentLyrics = lyrics || null;
-    const position = track ? TidalStore.mPosition : 0;
 
     return (
         <Modal {...rootProps} size="md" title={getTitleNode(track)}>
-            <div className={cl("lyrics-modal-container") + ` ${scrollClasses.auto}`}>
+            <div className={`${cl("lyrics-modal-container")} ${scrollClasses.auto}`}>
                 {currentLyrics ? (
                     currentLyrics.map((line, i) => (
                         <BaseText

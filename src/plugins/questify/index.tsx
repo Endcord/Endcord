@@ -256,7 +256,7 @@ export default definePlugin({
                 },
                 {
                     // QUESTS_FETCH_QUEST_TO_DELIVER_BEGIN
-                    match: /(?=let \i=Date.now\(\);\i.recordQuestRequestAttempt.{0,50}QUESTS_FETCH_QUEST_TO_DELIVER_BEGIN)/,
+                    match: /(?=let \i=Date\.now\(\)[;,](?:\i=)?\i\.recordQuestRequestAttempt.{0,90}QUESTS_FETCH_QUEST_TO_DELIVER_BEGIN)/,
                     replace: "return;"
                 }
             ]
@@ -429,7 +429,8 @@ export default definePlugin({
             ]
         },
         {
-            find: 'STEP_2_CLICKED_INTERNAL,"quest_embed_card_footer',
+            // rewardWithArticleHook: is in three modules now, and a group is dropped after the first one it fails on
+            find: ".GameProfileSources.QuestEmbed",
             group: true,
             predicate: () => !getQuestifySettings().disableQuestsEverything,
             replacement: [
@@ -639,9 +640,9 @@ export default definePlugin({
         LOGIN_SUCCESS(): void {
             if (!isSwitchingAccount || getQuestifySettings().disableQuestsEverything) {
                 return;
-            } else {
-                isSwitchingAccount = false;
             }
+                isSwitchingAccount = false;
+
 
             setInitialQuestDataFetched(false);
             didAttemptAutoCompleteResume = false;
@@ -651,9 +652,9 @@ export default definePlugin({
         LOGOUT(data: { isSwitchingAccount?: boolean; }): void {
             if (!data.isSwitchingAccount) {
                 return;
-            } else {
-                isSwitchingAccount = true;
             }
+                isSwitchingAccount = true;
+
 
             setInitialQuestDataFetched(false);
             stopPerAccountTasks("LOGOUT");

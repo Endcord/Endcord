@@ -135,13 +135,11 @@ export function UserMuteButton({ user }: { user: User; }) {
                     if (channel?.guild_id) {
                         GuildActions.setServerMute(channel.guild_id, user.id, !isServerMuted);
                     }
-                } else {
-                    if (isCurrent) {
+                } else if (isCurrent) {
                         VoiceActions.toggleSelfMute();
                     } else {
                         VoiceActions.toggleLocalMute(user.id);
                     }
-                }
             }}
         />
     );

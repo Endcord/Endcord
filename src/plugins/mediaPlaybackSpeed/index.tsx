@@ -121,7 +121,7 @@ export default definePlugin({
                                         {speeds.map(speed => (
                                             <Menu.MenuItem
                                                 key={speed}
-                                                id={"speed-" + speed}
+                                                id={`speed-${speed}`}
                                                 label={`${speed}x`}
                                                 action={() => changeSpeed(speed)}
                                             />

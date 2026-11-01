@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { toProxiedUrl } from "@endcordplugins/fileUpload/constants";
-import { settings } from "@endcordplugins/fileUpload/settings";
+import { toProxiedUrl } from "@plugins/fileUpload/constants";
+import { settings } from "@plugins/fileUpload/settings";
 import { PluginNative } from "@utils/types";
 
 type S3Store = {
@@ -33,7 +33,7 @@ const textEncoder = new TextEncoder();
 
 function toArrayBuffer(data: ArrayBuffer | Uint8Array | string): ArrayBuffer {
     if (typeof data === "string") {
-        return textEncoder.encode(data).buffer as ArrayBuffer;
+        return textEncoder.encode(data).buffer;
     }
 
     if (data instanceof Uint8Array) {
@@ -118,8 +118,8 @@ export async function uploadToS3(
     }
 
     const endpoint = new URL(s3Endpoint);
-    if (!/^https?:$/.test(endpoint.protocol)) {
-        throw new Error("S3 endpoint must be a valid HTTP(S) URL");
+    if (endpoint.protocol !== "https:") {
+        throw new Error("S3 endpoint must use HTTPS");
     }
 
     const extension = filename.includes(".") ? filename.slice(filename.lastIndexOf(".")) : "";

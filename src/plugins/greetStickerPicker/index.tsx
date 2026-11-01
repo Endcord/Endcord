@@ -73,7 +73,7 @@ function GreetMenu({ channel, message }: { message: Message, channel: Channel; }
                     <Menu.MenuRadioItem
                         key={mode}
                         group="greet-mode"
-                        id={"greet-mode-" + mode}
+                        id={`greet-mode-${mode}`}
                         label={mode}
                         checked={mode === greetMode}
                         action={() => s.greetMode = mode}
@@ -89,7 +89,7 @@ function GreetMenu({ channel, message }: { message: Message, channel: Channel; }
                 {WELCOME_STICKERS.map(sticker => (
                     <Menu.MenuItem
                         key={sticker.id}
-                        id={"greet-" + sticker.id}
+                        id={`greet-${sticker.id}`}
                         label={sticker.description.split(" ")[0]}
                         action={() => greet(channel, message, [sticker.id])}
                     />
@@ -110,7 +110,7 @@ function GreetMenu({ channel, message }: { message: Message, channel: Channel; }
                             return (
                                 <Menu.MenuCheckboxItem
                                     key={sticker.id}
-                                    id={"multi-greet-" + sticker.id}
+                                    id={`multi-greet-${sticker.id}`}
                                     label={sticker.description.split(" ")[0]}
                                     checked={checked}
                                     disabled={!checked && multiGreetChoices.length >= 3}
@@ -127,7 +127,7 @@ function GreetMenu({ channel, message }: { message: Message, channel: Channel; }
                         <Menu.MenuItem
                             id="multi-greet-submit"
                             label={t("Send Greets")}
-                            action={() => greet(channel, message, multiGreetChoices!)}
+                            action={() => greet(channel, message, multiGreetChoices)}
                             disabled={multiGreetChoices.length === 0}
                         />
 

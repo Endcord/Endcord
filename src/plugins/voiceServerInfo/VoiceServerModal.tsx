@@ -5,10 +5,10 @@
  */
 
 import { Button } from "@components/Button";
+import type { RenderModalProps } from "@endcord/discord-types";
 import { copyWithToast } from "@utils/discord";
 import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
-import type { RenderModalProps } from "@vencord/discord-types";
 import { Modal, React, RTCConnectionStore, useStateFromStores } from "@webpack/common";
 import type { SVGProps } from "react";
 

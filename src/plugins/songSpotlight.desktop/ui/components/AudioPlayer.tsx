@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { logger } from "@equicordplugins/songSpotlight.desktop/lib/utils";
-import settings from "@equicordplugins/songSpotlight.desktop/settings";
+import { logger } from "@plugins/songSpotlight.desktop/lib/utils";
+import settings from "@plugins/songSpotlight.desktop/settings";
 import { RenderInfoEntry, RenderInfoEntryAudio } from "@song-spotlight/api/handlers";
 import { showToast, Toasts, useCallback, useEffect, useMemo, useRef } from "@webpack/common";
 import { RefObject } from "react";

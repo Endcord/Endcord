@@ -62,7 +62,7 @@ function PickerModal(props: RenderModalProps) {
                 text: "Insert",
                 variant: "primary",
                 onClick() {
-                    insertTextIntoChatInputBox(formatted + " ");
+                    insertTextIntoChatInputBox(`${formatted} `);
                     props.onClose();
                 }
             }]}

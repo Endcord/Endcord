@@ -7,13 +7,13 @@
 import { BaseText } from "@components/BaseText";
 import { Flex } from "@components/Flex";
 import { Heading } from "@components/Heading";
+import { RenderModalProps } from "@endcord/discord-types";
 import { settings } from "@plugins/voiceMessageTranscriber.desktop/settings";
 import { decodeAudio, fetchVoiceMessage } from "@plugins/voiceMessageTranscriber.desktop/utils/audio";
 import { cl, formatTranscript } from "@plugins/voiceMessageTranscriber.desktop/utils/misc";
 import { TranscriptionJob, TranscriptionResult } from "@plugins/voiceMessageTranscriber.desktop/utils/worker";
 import { copyToClipboard } from "@utils/clipboard";
 import { t } from "@utils/i18n";
-import { RenderModalProps } from "@vencord/discord-types";
 import { Modal, useEffect, useRef, useState } from "@webpack/common";
 
 export function TranscriptionModal(props: { modalProps: RenderModalProps, src: string, options: { language: string, task: string; }; }) {

@@ -57,7 +57,7 @@ export default definePlugin({
     settings,
 
     contextMenus: {
-        "expression-picker"(children, { target }: { target: Target; }) {
+        "expression-picker": function(children, { target }: { target: Target; }) {
             if (target.dataset.type !== "emoji") return;
 
             children.push(

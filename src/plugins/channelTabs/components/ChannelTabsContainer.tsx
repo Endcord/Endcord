@@ -7,7 +7,7 @@
 import { Flex } from "@components/Flex";
 import { Heading } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
-import { BasicChannelTabsProps, ChannelTabsProps, clearStaleNavigationContext, closeTab, createTab, handleChannelSwitch, isNavigationFromSource, isTabSelected, moveToTab, openedTabs, openStartupTabs, saveTabs, settings, setUpdaterFunction, useGhostTabs } from "@equicordplugins/channelTabs/util";
+import { BasicChannelTabsProps, ChannelTabsProps, clearStaleNavigationContext, closeTab, createTab, handleChannelSwitch, isNavigationFromSource, isTabSelected, moveToTab, openedTabs, openStartupTabs, saveTabs, settings, setUpdaterFunction, useGhostTabs } from "@plugins/channelTabs/util";
 import { IS_MAC } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import { t as translateText } from "@utils/i18n";
@@ -253,7 +253,7 @@ export default function ChannelsTabsContainer(props: BasicChannelTabsProps) {
                     const nextIndex = (currentIndex - 1 + openedTabs.length) % openedTabs.length;
                     moveToTab(openedTabs[nextIndex].id);
                 }
-                return;
+
             }
         };
 

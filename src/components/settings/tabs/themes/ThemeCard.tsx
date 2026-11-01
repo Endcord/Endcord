@@ -8,7 +8,7 @@ import { Flex } from "@components/Flex";
 import { DeleteIcon } from "@components/Icons";
 import { Link } from "@components/Link";
 import { AddonCard } from "@components/settings/AddonCard";
-import { UserThemeHeader } from "@main/themes";
+import type { UserThemeHeader } from "@main/themes";
 import { openInviteModal } from "@utils/discord";
 import { useI18n } from "@utils/i18n";
 import { showToast } from "@webpack/common";

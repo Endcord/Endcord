@@ -50,7 +50,7 @@ export default definePlugin({
             return {
                 label: "Translate",
                 icon: Icon,
-                message: message,
+                message,
                 channel: ChannelStore.getChannel(message.channel_id),
                 onClick: () => handleTranslate(message),
             };

@@ -114,7 +114,7 @@ export const Magnifier = ErrorBoundary.wrap<MagnifierProps>(({ instance, size: i
             element.current = elem;
             elem.querySelector("img,video")?.setAttribute("draggable", "false");
             if (instance.props.animated) {
-                originalVideoElementRef.current = elem!.querySelector("video")!;
+                originalVideoElementRef.current = elem.querySelector("video")!;
                 originalVideoElementRef.current.addEventListener("timeupdate", syncVideos);
             }
 
@@ -162,8 +162,8 @@ export const Magnifier = ErrorBoundary.wrap<MagnifierProps>(({ instance, size: i
             className={cl("lens", { "nearest-neighbor": settings.store.nearestNeighbour, square: settings.store.square })}
             style={{
                 opacity,
-                width: size.current + "px",
-                height: size.current + "px",
+                width: `${size.current}px`,
+                height: `${size.current}px`,
                 transform: `translate(${lensPosition.x}px, ${lensPosition.y}px)`,
             }}
         >

@@ -86,7 +86,7 @@ export default definePlugin({
 
                     FluxDispatcher.dispatch({
                         type: "MESSAGE_DELETE",
-                        channelId: channelId,
+                        channelId,
                         message: messageId
                     });
                 } else {

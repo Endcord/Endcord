@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { normalizeCorsProxyUrl, toProxiedUrl } from "@endcordplugins/fileUpload/constants";
-import { settings } from "@endcordplugins/fileUpload/settings";
-import { fallbackServiceOrder, serviceLabels, ServiceType, ShareXUploaderConfig, UploadResponse } from "@endcordplugins/fileUpload/types";
+import { normalizeCorsProxyUrl, toProxiedUrl } from "@plugins/fileUpload/constants";
+import { settings } from "@plugins/fileUpload/settings";
+import { fallbackServiceOrder, serviceLabels, ServiceType, ShareXUploaderConfig, UploadResponse } from "@plugins/fileUpload/types";
 import { copyToClipboard } from "@utils/clipboard";
 import { insertTextIntoChatInputBox } from "@utils/discord";
 import { Logger } from "@utils/Logger";
@@ -262,7 +262,7 @@ async function uploadRequestWithTimeout(url: string, options: RequestInit): Prom
         };
 
         const { body } = options;
-        xhr.send(body instanceof ReadableStream ? null : body as XMLHttpRequestBodyInit | null);
+        xhr.send(body instanceof ReadableStream ? null : body);
     });
 }
 
@@ -1346,7 +1346,7 @@ async function normalizeUploadBlob(blob: Blob, sourceUrl?: string): Promise<{ bl
 }
 
 async function uploadPreparedBlob(blob: Blob, sourceUrl?: string, forceSend?: boolean): Promise<string> {
-    const primary = settings.store.serviceType as ServiceType;
+    const primary = settings.store.serviceType;
     const { blob: normalizedBlob, filename } = await normalizeUploadBlob(blob, sourceUrl);
     setUploadState({ fileName: filename, status: "File ready, starting upload...", percent: 4 });
     const uploadedUrl = await uploadWithFallbacks(normalizedBlob, filename, primary);

@@ -9,6 +9,8 @@ import { ipcMain } from "electron";
 
 import PluginNatives from "~pluginNatives";
 
+import { handleIpc } from "./utils/ipc";
+
 const PluginIpcMappings = {} as Record<string, Record<string, string>>;
 export type PluginIpcMappings = typeof PluginIpcMappings;
 
@@ -20,7 +22,7 @@ for (const [plugin, methods] of Object.entries(PluginNatives)) {
 
     for (const [methodName, method] of entries) {
         const key = `EndcordPluginNative_${plugin}_${methodName}`;
-        ipcMain.handle(key, method);
+        handleIpc(key, method);
         mappings[methodName] = key;
     }
 }

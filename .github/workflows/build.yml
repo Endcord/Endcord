@@ -20,12 +20,12 @@ jobs:
             contents: write
 
         steps:
-            - uses: actions/checkout@v7
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-            - uses: pnpm/action-setup@v6 # Install pnpm using packageManager key in package.json
+            - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6, installs pnpm using packageManager key in package.json
 
             - name: Use Node.js 24
-              uses: actions/setup-node@v6
+              uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
               with:
                   node-version: 24
                   cache: "pnpm"
@@ -52,7 +52,7 @@ jobs:
                   echo "release_tag=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
             - name: Upload DevBuild as release
-              if: github.repository == 'rootpoii/Endcord'
+              if: github.repository == 'Endcord/Endcord'
               run: |
                   gh release create devbuild --title "DevBuild" --notes "Automated build" || true
                   gh release upload devbuild --clobber dist/*
@@ -62,7 +62,7 @@ jobs:
                   RELEASE_TAG: ${{ env.release_tag }}
 
             - name: Upload DevBuild to builds repo
-              if: github.repository == 'rootpoii/Endcord'
+              if: github.repository == 'Endcord/Endcord'
               continue-on-error: true
               run: |
                   git config --global user.name "$USERNAME"

@@ -167,7 +167,7 @@ export function createTab(props: BasicChannelTabsProps | ChannelTabsProps, switc
 export function closeTab(id: number) {
     if (openTabs.length <= 1) return;
     const i = openTabs.findIndex(v => v.id === id);
-    if (i === -1) return logger.error("Couldn't find channel tab with ID " + id, openTabs);
+    if (i === -1) return logger.error(`Couldn't find channel tab with ID ${id}`, openTabs);
 
     const closed = openTabs.splice(i, 1);
     closedTabs.push(...closed);
@@ -210,7 +210,7 @@ export function closeTab(id: number) {
 
 export function closeOtherTabs(id: number) {
     const tab = openTabs.find(v => v.id === id);
-    if (tab === undefined) return logger.error("Couldn't find channel tab with ID " + id, openTabs);
+    if (tab === undefined) return logger.error(`Couldn't find channel tab with ID ${id}`, openTabs);
 
     const removedTabs = openTabs.filter(v => v.id !== id);
     closedTabs.push(...removedTabs.reverse());
@@ -225,7 +225,7 @@ export function closeOtherTabs(id: number) {
 
 export function closeTabsToTheRight(id: number) {
     const i = openTabs.findIndex(v => v.id === id);
-    if (i === -1) return logger.error("Couldn't find channel tab with ID " + id, openTabs);
+    if (i === -1) return logger.error(`Couldn't find channel tab with ID ${id}`, openTabs);
 
     const tabsToTheRight = openTabs.filter((_, ind) => ind > i);
     closedTabs.push(...tabsToTheRight.reverse());
@@ -238,7 +238,7 @@ export function closeTabsToTheRight(id: number) {
 
 export function closeTabsToTheLeft(id: number) {
     const i = openTabs.findIndex(v => v.id === id);
-    if (i === -1) return logger.error("Couldn't find channel tab with ID " + id, openTabs);
+    if (i === -1) return logger.error(`Couldn't find channel tab with ID ${id}`, openTabs);
 
     const tabsToTheLeft = openTabs.filter((_, ind) => ind < i);
     closedTabs.push(...tabsToTheLeft.reverse());
@@ -332,7 +332,7 @@ export function moveDraggedTabs(index1: number, index2: number) {
 
 export function moveToTab(id: number) {
     const tab = openTabs.find(v => v.id === id);
-    if (tab === undefined) return logger.error("Couldn't find channel tab with ID " + id, openTabs);
+    if (tab === undefined) return logger.error(`Couldn't find channel tab with ID ${id}`, openTabs);
 
     // clear bookmark viewing mode when switching to a tab
     isViewingViaBookmark = false;
@@ -491,7 +491,7 @@ export function saveTabs(userId: string): Promise<void> {
 
 export function setOpenTab(id: number) {
     const i = openTabs.findIndex(v => v.id === id);
-    if (i === -1) return logger.error("Couldn't find channel tab with ID " + id, openTabs);
+    if (i === -1) return logger.error(`Couldn't find channel tab with ID ${id}`, openTabs);
 
     currentlyOpenTab = id;
     openTabHistory.push(id);
@@ -555,7 +555,7 @@ export function navigateToBookmark(ch: BasicChannelTabsProps) {
 
 export function toggleCompactTab(id: number) {
     const i = openTabs.findIndex(v => v.id === id);
-    if (i === -1) return logger.error("Couldn't find channel tab with ID " + id, openTabs);
+    if (i === -1) return logger.error(`Couldn't find channel tab with ID ${id}`, openTabs);
 
     openTabs[i] = {
         ...openTabs[i],

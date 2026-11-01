@@ -129,7 +129,7 @@ function getUsernames(contacts: ContactsList[], type: number): string[] {
         // only select contacts that are the specified type
         .filter(e => e.type === type)
         // return the username, and discriminator if necessary
-        .map(e => e.user.discriminator === "0" ? e.user.username : e.user.username + "#" + e.user.discriminator);
+        .map(e => e.user.discriminator === "0" ? e.user.username : `${e.user.username}#${e.user.discriminator}`);
 }
 
 export default definePlugin({
@@ -170,7 +170,7 @@ export default definePlugin({
     },
     addExportButton() {
         return <ErrorBoundary noop key=".2">
-            <button className="export-contacts-button" onClick={() => { this.copyContactToClipboard(); console.log("clicked"); }}>{t("Export")}</button>
+            <button className="export-contacts-button" onClick={() => { this.copyContactToClipboard(); console.debug("clicked"); }}>{t("Export")}</button>
         </ErrorBoundary>;
     },
     copyContactToClipboard() {

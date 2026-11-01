@@ -36,6 +36,7 @@ function DiscordHighlightedCode({ lang, content, theme }: { lang: string; conten
     const html = DiscordHighlighter.useHighlightedHtml(lang, content);
     const lines = html == null
         ? plainLines(content)
+        // eslint-disable-next-line no-restricted-syntax -- Discord's highlighter escapes the code before adding its own tags
         : splitHighlightedLines(html).map((line, i) => <span key={i} dangerouslySetInnerHTML={{ __html: line }} />);
 
     return <CodeTable lines={lines} theme={theme} />;
@@ -64,7 +65,7 @@ export const Code = ({
         tokens ??
         content
             .split("\n")
-            .map(line => [{ color: theme.plainColor, content: line } as IThemedToken]);
+            .map(line => [{ color: theme.plainColor, content: line }]);
 
     const lines = renderTokens.map((line, idx) => {
         // [Cynthia] this makes it so when you highlight the codeblock

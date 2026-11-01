@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { fetchPublicUrl, readBody } from "@main/utils/http";
 import { IpcMainInvokeEvent } from "electron";
 
 const MAX_MEDIA_BYTES = 25 * 1024 * 1024;
@@ -16,15 +17,11 @@ export async function fetchMedia(_event: IpcMainInvokeEvent, url: string) {
 
         const controller = new AbortController();
         timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-        const response = await fetch(url, { signal: controller.signal });
+        const response = await fetchPublicUrl(url, { signal: controller.signal });
         if (!response.ok) return null;
-        const length = Number(response.headers.get("content-length"));
-        if (length > MAX_MEDIA_BYTES) return null;
 
-        const arrayBuffer = await response.arrayBuffer();
-        if (arrayBuffer.byteLength > MAX_MEDIA_BYTES) return null;
-        const data = new Uint8Array(arrayBuffer);
-        if (!data.length) return null;
+        const data = await readBody(response, MAX_MEDIA_BYTES);
+        if (!data?.length) return null;
 
         return {
             data,
@@ -36,5 +33,3 @@ export async function fetchMedia(_event: IpcMainInvokeEvent, url: string) {
         if (timeout) clearTimeout(timeout);
     }
 }
-
-export function gifCaptionerUniqueIdThingyIdkMan() { }

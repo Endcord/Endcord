@@ -113,12 +113,12 @@ export enum ListType {
 function highlightKeywords(str: string, entries: Array<KeywordEntry>) {
     let regexes: Array<RegExp>;
     try {
-        regexes = entries.map(e => new RegExp(e.regex, "g" + (e.ignoreCase ? "i" : "")));
+        regexes = entries.map(e => new RegExp(e.regex, `g${e.ignoreCase ? "i" : ""}`));
     } catch (err) {
         return [str];
     }
 
-    const matches = regexes.map(r => str.match(r)).flat().filter(e => e != null) as Array<string>;
+    const matches = regexes.map(r => str.match(r)).flat().filter(e => e != null);
     if (matches.length === 0) {
         return [str];
     }
@@ -312,7 +312,7 @@ export default definePlugin({
             const id = UserStore.getCurrentUser()?.id;
             if (id != null) {
                 // @ts-ignore
-                m.mentions.push({ id: id });
+                m.mentions.push({ id });
             }
 
             if (m.author.id !== id) {

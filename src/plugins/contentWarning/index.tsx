@@ -41,7 +41,7 @@ function TriggerContainer({ child }) {
 
     if (visible) {
         return child;
-    } else {
+    }
         return (
             <div
                 className={className}
@@ -60,7 +60,7 @@ function TriggerContainer({ child }) {
                 {child}
             </div >
         );
-    }
+
 }
 
 function FlaggedInput({ index, forceUpdate }) {
@@ -168,9 +168,9 @@ export default definePlugin({
     modify(message, child) {
         if (triggerWords.some(w => safeMatchesRegex(message.content, w))) {
             return <TriggerContainer child={child} />;
-        } else {
-            return child;
         }
+            return child;
+
     },
 
     async start() {

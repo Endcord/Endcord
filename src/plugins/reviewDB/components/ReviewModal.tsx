@@ -90,7 +90,7 @@ function ReviewsModal({ modalProps, modalKey, discordId, name, type }: { modalPr
 }
 
 export function openReviewsModal(discordId: string, name: string, type: ReviewType) {
-    const modalKey = "vc-rdb-modal-" + Date.now();
+    const modalKey = `vc-rdb-modal-${Date.now()}`;
 
     openModalLazy(async () => {
         await requirePaginator();

@@ -52,7 +52,7 @@ export const LastFMScrobbler: ScrobblerBackend = {
                 artistURL: trackData.artist["#text"] ? url(`/music/${encodeURIComponent(trackData.artist["#text"])}`) : undefined,
                 albumURL: url(`/music/${encodeURIComponent(trackData.artist["#text"])}/${encodeURIComponent(trackData.album["#text"])}`),
                 imageURL: trackData.image?.find((x: any) => x.size === "large")?.["#text"]
-            } as TrackData;
+            };
         } catch (e) {
             logger.error("Failed to query Last.FM API", e);
             // will clear the rich presence if API fails

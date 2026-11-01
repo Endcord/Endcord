@@ -58,8 +58,8 @@ export function KeywordEntries() {
     }
 
     async function setIgnoreBots(index: number, value: boolean) {
-        keywordEntries[index].ignoreBots = value,
-            updateStoreAndRender();
+        keywordEntries[index].ignoreBots = value;
+        updateStoreAndRender();
     }
 
     const elements = keywordEntries.map((entry, i) => {

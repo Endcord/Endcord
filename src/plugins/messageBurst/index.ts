@@ -40,7 +40,7 @@ function shouldEdit(channel: Channel, message: Message, timePeriod: number, shou
     }
 
     return {
-        should: should,
+        should,
         content: message.content
     };
 }

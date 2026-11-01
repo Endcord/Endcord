@@ -38,7 +38,7 @@ export default definePlugin({
     tags: ["Notifications", "Appearance"],
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
-    settings: settings,
+    settings,
 
     // Functions used to determine the top left count indicator can be found in the single module that calls getUnacknowledgedOffers(...)
     // or by searching for "showProgressBadge:"

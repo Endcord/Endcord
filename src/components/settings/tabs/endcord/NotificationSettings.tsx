@@ -78,7 +78,7 @@ function NotificationSettings() {
                 serialize={identity}
             />
 
-            <Forms.FormTitle tag="h5" className={Margins.top16 + " " + Margins.bottom8}>{t("Notification Position")}</Forms.FormTitle>
+            <Forms.FormTitle tag="h5" className={`${Margins.top16} ${Margins.bottom8}`}>{t("Notification Position")}</Forms.FormTitle>
             <Select
                 isDisabled={settings.useNative === "always"}
                 placeholder={t("Notification Position")}
@@ -91,7 +91,7 @@ function NotificationSettings() {
                 serialize={identity}
             />
 
-            <Forms.FormTitle tag="h5" className={Margins.top16 + " " + Margins.bottom8}>{t("Notification Timeout")}</Forms.FormTitle>
+            <Forms.FormTitle tag="h5" className={`${Margins.top16} ${Margins.bottom8}`}>{t("Notification Timeout")}</Forms.FormTitle>
             <Forms.FormText className={Margins.bottom16}>{t("Set to 0s to never automatically time out")}</Forms.FormText>
             <Slider
                 disabled={settings.useNative === "always"}
@@ -100,12 +100,12 @@ function NotificationSettings() {
                 maxValue={20_000}
                 initialValue={settings.timeout}
                 onValueChange={v => settings.timeout = v}
-                onValueRender={v => (v / 1000).toFixed(2) + "s"}
-                onMarkerRender={v => (v / 1000) + "s"}
+                onValueRender={v => `${(v / 1000).toFixed(2)}s`}
+                onMarkerRender={v => `${v / 1000}s`}
                 stickToMarkers={false}
             />
 
-            <Forms.FormTitle tag="h5" className={Margins.top16 + " " + Margins.bottom8}>{t("Notification Log Limit")}</Forms.FormTitle>
+            <Forms.FormTitle tag="h5" className={`${Margins.top16} ${Margins.bottom8}`}>{t("Notification Log Limit")}</Forms.FormTitle>
             <Forms.FormText className={Margins.bottom16}>
                 {t("The amount of notifications to save in the log until old ones are removed. Set to 0 to disable Notification log and ∞ to never automatically remove old Notifications")}
             </Forms.FormText>

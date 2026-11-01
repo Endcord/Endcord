@@ -59,7 +59,7 @@ export default definePlugin({
         <Card variant="warning" defaultPadding>
             {t("We can't guarantee this plugin won't get you warned or banned.")}</Card>
     ),
-    settings: settings,
+    settings,
     patches: [
         {
             find: "_doIdentify(){",

@@ -76,7 +76,7 @@ export default definePlugin({
 
             const user = userOverride ?? message.author;
             let username = StreamerModeStore.enabled
-                ? user.username[0] + "…"
+                ? `${user.username[0]}…`
                 : user.username;
 
             if (displayNames)

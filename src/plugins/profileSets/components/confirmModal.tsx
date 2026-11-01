@@ -5,7 +5,7 @@
  */
 
 import { Paragraph } from "@components/Paragraph";
-import { RenderModalProps } from "@vencord/discord-types";
+import { RenderModalProps } from "@endcord/discord-types";
 import { Modal, React } from "@webpack/common";
 
 interface ConfirmModalProps extends RenderModalProps {

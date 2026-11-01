@@ -46,7 +46,7 @@ export async function saveStickerPack(sp: StickerPack, packsKey: string = PACKS_
             const unlock = await mutex.lock();
 
             try {
-                let packs = (await DataStore.get(packsKey) ?? null) as (StickerPackMeta[] | null);
+                let packs = (await DataStore.get(packsKey) ?? null);
                 if (packs?.some(p => p.id === sp.id)) {
                     packs = packs.map(p => p.id === sp.id ? meta : p);
                 } else {
@@ -105,7 +105,7 @@ export async function deleteStickerPack(id: string, packsKey: string = PACKS_KEY
             const unlock = await mutex.lock();
 
             try {
-                const packs = (await DataStore.get(packsKey) ?? null) as (StickerPackMeta[] | null);
+                const packs = (await DataStore.get(packsKey) ?? null);
                 if (packs === null) return;
                 await DataStore.set(packsKey, packs.filter(p => p.id !== id));
             } finally {
@@ -157,9 +157,9 @@ export async function refreshDynamicPackSet(old: DynamicPackSetMeta, _new: Dynam
 }
 
 export async function saveDynamicPackSetMeta(dpsm: DynamicPackSetMeta, dpsmKey: string = DYNAMIC_PACK_SET_METAS_KEY): Promise<void> {
-    let metas = (await DataStore.get(dpsmKey) ?? null) as (DynamicPackSetMeta[] | null);
+    let metas = (await DataStore.get(dpsmKey) ?? null);
     if (hasDynamicPackSetMeta(dpsm, metas)) {
-        await refreshDynamicPackSet(metas!.find(m => m.id === dpsm.id)!, dpsm);
+        await refreshDynamicPackSet(metas!.find(m => m.id === dpsm.id), dpsm);
         metas = metas!.map(m => m.id === dpsm.id ? dpsm : m);
     }
 

@@ -4,14 +4,16 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import "./ipcMain";
+
 import { app, net, protocol } from "electron";
 import { join } from "path";
 import { pathToFileURL } from "url";
 
 import { initCsp } from "./csp";
-import { ensureSafePath } from "./ipcMain";
 import { RendererSettings } from "./settings";
 import { IS_VANILLA, THEMES_DIR } from "./utils/constants";
+import { ensureSafePath } from "./utils/ensureSafePath";
 import { installExt } from "./utils/extensions";
 
 if (IS_VESKTOP || !IS_VANILLA) {

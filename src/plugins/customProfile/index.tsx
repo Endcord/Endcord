@@ -6,7 +6,6 @@
 
 import "./styles.css";
 
-import { BadgePosition, ProfileBadge } from "@api/Badges";
 import { addHeaderBarButton, HeaderBarButton, removeHeaderBarButton } from "@api/HeaderBar";
 import { DataStore } from "@api/index";
 import BadgeAPIPlugin from "@plugins/_api/badges";
@@ -27,11 +26,11 @@ import { AuthenticationStore, Button, FluxDispatcher, IconUtils, React, Select, 
 
 import { profileBadgeId, reloadBadgeLayout, setManagedBadges, startBadgeManagement, stopBadgeManagement } from "./badgeManagement";
 
-const ModalRoot = ModalRoot_ as React.ComponentType<any>;
-const ModalHeader = ModalHeader_ as React.ComponentType<any>;
-const ModalContent = ModalContent_ as React.ComponentType<any>;
-const ModalFooter = ModalFooter_ as React.ComponentType<any>;
-const ModalCloseButton = ModalCloseButton_ as React.ComponentType<any>;
+const ModalRoot = ModalRoot_;
+const ModalHeader = ModalHeader_;
+const ModalContent = ModalContent_;
+const ModalFooter = ModalFooter_;
+const ModalCloseButton = ModalCloseButton_;
 
 const DS_KEY = "customProfile_data";
 const DS_ENABLED = "customProfile_enabled";
@@ -102,7 +101,6 @@ const BOOST_LABELS_RAW = [
     "9 Months", "12 Months", "15 Months", "18 Months", "24 Months"
 ];
 const BOOST_LABELS = BOOST_LABELS_RAW.map(l => t(l));
-const BOOST_MONTHS = [1, 2, 3, 6, 9, 12, 15, 18, 24];
 const BOOST_ICONS = [
     "https://cdn.discordapp.com/badge-icons/51040c70d4f20a921ad6674ff86fc95c.png",
     "https://cdn.discordapp.com/badge-icons/0e4080d1d333bc7ad29ef6528b6f2fb7.png",
@@ -332,10 +330,6 @@ function wantsNitroLook(pd: CustomProfileData | null | undefined): boolean {
     if (pd.boostMonths != null && pd.boostMonths >= 0) return true;
     return false;
 }
-
-let cachedOriginalUser: any = null;
-let cachedFakeUser: any = null;
-const cachedDataHash: number = 0;
 let _trueOriginalUser: any = null;
 let _dataVersion: number = 0;
 let allAccountsData: Record<string, CustomProfileData> = {};
@@ -637,8 +631,6 @@ function userIfStaffWorks(fake: any, raw: any) {
 function onAccountSwitch() {
     updateCachedRealData();
     syncCurrentUserData();
-    cachedFakeUser = null;
-    cachedOriginalUser = null;
     _trueOriginalUser = null;
     _dataVersion++;
     _realUsername = "";
@@ -653,26 +645,6 @@ loadDataSync();
 loadPresetsSync();
 
 const HIDE_STYLE_ID = "cp-hide-during-load";
-function injectHideStyle() {
-    if (!isEnabled) return;
-    if (document.getElementById(HIDE_STYLE_ID)) return;
-    const style = document.createElement("style");
-    style.id = HIDE_STYLE_ID;
-    style.textContent = `
-        [class*='nameTag'] [class*='username'],
-        [class*='nameTag'] [class*='discriminator'],
-        [class*='nameTag'] [class*='panelSubtitle']
-        { color: transparent !important; }
-        [class*='accountProfilePopout'] [class*='avatarWrap'] img,
-        [class*='accountProfilePopout'] [class*='avatarWrap'] svg
-        { opacity: 0 !important; }
-    `;
-    const inject = () => {
-        if (!document.head) { requestAnimationFrame(inject); return; }
-        document.head.appendChild(style);
-    };
-    inject();
-}
 function removeHideStyle() {
     document.getElementById(HIDE_STYLE_ID)?.remove();
 }
@@ -735,20 +707,13 @@ async function loadData() {
     } catch (err) { }
 }
 
-function getRealNames(): { username: string | null; globalName: string | null; } {
-    try {
-        const u = UserStore.getCurrentUser();
-        return { username: u?.username ?? null, globalName: u?.globalName ?? null };
-    } catch { return { username: null, globalName: null }; }
-}
-
 let _realDateCache: { id: string; variants: string[] } | null = null;
 let _fakeDateCache: { iso: string; variants: string[] } | null = null;
 
 function getRealDateVariants(): string[] {
     try {
         const u = _origGetCurrentUser?.() || UserStore.getCurrentUser();
-        const real = (u as any)?.__cp_origUser || u;
+        const real = (u)?.__cp_origUser || u;
         if (!real?.id) return [];
         if (_realDateCache && _realDateCache.id === real.id) return _realDateCache.variants;
         const ms = Number(BigInt(real.id) >> 22n) + 1420070400000;
@@ -785,7 +750,7 @@ function getFakeDateVariants(isoDate: string): string[] {
     try {
         if (!isoDate) return [];
         if (_fakeDateCache?.iso === isoDate) return _fakeDateCache.variants;
-        const d = new Date(isoDate + "T12:00:00Z");
+        const d = new Date(`${isoDate}T12:00:00Z`);
         const variants = new Set<string>();
         const fmtSpecs: Intl.DateTimeFormatOptions[] = [
             { day: "numeric", month: "short", year: "numeric" },
@@ -1205,8 +1170,6 @@ function BadgePicker({ selected, onChange, nitroType, onNitroType, boostLevel, o
 
 function forceAccountPanelRerender() {
     try {
-        cachedFakeUser = null;
-        cachedOriginalUser = null;
         _dataVersion++;
         _fakeUserCache.clear();
         try { (UserStore as any)?.emitChange?.(); } catch { }
@@ -1276,8 +1239,6 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
 
             storedData = savedData;
             isEnabled = true;
-            cachedFakeUser = null;
-            cachedOriginalUser = null;
             _dataVersion++;
 
             if (effectiveId) applyLocalProfileCache(effectiveId, savedData, true);
@@ -1311,8 +1272,6 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
             if (selectedAccountId === myId || !selectedAccountId) {
                 storedData = {};
                 isEnabled = false;
-                cachedFakeUser = null;
-                cachedOriginalUser = null;
                 _trueOriginalUser = null;
                 _dataVersion++;
             }
@@ -1354,8 +1313,6 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
     // Repair: re-apply current stored data without deleting anything
     function repair() {
         try {
-            cachedFakeUser = null;
-            cachedOriginalUser = null;
             _trueOriginalUser = null;
             _dataVersion++;
             // Reload from localStorage to ensure consistency
@@ -1367,7 +1324,7 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
         rootProps.onClose();
     }
 
-    const accentHex = data.accentColor != null ? "#" + data.accentColor.toString(16).padStart(6, "0") : "";
+    const accentHex = data.accentColor != null ? `#${data.accentColor.toString(16).padStart(6, "0")}` : "";
 
     return (
         <ModalRoot {...rootProps} size="medium">
@@ -1436,7 +1393,7 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
                     <div className="cp-color-row">
                         <span style={{ fontSize: 11, color: "var(--text-muted)", marginRight: 6 }}>{t("Color 2")}</span>
                         {(() => {
-                            const hex2 = data.accentColor2 != null ? "#" + data.accentColor2.toString(16).padStart(6, "0") : ""; return (<>
+                            const hex2 = data.accentColor2 != null ? `#${data.accentColor2.toString(16).padStart(6, "0")}` : ""; return (<>
                                 <input type="color" value={hex2 || "#eb459e"} onChange={e => { const n = parseInt(e.target.value.replace("#", ""), 16); if (!isNaN(n)) set("accentColor2", n); }} className="cp-color-swatch" />
                                 <input value={hex2} placeholder={`#eb459e (${t("optional")})`} onChange={e => { const h = e.target.value.replace("#", ""); const n = parseInt(h, 16); if (!isNaN(n) && h.length === 6) set("accentColor2", n); else if (!e.target.value || e.target.value === "#") set("accentColor2", undefined); }} className="cp-input cp-color-input" />
                                 {data.accentColor2 != null && <button className="cp-clear-btn" onClick={() => set("accentColor2", undefined)}><CloseIcon /></button>}
@@ -1528,63 +1485,6 @@ function CustomProfileButton() {
     return <HeaderBarButton icon={() => <EditIcon size={18} />} tooltip={t("Custom Profile")} onClick={() => openModal(props => <CustomProfileModal rootProps={props} />)} />;
 }
 
-// ── Badge tooltip component — renders the new Discord-style big tooltip ────────
-function BadgeTooltipContent({ name, rarity, subtitle, icon }: { name: string; rarity?: string; subtitle?: string; icon: string; }) {
-    const rarityColor = rarity === "MYTHIC" ? "#b77ee0" : rarity === "RARE" ? "#5865f2" : "#99aab5";
-    const rarityBg = rarity === "MYTHIC" ? "rgba(183,126,224,0.15)" : rarity === "RARE" ? "rgba(88,101,242,0.15)" : "rgba(153,170,181,0.1)";
-    const rarityIcon = rarity === "MYTHIC"
-        ? <path fill="currentColor" d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6L12 2z" />
-        : <path fill="currentColor" d="M10.16 4.06a2.13 2.13 0 0 1 3.68 0l8 13.77c.81 1.41-.2 3.17-1.84 3.17H4a2.11 2.11 0 0 1-1.84-3.17l8-13.77Z" />;
-
-    return (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "6px 4px", textAlign: "center" }}>
-            <img src={icon} alt="" style={{ width: 48, height: 48, objectFit: "contain", borderRadius: "50%" }} />
-            {rarity && (
-                <div style={{
-                    display: "flex", alignItems: "center", gap: 4,
-                    fontSize: 11, fontWeight: 700, textTransform: "uppercase" as const,
-                    letterSpacing: "0.05em", color: rarityColor,
-                    background: rarityBg, borderRadius: 20,
-                    padding: "3px 10px", border: `1px solid ${rarityColor}40`,
-                }}>
-                    <svg width="10" height="10" fill="none" viewBox="0 0 24 24">{rarityIcon}</svg>
-                    {rarity}
-                </div>
-            )}
-            <div style={{ fontWeight: 700, fontSize: 15, color: "#fff", lineHeight: 1.2 }}>{name}</div>
-            {subtitle && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", marginTop: -4 }}>{subtitle}</div>}
-        </div>
-    );
-}
-
-// ── Badge builder ─────────────────────────────────────────────────────────────
-const badgeStyle: React.CSSProperties = { borderRadius: "50%", width: "22px", height: "22px" };
-
-function mkBadge(id: string, name: string, icon: string, rarity?: string, subtitle?: string): ProfileBadge {
-    if (!rarity && !subtitle) {
-        return { id, description: name, iconSrc: icon, position: BadgePosition.START, props: { style: badgeStyle } };
-    }
-
-    const Tooltip = (Endcord as any).Webpack.Common?.Tooltip;
-    if (!Tooltip) {
-        return { id, description: subtitle ? `${name}\n${subtitle}` : name, iconSrc: icon, position: BadgePosition.START, props: { style: badgeStyle } };
-    }
-
-    return {
-        id,
-        description: name,
-        iconSrc: icon,
-        position: BadgePosition.START,
-        component: () => (
-            <Tooltip text={<BadgeTooltipContent name={name} rarity={rarity} subtitle={subtitle} icon={icon} />}>
-                {(tooltipProps: any) => (
-                    <img {...tooltipProps} src={icon} alt={name} style={{ ...badgeStyle, cursor: "pointer" }} />
-                )}
-            </Tooltip>
-        ),
-    };
-}
-
 export default definePlugin({
     name: "CustomProfile",
     enabledByDefault: true,
@@ -1615,7 +1515,7 @@ export default definePlugin({
             if (cached && cached.v === _dataVersion && cached.src === user) return cached.fake;
 
             _fakeUserBuilding.add(user);
-            const realUser = (user as any).__cp_origUser || user;
+            const realUser = (user).__cp_origUser || user;
             if (isMe && !realUser.__cp_isClone) _trueOriginalUser = realUser;
 
             const realUsername = realUser.__cp_isClone ? (realUser._realUsername || realUser.username) : realUser.username;
@@ -1680,7 +1580,7 @@ export default definePlugin({
             setProp("toString", () => fakeDisplay, false);
 
             if (pd?.createdAt) {
-                const fakeCreatedAt = new Date(pd.createdAt + "T12:00:00Z");
+                const fakeCreatedAt = new Date(`${pd.createdAt}T12:00:00Z`);
                 setProp("createdAt", fakeCreatedAt);
             }
 
@@ -1833,14 +1733,14 @@ export default definePlugin({
         const fake = storedData.email;
         const atIdx = fake.indexOf("@");
         if (atIdx <= 1) return fake;
-        return fake[0] + "***" + fake.slice(atIdx - 1);
+        return `${fake[0]}***${fake.slice(atIdx - 1)}`;
     },
 
     fakeObfuscatedPhone(real: string | null) {
         if (!isEnabled || !storedData.phone || !real) return real;
         const fake = storedData.phone;
         if (fake.length < 4) return fake;
-        return "***-***-" + fake.slice(-4);
+        return `***-***-${fake.slice(-4)}`;
     },
 
     patchBannerUrl({ displayProfile }: any) {
@@ -2103,7 +2003,7 @@ export default definePlugin({
                 const origExtract = this._origExtractTimestamp;
                 (SnowflakeUtils as any).extractTimestamp = (snowflake: string) => {
                     if (isEnabled && storedData.createdAt && isMe(snowflake)) {
-                        return new Date(storedData.createdAt + "T12:00:00Z").getTime();
+                        return new Date(`${storedData.createdAt}T12:00:00Z`).getTime();
                     }
                     return origExtract(snowflake);
                 };

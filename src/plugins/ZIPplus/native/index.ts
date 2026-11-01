@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { fetchPublicUrl, readBody } from "@main/utils/http";
 import { IpcMainInvokeEvent } from "electron";
 
 const MAX_ATTACHMENT_BYTES = 100 * 1024 * 1024;
@@ -16,19 +17,13 @@ export async function fetchAttachment(_event: IpcMainInvokeEvent, url: string): 
 
         const controller = new AbortController();
         timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-        const res = await fetch(url, { signal: controller.signal });
+        const res = await fetchPublicUrl(url, { signal: controller.signal });
         if (!res.ok) return null;
-        const length = Number(res.headers.get("content-length"));
-        if (length > MAX_ATTACHMENT_BYTES) return null;
 
-        const arrayBuffer = await res.arrayBuffer();
-        if (arrayBuffer.byteLength > MAX_ATTACHMENT_BYTES) return null;
-        return new Uint8Array(arrayBuffer);
+        return await readBody(res, MAX_ATTACHMENT_BYTES);
     } catch {
         return null;
     } finally {
         if (timeout) clearTimeout(timeout);
     }
 }
-
-export function zipPreviewUniqueIdThingyIdkMan() { }

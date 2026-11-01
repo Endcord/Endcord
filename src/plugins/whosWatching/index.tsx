@@ -38,7 +38,7 @@ function getUsername(user: User): string {
 
 function Watching({ userIds, guildId }: WatchingProps): JSX.Element {
     let missingUsers = 0;
-    const users = userIds.map(id => UserStore.getUser(id)).filter(user => Boolean(user) ? true : (missingUsers += 1, false));
+    const users = userIds.map(id => UserStore.getUser(id)).filter(user => user ? true : (missingUsers += 1, false));
 
     return (
         <div className={cl("content")}>
@@ -107,7 +107,7 @@ export default definePlugin({
 
         let missingUsers = 0;
         const userIds: string[] = ApplicationStreamingStore.getViewerIds(stream);
-        const users = userIds.map(id => UserStore.getUser(id)).filter(user => Boolean(user) ? true : (missingUsers += 1, false));
+        const users = userIds.map(id => UserStore.getUser(id)).filter(user => user ? true : (missingUsers += 1, false));
         const guildId = stream?.guildId ?? "";
 
         function renderMoreUsers(_label: string, count: number) {
@@ -166,7 +166,7 @@ export default definePlugin({
             </div>
         );
     }),
-    component: function ({ OriginalComponent }) {
+    component ({ OriginalComponent }) {
         return ErrorBoundary.wrap(props => {
             const stream = useStateFromStores([ApplicationStreamingStore], () => ApplicationStreamingStore.getCurrentUserActiveStream());
             if (!stream) return null;

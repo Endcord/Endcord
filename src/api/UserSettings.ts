@@ -37,7 +37,7 @@ export const UserSettings: Record<PropertyKey, UserSettingDefinition<any>> | und
     const modId = findModuleId('"textAndImages","renderSpoilers"');
     if (modId == null) return new Logger("UserSettingsAPI").error("Didn't find settings module.");
 
-    return wreq(modId as any);
+    return wreq(modId);
 });
 
 /**

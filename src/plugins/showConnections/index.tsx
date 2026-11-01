@@ -13,6 +13,7 @@ import { Flex } from "@components/Flex";
 import { CopyIcon, LinkIcon } from "@components/Icons";
 import { ConnectedAccount, User } from "@endcord/discord-types";
 import OpenInAppPlugin from "@plugins/openInApp";
+import { isSafeLink } from "@shared/externalLinks";
 import { Devs } from "@utils/constants";
 import { copyWithToast } from "@utils/discord";
 import definePlugin, { OptionType } from "@utils/types";
@@ -84,7 +85,8 @@ function ConnectionsComponent({ id, theme }: { id: string, theme: string; }) {
 
 function CompactConnectionComponent({ connection, theme }: { connection: ConnectedAccount, theme: string; }) {
     const platform = platforms.get(useLegacyPlatformType(connection.type));
-    const url = platform.getPlatformUserUrl?.(connection);
+    const platformUrl = platform.getPlatformUserUrl?.(connection);
+    const url = isSafeLink(platformUrl) ? platformUrl : undefined;
 
     const img = (
         <img

@@ -43,8 +43,7 @@ export const VoiceRecorderWeb: VoiceRecorder = ({ setAudioBlob, onRecordingChang
 
                 changeRecording(true);
             });
-        } else {
-            if (recorder) {
+        } else if (recorder) {
                 recorder.addEventListener("stop", () => {
                     setAudioBlob(new Blob(chunks, { type: "audio/ogg; codecs=opus" }));
 
@@ -52,7 +51,6 @@ export const VoiceRecorderWeb: VoiceRecorder = ({ setAudioBlob, onRecordingChang
                 });
                 recorder.stop();
             }
-        }
     }
 
     return (

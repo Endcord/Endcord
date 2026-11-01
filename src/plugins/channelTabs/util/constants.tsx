@@ -7,8 +7,8 @@
 import { definePluginSettings } from "@api/Settings";
 import { Heading } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
-import { ChannelTabsPreview } from "@equicordplugins/channelTabs/components/ChannelTabsContainer";
-import { KeybindSettings } from "@equicordplugins/channelTabs/components/KeybindSettings";
+import { ChannelTabsPreview } from "@plugins/channelTabs/components/ChannelTabsContainer";
+import { KeybindSettings } from "@plugins/channelTabs/components/KeybindSettings";
 import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import { makeRange, OptionType } from "@utils/types";
@@ -95,7 +95,7 @@ function AnimationSettings(): JSX.Element {
                     maxVisibleItems={12}
                     clearable={true}
                     multi={true}
-                    value={currentValue as any}
+                    value={currentValue}
                     options={animationOptions}
                     onChange={handleChange}
                     closeOnSelect={false}

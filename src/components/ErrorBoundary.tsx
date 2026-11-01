@@ -39,7 +39,7 @@ const ErrorBoundary = LazyComponent(() => {
     // This component is used in a lot of files which end up importing other Webpack commons and causing circular imports.
     // For this reason, use a non import access here.
     return class ErrorBoundary extends Endcord.Webpack.Common.React.PureComponent<React.PropsWithChildren<Props>> {
-        state = {
+        override state = {
             error: NO_ERROR as any,
             stack: "",
             message: ""
@@ -60,7 +60,7 @@ const ErrorBoundary = LazyComponent(() => {
             return { error, stack, message };
         }
 
-        componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+        override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
             this.props.onError?.({ error, errorInfo, props: this.props.wrappedProps });
             logger.error(`${this.props.message || "A component threw an Error"}\n`, error, errorInfo.componentStack);
         }
@@ -70,7 +70,7 @@ const ErrorBoundary = LazyComponent(() => {
             return this.props.noop;
         }
 
-        render() {
+        override render() {
             if (this.state.error === NO_ERROR) return this.props.children;
 
             if (this.isNoop) return null;

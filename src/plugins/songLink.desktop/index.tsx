@@ -129,7 +129,7 @@ export default definePlugin({
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
     Providers,
-    cache: ({} as Record<string, SongLinkResult>),
+    cache: ({}),
     addToCache(link, data: SongLinkResult) {
         this.cache[link] = data;
     },

@@ -209,10 +209,10 @@ export default definePlugin({
 
         const [opts, setOpts] = useState(() => {
             if (!props.forwardOptions || !props.forwardOptions.onlyEmbedIndices)
-                return props.forwardOptions ?? ({} as ForwardOptions);
+                return props.forwardOptions ?? ({});
 
             let id = 0;
-            const embedsIds = new Set(props.forwardOptions.onlyEmbedIndices as number[]);
+            const embedsIds = new Set(props.forwardOptions.onlyEmbedIndices);
 
             // Discord incorrectly assumes that embed indices directly map to whole embeds, this is an attempt to fix that
             const onlyEmbedIndices = message?.embeds

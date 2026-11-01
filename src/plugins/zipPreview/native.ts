@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { readBody } from "@main/utils/http";
 import { dialog, IpcMainInvokeEvent } from "electron";
 
 const DISCORD_ATTACHMENT_BASE_URL = "https://cdn.discordapp.com/attachments/";
@@ -29,53 +30,13 @@ export async function fetchDiscordAttachment(
         const response = await fetch(attachmentUrl);
         if (!response.ok) return { success: false, error: `Fetch failed: ${response.status} ${response.statusText}` };
 
-        return {
-            success: true,
-            data: await readLimitedResponse(response)
-        };
+        const data = await readBody(response, MAX_ZIP_BYTES);
+        if (!data) return { success: false, error: "ZIP is too large to preview." };
+
+        return { success: true, data: data.buffer };
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
     }
-}
-
-async function readLimitedResponse(response: Response): Promise<ArrayBuffer> {
-    const contentLength = Number(response.headers.get("content-length"));
-    if (Number.isFinite(contentLength) && contentLength > MAX_ZIP_BYTES) {
-        throw new Error("ZIP is too large to preview.");
-    }
-
-    if (!response.body) {
-        const buffer = await response.arrayBuffer();
-        if (buffer.byteLength > MAX_ZIP_BYTES) throw new Error("ZIP is too large to preview.");
-        return buffer;
-    }
-
-    const reader = response.body.getReader();
-    const chunks: Uint8Array[] = [];
-    let totalBytes = 0;
-
-    for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        if (!value) continue;
-
-        totalBytes += value.byteLength;
-        if (totalBytes > MAX_ZIP_BYTES) {
-            await reader.cancel();
-            throw new Error("ZIP is too large to preview.");
-        }
-
-        chunks.push(value);
-    }
-
-    const result = new Uint8Array(totalBytes);
-    let offset = 0;
-    for (const chunk of chunks) {
-        result.set(chunk, offset);
-        offset += chunk.byteLength;
-    }
-
-    return result.buffer;
 }
 
 function getAttachmentFileName(pathAndQuery: string): string {

@@ -42,7 +42,7 @@ export function getIdFromUrl(url: string): string {
  */
 
 function toStickerPackId(id: string): string {
-    return "MoreStickers:Line:Pack:" + id;
+    return `MoreStickers:Line:Pack:${id}`;
 }
 
 /**
@@ -54,7 +54,7 @@ function toStickerPackId(id: string): string {
  */
 
 function toStickerId(stickerId: string, lineStickerPackId: string): string {
-    return "MoreStickers:Line:Sticker:" + lineStickerPackId + ":" + stickerId;
+    return `MoreStickers:Line:Sticker:${lineStickerPackId}:${stickerId}`;
 }
 
 /**
@@ -110,12 +110,12 @@ export function parseHtml(html: string): LineStickerPack {
         title: doc.querySelector("[data-test=\"sticker-name-title\"]")?.textContent ?? "null",
         author: {
             name: doc.querySelector("[data-test=\"sticker-author\"]")?.textContent ?? "null",
-            url: "https://store.line.me/" + (doc.querySelector("[data-test=\"sticker-author\"]")?.getAttribute("href") ?? "null")
+            url: `https://store.line.me/${doc.querySelector("[data-test=\"sticker-author\"]")?.getAttribute("href") ?? "null"}`
         },
         id,
         mainImage,
         stickers
-    } as LineStickerPack;
+    };
 
     return stickerPack;
 }

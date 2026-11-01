@@ -8,7 +8,7 @@ import { BaseText } from "@components/BaseText";
 import { Flex } from "@components/Flex";
 import { AtIcon, DiscordIconSizes, RightArrow, TextIcon } from "@components/Icons";
 import { BasicGuild, Channel, Guild, GuildProfile, Message, MessageAttachment } from "@endcord/discord-types";
-import { iconsModule } from "@equicordplugins/_core/concatenatedModules";
+import { iconsModule } from "@plugins/_core/concatenatedModules";
 import { getGuildAcronym, getIntlMessage } from "@utils/discord";
 import { t } from "@utils/i18n";
 import { getUserAvatarUrl, identity } from "@utils/misc";
@@ -211,7 +211,7 @@ function EmbedPicker(props: Required<ForwardOptionsState>) {
                 // It's only possible to tell it apart in the raw API message source since the client groups all related embeds together.
                 current.subEmbeds = images.map((image, si) => ({
                     id: id++,
-                    name: `${si === 0 ? "Embed + " : ""}Image ${images.length > 1 ? `${si + 1} ` : ""}(${image!.width} x ${image!.height})`,
+                    name: `${si === 0 ? "Embed + " : ""}Image ${images.length > 1 ? `${si + 1} ` : ""}(${image.width} x ${image.height})`,
                     isMainEmbed: si === 0
                 }));
             } else if (video) {
@@ -312,7 +312,7 @@ const attachmentIcons: Partial<Record<AttachmentType, string>> = {
 function AttachmentIcon({ attachment, ...props }: { attachment: MessageAttachment; size?: string; color?: string; }) {
     const Icon = useMemo(() => {
         const type = getAttachmentType(attachment, true);
-        return iconsModule[(attachmentIcons[type] ?? "ImageFile") + "Icon"];
+        return iconsModule[`${attachmentIcons[type] ?? "ImageFile"}Icon`];
     }, [attachment]);
 
     return Icon && <Icon style={{ flexShrink: 0 }} {...props} />;

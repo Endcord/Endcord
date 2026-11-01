@@ -14,7 +14,7 @@ export class TTLMap<K, V> extends Map<K, V> {
         super();
     }
 
-    public set(key: K, value: V) {
+    public override set(key: K, value: V) {
         if (this._timers.has(key)) {
             clearTimeout(this._timers.get(key));
         }
@@ -28,7 +28,7 @@ export class TTLMap<K, V> extends Map<K, V> {
         return super.set(key, value);
     }
 
-    public delete(key: K) {
+    public override delete(key: K) {
         if (this._timers.has(key)) {
             clearTimeout(this._timers.get(key));
             this._timers.delete(key);
@@ -37,7 +37,7 @@ export class TTLMap<K, V> extends Map<K, V> {
         return super.delete(key);
     }
 
-    clear(): void {
+    override clear(): void {
         for (const timeoutId of this._timers.values())
             clearTimeout(timeoutId);
 

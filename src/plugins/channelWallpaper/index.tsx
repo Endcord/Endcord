@@ -55,18 +55,32 @@ const settings = definePluginSettings({
         restartNeeded: false,
     },
     vpsUrl: {
+        sensitive: true,
         type: OptionType.STRING,
-        description: "VPS URL (e.g. ws://your-vps:3000). Empty = use hidden messages.",
+        description: "VPS URL (e.g. wss://your-vps:3000). Empty = use hidden messages.",
         default: "",
         restartNeeded: true,
     },
     vpsPassword: {
+        sensitive: true,
         type: OptionType.STRING,
         description: "Password for the sync server.",
         default: "nightcord",
         restartNeeded: true,
     },
 });
+
+// Whatever a friend or the sync server sends ends up on your screen, so it has to come from where wallpapers get uploaded
+const SYNC_HOSTS = new Set(["cdn.discordapp.com", "media.discordapp.net", "i.imgur.com"]);
+
+function isSyncableUrl(url: string) {
+    try {
+        const { protocol, hostname } = new URL(url);
+        return protocol === "https:" && SYNC_HOSTS.has(hostname);
+    } catch {
+        return false;
+    }
+}
 
 // ── Wallpaper storage helpers ──────────────────────────────────────────────────
 
@@ -113,6 +127,8 @@ function saveWallpaper(channelId: string, url: string, skipSync = false) {
 }
 
 function saveLocalWallpaperOnly(channelId: string, url: string) {
+    if (url && !isSyncableUrl(url)) return;
+
     const wp = getWallpapers();
     if (url) wp[channelId] = url;
     else delete wp[channelId];
@@ -265,7 +281,7 @@ function applyWallpaper(channelId?: string) {
             // Ensure the element is in the main area (not in a popup)
             if (!target.closest('[class*="popout"]') && !target.closest('[class*="modal"]')) {
                 if (!target.querySelector(`#${CONTAINER_ID}`)) {
-                    (target as HTMLElement).style.position = "relative";
+                    (target).style.position = "relative";
                     target.prepend(container);
                 }
                 return true;
@@ -393,6 +409,13 @@ function trackedTimeout(fn: () => void, ms: number) {
 function initVPSSync() {
     if (!settings.store.vpsUrl || stopping) return;
     try {
+        // The sync password travels over this connection
+        const { protocol, hostname } = new URL(settings.store.vpsUrl);
+        if (protocol !== "wss:" && !(protocol === "ws:" && ["localhost", "127.0.0.1"].includes(hostname))) {
+            console.error("[ChannelWallpaper] The VPS URL has to use wss://");
+            return;
+        }
+
         vpsSocket = new WebSocket(settings.store.vpsUrl);
         vpsSocket.onmessage = e => {
             try {

@@ -32,7 +32,7 @@ const settings = definePluginSettings({
 });
 
 function formatDuration(ms: number) {
-    // here be dragons (moment fucking sucks)
+    // moment has no way to format a duration, so this is done by hand
     const human = settings.store.format === "human";
 
     const format = (n: number) => human ? n : n.toString().padStart(2, "0");
@@ -65,7 +65,7 @@ export default definePlugin({
     settings,
 
     startTime: 0,
-    interval: void 0 as NodeJS.Timeout | undefined,
+    interval: void 0,
 
     patches: [
         {

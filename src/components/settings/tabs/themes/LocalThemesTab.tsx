@@ -12,13 +12,14 @@ import { FolderIcon, PaintbrushIcon, PencilIcon, PlusIcon, RestartIcon } from "@
 import { Link } from "@components/Link";
 import { QuickAction, QuickActionCard } from "@components/settings/QuickAction";
 import { openPluginModal } from "@components/settings/tabs/plugins/PluginModal";
-import { UserThemeHeader } from "@main/themes";
-import ClientThemePlugin from "@plugins/clientTheme";
+import type { UserThemeHeader } from "@main/themes";
 import { classNameFactory } from "@utils/css";
 import { useI18n } from "@utils/i18n";
 import { findLazy } from "@webpack";
 import { Forms, useEffect, useRef, useState } from "@webpack/common";
 import type { ComponentType, Ref, SyntheticEvent } from "react";
+
+import Plugins from "~plugins";
 
 import { ThemeCard } from "./ThemeCard";
 
@@ -50,9 +51,8 @@ async function onFileUpload(e: SyntheticEvent<HTMLInputElement>) {
     if (!e.currentTarget?.files?.length) return;
     const { files } = e.currentTarget;
 
-    const uploads = Array.from(files, file => {
+    const uploads = Array.from(files).filter(file => file.name.endsWith(".css")).map(file => {
         const { name } = file;
-        if (!name.endsWith(".css")) return;
 
         return new Promise<void>((resolve, reject) => {
             const reader = new FileReader();
@@ -145,10 +145,10 @@ export function LocalThemesTab() {
                             Icon={PaintbrushIcon}
                         />
 
-                        {isPluginEnabled(ClientThemePlugin.name) && (
+                        {isPluginEnabled("ClientTheme") && (
                             <QuickAction
                                 text={t("Edit ClientTheme")}
-                                action={() => openPluginModal(ClientThemePlugin)}
+                                action={() => openPluginModal(Plugins.ClientTheme)}
                                 Icon={PencilIcon}
                             />
                         )}

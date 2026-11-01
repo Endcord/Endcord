@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { settings } from "@equicordplugins/musicControls/settings";
-import { TidalLrcStore } from "@equicordplugins/musicControls/tidal/lyrics/providers/store";
-import { EnhancedLyric } from "@equicordplugins/musicControls/tidal/lyrics/types";
-import { TidalStore } from "@equicordplugins/musicControls/tidal/TidalStore";
+import { settings } from "@plugins/musicControls/settings";
+import { TidalLrcStore } from "@plugins/musicControls/tidal/lyrics/providers/store";
+import { EnhancedLyric } from "@plugins/musicControls/tidal/lyrics/types";
+import { TidalStore } from "@plugins/musicControls/tidal/TidalStore";
 import { classNameFactory } from "@utils/css";
 import { findCssClassesLazy } from "@webpack";
 import { React, useEffect, useState, useStateFromStores } from "@webpack/common";

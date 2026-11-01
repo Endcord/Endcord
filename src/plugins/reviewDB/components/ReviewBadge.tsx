@@ -6,11 +6,12 @@
 
 import { Badge } from "@plugins/reviewDB/entities";
 import { cl } from "@plugins/reviewDB/utils";
+import { isSafeLink } from "@shared/externalLinks";
 import { MaskedLink, React, Tooltip } from "@webpack/common";
 import { HTMLAttributes } from "react";
 
 export default function ReviewBadge(badge: Badge & { onClick?(): void; }) {
-    const Wrapper = badge.redirectURL
+    const Wrapper = badge.redirectURL && isSafeLink(badge.redirectURL)
         ? MaskedLink
         : (props: HTMLAttributes<HTMLDivElement>) => (
             <span {...props} role="button">{props.children}</span>

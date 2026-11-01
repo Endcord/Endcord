@@ -17,11 +17,11 @@ function burst(e: MouseEvent) {
         const s = document.createElement("span");
         s.className = "mc-sparkle";
         s.textContent = "✦";
-        s.style.left = e.clientX + "px";
-        s.style.top = e.clientY + "px";
+        s.style.left = `${e.clientX}px`;
+        s.style.top = `${e.clientY}px`;
         s.style.color = COLORS[Math.floor(Math.random() * COLORS.length)];
-        s.style.setProperty("--dx", (Math.random() * 40 - 20) + "px");
-        s.style.setProperty("--dy", (-Math.random() * 40 - 10) + "px");
+        s.style.setProperty("--dx", `${Math.random() * 40 - 20}px`);
+        s.style.setProperty("--dy", `${-Math.random() * 40 - 10}px`);
         document.body.appendChild(s);
         s.addEventListener("animationend", () => s.remove());
     }

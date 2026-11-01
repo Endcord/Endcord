@@ -36,14 +36,14 @@ const getAttachments = async (channelId: string) =>
                 const url = URL.createObjectURL(file);
                 const attachment: MessageAttachment = {
                     id: generateId(),
-                    filename: spoiler ? "SPOILER_" + filename : filename,
+                    filename: spoiler ? `SPOILER_${filename}` : filename,
                     // weird eh? if i give it the normal content type the preview doenst work
                     content_type: undefined,
                     size: upload.getSize(),
                     spoiler,
                     // discord adds query params to the url, so we need to add a hash to prevent that
-                    url: url + "#",
-                    proxy_url: url + "#",
+                    url: `${url}#`,
+                    proxy_url: `${url}#`,
                 };
 
                 if (isImage) {

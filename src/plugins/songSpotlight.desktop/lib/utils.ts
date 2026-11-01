@@ -22,8 +22,8 @@ export function formatCoverTooltip(song: Song, render: RenderSongInfo) {
     if (["user", "artist"].includes(song.type)) {
         // "Jane Remover's Top tracks"
         return `${render.label}'s ${render.sublabel}`;
-    } else {
+    }
         // "Star people by Jane Remover"
         return `${render.label} by ${render.sublabel}`;
-    }
+
 }

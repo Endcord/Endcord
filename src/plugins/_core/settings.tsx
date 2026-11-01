@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { getIsEndcordHidden } from "@api/EndcordVisibility";
 import { definePluginSettings } from "@api/Settings";
 import { BackupRestoreIcon, MainSettingsIcon, PaintbrushIcon, PatchHelperIcon, PlaceholderIcon, PluginsIcon, UpdaterIcon, VesktopSettingsIcon } from "@components/Icons";
 import { BackupAndRestoreTab, EndcordTab,PatchHelperTab, PluginsTab, ThemesTab, UpdaterTab } from "@components/settings/tabs";
-import { getIsEndcordHidden } from "@plugins/hideEndcord";
 import { Devs } from "@utils/constants";
 import { isTruthy } from "@utils/guards";
 import { t } from "@utils/i18n";
@@ -126,16 +126,16 @@ export default definePlugin({
         const { key, title, panelTitle = title, Component, Icon } = options;
 
         const panel: SettingsLayoutNode = {
-            key: key + "_panel",
+            key: `${key}_panel`,
             type: LayoutTypes.PANEL,
             useTitle: () => t(panelTitle),
             buildLayout: () => [{
                 type: LayoutTypes.CATEGORY,
-                key: key + "_category",
+                key: `${key}_category`,
                 buildLayout: () => [{
                     type: LayoutTypes.CUSTOM,
-                    key: key + "_custom",
-                    Component: Component,
+                    key: `${key}_custom`,
+                    Component,
                     useSearchTerms: () => [t(title), title]
                 }]
             }]
@@ -287,7 +287,7 @@ export default definePlugin({
 
     getInfoString() {
         if (!settings.store.includeEndcordInfoWhenCopying) return "";
-        return "\n" + this.getInfoRows().join("\n");
+        return `\n${this.getInfoRows().join("\n")}`;
     },
 
     makeInfoElements(Component: ComponentType<PropsWithChildren>, props: PropsWithChildren) {

@@ -8,8 +8,8 @@ import { CodeBlock } from "@components/CodeBlock";
 import { Heading } from "@components/Heading";
 import { Heart } from "@components/Heart";
 import { Paragraph } from "@components/Paragraph";
-import { Theme, ThemeInfoModalProps } from "@equicordplugins/themeLibrary/types";
-import { ClockIcon, WarningIcon } from "@equicordplugins/themeLibrary/utils/Icons";
+import { Theme, ThemeInfoModalProps } from "@plugins/themeLibrary/types";
+import { ClockIcon, WarningIcon } from "@plugins/themeLibrary/utils/Icons";
 import { copyToClipboard } from "@utils/clipboard";
 import { openInviteModal } from "@utils/discord";
 import { t } from "@utils/i18n";
@@ -223,7 +223,7 @@ export const ThemeInfoModal: React.FC<ThemeInfoModalProps> = ({ author, theme, .
                     )}
                     {last_updated && (
                         <Paragraph style={{ marginTop: "10px" }}>
-                            <ClockIcon />{" "}{t("This theme was last updated")}{" "}{Parser.parse("<t:" + lastUpdated + ":F>")} ({Parser.parse("<t:" + lastUpdated + ":R>")})
+                            <ClockIcon />{" "}{t("This theme was last updated")}{" "}{Parser.parse(`<t:${lastUpdated}:F>`)} ({Parser.parse(`<t:${lastUpdated}:R>`)})
                         </Paragraph>
                     )}
                 </div>

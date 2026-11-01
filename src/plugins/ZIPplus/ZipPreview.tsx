@@ -136,7 +136,7 @@ export default function ZipPreview({ blob, name, expanded: expandedProp, onExpan
                     </div>
                 </div>
 
-                <div className={"zp-zip-preview" + (expanded ? " expanded" : "")}>
+                <div className={`zp-zip-preview${expanded ? " expanded" : ""}`}>
                     {tree ? (
                         <>
                             {tree.parent && (
@@ -161,7 +161,7 @@ export default function ZipPreview({ blob, name, expanded: expandedProp, onExpan
                             )}
                             {Object.entries(tree.files).length > 0 && (
                                 <>
-                                    {(Object.entries(tree.files) as Array<[string, ZipTreeFile]>).sort(([a], [b]) => a.localeCompare(b)).map(([name, file]) => (
+                                    {(Object.entries(tree.files)).sort(([a], [b]) => a.localeCompare(b)).map(([name, file]) => (
                                         <div key={name} className="zp-entry-row" onClick={() => openFile(name, file)}>
                                             <div className="zp-entry-icon">
                                                 <FileIcon />

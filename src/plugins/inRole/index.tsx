@@ -78,7 +78,7 @@ export default definePlugin({
         }
     ],
     contextMenus: {
-        "dev-context"(children, { id }: { id: string; }) {
+        "dev-context": function(children, { id }: { id: string; }) {
             const guild = getCurrentGuild();
             if (!guild) return;
 
@@ -100,7 +100,7 @@ export default definePlugin({
                 />
             );
         },
-        "message"(children, { message }: { message: any; }) {
+        "message": function(children, { message }: { message: any; }) {
             const guild = getCurrentGuild();
             if (!guild) return;
 

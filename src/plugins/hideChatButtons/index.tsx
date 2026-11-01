@@ -63,7 +63,7 @@ function ButtonsInnerComponent({ buttons }: { buttons: ReactNode; }) {
         hidechatbuttonsopen = open;
     }, [open]);
 
-    if (buttonItems.length === 0 || buttonItems.every(button => (button as any)?.props?.disabled === true)) return null;
+    if (buttonItems.length === 0 || buttonItems.every(button => (button)?.props?.disabled === true)) return null;
 
     return (
         <div key="chat-bar-buttons-menu" id="chat-bar-buttons-menu" style={{
@@ -86,7 +86,7 @@ export default definePlugin({
     tags: ["Chat", "Utility"],
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     dependencies: ["ChatInputButtonAPI"],
-    settings: settings,
+    settings,
     startAt: StartAt.Init,
     chatBarButtonWrapper: {
         wrapper: (buttons: ReactNode) => {

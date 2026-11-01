@@ -7,7 +7,7 @@
 import "./style.css";
 
 import { RenderModalProps } from "@endcord/discord-types";
-import { ButtonAction } from "@equicordplugins/keyboardNavigation/commands";
+import { ButtonAction } from "@plugins/keyboardNavigation/commands";
 import { classNameFactory } from "@utils/css";
 import { t } from "@utils/i18n";
 import { closeAllModals, Modal,openModal, React, TextInput, useEffect, useState } from "@webpack/common";

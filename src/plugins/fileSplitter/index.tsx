@@ -56,14 +56,12 @@ function FileSplitterModal({ modalProps }: { modalProps: ModalProps; }) {
     const [isProcessing, setIsProcessing] = useState(false);
     const [progress, setProgress] = useState(0);
     const [chunks, setChunks] = useState<FileChunk[]>([]);
-    const [downloadLinks, setDownloadLinks] = useState<string[]>([]);
 
     const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = event.target.files?.[0];
         if (selectedFile) {
             setFile(selectedFile);
             setChunks([]);
-            setDownloadLinks([]);
             setProgress(0);
         }
     };
@@ -79,7 +77,7 @@ function FileSplitterModal({ modalProps }: { modalProps: ModalProps; }) {
             const totalChunks = Math.ceil(file.size / chunkSizeBytes);
             const newChunks: FileChunk[] = [];
 
-            console.log(
+            console.debug(
                 `🎯 File Splitter: Splitting ${file.name} (${(
                     file.size /
                     1024 /
@@ -103,14 +101,14 @@ function FileSplitterModal({ modalProps }: { modalProps: ModalProps; }) {
                 setProgress(((i + 1) / totalChunks) * 100);
 
                 if (settings.store.showProgress) {
-                    console.log(
+                    console.debug(
                         `🎯 File Splitter: Chunk ${i + 1}/${totalChunks} created`
                     );
                 }
             }
 
             setChunks(newChunks);
-            console.log(
+            console.debug(
                 `✅ File Splitter: Successfully split ${file.name} into ${totalChunks} chunks`
             );
         } catch (error) {
@@ -143,11 +141,11 @@ function FileSplitterModal({ modalProps }: { modalProps: ModalProps; }) {
 
         const script = `@echo off
 echo Rejoining ${file.name}...
-copy /b "${file.name}.part1" + "${file.name}.part2"${chunks.length > 2 ? ' + "' + file.name + '.part3"' : ""
-            }${chunks.length > 3 ? ' + "' + file.name + '.part4"' : ""}${chunks.length > 4 ? ' + "' + file.name + '.part5"' : ""
-            }${chunks.length > 5 ? ' + "' + file.name + '.part6"' : ""}${chunks.length > 6 ? ' + "' + file.name + '.part7"' : ""
-            }${chunks.length > 7 ? ' + "' + file.name + '.part8"' : ""}${chunks.length > 8 ? ' + "' + file.name + '.part9"' : ""
-            }${chunks.length > 9 ? ' + "' + file.name + '.part10"' : ""} "${file.name}"
+copy /b "${file.name}.part1" + "${file.name}.part2"${chunks.length > 2 ? ` + "${file.name}.part3"` : ""
+            }${chunks.length > 3 ? ` + "${file.name}.part4"` : ""}${chunks.length > 4 ? ` + "${file.name}.part5"` : ""
+            }${chunks.length > 5 ? ` + "${file.name}.part6"` : ""}${chunks.length > 6 ? ` + "${file.name}.part7"` : ""
+            }${chunks.length > 7 ? ` + "${file.name}.part8"` : ""}${chunks.length > 8 ? ` + "${file.name}.part9"` : ""
+            }${chunks.length > 9 ? ` + "${file.name}.part10"` : ""} "${file.name}"
 echo File rejoined successfully!
 pause`;
 
@@ -304,7 +302,7 @@ export default definePlugin({
 
     toolboxActions: {
         "File Splitter": () => {
-            openModal(modalProps => <FileSplitterModal modalProps={modalProps as any} />);
+            openModal(modalProps => <FileSplitterModal modalProps={modalProps} />);
         },
     },
 });

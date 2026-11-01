@@ -136,10 +136,10 @@ function UserPluginsTab() {
                                 }
                                 setValid(true);
                                 return true;
-                            } else {
+                            }
                                 setValid(false);
                                 return "Invalid URL, read the notice above";
-                            }
+
                         }}
                         initialValue={url}
                     />

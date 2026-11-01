@@ -99,8 +99,8 @@ async function getActivity(): Promise<Activity | null> {
 
     const statusName = (() => {
         switch (settings.store.sfm_nameFormat) {
-            case NameFormat.ArtistFirst: return trackData.artists + " - " + trackData.name;
-            case NameFormat.SongFirst: return trackData.name + " - " + trackData.artists;
+            case NameFormat.ArtistFirst: return `${trackData.artists} - ${trackData.name}`;
+            case NameFormat.SongFirst: return `${trackData.name} - ${trackData.artists}`;
             case NameFormat.ArtistOnly: return trackData.artists;
             case NameFormat.SongOnly: return trackData.name;
             case NameFormat.AlbumName: return trackData.albums || settings.store.sfm_statusName;

@@ -9,7 +9,7 @@ import { Heading } from "@components/Heading";
 import { SettingsTab, wrapTab } from "@components/settings";
 import { TooltipContainer } from "@components/TooltipContainer";
 import { Icon } from "@endcord/discord-types";
-import { iconsModule } from "@endcordplugins/_core/concatenatedModules";
+import { iconsModule } from "@plugins/_core/concatenatedModules";
 import { IconsDef } from "@plugins/iconViewer/types";
 import { debounce } from "@shared/debounce";
 import { t } from "@utils/i18n";
@@ -29,7 +29,7 @@ function getIcons(): IconsDef {
         Object.entries(iconsModule).filter(([name, fn]) =>
             typeof fn === "function" && name.endsWith("Icon")
         )
-    ) as IconsDef;
+    );
 
     return cachedIcons;
 }

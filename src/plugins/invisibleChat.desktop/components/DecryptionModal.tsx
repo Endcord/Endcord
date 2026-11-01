@@ -5,9 +5,9 @@
  */
 
 import { Heading } from "@components/Heading";
+import { RenderModalProps } from "@endcord/discord-types";
 import { buildEmbed, decrypt } from "@plugins/invisibleChat.desktop/index";
 import { t } from "@utils/i18n";
-import { RenderModalProps } from "@vencord/discord-types";
 import { Modal, openModal, React, TextInput } from "@webpack/common";
 
 export function DecModal(props: RenderModalProps & { message: any; }) {

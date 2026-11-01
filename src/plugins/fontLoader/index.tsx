@@ -37,8 +37,10 @@ const createGoogleFontUrl = (family: string, options = "") =>
     `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}${options}&display=swap`;
 
 const loadFontStyle = (url: string) => {
-    document.head.insertAdjacentHTML("beforeend", `<link rel="stylesheet" href="${url}">`);
-    return document.createElement("style");
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = url;
+    document.head.append(link);
 };
 
 async function searchGoogleFonts(query: string) {
@@ -95,7 +97,7 @@ const applyFont = async (fontFamily: string) => {
                 --font-primary: '${fontFamily}', sans-serif !important;
                 --font-display: '${fontFamily}', sans-serif !important;
                 --font-headline: '${fontFamily}', sans-serif !important;
-                ${settings.store.applyOnCodeBlocks ? "--font-code: '${fontFamily}', monospace !important;" : ""}
+                ${settings.store.applyOnCodeBlocks ? `--font-code: '${fontFamily}', monospace !important;` : ""}
             }
         `;
     } catch (err) {

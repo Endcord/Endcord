@@ -22,7 +22,7 @@
 import { readdir, readFile } from "fs/promises";
 import { join, resolve } from "path";
 
-import { banner, BUILD_TIMESTAMP, commonOpts, exists, globPlugins, IS_DEV, IS_REPORTER, IS_ANTI_CRASH_TEST, IS_STANDALONE, IS_UPDATER_DISABLED, resolvePluginName, VERSION, commonRendererPlugins, watch, buildOrWatchAll, stringifyValues } from "./common.mjs";
+import { banner, BUILD_TIMESTAMP, buildOrWatchAll, commonOpts, commonRendererPlugins, exists, globPlugins, IS_ANTI_CRASH_TEST, IS_DEV, IS_REPORTER, IS_STANDALONE, IS_UPDATER_DISABLED, resolvePluginName, stringifyValues,VERSION, watch } from "./common.mjs";
 
 const defines = stringifyValues({
     IS_STANDALONE,
@@ -58,7 +58,7 @@ const nodeCommonOpts = {
 
 // Startup timing marks around the renderer bundle, readable via performance.getEntriesByName
 // "use strict" must stay the first statement so the bundle keeps running in strict mode
-const rendererBanner = { js: banner.js + '\n"use strict";performance.mark("endcord:renderer:start");' };
+const rendererBanner = { js: `${banner.js}\n"use strict";performance.mark("endcord:renderer:start");` };
 const rendererFooter = s => `performance.mark("endcord:renderer:end");\n//# sourceURL=file:///${s}\n`;
 
 const sourceMapFooter = s => watch ? "" : `//# sourceMappingURL=endcord://${s}.js.map`;
@@ -127,7 +127,7 @@ const buildConfigs = ([
         ...nodeCommonOpts,
         entryPoints: ["src/main/index.ts"],
         outfile: "dist/patcher.js",
-        footer: { js: "//# sourceURL=file:///EndcordPatcher\n" + sourceMapFooter("patcher") },
+        footer: { js: `//# sourceURL=file:///EndcordPatcher\n${sourceMapFooter("patcher")}` },
         sourcemap,
         plugins: [
             // @ts-ignore this is never undefined
@@ -164,7 +164,7 @@ const buildConfigs = ([
         ...nodeCommonOpts,
         entryPoints: ["src/preload.ts"],
         outfile: "dist/preload.js",
-        footer: { js: "//# sourceURL=file:///EndcordPreload\n" + sourceMapFooter("preload") },
+        footer: { js: `//# sourceURL=file:///EndcordPreload\n${sourceMapFooter("preload")}` },
         sourcemap,
         define: {
             ...defines,
@@ -178,7 +178,7 @@ const buildConfigs = ([
         ...nodeCommonOpts,
         entryPoints: ["src/main/index.ts"],
         outfile: "dist/endcordDesktopMain.js",
-        footer: { js: "//# sourceURL=file:///EndcordDesktopMain\n" + sourceMapFooter("endcordDesktopMain") },
+        footer: { js: `//# sourceURL=file:///EndcordDesktopMain\n${sourceMapFooter("endcordDesktopMain")}` },
         sourcemap,
         plugins: [
             ...nodeCommonOpts.plugins,
@@ -214,7 +214,7 @@ const buildConfigs = ([
         ...nodeCommonOpts,
         entryPoints: ["src/preload.ts"],
         outfile: "dist/endcordDesktopPreload.js",
-        footer: { js: "//# sourceURL=file:///EndcordPreload\n" + sourceMapFooter("endcordDesktopPreload") },
+        footer: { js: `//# sourceURL=file:///EndcordPreload\n${sourceMapFooter("endcordDesktopPreload")}` },
         sourcemap,
         define: {
             ...defines,
@@ -229,7 +229,7 @@ await buildOrWatchAll(buildConfigs);
 // V8 stores a script's source at two bytes per character once a single character is outside Latin-1,
 // which doubles the renderer's source memory. esbuild escapes strings but not regex literals, so write
 // such characters as \uXXXX there.
-if (!watch) {
+if (!watch && !IS_REPORTER) {
     for (const file of ["dist/renderer.js", "dist/patcher.js", "dist/preload.js"]) {
         if (!await exists(file)) continue;
         const text = await readFile(file, "utf8");

@@ -28,7 +28,7 @@ export interface ProfileBadge {
     /** Action to perform when you click the badge */
     onClick?(event: React.MouseEvent, props: ProfileBadge & BadgeUserArgs): void;
     /** Action to perform when you right click the badge */
-    onContextMenu?(event: React.MouseEvent, props: BadgeUserArgs & BadgeUserArgs): void;
+    onContextMenu?(event: React.MouseEvent, props: BadgeUserArgs): void;
     /** Should the user display this badge? */
     shouldShow?(userInfo: BadgeUserArgs): boolean;
     /** Optional props (e.g. style) for the badge, ignored for component badges */
@@ -112,12 +112,4 @@ export function _getBadges(args: BadgeUserArgs) {
 export interface BadgeUserArgs {
     userId: string;
     guildId: string;
-}
-
-export async function syncBadgeToAPI(_userId: string, _badge: string, _tooltip: string) {
-    return;
-}
-
-export async function syncBadgesToAPI(_userId: string, _badges: Array<{ badge: string; tooltip: string; }>) {
-    return;
 }

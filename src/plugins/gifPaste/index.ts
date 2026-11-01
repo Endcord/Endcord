@@ -25,7 +25,7 @@ export default definePlugin({
 
     handleSelect(gif?: { url: string; }) {
         if (gif) {
-            insertTextIntoChatInputBox(gif.url + " ");
+            insertTextIntoChatInputBox(`${gif.url} `);
             ExpressionPickerStore.closeExpressionPicker();
         }
     }

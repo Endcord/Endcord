@@ -22,7 +22,7 @@ function onVoiceStateUpdate({ voiceStates }: { voiceStates: any[]; }) {
     const myState = voiceStates.find(s => s.userId === myId);
     if (myState) {
         if (myState.channelId !== targetChannelId) {
-            console.log(`[AntiMoveDeco] Movement or disconnect detected! Returning to channel ${targetChannelId}...`);
+            console.debug(`[AntiMoveDeco] Movement or disconnect detected! Returning to channel ${targetChannelId}...`);
             setTimeout(() => {
                 if (enabled && targetChannelId) {
                     try {
@@ -51,11 +51,11 @@ function AntiMoveDecoButton() {
             if (!channelId) return;
             targetChannelId = channelId;
             enabled = true;
-            console.log(`[AntiMoveDeco] Enabled. Protected channel: ${targetChannelId}`);
+            console.debug(`[AntiMoveDeco] Enabled. Protected channel: ${targetChannelId}`);
         } else {
             enabled = false;
             targetChannelId = null;
-            console.log("[AntiMoveDeco] Disabled.");
+            console.debug("[AntiMoveDeco] Disabled.");
         }
         forceUpdate();
     };

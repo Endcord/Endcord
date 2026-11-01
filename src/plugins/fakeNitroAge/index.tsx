@@ -12,11 +12,11 @@ import { ModalCloseButton as ModalCloseButton_, ModalContent as ModalContent_, M
 import definePlugin, { IconComponent } from "@utils/types";
 import { FluxDispatcher, openModal, React, UserStore } from "@webpack/common";
 
-const ModalRoot = ModalRoot_ as React.ComponentType<any>;
-const ModalHeader = ModalHeader_ as React.ComponentType<any>;
-const ModalContent = ModalContent_ as React.ComponentType<any>;
-const ModalFooter = ModalFooter_ as React.ComponentType<any>;
-const ModalCloseButton = ModalCloseButton_ as React.ComponentType<any>;
+const ModalRoot = ModalRoot_;
+const ModalHeader = ModalHeader_;
+const ModalContent = ModalContent_;
+const ModalFooter = ModalFooter_;
+const ModalCloseButton = ModalCloseButton_;
 
 const DS_KEY = "FakeNitroAge_months";
 

@@ -19,9 +19,6 @@ const ShieldIcon = (props: any) => <VSafetyIcon width={props.width || 24} height
 
 const VoiceActions = findByPropsLazy("setChannel", "setServerMute");
 const MemberRoleActions = findByPropsLazy("updateMemberRoles");
-const MessageStore = findByPropsLazy("getMessages");
-const InviteActions = findByPropsLazy("resolveInvite");
-const PrivateChannelActions = findByPropsLazy("ensurePrivateChannel");
 const VoiceStateStore = findByPropsLazy("getVoiceState");
 
 interface SharedUser {
@@ -47,6 +44,7 @@ interface ShareLog {
 
 const settings = definePluginSettings({
     sharedUsers: {
+        sensitive: true,
         type: OptionType.STRING,
         description: "Internal: list of shared users",
         default: "[]",
@@ -131,10 +129,10 @@ function formatTimeLeft(ms: number): string {
     const days = Math.floor(ms / (1000 * 60 * 60 * 24));
 
     const parts: string[] = [];
-    if (days > 0) parts.push(days + "d");
-    if (hours > 0) parts.push(hours + "h");
-    if (minutes > 0) parts.push(minutes + "m");
-    if (seconds > 0 || parts.length === 0) parts.push(seconds + "s");
+    if (days > 0) parts.push(`${days}d`);
+    if (hours > 0) parts.push(`${hours}h`);
+    if (minutes > 0) parts.push(`${minutes}m`);
+    if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`);
     return parts.join(" ");
 }
 
@@ -143,7 +141,7 @@ function SharePermsModal({ rootProps }: { rootProps: any; }) {
     const [logs, setLogs] = React.useState(getLogs());
     const [newUserIds, setNewUserIds] = React.useState<string[]>([]);
     const [newGuildId, setNewGuildId] = React.useState("");
-    const [newChannelId, setNewChannelId] = React.useState("");
+    const [newChannelId] = React.useState("");
     const [newDuration, setNewDuration] = React.useState("1d");
     const [newMaxUses, setNewMaxUses] = React.useState("0"); // 0 = unlimited
     const [newPerms, setNewPerms] = React.useState<string[]>(["all"]);
@@ -234,7 +232,7 @@ function SharePermsModal({ rootProps }: { rootProps: any; }) {
                     console.error("DM Error:", e);
                 }
             } catch (e) {
-                console.error("Failed to send DM to " + userId, e);
+                console.error(`Failed to send DM to ${userId}`, e);
             }
         }
 
@@ -285,7 +283,7 @@ function SharePermsModal({ rootProps }: { rootProps: any; }) {
                     });
                 }
             } catch (e) {
-                console.error("Failed to send revocation DM to " + userToRemove.id, e);
+                console.error(`Failed to send revocation DM to ${userToRemove.id}`, e);
             }
         }
     };
@@ -330,7 +328,7 @@ function SharePermsModal({ rootProps }: { rootProps: any; }) {
                                 const user = UserStore.getUser(opt.value);
                                 return (
                                     <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "12px 16px" }}>
-                                        <Avatar src={IconUtils.getUserAvatarURL(user)} size={"SIZE_48" as any} />
+                                        <Avatar src={IconUtils.getUserAvatarURL(user)} size={"SIZE_48"} />
                                         <Text color="header-primary" style={{ fontSize: "20px", fontWeight: "600" }}>{opt.label}</Text>
                                     </div>
                                 );
@@ -339,7 +337,7 @@ function SharePermsModal({ rootProps }: { rootProps: any; }) {
                                 const user = UserStore.getUser(opt.value);
                                 return (
                                     <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 8px" }}>
-                                        <Avatar src={IconUtils.getUserAvatarURL(user)} size={"SIZE_24" as any} />
+                                        <Avatar src={IconUtils.getUserAvatarURL(user)} size={"SIZE_24"} />
                                         <Text color="header-primary" style={{ fontSize: "16px", fontWeight: "500" }}>{opt.label}</Text>
                                     </div>
                                 );
@@ -432,7 +430,7 @@ function SharePermsModal({ rootProps }: { rootProps: any; }) {
                         return (
                             <div key={`${u.id}-${index}`} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: 12, background: "var(--background-secondary)", borderRadius: 8, marginBottom: 10 }}>
                                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                                    <Avatar src={IconUtils.getUserAvatarURL(user || { id: u.id, avatar: null } as any)} size={"SIZE_40" as any} />
+                                    <Avatar src={IconUtils.getUserAvatarURL(user || { id: u.id, avatar: null } as any)} size={"SIZE_40"} />
                                     <div>
                                         <Text variant="text-md/semibold" style={{ color: "#FFFFFF" }}>{user?.globalName || user?.username || u.id}</Text>
                                         <Text variant="text-xs/normal" style={{ color: "#FFFFFF", opacity: 0.7, maxWidth: 250, overflow: "hidden", textOverflow: "ellipsis" }}>
@@ -478,7 +476,7 @@ function SharePermsModal({ rootProps }: { rootProps: any; }) {
                             }}>
                                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                        <Avatar src={IconUtils.getUserAvatarURL(user || { id: log.userId, avatar: null } as any)} size={"SIZE_20" as any} />
+                                        <Avatar src={IconUtils.getUserAvatarURL(user || { id: log.userId, avatar: null } as any)} size={"SIZE_20"} />
                                         <Text variant="text-sm/bold" style={{ color: "#FFFFFF" }}>
                                             {user?.globalName || user?.username || log.userId}
                                         </Text>
@@ -629,7 +627,7 @@ export default definePlugin({
                 await RestAPI.put({
                     url: `/guilds/${guildId}/bans/${targetId}`,
                     body: { delete_message_seconds: 0, reason }
-                } as any);
+                });
                 sendBotMessage(channelId, { content: `✅ User <@${targetId}> banned (API).` });
                 success = true;
             }
@@ -655,7 +653,7 @@ export default definePlugin({
                 targetId = resolveId(args[0]);
                 await RestAPI.del({
                     url: `/guilds/${guildId}/bans/${targetId}`
-                } as any);
+                });
                 sendBotMessage(channelId, { content: `✅ User <@${targetId}> unbanned.` });
                 success = true;
             }

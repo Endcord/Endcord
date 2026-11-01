@@ -125,7 +125,7 @@ export default definePlugin({
                     if (!dispatched) {
                         sendBotMessage(ctx.channel.id, {
                             ...rawMsg,
-                            author: user as any
+                            author: user
                         });
                     }
                 } catch (err: any) {

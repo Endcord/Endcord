@@ -6,11 +6,11 @@
 
 import { addGlobalContextMenuPatch, GlobalContextMenuPatchCallback, removeGlobalContextMenuPatch } from "@api/ContextMenu";
 import { definePluginSettings } from "@api/Settings";
+import type { Channel, User } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType } from "@utils/types";
-import type { Channel, User } from "@vencord/discord-types";
 import { ChannelStore, Menu, React, RestAPI, showToast, UserStore, VoiceStateStore } from "@webpack/common";
 
 interface UserContextProps {

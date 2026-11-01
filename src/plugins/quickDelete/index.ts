@@ -44,7 +44,7 @@ async function onKeyDown(e: KeyboardEvent) {
     const messages = MessageStore.getMessages(channelId);
     if (!messages) return;
 
-    const all = (messages as any).toArray?.() as any[] | undefined ?? [];
+    const all = (messages).toArray?.() as any[] | undefined ?? [];
     const lastMine = [...all].reverse().find((m: any) => m.author?.id === me && !m.deleted);
     if (!lastMine) return;
 

@@ -55,7 +55,6 @@ export default class GifRenderer {
     private readonly canvas = new OffscreenCanvas(1, 1);
     private readonly ctx = getCanvasContext(this.canvas);
     private readonly gif = GIFEncoder();
-    private readonly transform: GifTransform;
 
     private topOffset = 0;
     private width: number;
@@ -72,7 +71,6 @@ export default class GifRenderer {
     constructor({ frames, width, height, transform }: { frames: number; width: number; height: number; transform: GifTransform; }) {
         this.width = width;
         this.height = height;
-        this.transform = transform;
 
         this.ctx.font = `${transform.size}px ${getSelectedFont()}`;
         const lines = getLines(this.ctx, transform.text, this.width);

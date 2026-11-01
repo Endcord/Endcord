@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { isSafeExternalUrl } from "@shared/externalLinks";
 import { type BrowserWindow, shell } from "electron";
 
 export function makeLinksOpenExternally(win: BrowserWindow) {
@@ -16,20 +17,8 @@ export function makeLinksOpenExternally(win: BrowserWindow) {
                 return { action: "allow" };
         }
 
-        try {
-            var { protocol } = new URL(url);
-        } catch {
-            return { action: "deny" };
-        }
-
-        switch (protocol) {
-            case "http:":
-            case "https:":
-            case "mailto:":
-            case "steam:":
-            case "spotify:":
-                shell.openExternal(url);
-        }
+        // eslint-disable-next-line no-restricted-syntax -- this is the check
+        if (isSafeExternalUrl(url)) shell.openExternal(url);
 
         return { action: "deny" };
     });

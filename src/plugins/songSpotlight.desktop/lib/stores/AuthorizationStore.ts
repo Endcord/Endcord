@@ -8,7 +8,7 @@ import { DataStore } from "@api/index";
 import { proxyLazy } from "@utils/lazy";
 import { UserStore, zustandCreate, zustandPersist } from "@webpack/common";
 
-import { PersistedZustandStore, ZustandDefinition } from "./zustand";
+import { PersistedZustandStore } from "./zustand";
 
 export interface Token {
     access: string;
@@ -48,7 +48,7 @@ export const useAuthorizationStore: PersistedZustandStore<AuthorizationState> = 
                 isAuthorized() {
                     return !!get().getToken();
                 },
-            })) as ZustandDefinition<AuthorizationState>,
+            })),
             {
                 name: "songspotlight-auth",
                 version: 1,

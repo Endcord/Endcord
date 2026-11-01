@@ -325,7 +325,7 @@ export default definePlugin({
 function shouldIgnoreForChannelType(channel: Channel) {
     if (channel.type === ChannelTypes.DM && settings.store.dmNotifications) return false;
     if (channel.type === ChannelTypes.GROUP_DM && settings.store.groupDmNotifications) return false;
-    else return !settings.store.serverNotifications;
+    return !settings.store.serverNotifications;
 }
 
 function sendMsgNotif(titleString: string, content: string, message: Message) {
@@ -344,7 +344,7 @@ function sendMsgNotif(titleString: string, content: string, message: Message) {
                 volume: settings.store.volume,
                 audioPath: settings.store.soundPath,
                 title: titleString,
-                content: content,
+                content,
                 useBase64Icon: true,
                 icon: result,
                 sourceApp: "Endcord"
@@ -363,7 +363,7 @@ function sendOtherNotif(content: string, titleString: string) {
         volume: settings.store.volume,
         audioPath: settings.store.soundPath,
         title: titleString,
-        content: content,
+        content,
         useBase64Icon: false,
         icon: "default",
         sourceApp: "Endcord"

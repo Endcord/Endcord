@@ -128,7 +128,7 @@ function beginCycleSession() {
 
     const currentId = SelectedChannelStore.getChannelId();
     cycleSnapshot = sanitizeHistory([
-        ...(isDirectMessageChannel(currentId) ? [currentId!] : []),
+        ...(isDirectMessageChannel(currentId) ? [currentId] : []),
         ...rmdsDmChannelIds
     ]);
 
@@ -264,7 +264,7 @@ function OverlayContent(): any {
     const pageItems = visibleList.slice(start, end);
 
     const cards = pageItems.map(id => {
-        const { name, avatar } = getDisplayForChannel(id!);
+        const { name, avatar } = getDisplayForChannel(id);
         const isActive = id === cycleSnapshot[cycleIndex];
 
         return (
@@ -356,7 +356,7 @@ export default definePlugin({
         rmdsDmChannelIds = Array.isArray(saved) ? sanitizeHistory(saved) : [];
 
         const current = SelectedChannelStore.getChannelId();
-        if (isDirectMessageChannel(current)) pushChannelToFront(current!);
+        if (isDirectMessageChannel(current)) pushChannelToFront(current);
 
         document.addEventListener("keydown", onKeyDown, true);
         document.addEventListener("keyup", onKeyUp, true);

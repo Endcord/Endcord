@@ -14,6 +14,7 @@ const Native = EndcordNative?.pluginHelpers?.ZipPreview as PluginNative<typeof i
 export const MAX_ZIP_BYTES = 50 * 1024 * 1024;
 export const MAX_ENTRIES = 1000;
 export const MAX_PREVIEW_BYTES = 10 * 1024 * 1024;
+const MAX_UNPACKED_BYTES = 256 * 1024 * 1024;
 
 const CANCELLED_PREVIEW_MESSAGE = "ZIP preview was cancelled.";
 const NATIVE_UNAVAILABLE_MESSAGE = "Native helper is unavailable.";
@@ -205,7 +206,15 @@ function isValidDiscordAttachmentPath(path: string): boolean {
 }
 
 function parseZipBuffer(buffer: ArrayBuffer): ZipPreviewResult {
-    const unzipped = unzipSync(new Uint8Array(buffer));
+    let unpacked = 0;
+    const unzipped = unzipSync(new Uint8Array(buffer), {
+        // Runs before anything is inflated, so a zip bomb can't fill memory first
+        filter: ({ originalSize }) => {
+            unpacked += originalSize;
+            if (unpacked > MAX_UNPACKED_BYTES) throw new Error("ZIP is too large to preview.");
+            return true;
+        }
+    });
     const files = Object.entries(unzipped)
         .filter(([path]) => !path.endsWith("/"))
         .sort(([a], [b]) => a.localeCompare(b));

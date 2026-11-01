@@ -158,7 +158,7 @@ export async function deleteTempVideoFile(_: IpcMainInvokeEvent, token: string):
 
     tempEntries.delete(token);
 
-    if (!ensureSafePath(CLIP_UPLOAD_DIR, entry.tmpDir)) return;
+    if (!ensureSafePath(CLIP_UPLOAD_DIR, basename(entry.tmpDir))) return;
 
     try {
         await rm(entry.tmpDir, { force: true, recursive: true });

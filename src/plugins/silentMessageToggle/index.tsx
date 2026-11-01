@@ -68,7 +68,7 @@ const SilentMessageToggle: ChatBarButtonFactory = ({ isMainChat }) => {
         const listener: MessageSendListener = (_, message) => {
             if (enabled) {
                 if (settings.store.autoDisable) setEnabledValue(false);
-                if (!message.content.startsWith("@silent ")) message.content = "@silent " + message.content;
+                if (!message.content.startsWith("@silent ")) message.content = `@silent ${message.content}`;
             }
         };
 

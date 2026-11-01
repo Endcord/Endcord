@@ -39,14 +39,14 @@ export const settings = definePluginSettings({
     },
     toki: {
         type: OptionType.BOOLEAN,
-        description: "Enable Toki Pona",
-        default: true,
+        description: "Enable Toki Pona (text is sent to aiapi.serversmp.xyz, a third-party AI service)",
+        default: false,
         restartNeeded: true
     },
     sitelen: {
         type: OptionType.BOOLEAN,
-        description: "Enable Sitelen Pona",
-        default: true,
+        description: "Enable Sitelen Pona (text is sent to aiapi.serversmp.xyz, a third-party AI service)",
+        default: false,
         restartNeeded: true
     },
     shavian: {

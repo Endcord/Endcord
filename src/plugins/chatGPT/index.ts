@@ -16,6 +16,7 @@ import definePlugin, { OptionType } from "@utils/types";
 
 const settings = definePluginSettings({
     apiKey: {
+        sensitive: true,
         type: OptionType.STRING,
         description:
             "Your OpenAI API key (obtained from https://platform.openai.com/api-keys)",
@@ -214,7 +215,7 @@ export default definePlugin({
 
                     isProcessing = true;
 
-                    const response = await callChatGPT(question as string);
+                    const response = await callChatGPT(question);
 
                     notify("ChatGPT", "Response generated successfully");
 
@@ -267,12 +268,12 @@ export default definePlugin({
     ],
     start() {
         if (isInitialized) {
-            console.log("[ChatGPT] Plugin is already initialized");
+            console.debug("[ChatGPT] Plugin is already initialized");
             return;
         }
 
         try {
-            console.log("[ChatGPT] Initializing plugin...");
+            console.debug("[ChatGPT] Initializing plugin...");
 
             const hasValidKey = validateApiKey(settings.store.apiKey);
 
@@ -287,7 +288,7 @@ export default definePlugin({
             }
 
             isInitialized = true;
-            console.log("[ChatGPT] Plugin initialized successfully");
+            console.debug("[ChatGPT] Plugin initialized successfully");
         } catch (error) {
             console.error("[ChatGPT] Error initializing plugin:", error);
             isInitialized = false;
@@ -295,7 +296,7 @@ export default definePlugin({
         }
     },
     stop() {
-        console.log("[ChatGPT] Stopping plugin...");
+        console.debug("[ChatGPT] Stopping plugin...");
         isInitialized = false;
         isProcessing = false;
         notify("ChatGPT Plugin", "Plugin disabled");

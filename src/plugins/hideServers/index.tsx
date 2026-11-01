@@ -116,7 +116,7 @@ export default definePlugin({
                     replace: "$self.useFilteredGuilds($1)$2"
                 },
                 {
-                    match: /let{disableAppDownload.{0,10}isPlatformEmbedded/,
+                    match: /let(?: (?:\i,)+)?{disableAppDownload.{0,10}isPlatformEmbedded/,
                     replace: "$self.useStore();$&",
                 }
             ]
@@ -158,7 +158,7 @@ export default definePlugin({
                 return [];
             }
 
-            if (guild.type === "folder" && hiddenGuilds.has("folder-" + guild.id.toString())) {
+            if (guild.type === "folder" && hiddenGuilds.has(`folder-${guild.id.toString()}`)) {
                 return [];
             }
 
@@ -166,7 +166,7 @@ export default definePlugin({
             newGuild.children = guild.children.filter(
                 child =>
                     !hiddenGuilds.has(child.id.toString()) &&
-                    !(child.type === "folder" && hiddenGuilds.has("folder-" + child.id.toString()))
+                    !(child.type === "folder" && hiddenGuilds.has(`folder-${child.id.toString()}`))
             );
 
             return [newGuild];

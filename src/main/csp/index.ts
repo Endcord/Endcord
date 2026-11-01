@@ -14,7 +14,7 @@ export const ImageSrc = [...ConnectSrc, "img-src"];
 export const CssSrc = ["style-src", "font-src"];
 export const ImageAndCssSrc = [...ImageSrc, ...CssSrc];
 export const ImageAndMediaSrc = [...ImageSrc, "media-src"];
-export const ImageScriptsAndCssSrc = [...ImageAndCssSrc, "script-src", "worker-src"];
+export const ScriptSrc = ["script-src", "worker-src"];
 
 // Plugins can whitelist their own domains by importing this object in their native.ts
 // script and just adding to it. But generally, you should just edit this file instead
@@ -51,8 +51,17 @@ export const CspPolicies: PolicyMap = {
 
     // CDNs used for some things by Endcord.
     // FIXME: we really should not be using CDNs anymore
-    "cdnjs.cloudflare.com": ImageScriptsAndCssSrc,
-    "cdn.jsdelivr.net": ImageScriptsAndCssSrc,
+    "cdnjs.cloudflare.com": ImageAndCssSrc,
+    "cdn.jsdelivr.net": ImageAndCssSrc,
+
+    // Discord's script nonce stops injected scripts, and these CDNs host anyone's code,
+    // so only the exact packages Endcord runs may execute from them
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/": ScriptSrc, // PdfViewer
+    "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/": ScriptSrc, // ClipUpload, FileUpload, MoreStickers
+    "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.0/": ScriptSrc, // VoiceMessageTranscriber
+    "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.31.0-dev.20260914-8d85527a0/": ScriptSrc, // VoiceMessageTranscriber
+    "https://cdn.jsdelivr.net/npm/@vap/shiki-worker@0.0.8/": ScriptSrc, // ShikiCodeblocks
+    "https://cdn.jsdelivr.net/npm/stegcloak-dist@1.0.0/": ScriptSrc, // InvisibleChat
 
     // Function Specific
     "api.github.com": ConnectSrc, // used for updating Endcord itself
@@ -74,7 +83,7 @@ export const CspPolicies: PolicyMap = {
     // APIs that bundled plugins call from the renderer; without these the requests fail with "Failed to fetch"
     "badges.equicord.org": ConnectSrc, // GlobalBadges
     "timezone.creations.works": ConnectSrc, // Timezones
-    "cors.keiran0.workers.dev": ConnectSrc, // FileUpload, BetterAudioPlayer and MoreStickers CORS proxy
+    "cors.keiran0.workers.dev": ConnectSrc, // FileUpload and MoreStickers CORS proxy
     "corsproxy.io": ConnectSrc, // GifCaptioner
     "lrclib.net": ConnectSrc, // MusicControls lyrics
     "spotify-lyrics-api-pi.vercel.app": ConnectSrc, // MusicControls lyrics

@@ -40,7 +40,7 @@ app.on("browser-window-created", (_, win) => {
                 if (!settings?.enabled) return;
 
                 frame.executeJavaScript(`
-                    globalThis._vcVolume = ${settings.volume / 100};
+                    globalThis._vcVolume = ${Number(settings.volume) / 100};
                     const original = Audio.prototype.play;
                     Audio.prototype.play = function() {
                         this.volume = _vcVolume;
@@ -54,7 +54,7 @@ app.on("browser-window-created", (_, win) => {
     RendererSettings.addChangeListener("plugins.FixSpotifyEmbeds.volume", newVolume => {
         try {
             cleanUpAndGetSpotifyFrames().forEach(frame =>
-                frame.executeJavaScript(`globalThis._vcVolume = ${newVolume / 100}`)
+                frame.executeJavaScript(`globalThis._vcVolume = ${Number(newVolume) / 100}`)
             );
         } catch (e) {
             console.error("FixSpotifyEmbeds: Failed to update volume", e);

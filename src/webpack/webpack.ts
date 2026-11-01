@@ -222,7 +222,7 @@ export const find = traceFunction("find", function find(filter: FilterFn, { isIn
     if (IS_ANTI_CRASH_TEST) return null;
 
     if (typeof filter !== "function")
-        throw new Error("Invalid filter. Expected a function got " + typeof filter);
+        throw new Error(`Invalid filter. Expected a function got ${typeof filter}`);
 
     const matchModule = (key: string) => {
         const mod = cache[key];
@@ -263,7 +263,7 @@ export const find = traceFunction("find", function find(filter: FilterFn, { isIn
 
 export function findAll(filter: FilterFn, { topLevelOnly = false }: { topLevelOnly?: boolean; } = {}) {
     if (typeof filter !== "function")
-        throw new Error("Invalid filter. Expected a function got " + typeof filter);
+        throw new Error(`Invalid filter. Expected a function got ${typeof filter}`);
 
     const ret = [] as any[];
     for (const key in cache) {
@@ -295,7 +295,7 @@ export const findBulk = traceFunction("findBulk", function findBulk(...filterFns
     if (IS_ANTI_CRASH_TEST) return [];
 
     if (!Array.isArray(filterFns))
-        throw new Error("Invalid filters. Expected function[] got " + typeof filterFns);
+        throw new Error(`Invalid filters. Expected function[] got ${typeof filterFns}`);
 
     const { length } = filterFns;
 
@@ -371,7 +371,7 @@ export const findModuleId = traceFunction("findModuleId", function findModuleId(
         if (stringMatches(wreq.m[id].toString(), code)) return id;
     }
 
-    const err = new Error("Didn't find module with code(s):\n" + code.join("\n"));
+    const err = new Error(`Didn't find module with code(s):\n${code.join("\n")}`);
     if (IS_DEV) {
         if (!devToolsOpen)
             // Strict behaviour in DevBuilds to fail early and make sure the issue is found
@@ -406,7 +406,7 @@ export const lazyWebpackSearchHistory = [] as Array<["find" | "findByProps" | "f
  * @returns Proxy
  *
  * Note that the example below exists already as an api, see {@link findByPropsLazy}
- * @example const mod = proxyLazy(() => findByProps("blah")); console.log(mod.blah);
+ * @example const mod = proxyLazy(() => findByProps("blah")); console.debug(mod.blah);
  */
 export function proxyLazyWebpack<T = any>(factory: () => T, attempts?: number) {
     if (IS_REPORTER) lazyWebpackSearchHistory.push(["proxyLazyWebpack", [factory]]);
@@ -655,7 +655,7 @@ export const mapMangledModule = traceFunction("mapMangledModule", function mapMa
     if (id === null)
         return exports;
 
-    const mod = wreq(id as any);
+    const mod = wreq(id);
     const keys = getAllPropertyNames(mod, includeBlacklistedExports);
     outer:
     for (const key of keys) {
@@ -786,7 +786,7 @@ export function waitFor(filter: string | PropsFilter | FilterFn, callback: Callb
     else if (Array.isArray(filter))
         filter = filters.byProps(...filter);
     else if (typeof filter !== "function")
-        throw new Error("filter must be a string, string[] or function, got " + typeof filter);
+        throw new Error(`filter must be a string, string[] or function, got ${typeof filter}`);
 
     if (cache != null) {
         const [existing, id] = find(filter, { isIndirect: true, isWaitFor: true });
@@ -833,7 +833,7 @@ export function extract(moduleId: PropertyKey) {
     const originalFactoryCode = String(originalFactory);
     const isArrowFunction = originalFactoryCode.startsWith("(");
 
-    const wrappedCode = "0," + (!isArrowFunction ? "function" : "") + originalFactoryCode.slice(originalFactoryCode.indexOf("("));
+    const wrappedCode = `0,${!isArrowFunction ? "function" : ""}${originalFactoryCode.slice(originalFactoryCode.indexOf("("))}`;
     const code = `
 // [EXTRACTED] WebpackModule${String(moduleId)}
 // WARNING: This module was extracted to be more easily readable.

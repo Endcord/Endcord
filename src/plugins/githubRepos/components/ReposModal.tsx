@@ -5,8 +5,8 @@
  */
 
 import { RenderModalProps } from "@endcord/discord-types";
-import { RepoGroup, RepoSortMode } from "@equicordplugins/githubRepos/types";
-import { PERSONAL_GROUP_KEY, sortGroups } from "@equicordplugins/githubRepos/utils";
+import { RepoGroup, RepoSortMode } from "@plugins/githubRepos/types";
+import { PERSONAL_GROUP_KEY, sortGroups } from "@plugins/githubRepos/utils";
 import { Modal, React, useState } from "@webpack/common";
 
 import { cl, settings } from "..";

@@ -6,9 +6,9 @@
 
 import { BaseText } from "@components/BaseText";
 import { TooltipContainer } from "@components/TooltipContainer";
-import { settings } from "@equicordplugins/musicControls/settings";
-import { TidalLrcStore } from "@equicordplugins/musicControls/tidal/lyrics/providers/store";
-import { TidalStore } from "@equicordplugins/musicControls/tidal/TidalStore";
+import { settings } from "@plugins/musicControls/settings";
+import { TidalLrcStore } from "@plugins/musicControls/tidal/lyrics/providers/store";
+import { TidalStore } from "@plugins/musicControls/tidal/TidalStore";
 import { t } from "@utils/i18n";
 import { ContextMenuApi, openModal,useEffect, useState, useStateFromStores } from "@webpack/common";
 

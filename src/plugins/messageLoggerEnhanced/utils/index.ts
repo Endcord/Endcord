@@ -37,7 +37,7 @@ export function reAddDeletedMessages(messages: LoggedMessageJSON[], deletedMessa
 
     for (let i = 0, len = messages.length; i < len; i++) {
         const { id } = messages[i];
-        IDs.push({ id: id, time: (parseInt(id) / 4194304) + DISCORD_EPOCH });
+        IDs.push({ id, time: (parseInt(id) / 4194304) + DISCORD_EPOCH });
     }
     for (let i = 0, len = deletedMessages.length; i < len; i++) {
         const record = deletedMessages[i];

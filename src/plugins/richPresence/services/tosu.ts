@@ -10,7 +10,6 @@ import { BanchoStatusEnum, GameState, Modes, TosuApi } from "@plugins/richPresen
 import { ApplicationAssetUtils, FluxDispatcher } from "@webpack/common";
 
 const OSU_APP_ID = "367827983903490050";
-const OSU_LARGE_IMAGE = "373344233077211136";
 const OSU_STARDARD_SMALL_IMAGE = "373370493127884800";
 const OSU_MANIA_SMALL_IMAGE = "373370588703621136";
 const OSU_TAIKO_SMALL_IMAGE = "373370519891738624";
@@ -39,7 +38,7 @@ function throttle<T extends (...args: never[]) => void>(func: T, limit: number, 
 
 async function getAsset(key: string): Promise<string> {
     if (/https?:\/\/(cdn|media)\.discordapp\.(com|net)\/attachments\//.test(key))
-        return "mp:" + key.replace(/https?:\/\/(cdn|media)\.discordapp\.(com|net)\//, "");
+        return `mp:${key.replace(/https?:\/\/(cdn|media)\.discordapp\.(com|net)\//, "")}`;
     return (await ApplicationAssetUtils.fetchAssetIds(OSU_APP_ID, [key]))[0];
 }
 

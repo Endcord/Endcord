@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { isSafeLink } from "@shared/externalLinks";
 import { React } from "@webpack/common";
 
 interface Props extends React.DetailedHTMLProps<React.AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement> {
@@ -18,6 +19,7 @@ export function Link(props: React.PropsWithChildren<Props>) {
     }
 
     props.rel ??= "noreferrer";
+    if (!isSafeLink(props.href)) props.href = undefined;
 
     return (
         <a role="link" target="_blank" {...props}>

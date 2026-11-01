@@ -49,12 +49,14 @@ export const settings = definePluginSettings({
         onChange: resetLanguageDefaults
     },
     deeplApiKey: {
+        sensitive: true,
         type: OptionType.STRING,
         displayName: "DeepL API Key",
         description: "Your DeepL API key (from deepl.com/your-account)",
         default: ""
     },
     kagiSession: {
+        sensitive: true,
         type: OptionType.STRING,
         description: "Your Kagi session token (from kagi.com/settings?p=user_details)",
         default: ""

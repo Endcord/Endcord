@@ -92,7 +92,7 @@ function applyTenorMp4Fix(url: string, isGif: boolean) {
     const typeIndex = url.lastIndexOf("/") - 1;
     if (typeIndex <= 0 || url[typeIndex] === "o") return url;
 
-    return url.slice(0, typeIndex) + "o" + url.slice(typeIndex + 1);
+    return `${url.slice(0, typeIndex)}o${url.slice(typeIndex + 1)}`;
 }
 
 function collectCandidateUrls(source: unknown, depth = 0, out = new Set<string>()) {
@@ -154,10 +154,6 @@ function orderCandidateUrls(preferred: string | null, candidates: Set<string>) {
     rest.sort((a, b) => scoreUrl(b) - scoreUrl(a));
 
     return preferred ? [preferred, ...rest] : rest;
-}
-
-function isLikelyVideoUrl(url: string) {
-    return /\.(webm|mp4|m4v)(\?|$)/i.test(url);
 }
 
 async function resolveMedia(urls: string[]) {

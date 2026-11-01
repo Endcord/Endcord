@@ -22,7 +22,6 @@ import { Settings, SettingsStore } from "@api/Settings";
 import { disableStyle, enableStyle } from "@api/Styles";
 import { addUserAreaButton, removeUserAreaButton } from "@api/UserArea";
 import { traceFunction } from "@debug/Tracer";
-import { FluxEvents } from "@endcord/discord-types";
 import { Logger } from "@utils/Logger";
 import { onlyOnce } from "@utils/onlyOnce";
 import { canonicalizeFind, canonicalizeReplacement } from "@utils/patches";
@@ -177,7 +176,7 @@ export function subscribePluginFluxEvents(p: Plugin, fluxDispatcher: typeof Flux
                 }
             };
 
-            fluxDispatcher.subscribe(event as FluxEvents, wrappedHandler);
+            fluxDispatcher.subscribe(event, wrappedHandler);
         }
     }
 }
@@ -188,7 +187,7 @@ export function unsubscribePluginFluxEvents(p: Plugin, fluxDispatcher: typeof Fl
 
         logger.debug("Unsubscribing from flux events of plugin", p.name);
         for (const [event, handler] of Object.entries(p.flux)) {
-            fluxDispatcher.unsubscribe(event as FluxEvents, handler!);
+            fluxDispatcher.unsubscribe(event, handler!);
         }
     }
 }
@@ -456,7 +455,7 @@ export const initPluginManager = onlyOnce(function init() {
         if (p.renderProfileSection) neededApiPlugins.add("ProfileSectionsAPI");
 
         for (const key of pluginKeysToBind) {
-            p[key] &&= (p[key] as Function).bind(p) as any;
+            p[key] &&= (p[key] as Function).bind(p);
         }
     }
 

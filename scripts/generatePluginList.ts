@@ -20,7 +20,7 @@ import { Dirent, readdirSync, readFileSync, writeFileSync } from "fs";
 import { access, readFile } from "fs/promises";
 import { join, sep } from "path";
 import { normalize as posixNormalize, sep as posixSep } from "path/posix";
-import { BigIntLiteral, createSourceFile, Identifier, isArrayLiteralExpression, isAsExpression, isCallExpression, isExportAssignment, isIdentifier, isNewExpression, isNoSubstitutionTemplateLiteral, isObjectLiteralExpression, isPropertyAccessExpression, isPropertyAssignment, isSatisfiesExpression, isStringLiteral, isVariableStatement, NamedDeclaration, NodeArray, Node, ObjectLiteralExpression, ScriptTarget, StringLiteral, SyntaxKind } from "typescript";
+import { BigIntLiteral, createSourceFile, Identifier, isArrayLiteralExpression, isAsExpression, isCallExpression, isExportAssignment, isIdentifier, isNewExpression, isNoSubstitutionTemplateLiteral, isObjectLiteralExpression, isPropertyAccessExpression, isPropertyAssignment, isSatisfiesExpression, isStringLiteral, isVariableStatement, NamedDeclaration, Node, NodeArray, ObjectLiteralExpression, ScriptTarget, StringLiteral, SyntaxKind } from "typescript";
 
 import { getPluginTarget } from "./utils.mjs";
 

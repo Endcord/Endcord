@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { getIsEndcordHidden, onHiddenChange } from "@api/EndcordVisibility";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { getIsEndcordHidden, onHiddenChange } from "@plugins/hideEndcord";
 import { Logger } from "@utils/Logger";
 import { classes } from "@utils/misc";
 import { findComponentByCodeLazy, findCssClassesLazy } from "@webpack";

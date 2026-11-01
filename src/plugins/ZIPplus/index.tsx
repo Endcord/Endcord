@@ -110,7 +110,7 @@ function parseExtensions() {
     const exts = settings.store.extensions.split(",").map(ext => ext.trim().toLowerCase());
     exts.forEach(ext => {
         if (ext && !ext.startsWith(".")) {
-            extensionsToZip.add("." + ext);
+            extensionsToZip.add(`.${ext}`);
         } else if (ext) {
             extensionsToZip.add(ext);
         }
@@ -133,12 +133,12 @@ async function zipFile(file: File): Promise<File> {
     });
 
     const baseName = file.name.substring(0, file.name.lastIndexOf(".")) || file.name;
-    return new File([zipData as BlobPart], `${baseName}.zip`, { type: "application/zip" });
+    return new File([zipData], `${baseName}.zip`, { type: "application/zip" });
 }
 
 async function zipFolder(folderName: string, fileEntries: Record<string, Uint8Array>): Promise<File> {
     const zipData = zipSync(fileEntries);
-    return new File([zipData as BlobPart], `${folderName}.zip`, { type: "application/zip" });
+    return new File([zipData], `${folderName}.zip`, { type: "application/zip" });
 }
 
 async function readFileEntry(entry: FileSystemFileEntry): Promise<File> {
@@ -289,19 +289,8 @@ function handlePaste(event: ClipboardEvent) {
 // Get native helper for desktop
 function getNative(): ZipPreviewNative | null {
     if (!IS_DISCORD_DESKTOP || !EndcordNative?.pluginHelpers) return null;
-    const helpers = EndcordNative.pluginHelpers as Record<string, unknown>;
-    const directCandidates = [helpers.ZipPreview, helpers.zipPreview];
-
-    for (const candidate of directCandidates) {
-        if (isZipPreviewNative(candidate)) return candidate;
-    }
-
-    for (const candidate of Object.values(helpers)) {
-        if (!isZipPreviewNative(candidate)) continue;
-        if (typeof candidate.zipPreviewUniqueIdThingyIdkMan === "function") return candidate;
-    }
-
-    return null;
+    const native: unknown = EndcordNative.pluginHelpers["ZIP+"];
+    return isZipPreviewNative(native) ? native : null;
 }
 
 async function fetchBlob(url: string): Promise<Blob | null> {
@@ -462,9 +451,11 @@ function ZipAttachmentPreviewInner({ attachment }: { attachment: ZipAttachmentLi
     const [blob, setBlob] = useState<Blob | null>(() => blobCache.get(cacheKey) || null);
     const [error, setError] = useState<string | null>(null);
     const [expanded, setExpanded] = useState<boolean>(() => expandedState.get(cacheKey) ?? false);
+    // Nothing downloads until asked, or a channel full of archives would cost everyone who opens it
+    const [requested, setRequested] = useState<boolean>(() => blobCache.has(cacheKey));
 
     useEffect(() => {
-        if (blobCache.has(cacheKey)) return;
+        if (!requested || blobCache.has(cacheKey)) return;
 
         let mounted = true;
         (async () => {
@@ -507,9 +498,16 @@ function ZipAttachmentPreviewInner({ attachment }: { attachment: ZipAttachmentLi
             }
         })();
         return () => { mounted = false; };
-    }, [attachment.proxy_url, attachment.url, cacheKey]);
+    }, [attachment.proxy_url, attachment.url, cacheKey, requested]);
 
     if (error) return <div className="zp-error">{error}</div>;
+    if (!requested) {
+        return (
+            <button className="zp-loading zp-load-button" onClick={e => { e.stopPropagation(); setRequested(true); }}>
+                {t("Preview")}
+            </button>
+        );
+    }
     if (!blob) return <div className="zp-loading">{t("Loading preview…")}</div>;
 
     return (

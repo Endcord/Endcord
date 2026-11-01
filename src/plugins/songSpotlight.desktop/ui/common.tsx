@@ -5,7 +5,7 @@
  */
 
 import { BaseText } from "@components/index";
-import { cl } from "@equicordplugins/songSpotlight.desktop/lib/utils";
+import { cl } from "@plugins/songSpotlight.desktop/lib/utils";
 import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import { findByCodeLazy, findCssClassesLazy } from "@webpack";

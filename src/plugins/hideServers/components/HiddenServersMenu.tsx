@@ -7,7 +7,7 @@
 import { BaseText } from "@components/BaseText";
 import { Heading } from "@components/Heading";
 import { Guild, RenderModalProps } from "@endcord/discord-types";
-import { HiddenServersStore } from "@equicordplugins/hideServers/HiddenServersStore";
+import { HiddenServersStore } from "@plugins/hideServers/HiddenServersStore";
 import { classNameFactory } from "@utils/css";
 import { getGuildAcronym } from "@utils/discord";
 import { t } from "@utils/i18n";
@@ -29,7 +29,7 @@ function HiddenServersModal({ modalProps, close }: { modalProps: RenderModalProp
 
 function isGuildHidden(guild: Guild, SortedGuildStore: any) {
     const folder = SortedGuildStore.getGuildFolders().find((f: any) => f.guildIds.includes(guild.id));
-    if (folder && HiddenServersStore.hiddenGuilds.has("folder-" + folder.folderId)) return true;
+    if (folder && HiddenServersStore.hiddenGuilds.has(`folder-${folder.folderId}`)) return true;
     return HiddenServersStore.hiddenGuilds.has(guild.id);
 }
 
@@ -45,7 +45,7 @@ function restoreGuild(guild: Guild, SortedGuildStore: any) {
     const folder = getFolderForGuild(SortedGuildStore, guild.id);
     if (!folder) return;
 
-    HiddenServersStore.removeHiddenGuild("folder-" + folder.folderId);
+    HiddenServersStore.removeHiddenGuild(`folder-${folder.folderId}`);
 }
 
 function GuildRow({ guild }) {

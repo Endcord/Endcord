@@ -12,7 +12,7 @@ import { initMemoryTrim } from "./memoryTrim";
 import { RendererSettings } from "./settings";
 import { IS_VANILLA } from "./utils/constants";
 
-console.log("[Endcord] Starting up...");
+console.info("[Endcord] Starting up...");
 
 import { existsSync } from "fs";
 
@@ -165,8 +165,8 @@ if (!IS_VANILLA) {
         app.commandLine.appendSwitch("enable-features", "CanvasOopRasterization");
     }
 } else {
-    console.log("[Endcord] Running in vanilla mode. Not loading Endcord");
+    console.info("[Endcord] Running in vanilla mode. Not loading Endcord");
 }
 
-console.log("[Endcord] Loading original Discord app.asar");
+console.info("[Endcord] Loading original Discord app.asar");
 require(require.main!.filename);

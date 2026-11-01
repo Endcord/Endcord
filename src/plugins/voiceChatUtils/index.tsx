@@ -40,7 +40,7 @@ function sendPatch(channel: Channel, body: Record<string, any>, bypass = false) 
         if (bypass || userVoice.userId !== myId) {
             promises.push(RestAPI.patch({
                 url: `/guilds/${channel.guild_id}/members/${userVoice.userId}`,
-                body: body
+                body
             }));
         }
     });

@@ -17,7 +17,7 @@ export function fuzzyScore(query: string, text: string): number {
     if (t === q) return 1000;
     if (t.startsWith(q)) return 800 + Math.max(0, 60 - t.length);
 
-    const wordIndex = t.indexOf(" " + q);
+    const wordIndex = t.indexOf(` ${q}`);
     if (wordIndex !== -1) return 650 - Math.min(wordIndex, 100);
 
     const subIndex = t.indexOf(q);

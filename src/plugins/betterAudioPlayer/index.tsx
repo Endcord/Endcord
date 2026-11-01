@@ -9,11 +9,11 @@ import "./styles.css";
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
-import definePlugin, { OptionType } from "@utils/types";
+import definePlugin, { OptionType, PluginNative } from "@utils/types";
 import { ColorUtils, React, showToast, Toasts } from "@webpack/common";
 
 const cl = classNameFactory("vc-better-audio-player-");
-const CORS_PROXY = "https://cors.keiran0.workers.dev?url=";
+const Native = IS_WEB ? null : EndcordNative.pluginHelpers.BetterAudioPlayer as PluginNative<typeof import("./native")>;
 const MAX_FILE_SIZE = 12e6;
 
 interface PlayerInstance {
@@ -100,10 +100,12 @@ function drawSpectrograph(ctx: CanvasRenderingContext2D, w: number, h: number, f
 }
 
 async function fetchAudioBlob(src: string): Promise<string | null> {
-    const url = new URL(src);
-    url.searchParams.set("t", Date.now().toString());
+    if (Native) {
+        const audio = await Native.fetchAudio(src);
+        return audio && URL.createObjectURL(new Blob([audio.data], { type: audio.type }));
+    }
 
-    const response = await fetch(CORS_PROXY + encodeURIComponent(url.href));
+    const response = await fetch(src);
     const contentLength = response.headers.get("content-length");
     if (contentLength && Number(contentLength) > MAX_FILE_SIZE) return null;
 

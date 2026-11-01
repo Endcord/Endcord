@@ -51,8 +51,8 @@ async function cacheRecords(records: DBMessageRecord[]) {
         for (const att of r.message.attachments) {
             const blobUrl = await getAttachmentBlobUrl(att);
             if (blobUrl) {
-                att.url = blobUrl + "#";
-                att.proxy_url = blobUrl + "#";
+                att.url = `${blobUrl}#`;
+                att.proxy_url = `${blobUrl}#`;
             }
         }
     }
@@ -176,7 +176,7 @@ export async function getDateStortedMessagesByStatusIDB(newest: boolean, limit: 
     const cursor = await index.openCursor(IDBKeyRange.only(status), direction);
 
     if (!cursor) {
-        console.log("No messages found");
+        console.debug("No messages found");
         return [];
     }
 
@@ -197,7 +197,7 @@ export async function getMessagesByChannelAndAfterTimestampIDB(channel_id: strin
     const cursor = await index.openCursor(IDBKeyRange.bound([channel_id, start], [channel_id, "\uffff"]));
 
     if (!cursor) {
-        console.log("No messages found in range");
+        console.debug("No messages found in range");
         return [];
     }
 
@@ -286,7 +286,7 @@ async function clearMessagesChunkedIDB() {
     while (true) {
         const tx = db.transaction("messages", "readwrite", { durability: "relaxed" });
         const { store } = tx;
-        const keys = (await store.getAllKeys(undefined, CLEAR_BATCH_SIZE)) as string[];
+        const keys = (await store.getAllKeys(undefined, CLEAR_BATCH_SIZE));
         if (keys.length === 0) {
             await tx.done;
             break;

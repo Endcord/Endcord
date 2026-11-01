@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { Channel, Embed, EmbedJSON, Message, MessageAttachment, TextInput } from "@vencord/discord-types";
+import { Channel, Embed, EmbedJSON, Message, MessageAttachment, TextInput } from "@endcord/discord-types";
 import { Component, ComponentClass, ComponentProps, ComponentPropsWithRef, Key, PropsWithChildren, ReactNode, RefObject } from "react";
 import { JsonValue, PartialDeep } from "type-fest";
 

@@ -78,13 +78,11 @@ export function getApplicationIcons(activities: Activity[], preferSmall = false)
                 } else if (large_image) {
                     addImage(large_image, largeText);
                 }
-            } else {
-                if (large_image) {
+            } else if (large_image) {
                     addImage(large_image, largeText);
                 } else if (small_image) {
                     addImage(small_image, smallText);
                 }
-            }
         } else if (application_id) {
             let application = ApplicationStore.getApplication(application_id);
             if (!application) {

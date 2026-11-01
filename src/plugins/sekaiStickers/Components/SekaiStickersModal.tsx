@@ -8,7 +8,7 @@ import { Flex } from "@components/Flex";
 import { FormSwitch } from "@components/FormSwitch";
 import { Heading } from "@components/Heading";
 import { RenderModalProps } from "@endcord/discord-types";
-import { characters } from "@equicordplugins/sekaiStickers/characters.json";
+import { characters } from "@plugins/sekaiStickers/characters.json";
 import { t } from "@utils/i18n";
 import { ChannelStore, Modal, openModal, React, SelectedChannelStore, Slider, TextArea, UploadHandler } from "@webpack/common";
 
@@ -27,7 +27,7 @@ export default function SekaiStickersModal({ modalProps, settings }: { modalProp
     let canvast!: HTMLCanvasElement;
     const img = new Image();
     img.crossOrigin = "anonymous";
-    img.src = "https://st.ayaka.one/img/" + characters[character].img;
+    img.src = `https://st.ayaka.one/img/${characters[character].img}`;
 
     React.useEffect(() => {
         setPosition({

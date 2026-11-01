@@ -25,16 +25,16 @@ function applyGUMPatch() {
         if (constraints?.audio && typeof constraints.audio === "object") {
             const s = settings.store;
             if (s.forceStereo) {
-                (constraints.audio as MediaTrackConstraints).channelCount = { ideal: 2 };
+                (constraints.audio).channelCount = { ideal: 2 };
             }
             if (!s.echoCancellation) {
-                (constraints.audio as MediaTrackConstraints).echoCancellation = false;
+                (constraints.audio).echoCancellation = false;
             }
             if (!s.autoGainControl) {
-                (constraints.audio as MediaTrackConstraints).autoGainControl = false;
+                (constraints.audio).autoGainControl = false;
             }
             if (s.noiseSuppression === "none") {
-                (constraints.audio as MediaTrackConstraints).noiseSuppression = false;
+                (constraints.audio).noiseSuppression = false;
             }
         }
         return _origGUM!(constraints);

@@ -36,7 +36,7 @@ function OnekoColorSettings() {
 
     const formatNumberToHex = (num: number | null): string => {
         if (num === null) return "#FFFFFF";
-        return "#" + num.toString(16).padStart(6, "0").toUpperCase();
+        return `#${num.toString(16).padStart(6, "0").toUpperCase()}`;
     };
 
     const handleFurColorChange = (value: number | null) => {

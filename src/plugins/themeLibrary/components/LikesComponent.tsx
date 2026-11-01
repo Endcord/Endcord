@@ -7,9 +7,9 @@
 import * as DataStore from "@api/DataStore";
 import { Button } from "@components/Button";
 import { Margins } from "@components/margins";
-import type { Theme, ThemeLikeProps } from "@equicordplugins/themeLibrary/types";
-import { isAuthorized } from "@equicordplugins/themeLibrary/utils/auth";
-import { LikeIcon } from "@equicordplugins/themeLibrary/utils/Icons";
+import type { Theme, ThemeLikeProps } from "@plugins/themeLibrary/types";
+import { isAuthorized } from "@plugins/themeLibrary/utils/auth";
+import { LikeIcon } from "@plugins/themeLibrary/utils/Icons";
 import { useEffect, useRef, useState } from "@webpack/common";
 
 import { logger, themeRequest } from "./ThemeTab";
@@ -49,7 +49,7 @@ export const LikesComponent = ({ themeId, likedThemes: initialLikedThemes }: { t
                     "Authorization": `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    themeId: themeId,
+                    themeId,
                 }),
             });
 

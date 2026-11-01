@@ -6,10 +6,10 @@
 
 import { Paragraph } from "@components/Paragraph";
 import { Switch } from "@components/settings";
-import { BrushTool } from "@equicordplugins/remix/editor/tools/brush";
-import { CropTool, resetBounds } from "@equicordplugins/remix/editor/tools/crop";
-import { EraseTool } from "@equicordplugins/remix/editor/tools/eraser";
-import { currentShape, setShape, setShapeFill, Shape, ShapeTool } from "@equicordplugins/remix/editor/tools/shape";
+import { BrushTool } from "@plugins/remix/editor/tools/brush";
+import { CropTool, resetBounds } from "@plugins/remix/editor/tools/crop";
+import { EraseTool } from "@plugins/remix/editor/tools/eraser";
+import { currentShape, setShape, setShapeFill, Shape, ShapeTool } from "@plugins/remix/editor/tools/shape";
 import { t } from "@utils/i18n";
 import { Button, Select, Slider, useEffect, useState } from "@webpack/common";
 

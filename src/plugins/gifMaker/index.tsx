@@ -215,7 +215,7 @@ function GifMakerModal({ url, isVideo, sourceWidth, sourceHeight, ...props }: Re
             captionMode: settings.store.lastCaptionMode as GifMakerOptions["captionMode"],
             captionText: settings.store.lastCaptionText,
             captionSize: settings.store.lastCaptionSize,
-            fontFamily: settings.store.lastFontFamily as string || DEFAULT_OPTIONS.fontFamily,
+            fontFamily: settings.store.lastFontFamily || DEFAULT_OPTIONS.fontFamily,
             bubbleTipX: DEFAULT_OPTIONS.bubbleTipX,
             bubbleTipY: DEFAULT_OPTIONS.bubbleTipY,
             bubbleTipBase: settings.store.lastBubbleTipBase,

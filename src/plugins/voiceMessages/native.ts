@@ -11,7 +11,7 @@ import { basename, normalize } from "path";
 export async function readRecording(_, filePath: string) {
     filePath = normalize(filePath);
     const filename = basename(filePath);
-    const discordBaseDirWithTrailingSlash = normalize(app.getPath("userData") + "/");
+    const discordBaseDirWithTrailingSlash = normalize(`${app.getPath("userData")}/`);
     if (!/^\d*recording\.ogg$/.test(filename) || !filePath.startsWith(discordBaseDirWithTrailingSlash)) return null;
 
     try {

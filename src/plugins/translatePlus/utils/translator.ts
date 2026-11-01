@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { settings } from "@endcordplugins/translatePlus/settings";
+import { settings } from "@plugins/translatePlus/settings";
 
 function isTokiPona(text: string) {
     const dictionary = /\b(?:leko|weka|pan|lete|linja|lipu|suli|nimi|akesi|misikeke|selo|ike|sijelo|sona|lili|pimeja|ante|jo|loje|telo|walo|kijetesantakalu|kasi|waso|wile|utala|lukin|sina|lape|ma|pilin|jasima|la|olin|pipi|meso|lawa|pi|pakala|oko|tan|ken|jaki|unpa|esun|seme|sitelen|len|kule|soko|open|ala|tenpo|lon|sinpin|pini|kokosila|mama|musi|monsi|mewika|taso|ona|mun|kiwen|tomo|mute|mi|nena|palisa|meli|laso|wawa|ale|kipisi|kulupu|ilo|lupa|nanpa|en|mu|jelo|kili|tonsi|moku|ni|kama|pu|poki|monsuta|sin|lasina|poka|soweli|sewi|elena|epiku|moli|pona|lanpan|alasa|anu|kute|uta|luka|suno|sama|awen|namako|suwi|noka|seli|mije|sike|jan|pali|tawa|inli|nasa|mani|wan|insa|nijon|nasin|kalama|ijo|toki|anpa|kala|kepeken|ko|kon|pana|tu|supa|kin|usawi|yupekosi)\b/gm;
@@ -63,7 +63,7 @@ async function translateShavian(message: string) {
         if (word in dictionary) translated += dictionary[word];
         else translated += word;
 
-        translated += punctuationAfter + " ";
+        translated += `${punctuationAfter} `;
     }
 
     return translated.trim();
@@ -86,14 +86,14 @@ async function translateSitelen(message: string) {
 async function google(target: string, text: string) {
     if (!text) return { src: "", text: "" };
     try {
-        const res = await fetch("https://translate-pa.googleapis.com/v1/translate?" + new URLSearchParams({
+        const res = await fetch(`https://translate-pa.googleapis.com/v1/translate?${new URLSearchParams({
             "params.client": "gtx",
             "dataTypes": "TRANSLATION",
             "key": "AIzaSyDLEeFI5OtFBwYBIoK_jj5m32rZK5CkCXA", // some google API key
             "query.sourceLanguage": "auto",
             "query.targetLanguage": target,
             "query.text": text,
-        }));
+        })}`);
         if (!res.ok) throw new Error(`Request failed with status ${res.status}`);
         const translate = await res.json();
 
@@ -115,8 +115,6 @@ export async function translate(text: string): Promise<any> {
     if ((isTokiPona(text) || isSitelen(text)) && (toki || sitelen)) {
         if (isSitelen(text) && sitelen) text = await translateSitelen(text);
 
-        console.log(text);
-
         const translate = await (await fetch("https://aiapi.serversmp.xyz/toki", {
             method: "POST",
             headers: {
@@ -124,13 +122,11 @@ export async function translate(text: string): Promise<any> {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                text: text,
+                text,
                 src: "tl",
                 target: "en"
             })
         })).json();
-
-        console.log(translate);
 
         output.src = "tp";
         output.text = target === "en" ? translate.translation[0] : (await google(target, translate.translation[0])).text;

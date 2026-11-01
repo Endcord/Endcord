@@ -135,7 +135,7 @@ define(Function.prototype, "m", {
                 }
 
                 if (wreq == null && this.c != null) {
-                    logger.info("Main WebpackInstance found" + interpolateIfDefined` in ${fileName}` + ", initializing internal references to WebpackRequire");
+                    logger.info(`Main WebpackInstance found${interpolateIfDefined` in ${fileName}`}, initializing internal references to WebpackRequire`);
                     _initWebpack(this as WebpackRequire);
                 }
 
@@ -182,7 +182,7 @@ define(Function.prototype, "m", {
          * This should only be called if this instance was later found to be one we need to patch.
          */
         const patchThisInstance = () => {
-            logger.info("Found Webpack module factories" + interpolateIfDefined` in ${fileName}`);
+            logger.info(`Found Webpack module factories${interpolateIfDefined` in ${fileName}`}`);
             allWebpackInstances.add(this);
 
             // Proxy (and maybe patch) pre-populated factories
@@ -399,8 +399,8 @@ function runFactoryWithWrap(patchedFactory: PatchedModuleFactory, thisArg: unkno
 
                 logger.warn(
                     "WebpackRequire was not initialized, falling back to WebpackRequire passed to the first called wrapped module factory (" +
-                    `id: ${String(module.id)}` + interpolateIfDefined`, WebpackInstance origin: ${webpackInstanceFileName}` +
-                    ")"
+                    `id: ${String(module.id)}${interpolateIfDefined`, WebpackInstance origin: ${webpackInstanceFileName}`
+                    })`
                 );
 
                 // Could technically be wrong, but it's better than nothing
@@ -513,7 +513,7 @@ function patchFactory(moduleId: PropertyKey, originalFactory: AnyModuleFactory):
     const isArrowFunction = originalFactoryCode.startsWith("(");
 
     // 0, prefix to turn it into an expression: 0,function(){} would be invalid syntax without the 0,
-    let code = "0," + (!isArrowFunction ? "function" : "") + originalFactoryCode.slice(originalFactoryCode.indexOf("("));
+    let code = `0,${!isArrowFunction ? "function" : ""}${originalFactoryCode.slice(originalFactoryCode.indexOf("("))}`;
     let patchedSource = code;
     let patchedFactory = originalFactory;
 
@@ -746,7 +746,7 @@ function diffErroredPatch(code: string, lastCode: string, match: RegExpMatchArra
                 ? "lime"
                 : "grey";
         fmt += "%c%s";
-        elements.push("color:" + color, d.value);
+        elements.push(`color:${color}`, d.value);
     }
 
     logger.errorCustomFmt(...Logger.makeTitle("white", "Before"), context);

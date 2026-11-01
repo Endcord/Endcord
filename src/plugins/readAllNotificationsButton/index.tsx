@@ -38,7 +38,7 @@ function onClick() {
     FluxDispatcher.dispatch({
         type: "BULK_ACK",
         context: "APP",
-        channels: channels
+        channels
     });
 }
 

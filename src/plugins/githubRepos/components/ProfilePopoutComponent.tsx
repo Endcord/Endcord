@@ -6,9 +6,9 @@
 
 import { Paragraph } from "@components/Paragraph";
 import { Span } from "@components/Span";
-import { fetchOrgRepos, fetchReposByUserId, fetchReposByUsername, fetchUserInfo, fetchUserOrgs, GitHubUserInfo } from "@equicordplugins/githubRepos/githubApi";
-import { GitHubRepo, RepoGroup } from "@equicordplugins/githubRepos/types";
-import { buildRepoGroups, getLanguageIconUrl, PERSONAL_GROUP_KEY } from "@equicordplugins/githubRepos/utils";
+import { fetchOrgRepos, fetchReposByUserId, fetchReposByUsername, fetchUserInfo, fetchUserOrgs, GitHubUserInfo } from "@plugins/githubRepos/githubApi";
+import { GitHubRepo, RepoGroup } from "@plugins/githubRepos/types";
+import { buildRepoGroups, getLanguageIconUrl, PERSONAL_GROUP_KEY } from "@plugins/githubRepos/utils";
 import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import { findCssClassesLazy } from "@webpack";

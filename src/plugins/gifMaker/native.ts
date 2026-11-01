@@ -4,11 +4,13 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-const ALLOWED_MEDIA_HOSTS = new Set([
-    "cdn.discordapp.com",
+import { DISCORD_CDN_HOSTS, parseAllowedUrl, readBody } from "@main/utils/http";
+
+const MAX_MEDIA_BYTES = 100 * 1024 * 1024;
+const ALLOWED_MEDIA_HOSTS = [
+    ...DISCORD_CDN_HOSTS,
     "images-ext-1.discordapp.net",
     "images-ext-2.discordapp.net",
-    "media.discordapp.net",
     "media.tenor.com",
     "tenor.com",
     "media.giphy.com",
@@ -17,21 +19,18 @@ const ALLOWED_MEDIA_HOSTS = new Set([
     "media2.giphy.com",
     "media3.giphy.com",
     "media4.giphy.com",
-]);
+];
 
 export async function fetchMedia(_: unknown, url: string) {
-    const parsed = URL.parse(url);
-    if (!parsed || !ALLOWED_MEDIA_HOSTS.has(parsed.hostname))
-        throw new Error("Invalid URL");
-
-    const res = await fetch(parsed, { headers: { Accept: "*/*" } });
+    const res = await fetch(parseAllowedUrl(url, ALLOWED_MEDIA_HOSTS), { headers: { Accept: "*/*" } });
     if (!res.ok) throw new Error(`Server error ${res.status}`);
 
-    const blob = await res.blob();
-    if (blob.size === 0) throw new Error(`Empty body (${res.status}) from ${url}`);
+    const data = await readBody(res, MAX_MEDIA_BYTES);
+    if (!data) throw new Error("File is too large");
+    if (data.length === 0) throw new Error(`Empty body (${res.status}) from ${url}`);
 
     return {
-        data: await blob.arrayBuffer(),
-        type: blob.type || "application/octet-stream"
+        data: data.buffer,
+        type: res.headers.get("content-type") || "application/octet-stream"
     };
 }

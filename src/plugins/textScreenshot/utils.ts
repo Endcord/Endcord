@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { User } from "@vencord/discord-types";
+import { User } from "@endcord/discord-types";
 import { IconUtils } from "@webpack/common";
 
 const DISCORD_BG = "#313338";
@@ -14,7 +14,6 @@ const DISCORD_TIMESTAMP = "#949ba4";
 
 const CANVAS_PADDING = 16;
 const AVATAR_SIZE = 40;
-const DECO_SIZE = 48;
 const DECO_OVERLAY_SIZE = 56;
 const AVATAR_RIGHT_MARGIN = 12;
 const HEADER_TOP_MARGIN = 4;
@@ -139,7 +138,6 @@ function drawMessage(
 }
 
 function calculateCanvasSize(ctx: CanvasRenderingContext2D, text: string): { width: number; height: number; } {
-    const textAreaWidth = MAX_WIDTH - CANVAS_PADDING - AVATAR_SIZE - AVATAR_RIGHT_MARGIN - CANVAS_PADDING;
     const textWidth = ctx.measureText(text).width;
     const width = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, CANVAS_PADDING + AVATAR_SIZE + AVATAR_RIGHT_MARGIN + textWidth + CANVAS_PADDING + 20));
     const actualTextAreaWidth = width - CANVAS_PADDING - AVATAR_SIZE - AVATAR_RIGHT_MARGIN - CANVAS_PADDING;

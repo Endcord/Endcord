@@ -5,9 +5,9 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
+import { Message } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
-import { Message } from "@vencord/discord-types";
 import { ChannelStore, GuildStore, UserStore } from "@webpack/common";
 
 const settings = definePluginSettings({
@@ -259,12 +259,12 @@ export default definePlugin({
   ],
 
   start() {
-    console.log(
+    console.debug(
       "[ID Translater] Plugin started - Automatic ID conversion enabled"
     );
   },
 
   stop() {
-    console.log("[ID Translater] Plugin stopped");
+    console.debug("[ID Translater] Plugin stopped");
   },
 });

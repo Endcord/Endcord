@@ -71,7 +71,7 @@ function parseNode(node: Node) {
             // since we're running in the browser sandbox, whereas the sender has host access
             return (0, eval)(node.value);
         default:
-            throw new Error("Unknown Node Type " + (node as any).type);
+            throw new Error(`Unknown Node Type ${(node as any).type}`);
     }
 }
 
@@ -124,7 +124,7 @@ function initWs(isManual = false) {
         try {
             var { nonce, type, data } = JSON.parse(e.data);
         } catch (err) {
-            logger.error("Invalid JSON:", err, "\n" + e.data);
+            logger.error("Invalid JSON:", err, `\n${e.data}`);
             return;
         }
 
@@ -144,15 +144,15 @@ function initWs(isManual = false) {
                 const candidates = search(find);
                 const keys = Object.keys(candidates);
                 if (keys.length !== 1)
-                    return reply("Expected exactly one 'find' matches, found " + keys.length);
+                    return reply(`Expected exactly one 'find' matches, found ${keys.length}`);
 
                 const mod = candidates[keys[0]];
                 let src = String(mod).replaceAll("\n", "");
 
                 if (src.startsWith("function(")) {
-                    src = "0," + src;
+                    src = `0,${src}`;
                 } else if (src.charCodeAt(0) >= 49 /* 1*/ && src.charCodeAt(0) <= 57 /* 9*/) {
-                    src = "0,function" + src.substring(src.indexOf("("));
+                    src = `0,function${src.substring(src.indexOf("("))}`;
                 }
 
                 let i = 0;
@@ -183,7 +183,7 @@ function initWs(isManual = false) {
                 try {
                     var parsedArgs = args.map(parseNode);
                 } catch (err) {
-                    return reply("Failed to parse args: " + err);
+                    return reply(`Failed to parse args: ${err}`);
                 }
 
                 try {
@@ -211,21 +211,21 @@ function initWs(isManual = false) {
                             results = findAll(filters.componentByCode(...parsedArgs));
                             break;
                         default:
-                            return reply("Unknown Find Type " + type);
+                            return reply(`Unknown Find Type ${type}`);
                     }
 
                     const uniqueResultsCount = new Set(results).size;
                     if (uniqueResultsCount === 0) throw "No results";
                     if (uniqueResultsCount > 1) throw "Found more than one result! Make this filter more specific";
                 } catch (err) {
-                    return reply("Failed to find: " + err);
+                    return reply(`Failed to find: ${err}`);
                 }
 
                 reply();
                 break;
             }
             default:
-                reply("Unknown Type " + type);
+                reply(`Unknown Type ${type}`);
                 break;
         }
     });
@@ -240,7 +240,7 @@ export default definePlugin({
     settings,
 
     toolboxActions: {
-        "Reconnect"() {
+        "Reconnect": function() {
             socket?.close(1000, "Reconnecting");
             initWs(true);
         }

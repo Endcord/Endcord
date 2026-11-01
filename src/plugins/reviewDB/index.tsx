@@ -115,11 +115,11 @@ export default definePlugin({
                         confirmText: "Ok",
                         onCancel: async () =>
                             EndcordNative.native.openExternal(
-                                "https://reviewdb.mantikafasi.dev/api/redirect?"
-                                + new URLSearchParams({
+                                `https://reviewdb.mantikafasi.dev/api/redirect?${
+                                 new URLSearchParams({
                                     token: Auth.token!,
                                     page: "dashboard/appeal"
-                                })
+                                })}`
                             )
                     } : {};
 
@@ -148,7 +148,7 @@ export default definePlugin({
     renderProfileComponent: ErrorBoundary.wrap(({ user, isSideBar = false }: { user: User; isSideBar?: boolean; }) => {
         const [reviewData] = useAwaiter(() => getReviews(user.id, { limit: 4 }), { deps: [user.id], fallbackValue: null });
 
-        // Discord are masters at using a crap ton of html elements and css classes to create a simple ui that could have
+        // Discord are masters at using a huge number of html elements and css classes to create a simple ui that could have
         // been made with less than half of the number of elements, so we have to do this insanity to replicate their ui
         const reviewsSection = (
             <section className={ProfileCardClasses.container}>
@@ -160,7 +160,7 @@ export default definePlugin({
                         >
                             <div className={classes(ProfileCardOverlayClasses.overlay, ProfileCardContainerClasses.innerContainer, ProfileCardClasses.card)}>
                                 <Paragraph size={isSideBar ? "sm" : "xs"} weight="medium">{t("User Reviews")}</Paragraph>
-                                {!!reviewData?.reviewCount
+                                {reviewData?.reviewCount
                                     ? (
                                         <div className={ProfileCardContainerClasses.icons}>
                                             {reviewData.reviews

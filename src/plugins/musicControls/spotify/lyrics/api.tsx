@@ -5,8 +5,8 @@
  */
 
 import { DataStore } from "@api/index";
-import { settings } from "@equicordplugins/musicControls/settings";
-import { Track } from "@equicordplugins/musicControls/spotify/SpotifyStore";
+import { settings } from "@plugins/musicControls/settings";
+import { Track } from "@plugins/musicControls/spotify/SpotifyStore";
 
 import { getLyricsLrclib } from "./providers/lrclibAPI";
 import { getLyricsSpotify } from "./providers/SpotifyAPI";
@@ -102,7 +102,7 @@ export async function removeTranslations() {
 
     for (const [trackId, trackData] of Object.entries(cache)) {
         const { Translated, ...lyricsVersions } = trackData?.lyricsVersions || {};
-        const newUseLyric = !!lyricsVersions[Provider.Spotify] ? Provider.Spotify : Provider.Lrclib;
+        const newUseLyric = lyricsVersions[Provider.Spotify] ? Provider.Spotify : Provider.Lrclib;
 
         newCache[trackId] = { lyricsVersions, useLyric: newUseLyric };
     }

@@ -105,17 +105,7 @@ export default definePlugin({
     tags: ["Appearance", "Chat"],
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     onBeforeMessageSend(channelId, msg) {
-        if (!settings.store.isEnabled) {
-            msg.content = msg.content;
-        } else {
-            msg.content = textProcessing(msg.content);
-        }
-    },
-    start: () => {
-        if (settings.store.isEnabled) true;
-    },
-    stop: () => {
-        if (settings.store.isEnabled) false;
+        if (settings.store.isEnabled) msg.content = textProcessing(msg.content);
     },
 
     chatBarButton: {
@@ -154,5 +144,5 @@ export default definePlugin({
 
 // text processing injection processor
 function textProcessing(input: string) {
-    return `${input}\n${settings.store.textHeader ? settings.store.textHeader + " " : ""}${settings.store.name}`;
+    return `${input}\n${settings.store.textHeader ? `${settings.store.textHeader} ` : ""}${settings.store.name}`;
 }

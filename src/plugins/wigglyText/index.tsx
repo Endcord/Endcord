@@ -46,7 +46,7 @@ const classMap = [
 
 let styles: HTMLStyleElement;
 const updateStyles = () => {
-    const inten = settings.store.intensity + "px";
+    const inten = `${settings.store.intensity}px`;
     styles.textContent = `
 .wiggle-example {
     list-style-type: disc;
@@ -151,7 +151,7 @@ export default definePlugin({
     ],
 
     wigglyRule: (order: number) => ({
-        order: order,
+        order,
         requiredFirstCharacters: ["<~", "^~", ")~"],
         match(source: string) {
             return classMap

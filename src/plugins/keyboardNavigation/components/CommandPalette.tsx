@@ -7,7 +7,7 @@
 import "./style.css";
 
 import { RenderModalProps } from "@endcord/discord-types";
-import { actions } from "@equicordplugins/keyboardNavigation/commands";
+import { actions } from "@plugins/keyboardNavigation/commands";
 import { classNameFactory } from "@utils/css";
 import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";

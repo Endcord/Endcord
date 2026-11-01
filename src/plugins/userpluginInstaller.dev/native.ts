@@ -6,17 +6,17 @@
 
 import { NativeSettings } from "@main/settings";
 import { exec, spawn } from "child_process";
-import { BrowserWindow, dialog, shell, WebContentsView } from "electron";
+import { BrowserWindow, dialog, shell } from "electron";
 import { existsSync, readdirSync, readFileSync } from "fs";
 import { mkdir, readdir, readFile, rm } from "fs/promises";
 import { basename, join } from "path";
 import yaml from "yaml-js";
 
-// @ts-ignore fuck off
+// @ts-ignore esbuild loads these as text
 import pluginValidateContent from "./misc/pluginValidate.txt"; // i would use HTML but esbuild is being whiny
-// @ts-ignore fuck off
+// @ts-ignore esbuild loads these as text
 import setGitPathContent from "./misc/setGitPath.txt";
-// @ts-ignore fuck off
+// @ts-ignore esbuild loads these as text
 import updateValidateContent from "./misc/updateValidate.txt"; // see above
 
 const PLUGIN_META_REGEX = /export default definePlugin\((?:\s|\/(?:\/|\*).*)*{\s*(?:\s|\/(?:\/|\*).*)*name:\s*(?:"|'|`)(.*)(?:"|'|`)(?:\s|\/(?:\/|\*).*)*,(?:\s|\/(?:\/|\*).*)*.+(?:\s|\/(?:\/|\*).*)*description:\s*(?:"|'|`)(.*)(?:"|'|`)(?:\s|\/(?:\/|\*).*)*/;
@@ -24,6 +24,11 @@ const PLUGIN_META_REGEX = /export default definePlugin\((?:\s|\/(?:\/|\*).*)*{\s
 const CLONE_LINK_REGEX = /https:\/\/(?:((?:git(?:hub|lab)\.com|git\.(?:[a-zA-Z0-9]|\.)+|codeberg\.org))\/(?!user-attachments)((?:[a-zA-Z0-9]|-)+)\/((?:[a-zA-Z0-9]|-|\.)+)(?:\.git)?|(plugins\.(nin0)\.dev)\/((?:[a-zA-Z0-9]|-|\.)+))(?:\/)?/;
 
 const vencordPath = ["desktop", "equibop"].includes(basename(__dirname)) ? join(__dirname, "../") : __dirname;
+
+// These names come from the renderer and get deleted or run git in, so they must stay inside the userplugins folder
+function isPluginDirectoryName(name: string) {
+    return !!name && basename(name) === name && !/^\.+$/.test(name);
+}
 
 export async function ensurePluginsDirectory(_: any) {
     if (!IS_DEV) return;
@@ -56,6 +61,8 @@ export async function rmPlugin(_, name: string): Promise<string> {
 }
 
 export async function isUpdateAvailableForPlugin(_, name: string): Promise<boolean> {
+    if (!isPluginDirectoryName(name)) return false;
+
     return new Promise(resolve => {
         const pluginDir = join(vencordPath, "../src/userplugins", name);
         const otherProc = exec("git fetch", {
@@ -85,7 +92,7 @@ export function initPluginInstall(_, link: string, source: string, owner: string
     return new Promise(async (resolve, reject) => {
         const verifiedRegex = link.match(CLONE_LINK_REGEX)!;
         const idpl = source === "plugins.nin0.dev" ? 1 : 0;
-        if (![4, 7].includes(verifiedRegex.length) || verifiedRegex[0] !== link || verifiedRegex[[1, 4][idpl]] !== source || verifiedRegex[[2, 5][idpl]] !== owner || verifiedRegex[[3, 6][idpl]] !== repo) return reject("Invalid link");
+        if (![4, 7].includes(verifiedRegex.length) || verifiedRegex[0] !== link || verifiedRegex[[1, 4][idpl]] !== source || verifiedRegex[[2, 5][idpl]] !== owner || verifiedRegex[[3, 6][idpl]] !== repo || !isPluginDirectoryName(repo)) return reject("Invalid link");
 
         // Ask for clone
         const cloneDialog = await dialog.showMessageBox({
@@ -128,13 +135,6 @@ export function initPluginInstall(_, link: string, source: string, owner: string
             show: false,
             autoHideMenuBar: true
         });
-        const reView /* haha got it */ = new WebContentsView({
-            webPreferences: {
-                devTools: true,
-                nodeIntegration: true
-            }
-        });
-        win.contentView.addChildView(reView);
         win.loadURL(generateReviewPluginContent(meta));
         win.on("page-title-updated", async e => {
             switch (win.webContents.getTitle() as "abortInstall" | "reviewCode" | "install") {
@@ -212,7 +212,6 @@ async function getPluginMeta(path: string, extra: object = {}): Promise<{
         let supportChannelID;
         try {
             const meta = readFileSync(join(path, "meta.yml"), "utf8");
-            console.log(meta);
             const parsed = yaml.load(meta);
             if (parsed.thread && typeof parsed.thread === "string" && /^\d+$/.test(parsed.thread)) {
                 supportChannelID = parsed.thread;
@@ -262,13 +261,17 @@ async function cloneRepo(link: string, repo: string): Promise<void> {
     });
 }
 
+function escapeHtml(text: string) {
+    return text.replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
+}
+
 function generateReviewPluginContent(meta: {
     name: string;
     description: string;
     usesPreSend: boolean;
     usesNative: boolean;
 }): string {
-    const template = pluginValidateContent.replace("%PLUGINNAME%", meta.name.replaceAll("<", "&lt;")).replace("%PLUGINDESC%", meta.description.replaceAll("<", "&lt;")).replace("%WARNINGHIDER%", !meta.usesNative && !meta.usesPreSend ? "[data-useless=\"warning\"] { display: none !important; }" : "").replace("%NATIVETSHIDER%", meta.usesNative ? "" : "#native-ts-warning { display: none !important; }").replace("%PRESENDHIDER%", meta.usesPreSend ? "" : "#pre-send-warning { display: none !important; }");
+    const template = pluginValidateContent.replace("%PLUGINNAME%", () => escapeHtml(meta.name)).replace("%PLUGINDESC%", () => escapeHtml(meta.description)).replace("%WARNINGHIDER%", !meta.usesNative && !meta.usesPreSend ? "[data-useless=\"warning\"] { display: none !important; }" : "").replace("%NATIVETSHIDER%", meta.usesNative ? "" : "#native-ts-warning { display: none !important; }").replace("%PRESENDHIDER%", meta.usesPreSend ? "" : "#pre-send-warning { display: none !important; }");
     const buf = Buffer.from(template).toString("base64");
     return `data:text/html;base64,${buf}`;
 }
@@ -279,7 +282,7 @@ function generateUpdatePluginContent(meta: {
     remote: string;
     commit: string;
 }): string {
-    const template = updateValidateContent.replace("%PLUGINNAME%", meta.name.replaceAll("<", "&lt;")).replace("%PLUGINDESC%", meta.description.replaceAll("<", "&lt;")).replace("%REMOTE%", meta.remote).replace("%COMMITMESSAGE%", meta.commit.replaceAll("\n", "<br />"));
+    const template = updateValidateContent.replace("%PLUGINNAME%", () => escapeHtml(meta.name)).replace("%PLUGINDESC%", () => escapeHtml(meta.description)).replace("%REMOTE%", () => escapeHtml(meta.remote)).replace("%COMMITMESSAGE%", () => meta.commit.replaceAll("\n", "<br />"));
     const buf = Buffer.from(template).toString("base64");
     return `data:text/html;base64,${buf}`;
 }
@@ -304,6 +307,8 @@ export async function getUserplugins() {
 }
 
 export async function updatePlugin(_, directory: string) {
+    if (!isPluginDirectoryName(directory)) throw new Error("Invalid plugin directory");
+
     return new Promise((resolve, reject) => {
         const pluginDir = join(vencordPath, "../src/userplugins", directory);
 
@@ -325,14 +330,6 @@ export async function updatePlugin(_, directory: string) {
                 show: false,
                 autoHideMenuBar: true
             });
-            const reView /* haha got it */ = new WebContentsView({
-                webPreferences: {
-                    devTools: true,
-                    nodeIntegration: true
-                }
-            });
-            win.contentView.addChildView(reView);
-
             const commitProc = exec("git log origin/HEAD...HEAD --oneline --pretty=format:%an////////%h////////%H////////%s", {
                 cwd: pluginDir
             });
@@ -345,11 +342,13 @@ export async function updatePlugin(_, directory: string) {
                     name: pluginMeta.name,
                     description: pluginMeta.description,
                     remote: pluginMeta.remote,
-                    commit: rawOutput.split("\n").map(line => line.split("////////")).map(([user, shortCommit, longCommit, message]) => `${user} (<a href="${pluginMeta.remote.replace("plugins.nin0.dev", "git.nin0.dev/userplugins")}/commit/${longCommit}" style="font-family: monospace;">${shortCommit}</a>) ~ ${message}`).join("\n")
+                    // Everything here comes from the plugin's repo, and this page can open links
+                    commit: rawOutput.split("\n").filter(Boolean).map(line => line.split("////////")).map(([user, shortCommit, longCommit, message]) => `${escapeHtml(user)} (<a href="${escapeHtml(pluginMeta.remote.replace("plugins.nin0.dev", "git.nin0.dev/userplugins"))}/commit/${escapeHtml(longCommit)}" style="font-family: monospace;">${escapeHtml(shortCommit)}</a>) ~ ${escapeHtml(message)}`).join("\n")
                 }));
                 win.on("page-title-updated", async e => {
                     if (win.webContents.getTitle().startsWith("openLink:")) {
-                        await shell.openExternal(win.webContents.getTitle().replace("openLink:", ""));
+                        const link = win.webContents.getTitle().replace("openLink:", "");
+                        if (link.startsWith("https://")) await shell.openExternal(link);
                     }
                     switch (win.webContents.getTitle() as "abortInstall" | "install") {
                         case "abortInstall": {
@@ -403,13 +402,6 @@ export async function openGitPathModal(_: any) {
         show: false,
         autoHideMenuBar: true
     });
-    const reView = new WebContentsView({
-        webPreferences: {
-            devTools: true,
-            nodeIntegration: true
-        }
-    });
-    win.contentView.addChildView(reView);
     win.loadURL(`data:text/html;base64,${Buffer.from(setGitPathContent).toString("base64")}`);
     win.on("page-title-updated", async _ => {
         const t = win.webContents.getTitle();
@@ -470,11 +462,4 @@ export async function openGitPathModal(_: any) {
     if (gitPathSet) {
         win.webContents.executeJavaScript(`document.querySelector("input").value = ${JSON.stringify(gitPathSet)};`);
     }
-
-    console.log(yaml.load(`
-    name: test
-    items:
-      - a
-      - b
-    `));
 }

@@ -22,13 +22,13 @@ import { Card } from "@components/Card";
 import { Heading } from "@components/Heading";
 import { Margins } from "@components/margins";
 import { Paragraph } from "@components/Paragraph";
+import { Activity, ActivityAssets, ActivityButton } from "@endcord/discord-types";
+import { ActivityFlags, ActivityStatusDisplayType, ActivityType } from "@endcord/discord-types/enums";
 import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
 import { promptToRestart } from "@utils/promptToRestart";
 import { useAwaiter, useForceUpdater } from "@utils/react";
 import definePlugin, { OptionType } from "@utils/types";
-import { Activity, ActivityAssets, ActivityButton } from "@vencord/discord-types";
-import { ActivityFlags, ActivityStatusDisplayType, ActivityType } from "@vencord/discord-types/enums";
 import { ApplicationAssetUtils, AuthenticationStore, FluxDispatcher, PresenceStore } from "@webpack/common";
 
 import { LastFMScrobbler } from "./lastfm";
@@ -111,6 +111,7 @@ export const settings = definePluginSettings({
         onChange: invalidateListenBrainzCache
     },
     apiKey: {
+        sensitive: true,
         displayName: "API Key",
         description: "Last.fm API key. Not required but highly recommended to avoid rate limiting with our shared key",
         type: OptionType.STRING,
@@ -318,7 +319,7 @@ export default definePlugin({
     },
 
     async updatePresence() {
-        const { username, scrobblerBackend, instanceAPIBaseUrl, instanceBaseURL } = settings.store;
+        const { username } = settings.store;
 
         if (!username) return;
         if (hasInvalidCustomInstance()) return;
@@ -380,9 +381,9 @@ export default definePlugin({
         const statusName = (() => {
             switch (settings.store.nameFormat) {
                 case NameFormat.ArtistFirst:
-                    return trackData.artist + " - " + trackData.name;
+                    return `${trackData.artist} - ${trackData.name}`;
                 case NameFormat.SongFirst:
-                    return trackData.name + " - " + trackData.artist;
+                    return `${trackData.name} - ${trackData.artist}`;
                 case NameFormat.ArtistOnly:
                     return trackData.artist;
                 case NameFormat.SongOnly:

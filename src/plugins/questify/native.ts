@@ -29,16 +29,21 @@ export function openDevTools(event: IpcMainInvokeEvent): boolean {
 }
 
 export async function complete(_: IpcMainInvokeEvent, appId: string, authCode: string, questTarget: number, questId: string, activityReferrer?: string): Promise<{ success: boolean; error: string | null; }> {
+    // The ID becomes part of the hostname the auth code is sent to
+    if (!/^\d+$/.test(appId)) {
+        return { success: false, error: "Invalid application ID" };
+    }
+
     const authorization = await authorize(appId, authCode, questId, activityReferrer);
 
     if (authorization.error || !authorization.token) {
-        return { success: false, error: "AUTH: " + JSON.stringify(authorization.error) };
+        return { success: false, error: `AUTH: ${JSON.stringify(authorization.error)}` };
     }
 
     const progressResult = await progress(appId, authorization.token, questTarget, questId, activityReferrer);
 
     if (progressResult.error || !progressResult.success) {
-        return { success: false, error: "PROGRESS: " + JSON.stringify(progressResult.error) };
+        return { success: false, error: `PROGRESS: ${JSON.stringify(progressResult.error)}` };
     }
 
     return { success: true, error: null };

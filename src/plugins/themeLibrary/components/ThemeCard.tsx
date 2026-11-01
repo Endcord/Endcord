@@ -11,7 +11,7 @@ import { Card } from "@components/Card";
 import { HeadingPrimary } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
 import { User } from "@endcord/discord-types";
-import type { Theme, ThemeLikeProps } from "@equicordplugins/themeLibrary/types";
+import type { Theme, ThemeLikeProps } from "@plugins/themeLibrary/types";
 import { useI18n } from "@utils/i18n";
 import { proxyLazy } from "@utils/lazy";
 import { Margins } from "@utils/margins";

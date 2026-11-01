@@ -8,12 +8,12 @@ import { BaseText } from "@components/BaseText";
 import { Flex } from "@components/Flex";
 import { LinkIcon } from "@components/Icons";
 import { Link } from "@components/Link";
-import { apiConstants } from "@equicordplugins/songSpotlight.desktop/lib/api";
-import { cl } from "@equicordplugins/songSpotlight.desktop/lib/utils";
-import { useRender } from "@equicordplugins/songSpotlight.desktop/service";
-import { TrashIcon } from "@equicordplugins/songSpotlight.desktop/ui/common";
-import ServiceIcon from "@equicordplugins/songSpotlight.desktop/ui/components/ServiceIcon";
-import AddSong from "@equicordplugins/songSpotlight.desktop/ui/settings/AddSong";
+import { apiConstants } from "@plugins/songSpotlight.desktop/lib/api";
+import { cl } from "@plugins/songSpotlight.desktop/lib/utils";
+import { useRender } from "@plugins/songSpotlight.desktop/service";
+import { TrashIcon } from "@plugins/songSpotlight.desktop/ui/common";
+import ServiceIcon from "@plugins/songSpotlight.desktop/ui/components/ServiceIcon";
+import AddSong from "@plugins/songSpotlight.desktop/ui/settings/AddSong";
 import { Song, UserData } from "@song-spotlight/api/structs";
 import { sid } from "@song-spotlight/api/util";
 import { copyWithToast } from "@utils/discord";
@@ -139,7 +139,7 @@ export default function SongList({ localData, setLocalData }: SongListProps) {
                         last: !localData[i + 1],
                     };
                 } else if (localData[i - 1] || i === 0) return { slot: "add" };
-                else return { slot: "empty" };
+                return { slot: "empty" };
             });
         },
         [localData],
@@ -230,7 +230,7 @@ export default function SongList({ localData, setLocalData }: SongListProps) {
                     );
                 } else if (slot === "add") {
                     return <AddSong onAdd={handleAdd} key={slot} />;
-                } else return <div className={cl("empty-song")} key={`${slot}-${i}`} />;
+                } return <div className={cl("empty-song")} key={`${slot}-${i}`} />;
             })}
         </Flex>
     );

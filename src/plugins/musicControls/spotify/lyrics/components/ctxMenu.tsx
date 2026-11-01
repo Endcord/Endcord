@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { providers } from "@equicordplugins/musicControls/spotify/lyrics/api";
-import { lyricsAlternative } from "@equicordplugins/musicControls/spotify/lyrics/providers/store";
+import { providers } from "@plugins/musicControls/spotify/lyrics/api";
+import { lyricsAlternative } from "@plugins/musicControls/spotify/lyrics/providers/store";
 import { copyWithToast } from "@utils/discord";
 import { t } from "@utils/i18n";
 import { findComponentByCodeLazy } from "@webpack";
@@ -55,7 +55,7 @@ export function LyricsContextMenu() {
                             FluxDispatcher.dispatch({
                                 // @ts-ignore
                                 type: "SPOTIFY_LYRICS_PROVIDER_CHANGE",
-                                provider: provider,
+                                provider,
                             });
                         }}
                     />

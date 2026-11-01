@@ -10,11 +10,14 @@ import { AbsMediaData, AbsSession } from "@plugins/richPresence/types/audiobooks
 import { Logger } from "@utils/Logger";
 import { ApplicationAssetUtils, FluxDispatcher, showToast } from "@webpack/common";
 
+import { canSendCredentials } from "./serverUrl";
+
 const APPLICATION_ID = "1381423044907503636";
 const SOCKET_ID = "RichPresence_ABS";
 const logger = new Logger("RichPresence:AudioBookShelf");
 
 let authToken: string | null = null;
+let warnedInsecureUrl = false;
 let updateInterval: NodeJS.Timeout | undefined;
 
 async function getAsset(key: string): Promise<string> {
@@ -35,6 +38,15 @@ async function authenticate(): Promise<boolean> {
 
     try {
         const baseUrl = abs_serverUrl.replace(/\/$/, "");
+        if (!canSendCredentials(baseUrl)) {
+            if (!warnedInsecureUrl) {
+                logger.error("AudioBookShelf server URL must use HTTPS outside your local network.");
+                showToast("AudioBookShelf needs an https:// URL outside your local network.", "failure", { duration: 15000 });
+                warnedInsecureUrl = true;
+            }
+            return false;
+        }
+
         const res = await fetch(`${baseUrl}/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -56,7 +68,7 @@ async function fetchMediaData(): Promise<AbsMediaData | null> {
     if (!authToken && !(await authenticate())) return null;
 
     try {
-        const baseUrl = settings.store.abs_serverUrl!.replace(/\/$/, "");
+        const baseUrl = settings.store.abs_serverUrl.replace(/\/$/, "");
         const res = await fetch(`${baseUrl}/api/me/listening-sessions`, {
             headers: { "Authorization": `Bearer ${authToken}` },
         });

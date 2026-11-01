@@ -7,7 +7,7 @@
 import "./styles.css";
 
 import ErrorBoundary from "@components/ErrorBoundary";
-import { settings as PluginSettings } from "@equicordplugins/toastNotifications/index";
+import { settings as PluginSettings } from "@plugins/toastNotifications/index";
 import { classNameFactory } from "@utils/css";
 import { t } from "@utils/i18n";
 import { findComponentByCodeLazy } from "@webpack";
@@ -28,7 +28,7 @@ function renderContextHeader(channel: MessageNotification["channel"]): React.Rea
             ? IconUtils.getChannelIconURL?.({ id: channel.id, icon: channel.icon, size: 32 })
             : undefined;
         const rawName = channel.name?.trim() || channel.rawRecipients.slice(0, 3).map(e => e.username).join(", ");
-        const name = rawName.length > 20 ? rawName.substring(0, 20) + "..." : rawName;
+        const name = rawName.length > 20 ? `${rawName.substring(0, 20)}...` : rawName;
         return (
             <div className={cl("context-header")}>
                 {icon && <img className={cl("context-header-icon")} src={icon} alt="" />}
@@ -138,7 +138,7 @@ export default ErrorBoundary.wrap(function NotificationComponent(props: Notifica
                     </div>
                     {body && (
                         <p className={cl("notification-p")}>
-                            {body.length > 500 ? body.slice(0, 500) + "..." : body}
+                            {body.length > 500 ? `${body.slice(0, 500)}...` : body}
                         </p>
                     )}
                 </div>

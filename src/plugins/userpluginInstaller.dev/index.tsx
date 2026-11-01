@@ -63,9 +63,9 @@ export default definePlugin({
     ),
     async checkPluginUpdates() {
         for (const p of this.plugins.value()) {
-            if (await Native.isUpdateAvailableForPlugin(p.directory!)) {
+            if (await Native.isUpdateAvailableForPlugin(p.directory)) {
                 const t = this.pluginsWithUpdates.value().plugins;
-                t.push(p.directory!);
+                t.push(p.directory);
                 this.pluginsWithUpdates.value({
                     finished: false,
                     plugins: t

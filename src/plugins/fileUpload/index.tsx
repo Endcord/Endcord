@@ -18,7 +18,7 @@ import { findByPropsLazy } from "@webpack";
 import { DraftType, FluxDispatcher, Menu, PermissionsBits, PermissionStore, React, showToast, Toasts, UploadAttachmentStore, useEffect, UserStore, useState } from "@webpack/common";
 
 import { settings } from "./settings";
-import { serviceLabels, ServiceType } from "./types";
+import { serviceLabels } from "./types";
 import { getMediaUrl } from "./utils/getMediaUrl";
 import { cancelCurrentUpload, getUploadState, isConfigured, isFileTypeAllowed, logger, subscribeUploadState, uploadFile, uploadPickedFile, uploadProvidedFiles } from "./utils/upload";
 const cl = classNameFactory("vc-file-upload-");
@@ -189,7 +189,7 @@ const messageContextMenuPatch: NavContextMenuPatchCallback = (children, props) =
         ?? findGroupChildrenByChildId("copy-link", children);
 
     if (group && !group.some(child => child?.props?.id === "file-upload")) {
-        const serviceType = settings.store.serviceType as ServiceType;
+        const { serviceType } = settings.store;
         const serviceName = serviceLabels[serviceType];
 
         group.push(
@@ -213,7 +213,7 @@ const imageContextMenuPatch: NavContextMenuPatchCallback = (children, props) => 
 
     if (children.some(child => child?.props?.id === "file-upload-group")) return;
 
-    const serviceType = settings.store.serviceType as ServiceType;
+    const { serviceType } = settings.store;
     const serviceName = serviceLabels[serviceType];
 
     children.push(

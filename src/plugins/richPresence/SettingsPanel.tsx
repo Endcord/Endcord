@@ -174,7 +174,6 @@ function NavidromeSettings() {
             <TextSetting name="Client ID" description={t("Optional Discord Application Client ID.")} settingsKey="nd_clientId" placeholder="1470554657506984069" />
             <SelectSetting name="Album Art Mode" description={t("How to fetch album art.")} settingsKey="nd_albumArtMode" options={[
                 { label: "None", value: "none" },
-                { label: "Navidrome Instance (Exposes Server URL. One-time auth sent.)", value: "instance" },
                 { label: "Last.fm API (Sends Metadata to last.fm)", value: "lastfm" },
             ]} />
             {nd_albumArtMode === "lastfm" && (

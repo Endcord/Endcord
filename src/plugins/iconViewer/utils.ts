@@ -6,7 +6,7 @@
 
 import { findByPropsLazy, waitFor } from "@webpack";
 
-import { CssColorData, IconSize } from "./types";
+import { IconSize } from "./types";
 
 let colorKeys: string[] = [];
 
@@ -18,7 +18,7 @@ export function getCssColorKeys(): string[] {
     return colorKeys;
 }
 
-export const cssColors = new Proxy({} as Record<number, CssColorData>, {
+export const cssColors = new Proxy({}, {
     get: (target, key) => {
         const idx = Number(key);
         if (isNaN(idx)) return undefined;

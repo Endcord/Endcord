@@ -187,7 +187,7 @@ function MutualMembersModal({ guildAId, guildBId, modalProps }: { guildAId: stri
                         style={styles.searchInput}
                         placeholder={t("Search members...")}
                         value={search}
-                        onChange={e => setSearch((e.target as HTMLInputElement).value)}
+                        onChange={e => setSearch((e.target).value)}
                     />
                     <button style={styles.botToggle} onClick={() => setShowBots(v => !v)}>
                         {showBots ? "Hide Bots" : "Show Bots"}
@@ -337,18 +337,18 @@ function GuildPickerModal({ fixedGuildId, modalProps }: { fixedGuildId?: string;
                             <label style={s.label}>{t("Server A ID")}</label>
                             <div style={{ marginBottom: 10 }}>
                                 <input style={s.input} placeholder="000000000000000000"
-                                    value={manualIdA} onChange={e => setManualIdA((e.target as HTMLInputElement).value)} />
+                                    value={manualIdA} onChange={e => setManualIdA((e.target).value)} />
                             </div>
                             <label style={s.label}>{t("Server B ID")}</label>
                             <div style={{ marginBottom: 10 }}>
                                 <input style={s.input} placeholder="000000000000000000"
-                                    value={manualIdB} onChange={e => setManualIdB((e.target as HTMLInputElement).value)} />
+                                    value={manualIdB} onChange={e => setManualIdB((e.target).value)} />
                             </div>
                         </>
                     ) : (
                         <>
                             <input style={{ ...s.input, marginBottom: 8 }} placeholder={t("Search your servers...")}
-                                value={search} onChange={e => setSearch((e.target as HTMLInputElement).value)} />
+                                value={search} onChange={e => setSearch((e.target).value)} />
                             <div style={s.row}>
                                 <div style={{ flex: 1 }}>
                                     <label style={s.label}>{t("Server A")}</label>

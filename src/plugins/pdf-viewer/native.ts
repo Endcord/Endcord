@@ -4,20 +4,15 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { DISCORD_CDN_HOSTS, parseAllowedUrl, readBody } from "@main/utils/http";
 import { IpcMainInvokeEvent } from "electron";
-
-const ALLOWED_HOSTS = new Set([
-    "cdn.discordapp.com",
-    "media.discordapp.net",
-]);
 
 const PDF_MAGIC = [0x25, 0x50, 0x44, 0x46];
 const FETCH_TIMEOUT_MS = 30000;
+const MAX_PDF_BYTES = 100 * 1024 * 1024;
 
 function checkUrl(rawUrl: string) {
-    const url = new URL(rawUrl);
-    if (url.protocol !== "https:") throw new Error("Not an https URL");
-    if (!ALLOWED_HOSTS.has(url.hostname)) throw new Error("Not a Discord CDN host");
+    const url = parseAllowedUrl(rawUrl, DISCORD_CDN_HOSTS);
 
     const path = decodeURIComponent(url.pathname).toLowerCase();
     if (!path.startsWith("/attachments/") && !path.startsWith("/ephemeral-attachments/"))
@@ -29,6 +24,7 @@ function checkUrl(rawUrl: string) {
 
 export async function fetchPdf(_: IpcMainInvokeEvent, rawUrl: string, maxBytes: number) {
     const url = checkUrl(rawUrl);
+    const limit = Math.min(Number(maxBytes) || 0, MAX_PDF_BYTES);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
@@ -39,39 +35,15 @@ export async function fetchPdf(_: IpcMainInvokeEvent, rawUrl: string, maxBytes: 
             headers: { Accept: "application/pdf,*/*;q=0.1" },
         });
 
-    if (res.status >= 300 && res.status < 400) throw new Error("CDN tried to redirect, refusing");
-    if (!res.ok) throw new Error(`CDN returned ${res.status}`);
+        if (res.status >= 300 && res.status < 400) throw new Error("CDN tried to redirect, refusing");
+        if (!res.ok) throw new Error(`CDN returned ${res.status}`);
 
-    const declared = Number(res.headers.get("content-length"));
-    if (declared > maxBytes) throw new Error(`PDF is ${(declared / 1024 / 1024).toFixed(1)} MB which exceeds the limit`);
+        const out = await readBody(res, limit);
+        if (!out) throw new Error("PDF exceeded the size limit");
 
-    const reader = res.body!.getReader();
-    const chunks: Uint8Array[] = [];
-    let total = 0;
-
-    while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        if (!value) continue;
-
-        total += value.byteLength;
-        if (total > maxBytes) {
-            reader.cancel();
-            throw new Error("PDF exceeded the size limit mid-download");
+        for (let i = 0; i < PDF_MAGIC.length; i++) {
+            if (out[i] !== PDF_MAGIC[i]) throw new Error("Downloaded data is not a valid PDF");
         }
-        chunks.push(value);
-    }
-
-    const out = new Uint8Array(total);
-    let offset = 0;
-    for (const chunk of chunks) {
-        out.set(chunk, offset);
-        offset += chunk.byteLength;
-    }
-
-    for (let i = 0; i < PDF_MAGIC.length; i++) {
-        if (out[i] !== PDF_MAGIC[i]) throw new Error("Downloaded data is not a valid PDF");
-    }
 
         return out;
     } finally {

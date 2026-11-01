@@ -20,11 +20,11 @@ import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
 import { updateMessage } from "@api/MessageUpdater";
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
+import { Message } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { getStegCloak } from "@utils/dependencies";
 import { t } from "@utils/i18n";
 import definePlugin, { OptionType, ReporterTestable } from "@utils/types";
-import { Message } from "@vencord/discord-types";
 import { ChannelStore, Constants, RestAPI, Tooltip } from "@webpack/common";
 
 import { buildDecModal } from "./components/DecryptionModal";
@@ -98,13 +98,12 @@ function ChatBarIcon() {
 
 const settings = definePluginSettings({
     savedPasswords: {
+        sensitive: true,
         type: OptionType.STRING,
         default: "password, Password",
         description: "Saved Passwords (separated with a comma)"
     }
 });
-
-const EMBED_API_URL = "https://embed.sammcheese.net";
 const INV_REGEX = new RegExp(/( \u200c|\u200d |[\u2060-\u2064])[^\u200b]/);
 const URL_REGEX = new RegExp(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/);
 function colorCodeFromNumber(color: number): string {
@@ -184,7 +183,7 @@ export default definePlugin({
                 ? {
                     label: "Decrypt Message",
                     icon: PopOverIcon,
-                    message: message,
+                    message,
                     channel: ChannelStore.getChannel(message.channel_id),
                     onClick: async () => {
                         const res = await iteratePasswords(message);
@@ -203,7 +202,7 @@ export default definePlugin({
 });
 
 export function encrypt(secret: string, password: string, cover: string): string {
-    return steggo.hide(secret + "\u200b", password, cover);
+    return steggo.hide(`${secret}\u200b`, password, cover);
 }
 
 export function decrypt(encrypted: string, password: string, removeIndicator: boolean): string {

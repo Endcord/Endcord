@@ -45,7 +45,7 @@ async function runReporter() {
         }
 
         if (IS_REPORTER && IS_WEB && !IS_VESKTOP) {
-            console.log("[REPORTER_META]", {
+            console.debug("[REPORTER_META]", {
                 buildNumber: getBuildNumber(),
                 buildHash: window.GLOBAL_ENV.SENTRY_TAGS.buildId
             });

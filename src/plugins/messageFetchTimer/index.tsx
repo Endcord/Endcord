@@ -112,9 +112,9 @@ function formatTimeAgo(timestamp: Date): string {
         return `${hours} hour${hours > 1 ? "s" : ""} ago`;
     } else if (minutes > 0) {
         return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
-    } else {
-        return "just now";
     }
+        return "just now";
+
 }
 
 function handleChannelSelect(data: any) {

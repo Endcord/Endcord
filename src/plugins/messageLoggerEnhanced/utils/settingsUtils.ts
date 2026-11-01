@@ -98,7 +98,7 @@ export async function exportLogs() {
                 const prefix = first ? "" : ",\n";
                 first = false;
 
-                const chunk = prefix + "    " + JSON.stringify(record);
+                const chunk = `${prefix}    ${JSON.stringify(record)}`;
 
                 await Native.writeNativeLogChunk(streamId, chunk);
             }
@@ -135,7 +135,7 @@ export async function exportLogs() {
             for await (const records of iterateAllMessagesIDB()) {
                 const prefix = first ? "" : ",\n";
                 first = false;
-                const chunk = prefix + "    " + JSON.stringify(records);
+                const chunk = `${prefix}    ${JSON.stringify(records)}`;
                 await writer.write(encoder.encode(chunk));
                 count++;
             }
@@ -188,8 +188,6 @@ async function* parseJsonStream(readChunk: () => Promise<string | null>) {
 
             parser.write(chunk);
         }
-    } catch (e) {
-        throw e;
     } finally {
         if (!parser.isEnded)
             parser.end();

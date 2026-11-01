@@ -42,7 +42,7 @@ export async function putCloudSettings(manual?: boolean) {
                 Authorization: await getCloudAuth(),
                 "Content-Type": "application/octet-stream"
             },
-            body: deflateSync(new TextEncoder().encode(settings)) as Uint8Array<ArrayBuffer>
+            body: deflateSync(new TextEncoder().encode(settings))
         });
 
         if (!res.ok) {
@@ -142,7 +142,7 @@ export async function getCloudSettings(shouldNotify = true, force = false) {
         const data = await res.arrayBuffer();
 
         const settings = new TextDecoder().decode(inflateSync(new Uint8Array(data)));
-        await importSettings(settings);
+        await importSettings(settings, "cloud");
 
         // sync with server timestamp instead of local one
         PlainSettings.cloud.settingsSyncVersion = written;

@@ -4,21 +4,13 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-export const REACT_GLOBAL = "Endcord.Webpack.Common.React";
-export const VENBOT_USER_ID = "1017176847865352332";
 export const ENDCORD_GUILD_ID = "1543323763695820942";
-export const DONOR_ROLE_ID = "1042507929485586532";
-export const CONTRIB_ROLE_ID = "1026534353167208489";
-export const REGULAR_ROLE_ID = "1026504932959977532";
 export const SUPPORT_CHANNEL_ID = "1543359285503721573";
-export const SUPPORT_CATEGORY_ID = "1108135649699180705";
-export const KNOWN_ISSUES_CHANNEL_ID = "1257025907625951423";
 
 const platform = navigator.platform.toLowerCase();
 export const IS_WINDOWS = platform.startsWith("win");
 export const IS_MAC = platform.startsWith("mac");
 export const IS_LINUX = platform.startsWith("linux");
-export const IS_MOBILE = navigator.userAgent.includes("Mobi");
 
 export interface Dev {
     name: string;
@@ -50,7 +42,7 @@ export const Devs: Record<string, Dev> & {
             id: 1390609041897554050n
         };
     }
-}) as any;
+});
 
 export const DevsById = /* #__PURE__*/ (() =>
     Object.freeze(Object.fromEntries(
@@ -66,8 +58,6 @@ export const DevsById = /* #__PURE__*/ (() =>
 )() as Record<string, Dev>;
 
 export const EndcordDevs = Devs;
-export const EquicordDevs = Devs;
-export const TestcordDevs = Devs;
 
 
 

@@ -5,8 +5,8 @@
  */
 
 import { DataStore } from "@api/index";
+import { ProfilePreset } from "@endcord/discord-types";
 import { Logger } from "@utils/Logger";
-import { ProfilePreset } from "@vencord/discord-types";
 import { UserStore } from "@webpack/common";
 
 const logger = new Logger("ProfilePresets");
@@ -41,7 +41,7 @@ function getLegacyKey(userId: string) {
 export async function loadPresets(section: PresetSection) {
     try {
         const currentUser = UserStore.getCurrentUser();
-        const userId = currentUser!.id;
+        const userId = currentUser.id;
         const key = getPresetsKey(section, userId);
         activeScopeKey = key;
         const stored = await DataStore.get(key);
@@ -76,7 +76,7 @@ export async function savePresetsData(section?: PresetSection) {
     try {
         if (!activeScopeKey && !section) return;
         const currentUser = UserStore.getCurrentUser();
-        const userId = currentUser!.id;
+        const userId = currentUser.id;
         const key = section ? getPresetsKey(section, userId) : activeScopeKey!;
         await DataStore.set(key, presets);
     } catch (err) {

@@ -119,7 +119,7 @@ function getPlatformTooltip(platform: DiscordPlatform): string {
 }
 
 const PlatformIcon = ({ platform, status, small }: { platform: DiscordPlatform, status: OnlineStatus; small: boolean; }) => {
-    const tooltip = getPlatformTooltip(platform as DiscordPlatform);
+    const tooltip = getPlatformTooltip(platform);
 
     const Icon = Icons[platform] ?? Icons.desktop;
 

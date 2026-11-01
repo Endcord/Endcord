@@ -226,7 +226,7 @@ export function QuestButtonContextMenu({ dummy = false }: { dummy?: boolean; }):
             {queueAllQuestsVisible && (
                 <Menu.MenuItem
                     id={q(`${navId}-queue-all-quests`)}
-                    label={"Queue All Quests" + labelSuffix}
+                    label={`Queue All Quests${labelSuffix}`}
                     action={() => {
                         const queueAllPromise = queueAllAutoCompleteQuests();
 

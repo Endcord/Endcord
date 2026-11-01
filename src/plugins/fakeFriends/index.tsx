@@ -5,15 +5,13 @@
  */
 
 import { addContextMenuPatch, NavContextMenuPatchCallback, removeContextMenuPatch } from "@api/ContextMenu";
+import { RelationshipType } from "@endcord/discord-types/enums";
 import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
 import { Modals, openModal } from "@utils/modal";
 import definePlugin from "@utils/types";
-import { RelationshipType } from "@vencord/discord-types/enums";
 import { findByPropsLazy, findStoreLazy } from "@webpack";
 import { ChannelStore, FluxDispatcher, GuildMemberStore, Menu, React, RelationshipStore, showToast, UserStore, UserUtils } from "@webpack/common";
-
-const DS_KEY = "FakeFriends_state";
 
 // fakeState is in memory only — does NOT persist across restarts
 const fakeState = new Map<string, "pending" | "accepted">();
@@ -25,18 +23,6 @@ async function persistState() {
 async function loadState() {
     // No loading at startup — fakeState starts empty
 }
-
-const FAKE_DM_PHRASES = [
-    "hey don't you have discord?", "hello!", "hi :)", "yo", "good morning!",
-    "hey, do we know each other?", "what are you playing right now?", "are you active?",
-    "hey what's your server?", "hi, can we talk?", "hello",
-    "wsh", "hey you!", "did you see the last thing on the server?",
-    "i hadn't seen you there!", "good evening!", "want to play together?",
-    "hey are you free?", "gg on the server!", "hi i have a question",
-    "yo are you there?", "hello, new here", "hey :)", "wsh bro",
-    "yes it's me", "where are you from?", "how old are you?",
-    "hey, cool nickname", "hi, do you stream?", "yo, we follow each other?",
-];
 
 // ── Patch RelationshipStore ────────────────────────────────────────────────────
 let origGetRelType: Function | null = null;
@@ -96,7 +82,7 @@ let origAccept: Function | null = null;
 
 function patchAcceptFriend() {
     try {
-        const RA = findByPropsLazy("acceptFriendRequest", "cancelFriendRequest") as any;
+        const RA = findByPropsLazy("acceptFriendRequest", "cancelFriendRequest");
         if (!RA || origAccept) return;
         origAccept = RA.acceptFriendRequest;
         // Discord passes { userId, ... }; older builds passed the id directly
@@ -119,7 +105,7 @@ function patchAcceptFriend() {
 function unpatchAcceptFriend() {
     try {
         if (!origAccept) return;
-        const RA = findByPropsLazy("acceptFriendRequest", "cancelFriendRequest") as any;
+        const RA = findByPropsLazy("acceptFriendRequest", "cancelFriendRequest");
         if (RA) RA.acceptFriendRequest = origAccept;
         origAccept = null;
     } catch { }
@@ -144,11 +130,6 @@ function isBot(user: any): boolean {
     if (user.bot === true) return true;
     if ((user.publicFlags ?? 0) & (1 << 19)) return true;
     return false;
-}
-
-function makeSnowflake(): string {
-    const ts = BigInt(Date.now() - 1420070400000);
-    return String((ts << 22n) | BigInt(Math.floor(Math.random() * 0xFFFFF)));
 }
 
 function dispatchRelationship(user: any, type: RelationshipType) {
@@ -209,116 +190,6 @@ async function reapplyFakeStates() {
     }
 }
 
-// ── Fake DM ────────────────────────────────────────────────────────────────────
-
-function getChannelClass(): any {
-    try {
-        const allChannels = (ChannelStore as any).getSortedPrivateChannels?.() ?? [];
-        const real = allChannels.find((c: any) => c.type === 1);
-        if (real) return real.constructor;
-    } catch { }
-    return null;
-}
-
-function buildRealDMChannel(user: any): any {
-    const ChannelClass = getChannelClass();
-    const msgId = makeSnowflake();
-    const channelId = makeSnowflake();
-
-    const raw = {
-        id: channelId,
-        type: 1,
-        flags: 0,
-        last_message_id: msgId,
-        last_pin_timestamp: null,
-        recipients: [makeUserPayload(user)],
-        recipient_ids: [user.id],
-        is_spam: false,
-        is_message_request: false,
-        is_message_request_timestamp: null,
-    };
-
-    if (ChannelClass) {
-        try {
-            return { instance: new ChannelClass(raw), msgId, channelId };
-        } catch { }
-    }
-
-    const fallback = Object.assign(Object.create({
-        getGuildId() { return null; },
-        isPrivate() { return true; },
-        isDM() { return true; },
-        isGroupDM() { return false; },
-        isMultiUserDM() { return false; },
-        isSystemDM() { return false; },
-        isGuildVoice() { return false; },
-        isGuildStageVoice() { return false; },
-        isGuildPublicThread() { return false; },
-        isGuildPrivateThread() { return false; },
-        isGuildNewsThread() { return false; },
-        isThread() { return false; },
-        isArchivedLockedThread() { return false; },
-        isManaged() { return false; },
-        isCategory() { return false; },
-        isDirectory() { return false; },
-        isAnnouncement() { return false; },
-        isListenModeCapable() { return false; },
-        isForumChannel() { return false; },
-        isMediaPostChannel() { return false; },
-        isBroadcastChannel() { return false; },
-        hasActiveThreads() { return false; },
-        canHaveInvite() { return false; },
-        canHaveWebhooks() { return false; },
-        isEmojiPickerDisabled() { return false; },
-        computeLurkerPermissionsAllowList() { return null; },
-        toString() { return `<#${(this as any).id}>`; },
-    }), {
-        id: channelId,
-        type: 1,
-        flags: 0,
-        guild_id: null,
-        guildId: null,
-        lastMessageId: msgId,
-        lastPinTimestamp: null,
-        name: "",
-        icon: null,
-        ownerId: null,
-        applicationId: null,
-        recipients: [user.id],
-        recipientIDs: [user.id],
-        rawRecipients: [makeUserPayload(user)],
-        nicks: {},
-        isSpam: false,
-        isMessageRequest: false,
-        isMessageRequestTimestamp: null,
-        blockedUserWarningDismissed: false,
-        safetyWarnings: null,
-        permissionOverwrites: {},
-        bitrate: 0,
-        userLimit: 0,
-        rateLimitPerUser: 0,
-        rtcRegion: null,
-        videoQualityMode: 1,
-        defaultThreadRateLimitPerUser: 0,
-        nsfw: false,
-        topic: null,
-        position: 0,
-        parentId: null,
-        defaultAutoArchiveDuration: null,
-        member: null,
-        memberCount: null,
-        messageCount: null,
-        totalMessageSent: null,
-        threadMetadata: null,
-        defaultReactionEmoji: null,
-        availableTags: null,
-        appliedTags: null,
-        flags_: 0,
-    });
-
-    return { instance: fallback, msgId, channelId };
-}
-
 const fakeDMChannelObjects = new Map<string, any>();
 let origGetChannel: Function | null = null;
 let origGetDMFromUserId: Function | null = null;
@@ -360,53 +231,6 @@ function unpatchChannelStore() {
     if (origGetDMFromUserId) { store.getDMFromUserId = origGetDMFromUserId; origGetDMFromUserId = null; }
     if (origGetSorted) { store.getSortedPrivateChannels = origGetSorted; origGetSorted = null; }
     fakeDMChannelObjects.clear();
-}
-
-async function sendFakeDM(user: any) {
-    const me = UserStore.getCurrentUser() as any;
-    if (!me) return;
-
-    const phrase = FAKE_DM_PHRASES[Math.floor(Math.random() * FAKE_DM_PHRASES.length)];
-
-    let channelId: string | null = (ChannelStore as any).getDMFromUserId?.(user.id) ?? null;
-
-    if (!channelId) {
-        const { instance, msgId: _m, channelId: cid } = buildRealDMChannel(user);
-        channelId = cid;
-        fakeDMChannelObjects.set(cid, instance);
-
-        FluxDispatcher.dispatch({ type: "CHANNEL_OPEN", channelId: cid });
-        await new Promise(r => setTimeout(r, 30));
-    }
-
-    const msgId = makeSnowflake();
-
-    FluxDispatcher.dispatch({
-        type: "MESSAGE_CREATE",
-        channelId: channelId!,
-        message: {
-            id: msgId,
-            type: 0,
-            content: phrase,
-            channel_id: channelId!,
-            author: makeUserPayload(user),
-            attachments: [],
-            embeds: [],
-            mentions: [],
-            mention_roles: [],
-            mention_channels: [],
-            pinned: false,
-            mention_everyone: false,
-            tts: false,
-            timestamp: new Date().toISOString(),
-            edited_timestamp: null,
-            flags: 0,
-            components: [],
-            nonce: msgId,
-        },
-        optimistic: false,
-        isPushNotification: false,
-    });
 }
 
 async function loadUser(userId: string): Promise<any | null> {
@@ -525,7 +349,7 @@ async function fetchAllGuildMembers(guildId: string): Promise<void> {
         ..."!@#$%^&*_-+=.[]{}".split(""),
     ];
 
-    const before = (GuildMemberStore.getMemberIds(guildId) as string[]).length;
+    const before = (GuildMemberStore.getMemberIds(guildId)).length;
 
     for (const q of queries) {
         FluxDispatcher.dispatch({
@@ -539,15 +363,15 @@ async function fetchAllGuildMembers(guildId: string): Promise<void> {
 
     await new Promise(r => setTimeout(r, 1000));
 
-    const after = (GuildMemberStore.getMemberIds(guildId) as string[]).length;
+    const after = (GuildMemberStore.getMemberIds(guildId)).length;
     const loaded = after - before;
-    console.log(`[FakeFriends] ${after} members in cache (${loaded > 0 ? "+" + loaded : "already loaded"})`);
+    console.debug(`[FakeFriends] ${after} members in cache (${loaded > 0 ? `+${loaded}` : "already loaded"})`);
     showToast({ text: `${after} members available`, variant: "success" });
 }
 
 function getGuildCandidates(guildId: string): string[] {
     const me = UserStore.getCurrentUser()?.id;
-    const memberIds: string[] = (GuildMemberStore.getMemberIds(guildId) as string[]) ?? [];
+    const memberIds: string[] = (GuildMemberStore.getMemberIds(guildId)) ?? [];
     const realRelNone = (id: string) => {
         const fn = origGetRelType ?? ((uid: string) => (RelationshipStore as any).getRelationshipType(uid));
         return fn.call(RelationshipStore, id) === RelationshipType.NONE;
@@ -595,7 +419,7 @@ async function floodGuild(guildId: string) {
 
 // ── Remove fake requests pour un serveur ──────────────────────────────────────
 async function removeFakeFriendsForGuild(guildId: string) {
-    const memberIds = new Set<string>(GuildMemberStore.getMemberIds(guildId) as string[]);
+    const memberIds = new Set<string>(GuildMemberStore.getMemberIds(guildId));
     const toRemove = [...fakeState.keys()].filter(id => memberIds.has(id));
 
     if (!toRemove.length) {
@@ -613,38 +437,6 @@ async function removeFakeFriendsForGuild(guildId: string) {
     showToast({ text: `${toRemove.length} fake request${toRemove.length > 1 ? "s" : ""} removed!`, variant: "success" });
 }
 
-// ── Fake Message Request ─────────────────────────────────────────────────────
-async function fakeMessageRequestGuild(guildId: string) {
-    const candidates = getGuildCandidates(guildId);
-    if (!candidates.length) {
-        showToast({ text: "No candidates available", variant: "critical" });
-        return;
-    }
-
-    const count = await askCount("How many message requests to simulate?", candidates.length);
-    if (!count) return;
-
-    const shuffled = [...candidates].sort(() => Math.random() - 0.5).slice(0, count);
-    let sent = 0;
-
-    const BATCH = 10;
-    for (let i = 0; i < shuffled.length; i += BATCH) {
-        const batch = shuffled.slice(i, i + BATCH);
-        const users = await Promise.all(batch.map(id => loadUser(id)));
-        for (const user of users) {
-            if (!user || isBot(user)) continue;
-            await sendIncomingMessageRequest(user);
-            sent++;
-        }
-        await new Promise(r => setTimeout(r, 60));
-    }
-
-    showToast({
-        text: `${sent} message request${sent > 1 ? "s" : ""} received!`,
-        variant: sent > 0 ? "success" : "critical"
-    });
-}
-
 const MessageRequestStoreLazy = findStoreLazy("MessageRequestStore");
 let MessageRequestStore: any = null;
 let origGetIds: Function | null = null;
@@ -657,7 +449,7 @@ function patchMessageRequestStore() {
     if (MessageRequestStore) return;
     try {
         // Discord's MessageRequestStore: channel id set, count and per-channel check.
-        const store = MessageRequestStoreLazy as any;
+        const store = MessageRequestStoreLazy;
         if (typeof store?.getMessageRequestChannelIds !== "function") return;
         MessageRequestStore = store;
 
@@ -692,107 +484,6 @@ function unpatchMessageRequestStore() {
     if (origIsRequest) MessageRequestStore.isMessageRequest = origIsRequest;
     origGetIds = origGetCount = origIsRequest = null;
     MessageRequestStore = null;
-}
-
-async function sendIncomingMessageRequest(user: any) {
-    const ChannelClass = getChannelClass();
-    const msgId = makeSnowflake();
-    const channelId = makeSnowflake();
-    const now = new Date().toISOString();
-
-    const raw = {
-        id: channelId,
-        type: 1,
-        flags: 0,
-        last_message_id: msgId,
-        last_pin_timestamp: null,
-        recipients: [makeUserPayload(user)],
-        recipient_ids: [user.id],
-        is_spam: false,
-        is_message_request: true,
-        is_message_request_timestamp: now,
-    };
-
-    let instance: any = null;
-    if (ChannelClass) {
-        try { instance = new ChannelClass(raw); } catch { }
-    }
-    if (!instance) {
-        instance = Object.assign(Object.create({
-            getGuildId() { return null; },
-            isPrivate() { return true; },
-            isDM() { return true; },
-            isGroupDM() { return false; },
-            isMultiUserDM() { return false; },
-            isSystemDM() { return false; },
-            isGuildVoice() { return false; },
-            isGuildStageVoice() { return false; },
-            isGuildPublicThread() { return false; },
-            isGuildPrivateThread() { return false; },
-            isGuildNewsThread() { return false; },
-            isThread() { return false; },
-            isArchivedLockedThread() { return false; },
-            isManaged() { return false; },
-            isCategory() { return false; },
-            isDirectory() { return false; },
-            isAnnouncement() { return false; },
-            isListenModeCapable() { return false; },
-            isForumChannel() { return false; },
-            isMediaPostChannel() { return false; },
-            isBroadcastChannel() { return false; },
-            hasActiveThreads() { return false; },
-            canHaveInvite() { return false; },
-            canHaveWebhooks() { return false; },
-            isEmojiPickerDisabled() { return false; },
-            computeLurkerPermissionsAllowList() { return null; },
-            toString() { return `<#${(this as any).id}>`; },
-        }), {
-            id: channelId, type: 1, flags: 0,
-            guild_id: null, guildId: null,
-            lastMessageId: msgId, lastPinTimestamp: null,
-            name: "", icon: null, ownerId: null, applicationId: null,
-            recipients: [user.id], recipientIDs: [user.id],
-            rawRecipients: [makeUserPayload(user)],
-            nicks: {},
-            isSpam: false,
-            isMessageRequest: true,
-            isMessageRequestTimestamp: now,
-            blockedUserWarningDismissed: false, safetyWarnings: null,
-            permissionOverwrites: {}, bitrate: 0, userLimit: 0,
-            rateLimitPerUser: 0, rtcRegion: null, videoQualityMode: 1,
-            defaultThreadRateLimitPerUser: 0, nsfw: false, topic: null,
-            position: 0, parentId: null, defaultAutoArchiveDuration: null,
-            member: null, memberCount: null, messageCount: null,
-            totalMessageSent: null, threadMetadata: null,
-            defaultReactionEmoji: null, availableTags: null,
-            appliedTags: null, flags_: 0,
-        });
-    }
-
-    fakeDMChannelObjects.set(channelId, instance);
-    FluxDispatcher.dispatch({ type: "CHANNEL_OPEN", channelId });
-    await new Promise(r => setTimeout(r, 30));
-
-    const realMsgId = makeSnowflake();
-    FluxDispatcher.dispatch({
-        type: "MESSAGE_CREATE",
-        channelId,
-        message: {
-            id: realMsgId,
-            type: 0,
-            content: "hi",
-            channel_id: channelId,
-            author: makeUserPayload(user),
-            attachments: [], embeds: [], mentions: [],
-            mention_roles: [], mention_channels: [],
-            pinned: false, mention_everyone: false, tts: false,
-            timestamp: now,
-            edited_timestamp: null, flags: 0, components: [],
-            nonce: realMsgId,
-        },
-        optimistic: false,
-        isPushNotification: false,
-    });
 }
 
 // ── Context menus ──────────────────────────────────────────────────────────────
@@ -855,7 +546,7 @@ const guildContextPatch: NavContextMenuPatchCallback = (children, props) => {
         if (!guildId) return;
 
         // Compter combien de fake states concernent ce serveur
-        const memberIds = new Set<string>(GuildMemberStore.getMemberIds(guildId) as string[]);
+        const memberIds = new Set<string>(GuildMemberStore.getMemberIds(guildId));
         const fakeCount = [...fakeState.keys()].filter(id => memberIds.has(id)).length;
 
         const items = [

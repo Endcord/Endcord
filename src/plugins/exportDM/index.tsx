@@ -301,7 +301,7 @@ function buildHtml(messages: RichMessage[], channelName: string): string {
             if (e.description) html += `<div class="embed-desc">${e.description.slice(0, 300).replace(/</g, "&lt;")}</div>`;
             if (e.image) html += `<img src="${e.image}" class="embed-img" loading="lazy">`;
             if (e.url) html += `<a href="${e.url}" target="_blank" class="embed-url">${e.url}</a>`;
-            return html + "</div>";
+            return `${html}</div>`;
         }).join("");
         const stickerHtml = m.stickers.map(s => `<span class="sticker">${s.name}</span>`).join("");
         const reactHtml = m.reactions.length

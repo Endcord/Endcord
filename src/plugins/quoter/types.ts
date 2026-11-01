@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { User } from "@vencord/discord-types";
+import { User } from "@endcord/discord-types";
 
 export enum QuoteFont {
     MPlusRounded = "M PLUS Rounded 1c",

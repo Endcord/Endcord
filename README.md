@@ -43,7 +43,7 @@ On macOS and Linux, run the installer again and choose **Uninstall Endcord**. Yo
 Node.js 22 or newer, and [pnpm](https://pnpm.io).
 
 ```sh
-git clone https://github.com/rootpoii/endcord.git
+git clone https://github.com/Endcord/Endcord.git
 cd endcord
 pnpm install
 pnpm build

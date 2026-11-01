@@ -8,10 +8,11 @@ import { session } from "electron";
 import { unzip } from "fflate";
 import { constants as fsConstants } from "fs";
 import { access, mkdir, rm, writeFile } from "fs/promises";
-import { join } from "path";
+import { dirname, join } from "path";
 
 import { DATA_DIR } from "./constants";
 import { crxToZip } from "./crxToZip";
+import { ensureSafePath } from "./ensureSafePath";
 import { fetchBuffer } from "./http";
 
 const extensionCacheDir = join(DATA_DIR, "ExtensionCache");
@@ -27,18 +28,14 @@ async function extract(data: Buffer, outDir: string) {
                 // _metadata. Filenames starting with "_" are reserved for use by the system.';
                 if (f.startsWith("_metadata/")) return;
 
-                if (f.endsWith("/")) return void mkdir(join(outDir, f), { recursive: true });
+                // The archive picks these names, so none of them may point outside the extension's folder
+                const dest = ensureSafePath(outDir, f);
+                if (!dest) throw new Error(`Unsafe path in extension: ${f}`);
 
-                const pathElements = f.split("/");
-                const name = pathElements.pop()!;
-                const directories = pathElements.join("/");
-                const dir = join(outDir, directories);
+                if (f.endsWith("/")) return void mkdir(dest, { recursive: true });
 
-                if (directories) {
-                    await mkdir(dir, { recursive: true });
-                }
-
-                await writeFile(join(dir, name), files[f]);
+                await mkdir(dirname(dest), { recursive: true });
+                await writeFile(dest, files[f]);
             }))
                 .then(() => resolve())
                 .catch(err => {
@@ -59,7 +56,7 @@ export async function installExt(id: string) {
 
         const buf = await fetchBuffer(url, {
             headers: {
-                "User-Agent": `Electron ${process.versions.electron} ~ Endcord (https://github.com/rootpoii/endcord)`
+                "User-Agent": `Electron ${process.versions.electron} ~ Endcord (https://github.com/Endcord/Endcord)`
             }
         });
 

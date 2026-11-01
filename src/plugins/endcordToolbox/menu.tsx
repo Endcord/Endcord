@@ -18,7 +18,7 @@ import type { ReactNode } from "react";
 
 import { settings } from ".";
 
-const ENDCORD_VERSION_URL = "https://raw.githubusercontent.com/rootpoii/endcord/main/version.json";
+const ENDCORD_VERSION_URL = "https://raw.githubusercontent.com/Endcord/Endcord/main/version.json";
 const LS_LAST_SEEN_UPDATE = "endcord_last_seen_updatedAt";
 let _updateAvailable = false;
 let _latestVersion = "";
@@ -146,7 +146,7 @@ export function buildPluginMenuEntries(includeEmpty = false) {
 
                         const baseProps = {
                             id: `${p.name}-${key}`,
-                            key: key,
+                            key,
                             label: t(wordsToTitle(wordsFromCamel(key))),
                             disabled: isSettingDisabled(p.settings, option)
                         };
@@ -195,7 +195,7 @@ export function buildPluginMenuEntries(includeEmpty = false) {
                                                 ref={ref}
                                                 {...props}
                                                 minValue={option.markers[0]}
-                                                maxValue={option.markers.at(-1)!}
+                                                maxValue={option.markers.at(-1)}
                                                 value={s[key]}
                                                 onChange={v => s[key] = v}
                                             />
@@ -367,7 +367,7 @@ export function renderPopout(onClose: () => void) {
                     <Menu.MenuItem
                         id="endcord-open-updater"
                         label={t("Update Endcord")}
-                        action={() => UpdaterTab ? openSettingsTabModal(UpdaterTab) : EndcordNative.native.openExternal(_latestUrl || "https://github.com/rootpoii/Endcord/releases")}
+                        action={() => UpdaterTab ? openSettingsTabModal(UpdaterTab) : EndcordNative.native.openExternal(_latestUrl || "https://github.com/Endcord/Endcord/releases")}
                     />
                     <Menu.MenuItem
                         id="endcord-dismiss-update"

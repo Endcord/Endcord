@@ -56,6 +56,7 @@ function setActivity(activity: Activity | null) {
 
 const settings = definePluginSettings({
     apiKey: {
+        sensitive: true,
         displayName: "API Key",
         description: "Custom Last.fm API key. Not required but highly recommended to avoid rate limiting with our shared key",
         type: OptionType.STRING,
@@ -295,9 +296,9 @@ export default definePlugin({
         const statusName = (() => {
             switch (settings.store.nameFormat) {
                 case NameFormat.ArtistFirst:
-                    return trackData.artist + " - " + trackData.name;
+                    return `${trackData.artist} - ${trackData.name}`;
                 case NameFormat.SongFirst:
-                    return trackData.name + " - " + trackData.artist;
+                    return `${trackData.name} - ${trackData.artist}`;
                 case NameFormat.ArtistOnly:
                     return trackData.artist;
                 case NameFormat.SongOnly:

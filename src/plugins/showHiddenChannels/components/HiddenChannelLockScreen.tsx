@@ -30,11 +30,6 @@ const enum ForumLayoutTypes {
     GRID = 2
 }
 
-interface DefaultReaction {
-    emojiId: string | null;
-    emojiName: string | null;
-}
-
 const enum ChannelTypes {
     GUILD_TEXT = 0,
     GUILD_VOICE = 2,
@@ -192,7 +187,7 @@ function HiddenChannelLockScreen({ channel }: { channel: Channel; }) {
                     <Text variant="text-md/normal">{t("Last message pin:")}{" "}<Timestamp timestamp={new Date(lastPinTimestamp)} /></Text>
                 }
                 {(rateLimitPerUser ?? 0) > 0 &&
-                    <Text variant="text-md/normal">{t("Slowmode:")}{" "}{formatDurationVerbose(rateLimitPerUser!, "seconds")}</Text>
+                    <Text variant="text-md/normal">{t("Slowmode:")}{" "}{formatDurationVerbose(rateLimitPerUser, "seconds")}</Text>
                 }
                 {(defaultThreadRateLimitPerUser ?? 0) > 0 &&
                     <Text variant="text-md/normal">
@@ -211,7 +206,7 @@ function HiddenChannelLockScreen({ channel }: { channel: Channel; }) {
                 {(defaultAutoArchiveDuration ?? 0) > 0 &&
                     <Text variant="text-md/normal">
                         {t("Default inactivity duration before archiving")}{" "}{channel.isForumChannel() ? "posts" : "threads"}:
-                        {" " + formatDurationVerbose(defaultAutoArchiveDuration!, "minutes")}
+                        {` ${formatDurationVerbose(defaultAutoArchiveDuration!, "minutes")}`}
                     </Text>
                 }
                 {defaultForumLayout != null &&

@@ -66,7 +66,7 @@ export const HiddenServersStore = proxyLazyWebpack(() => {
         }
 
         public hiddenGuildsDetail(): Guild[] {
-            const sortedGuildIds = SortedGuildStore.getFlattenedGuildIds() as string[];
+            const sortedGuildIds = SortedGuildStore.getFlattenedGuildIds();
             // otherwise the list is in order of increasing id number which is confusing
             return sortedGuildIds.filter(id => this._hiddenGuilds.has(id)).map(id => GuildStore.getGuild(id));
         }

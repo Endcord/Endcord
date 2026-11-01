@@ -6,12 +6,12 @@
 
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { CloudDownloadIcon, ImageIcon } from "@components/Icons";
+import { User } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { openImageModal } from "@utils/discord";
 import { t } from "@utils/i18n";
 import definePlugin from "@utils/types";
 import { saveFile } from "@utils/web";
-import { User } from "@vencord/discord-types";
 import { IconUtils, Menu, showToast, UserProfileStore } from "@webpack/common";
 
 function getAvatarUrl(user: User, size: number) {

@@ -11,6 +11,8 @@ import { Logger } from "@utils/Logger";
 import { formatDurationMs } from "@utils/text";
 import { ApplicationAssetUtils, FluxDispatcher, showToast } from "@webpack/common";
 
+import { canSendCredentials } from "./serverUrl";
+
 const APPLICATION_ID = "1381368130164625469";
 const SOCKET_ID = "RichPresence_JF";
 const logger = new Logger("RichPresence:Jellyfin");
@@ -39,7 +41,19 @@ async function fetchMediaData(): Promise<JfMediaData | null> {
 
     try {
         const baseUrl = (jf_serverUrl.startsWith("http") ? jf_serverUrl : `https://${jf_serverUrl}`).replace(/\/$/, "");
-        const res = await fetch(`${baseUrl}/Sessions?api_key=${jf_apiKey}`);
+        if (!canSendCredentials(baseUrl)) {
+            if (!hasShownError) {
+                logger.error("Jellyfin server URL must use HTTPS outside your local network.");
+                showToast("Jellyfin needs an https:// URL outside your local network.", "failure", { duration: 15000 });
+                hasShownError = true;
+            }
+            return null;
+        }
+
+        // A key in the URL would end up in server and proxy logs
+        const res = await fetch(`${baseUrl}/Sessions`, {
+            headers: { Authorization: `MediaBrowser Token="${jf_apiKey}"` }
+        });
         if (!res.ok) throw `${res.status} ${res.statusText}`;
 
         const contentType = res.headers.get("content-type") ?? "";
@@ -93,7 +107,7 @@ async function getActivity(): Promise<Activity | null> {
 
     let richPresenceType: number;
     if (settings.store.jf_overrideType !== "off") {
-        richPresenceType = parseInt(settings.store.jf_overrideType as string, 10);
+        richPresenceType = parseInt(settings.store.jf_overrideType, 10);
     } else {
         richPresenceType = mediaData.type === "Audio" ? 2 : 3;
     }

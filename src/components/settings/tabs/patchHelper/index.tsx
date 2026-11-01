@@ -144,7 +144,7 @@ function PatchHelper() {
                         <Button onClick={() => copyWithToast(code)}>
                             {t("Copy to Clipboard")}
                         </Button>
-                        <Button onClick={() => copyWithToast("```ts\n" + code + "\n```")}>
+                        <Button onClick={() => copyWithToast(`\`\`\`ts\n${code}\n\`\`\``)}>
                             {t("Copy as Codeblock")}
                         </Button>
                     </Flex>

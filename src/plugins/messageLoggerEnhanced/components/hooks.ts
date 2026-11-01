@@ -26,7 +26,6 @@ function useDebouncedValue<T>(value: T, delay: number): T {
     return debouncedValue;
 }
 
-// this is so shit
 export function useMessages(query: string, currentTab: LogTabs, sortNewest: boolean, numDisplayedMessages: number) {
     // only for initial load
     const [pending, setPending] = useState(true);

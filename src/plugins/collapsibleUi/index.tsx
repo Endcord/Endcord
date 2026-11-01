@@ -469,7 +469,7 @@ export default definePlugin({
         const panelAttr = (classId: string, collapsed: boolean): SurfaceProvidedProps => ({
             [`data-vc-collapsible-ui-${classId}`]: "",
             [`data-vc-collapsible-ui-${classId}-${collapsed ? "collapsed" : "expanded"}`]: "",
-        } as SurfaceProvidedProps);
+        });
 
         providerUnsubs = [
             addSurfacePropsProvider("guildBar", () => {
@@ -532,7 +532,7 @@ export default definePlugin({
                     ...(channelListCollapsed && channelListExpandedByInteraction ? { "data-vc-collapsible-ui-base-channel-list-interaction-expanded": "" } : {}),
                     ...(headerBarCollapsed && !headerBarExpandedByInteraction ? { "data-vc-collapsible-ui-base-header-bar-collapsed": "" } : {}),
                     ...(headerBarCollapsed && headerBarExpandedByInteraction ? { "data-vc-collapsible-ui-base-header-bar-expanded": "" } : {}),
-                } as SurfaceProvidedProps;
+                };
             }),
             addSurfacePropsProvider("sidebar", () => {
                 const collapsed = isPanelCollapsed("channelList");
@@ -547,7 +547,7 @@ export default definePlugin({
                     onBlurCapture: handleSidebarLeave,
                     onMouseOverCapture: handleSidebarEnter,
                     onMouseOutCapture: handleSidebarLeave,
-                } as SurfaceProvidedProps;
+                };
             }),
         ];
 

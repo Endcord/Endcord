@@ -91,7 +91,7 @@ function makeSearchItem(src: string) {
             id="vc-search-text"
         >
             {Object.keys(Engines).map(engine => {
-                const key = "vc-search-content-" + engine;
+                const key = `vc-search-content-${engine}`;
                 return (
                     <Menu.MenuItem
                         key={key}

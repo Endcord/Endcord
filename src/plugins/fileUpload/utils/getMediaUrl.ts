@@ -93,7 +93,7 @@ export async function getExtensionFromBytes(blob: Blob): Promise<string | undefi
 
 export function getUrlExtension(url: string): string | undefined {
     if (!url.startsWith("https:") && !url.startsWith("http:")) {
-        url = "https:" + url;
+        url = `https:${url}`;
     }
     try {
         let { pathname } = new URL(url);

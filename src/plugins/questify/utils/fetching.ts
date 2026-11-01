@@ -198,14 +198,14 @@ export async function fetchAndAlertQuests(source: string): Promise<Quest[] | nul
 
     if (shouldAlert) {
         playAudio(
-            alertSound!,
+            alertSound,
             { volume: Math.max(0, Math.min(100, alertVolume)) }
         );
     }
 
     if (shouldAlertExcluded) {
         playAudio(
-            excludedAlertSound!,
+            excludedAlertSound,
             { volume: Math.max(0, Math.min(100, excludedAlertVolume)) }
         );
     }

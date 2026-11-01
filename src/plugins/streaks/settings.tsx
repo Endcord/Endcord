@@ -17,7 +17,7 @@ import { useStreaksStore } from "./stores/StreaksStore";
 export const settings = definePluginSettings({
     account: {
         type: OptionType.COMPONENT,
-        description: "Log in or out of the Streaks API.",
+        description: "Log in or out of the Streaks API. While logged in, the IDs of people you DM are sent to streaks.equicord.org.",
         component() {
             const { isAuthorized, authorize, remove } = useAuthorizationStore();
 
@@ -31,7 +31,7 @@ export const settings = definePluginSettings({
                             {t("Log Out of Streaks API")}</Button>
                     </Flex>
                 );
-            } else {
+            }
                 return (
                     <Flex>
                         <Button onClick={async () => {
@@ -42,7 +42,7 @@ export const settings = definePluginSettings({
                             {t("Log In to Streaks API")}</Button>
                     </Flex>
                 );
-            }
+
         }
     },
     eliteColor: {

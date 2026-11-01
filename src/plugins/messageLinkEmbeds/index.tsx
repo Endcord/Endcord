@@ -156,8 +156,8 @@ function getImages(message: Message): Attachment[] {
             attachments.push({
                 height: height!,
                 width: width!,
-                url: url,
-                proxyURL: proxy_url!
+                url,
+                proxyURL: proxy_url
             });
     }
 
@@ -185,7 +185,7 @@ function noContent(attachments: number, embeds: number) {
 function requiresRichEmbed(message: Message) {
     if (message.components.length) return true;
     if (message.attachments.some(a => !a.content_type?.startsWith("image/"))) return true;
-    if (message.embeds.some(e => e.type !== "image" && (e.type !== "gifv" || tenorRegex.test(e.url!)))) return true;
+    if (message.embeds.some(e => e.type !== "image" && (e.type !== "gifv" || tenorRegex.test(e.url)))) return true;
 
     return false;
 }
@@ -220,7 +220,7 @@ function MessageEmbedAccessory({ message }: { message: Message; }) {
 
     const accessories = [] as (JSX.Element | null)[];
 
-    for (const [_, channelID, messageID] of message.content!.matchAll(messageLinkRegex)) {
+    for (const [_, channelID, messageID] of message.content.matchAll(messageLinkRegex)) {
         if (embeddedBy.includes(messageID) || embeddedBy.length > 2) {
             continue;
         }

@@ -76,7 +76,7 @@ function PinnedServers() {
     const { pinnedServers } = settings.use(["pinnedServers"]);
     const pinnedIds = React.useMemo(getPinned, [pinnedServers]);
     const selectedId = useStateFromStores([SelectedGuildStore], () => SelectedGuildStore.getGuildId());
-    const guilds = useStateFromStores([GuildStore], () => pinnedIds.map(id => GuildStore.getGuild(id)).filter(Boolean) as Guild[], [pinnedIds]);
+    const guilds = useStateFromStores([GuildStore], () => pinnedIds.map(id => GuildStore.getGuild(id)).filter(Boolean), [pinnedIds]);
     if (!guilds.length) return null;
 
     return (

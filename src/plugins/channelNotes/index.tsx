@@ -153,7 +153,7 @@ function ToolbarButton() {
     const channelId = useStateFromStores([SelectedChannelStore], () => SelectedChannelStore.getChannelId());
     const note = useNotes()[channelId];
     if (!channelId) return null;
-    const preview = note ? (note.text.length > 140 ? note.text.slice(0, 140) + "…" : note.text) : null;
+    const preview = note ? (note.text.length > 140 ? `${note.text.slice(0, 140)}…` : note.text) : null;
     return (
         <ChannelToolbarButton
             icon={p => <NoteIcon {...p} hasNote={!!note} />}

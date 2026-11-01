@@ -102,7 +102,7 @@ export default definePlugin({
             return url.toString();
         } catch (e) {
             new Logger("FixImagesQuality").error("Failed to make image src", e);
-            return;
+
         }
     }
 });

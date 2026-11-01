@@ -60,7 +60,7 @@ export const settings = definePluginSettings({
                     let url = "https://reviewdb.mantikafasi.dev";
                     const token = await getToken();
                     if (token)
-                        url += "/api/redirect?token=" + encodeURIComponent(token);
+                        url += `/api/redirect?token=${encodeURIComponent(token)}`;
 
                     EndcordNative.native.openExternal(url);
                 }}>

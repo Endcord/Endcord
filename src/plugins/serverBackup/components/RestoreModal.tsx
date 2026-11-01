@@ -8,6 +8,7 @@ import { Flex } from "@components/Flex";
 import { FormSwitch } from "@components/FormSwitch";
 import { Heading } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
+import type { Guild, RenderModalProps } from "@endcord/discord-types";
 import { getErrorMessage } from "@plugins/serverBackup/api";
 import { parseBackup, readBackupFile } from "@plugins/serverBackup/backup";
 import { restoreBackup } from "@plugins/serverBackup/restore";
@@ -15,7 +16,6 @@ import { settings } from "@plugins/serverBackup/settings";
 import { ChannelTypes, GuildBackup, RestoreProgress, RestoreReport } from "@plugins/serverBackup/types";
 import { readClipboard } from "@utils/clipboard";
 import { t } from "@utils/i18n";
-import type { Guild, RenderModalProps } from "@vencord/discord-types";
 import { Button, Modal, openModal, showToast, TextArea, useMemo, useState } from "@webpack/common";
 
 const MAX_LOGS = 100;

@@ -7,11 +7,11 @@
 import "./styles.css";
 
 import { migratePluginToSettings } from "@api/Settings";
+import { Channel, Message, User } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import { getCurrentChannel, getIntlMessage } from "@utils/discord";
 import definePlugin from "@utils/types";
-import { Channel, Message, User } from "@vencord/discord-types";
 import { ChannelStore, GuildStore, PermissionsBits, SelectedChannelStore, UserStore } from "@webpack/common";
 
 import { computePermissions, Tag, tags } from "./consts";
@@ -177,7 +177,7 @@ export default definePlugin({
         if (isChat && user.id === "1") return null;
         if (user.bot && settings.dontShowForBots) return null;
 
-        channel ??= ChannelStore.getChannel(channelId!) as any;
+        channel ??= ChannelStore.getChannel(channelId!);
         if (!channel) return null;
 
         const perms = this.getPermissions(user, channel);

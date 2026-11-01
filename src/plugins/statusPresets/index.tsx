@@ -84,8 +84,8 @@ const StatusSubMenuComponent = () => {
             {Object.entries((settings.store.StatusPresets as { [k: string]: DiscordStatus | undefined; })).map(([index, status]) =>
                 status != null ? (
                     <Menu.MenuItem
-                        key={"status-presets-" + index}
-                        id={"status-presets-" + index}
+                        key={`status-presets-${index}`}
+                        id={`status-presets-${index}`}
                         label={status.text}
                         action={() => (status.emojiInfo?.id == null || premiumType > 0) && setStatus(status)}
                         icon={status.emojiInfo != null
@@ -99,7 +99,7 @@ const StatusSubMenuComponent = () => {
                         disabled={status.emojiInfo?.id != null && premiumType === 0}
                     >
                         <Menu.MenuItem
-                            id={"status-presets-delete-" + index}
+                            id={`status-presets-delete-${index}`}
                             label={t("Delete Preset")}
                             action={() => {
                                 const newPresets = JSON.parse(JSON.stringify(settings.store.StatusPresets));

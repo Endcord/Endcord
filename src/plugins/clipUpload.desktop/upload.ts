@@ -209,7 +209,7 @@ function prepareClipFile(file: File, fileName: string) {
 }
 
 function parseAttachmentUploadResponse(response: RestResponse): AttachmentUploadResponse {
-    if (isObject(response.body)) return response.body as AttachmentUploadResponse;
+    if (isObject(response.body)) return response.body;
     return parseJSON<AttachmentUploadResponse>(response.text) ?? {};
 }
 

@@ -5,9 +5,9 @@
  */
 
 import { showNotification } from "@api/Notifications";
-import { settings } from "@equicordplugins/musicControls/settings";
-import { getLyrics, lyricFetchers, providers, updateLyrics } from "@equicordplugins/musicControls/spotify/lyrics/api";
-import { SpotifyStore, type Track } from "@equicordplugins/musicControls/spotify/SpotifyStore";
+import { settings } from "@plugins/musicControls/settings";
+import { getLyrics, lyricFetchers, providers, updateLyrics } from "@plugins/musicControls/spotify/lyrics/api";
+import { SpotifyStore, type Track } from "@plugins/musicControls/spotify/SpotifyStore";
 import { proxyLazyWebpack } from "@webpack";
 import { Flux, FluxDispatcher } from "@webpack/common";
 
@@ -68,7 +68,7 @@ export const SpotifyLrcStore = proxyLazyWebpack(() => {
             if (currentInfo?.lyricsVersions[provider]) {
                 lyricsInfo = { ...currentInfo, useLyric: provider };
 
-                await updateLyrics(track.id, currentInfo.lyricsVersions[provider]!, provider);
+                await updateLyrics(track.id, currentInfo.lyricsVersions[provider], provider);
                 store.emitChange();
                 return;
             }

@@ -5,14 +5,14 @@
  */
 
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
+import type { Guild } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
 import definePlugin from "@utils/types";
-import type { Guild } from "@vencord/discord-types";
 import { EmojiStore, Menu, StickersStore } from "@webpack/common";
 import { zipSync } from "fflate";
 
-const StickerExt = [, "png", "apng", "json", "gif"] as const;
+const StickerExt = [undefined, "png", "apng", "json", "gif"] as const;
 
 const Patch: NavContextMenuPatchCallback = (children, { guild }: { guild: Guild; }) => {
     // Assuming "privacy" is the correct ID for the group you want to modify.
@@ -35,7 +35,7 @@ async function zipGuildAssets(guild: Guild, type: "emojis" | "stickers") {
         : StickersStore.getStickersByGuildId(guild.id);
 
     if (!items) {
-        return console.log("Server not found!");
+        return console.debug("Server not found!");
     }
 
     const getProxyEndpoint = () => {
@@ -52,7 +52,7 @@ async function zipGuildAssets(guild: Guild, type: "emojis" | "stickers") {
             ext = e.animated ? ".gif" : ".png";
             url = `https://${endpoint}/emojis/${e.id}${ext}?size=512&quality=lossless`;
         } else {
-            ext = "." + StickerExt[e.format_type];
+            ext = `.${StickerExt[e.format_type]}`;
             const urlExt = e.format_type === 2 ? ".png" : ext;
             url = `https://${endpoint}/stickers/${e.id}${urlExt}?size=4096&lossless=true`;
         }

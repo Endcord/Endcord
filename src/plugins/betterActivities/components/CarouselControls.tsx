@@ -47,7 +47,7 @@ export function CarouselControls({ activities, currentActivity, onActivityChange
             <div className={cl("controls-carousel")}>
                 {activities.map((activity, index) => (
                     <div
-                        key={"dot--" + index}
+                        key={`dot--${index}`}
                         onClick={() => onActivityChange(activity)}
                         className={cl("controls-dot", currentActivity.id === activity.id && "controls-selected")} />
                 ))}

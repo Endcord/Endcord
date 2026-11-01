@@ -67,9 +67,9 @@ export const sortMessagesByDate = (timestampA: string, timestampB: string) => {
         return 1;
     } else if (timestampA > timestampB) {
         return -1;
-    } else {
-        return 0;
     }
+        return 0;
+
 };
 
 // stolen from mlv2
@@ -125,14 +125,6 @@ export const messageJsonToMessageClass = memoize((log: { message: LoggedMessageJ
     return message;
 });
 
-export function parseJSON(json?: string | null) {
-    try {
-        return JSON.parse(json!);
-    } finally {
-        return null;
-    }
-}
-
 export async function doesBlobUrlExist(url: string) {
     const res = await fetch(url);
     return res.ok;
@@ -153,9 +145,7 @@ export function getNative(): PluginNative<typeof import("../native")> {
             initDirs: async () => { },
             getImageNative: async (x: string) => new Uint8Array(0),
             getNativeSavedImages: async () => new Map(),
-            messageLoggerEnhancedUniqueIdThingyIdkMan: async () => { },
             showItemInFolder: async () => { },
-            writeImageNative: async () => { },
             chooseFile: async () => "",
             downloadAttachment: async () => ({ error: "web", path: null }),
             startNativeLogExport: async () => "" as any,
@@ -170,7 +160,6 @@ export function getNative(): PluginNative<typeof import("../native")> {
 
     }
 
-    return Object.values(EndcordNative.pluginHelpers)
-        .find(m => m.messageLoggerEnhancedUniqueIdThingyIdkMan) as PluginNative<typeof import("../native")>;
+    return EndcordNative.pluginHelpers.MessageLoggerEnhanced as PluginNative<typeof import("../native")>;
 
 }

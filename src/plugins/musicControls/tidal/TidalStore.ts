@@ -141,7 +141,7 @@ class TidalSocket {
                 }
             } catch (err) {
                 logger.error("Invalid JSON:", err, `\n${e.data}`);
-                return;
+
             }
         });
     }

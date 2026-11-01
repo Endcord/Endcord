@@ -6,7 +6,7 @@
 
 import SettingsPlugin from "@plugins/_core/settings";
 import { detectClient } from "@plugins/_core/supportHelper";
-import { gitHashShort } from "@shared/vencordUserAgent";
+import { gitHashShort } from "@shared/endcordUserAgent";
 import { React } from "@webpack/common";
 import { JSX } from "react";
 

@@ -52,7 +52,7 @@ function startTrackingChannel(channelId: string, myId: string) {
     trackedChannelId = channelId;
     const states = VoiceStateStore.getVoiceStatesForChannel(channelId) ?? {};
     const now = Date.now();
-    for (const state of Object.values(states) as VoiceState[]) {
+    for (const state of Object.values(states)) {
         if (state.userId !== myId) sessionStarts.set(state.userId, now);
     }
     saveIntervalId = setInterval(() => {

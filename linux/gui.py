@@ -2,8 +2,12 @@
 # Endcord Linux installer GUI — same layout/colors as InstallerGUI.cs
 from __future__ import print_function
 
+import base64
+import hashlib
+import hmac
 import json
 import os
+import secrets
 import shutil
 import socket
 import subprocess
@@ -27,13 +31,21 @@ if os.environ.get("SUDO_USER") and os.geteuid() == 0:
 CONFIG = os.environ.get("XDG_CONFIG_HOME") or os.path.join(HOME, ".config")
 DIST_DIR = os.path.join(CONFIG, "Endcord", "dist")
 FILES = ("patcher.js", "preload.js", "renderer.js", "renderer.css")
+# Where the files are, and the manifest with their checksums
 MIRRORS = (
-    "https://raw.githubusercontent.com/rootpoii/endcord/main/dist",
-    "https://endcord.com/dist",
+    ("https://raw.githubusercontent.com/Endcord/Endcord/main/dist", "https://raw.githubusercontent.com/Endcord/Endcord/main/version.json"),
+    ("https://endcord.com/dist", "https://endcord.com/version.json"),
 )
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 HERE = Path(SCRIPT_DIR)
 QUIT = threading.Event()
+# Any web page can reach the local API, so requests have to prove they come from the installer's window
+TOKEN = secrets.token_urlsafe(32)
+UPDATE_KEY = """-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEJi37GlwG/uPNC4oQicUcI1bPlnri
+1pXQGzUzDQwBnxQ1+F7tFtUkOjancC1eScKb9H9eASOz7iUA3CiGgXtHaw==
+-----END PUBLIC KEY-----
+"""
 
 LOADER_JS = """const { join } = require('path');
 const appData = process.env.APPDATA || (process.platform === 'darwin' ? join(process.env.HOME, 'Library/Application Support') : join(process.env.HOME, '.config'));
@@ -165,11 +177,55 @@ def find_local_dist():
     for p in (
         HERE / "dist",
         HERE.parent / "dist",
-        Path(os.getcwd()) / "dist",
     ):
         if (p / "patcher.js").is_file():
             return p
     return None
+
+
+def download(url):
+    req = Request(url, headers={"User-Agent": "EndcordInstaller"})
+    with urlopen(req, timeout=30) as r:
+        return r.read()
+
+
+# The checksums come from the same place as the files, so only this proves the release is really ours.
+# Keep the payload in sync with signManifest in scripts/uploadRelease.mjs
+def verify_manifest(manifest):
+    openssl = shutil.which("openssl")
+    if not openssl:
+        print("openssl isn't installed, so the release signature can't be checked. Using the checksums only.")
+        return
+    if not manifest.get("signature"):
+        raise RuntimeError("the release isn't signed")
+
+    fields = [str(manifest.get(key) or "") for key in ("version", "hash", "updatedAt", "installerSha256")]
+    if not all(fields):
+        raise RuntimeError("the release is incomplete")
+    assets = sorted("%s %s" % (a["name"], a["sha256"].lower()) for a in manifest["assets"])
+    tmp = tempfile.mkdtemp(prefix="endcord-")
+    try:
+        key, payload, signature = (os.path.join(tmp, name) for name in ("key.pem", "payload", "signature"))
+        Path(key).write_text(UPDATE_KEY, encoding="utf-8")
+        Path(payload).write_bytes("\n".join(fields + assets).encode("utf-8"))
+        Path(signature).write_bytes(base64.b64decode(manifest["signature"]))
+        result = subprocess.run(
+            [openssl, "dgst", "-sha256", "-verify", key, "-signature", signature, payload],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+    if result.returncode != 0:
+        raise RuntimeError("the release signature doesn't match")
+
+
+def fetch_checksums(url):
+    manifest = json.loads(download(url + "?t=%d" % time.time()).decode("utf-8"))
+    verify_manifest(manifest)
+    sums = {a.get("name"): a.get("sha256") for a in manifest.get("assets", [])}
+    if not all(sums.get(f) for f in FILES):
+        raise RuntimeError("the release has no checksums")
+    return sums
 
 
 def fetch_dist():
@@ -180,12 +236,19 @@ def fetch_dist():
             shutil.copy2(str(local / f), os.path.join(DIST_DIR, f))
         return "local " + str(local)
     last = None
-    for mirror in MIRRORS:
+    for mirror, manifest in MIRRORS:
         try:
+            sums = fetch_checksums(manifest)
+            files = {}
             for f in FILES:
-                req = Request(mirror + "/" + f, headers={"User-Agent": "EndcordInstaller"})
-                with urlopen(req, timeout=30) as r, open(os.path.join(DIST_DIR, f), "wb") as out:
-                    out.write(r.read())
+                data = download(mirror + "/" + f)
+                if hashlib.sha256(data).hexdigest() != sums[f].lower():
+                    raise RuntimeError("%s doesn't match its checksum" % f)
+                files[f] = data
+            # Everything is downloaded and checked before the installed copy is touched
+            for f, data in files.items():
+                with open(os.path.join(DIST_DIR, f), "wb") as out:
+                    out.write(data)
             return mirror
         except Exception as e:
             last = e
@@ -608,6 +671,7 @@ HTML = r"""<!DOCTYPE html>
   <div id="status">Ready<div id="bar"><i></i></div></div>
 </div>
 <script>
+const API_HEADERS = {"Content-Type":"application/json","X-Endcord-Token":"__TOKEN__"};
 const ACTIONS = ["install","uninstall","repair","kill"];
 const LABELS = ["INSTALL ENDCORD","UNINSTALL ENDCORD","REPAIR INSTALLATION","CLOSE ALL DISCORD"];
 const MODES = ["Install","Uninstall","Repair","Close Discord"];
@@ -667,7 +731,7 @@ function tab(i){
 }
 function selAll(on){ clients.forEach(c => on ? selected.add(c.root) : selected.delete(c.root)); render(); }
 async function refresh(){
-  const r = await fetch("/api/scan", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({extra})});
+  const r = await fetch("/api/scan", {method:"POST", headers:API_HEADERS, body: JSON.stringify({extra})});
   const data = await r.json();
   clients = data.clients || [];
   selected = new Set(clients.map(c => c.root));
@@ -695,7 +759,7 @@ async function go(){
   status("Working…");
   try {
     setBusy(true, 40);
-    const r = await fetch("/api/action", {method:"POST", headers:{"Content-Type":"application/json"},
+    const r = await fetch("/api/action", {method:"POST", headers:API_HEADERS,
       body: JSON.stringify({action: ACTIONS[mode], roots, relaunch: document.getElementById("relaunch").checked})});
     const data = await r.json();
     setBusy(true, 90);
@@ -709,12 +773,16 @@ async function go(){
   }
   setBusy(false, 100);
 }
-async function quit(){ try { await fetch("/api/quit"); } catch(e) {} window.close(); }
+async function quit(){ try { await fetch("/api/quit", {headers:API_HEADERS}); } catch(e) {} window.close(); }
 refresh();
 </script>
 </body>
 </html>
 """
+
+
+def token_matches(value):
+    return hmac.compare_digest(value.encode("utf-8", "replace"), TOKEN.encode("utf-8"))
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -729,8 +797,13 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(raw)
 
+    def _authorized(self):
+        host = self.headers.get("Host") or ""
+        token = self.headers.get("X-Endcord-Token") or ""
+        return host == "127.0.0.1:%d" % self.server.server_address[1] and token_matches(token)
+
     def _html(self):
-        raw = HTML.encode("utf-8")
+        raw = HTML.replace("__TOKEN__", TOKEN).encode("utf-8")
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.send_header("Content-Length", str(len(raw)))
@@ -738,16 +811,24 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(raw)
 
     def do_GET(self):
-        path = self.path.split("?", 1)[0]
+        path, _, query = self.path.partition("?")
         if path in ("/", "/index.html"):
-            self._html()
-        elif path == "/api/quit":
+            if token_matches(query.replace("token=", "", 1)):
+                self._html()
+            else:
+                self.send_error(403)
+        elif path == "/api/quit" and self._authorized():
             self._json({"ok": True})
             QUIT.set()
+        elif path == "/api/quit":
+            self.send_error(403)
         else:
             self.send_error(404)
 
     def do_POST(self):
+        if not self._authorized():
+            self.send_error(403)
+            return
         n = int(self.headers.get("Content-Length") or 0)
         try:
             body = json.loads(self.rfile.read(n) or b"{}")
@@ -847,7 +928,7 @@ def main():
     httpd = ThreadingHTTPServer(("127.0.0.1", port), Handler)
     t = threading.Thread(target=httpd.serve_forever, daemon=True)
     t.start()
-    url = "http://127.0.0.1:%d/" % port
+    url = "http://127.0.0.1:%d/?token=%s" % (port, TOKEN)
     try:
         open_window(url)
     finally:

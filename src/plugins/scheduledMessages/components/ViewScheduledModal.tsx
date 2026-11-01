@@ -73,7 +73,7 @@ function ViewScheduledModalInner({ rootProps, close }: ViewScheduledModalProps) 
 
                         const isDM = channel.isPrivate();
                         const displayContent = msg.content.length > 200
-                            ? msg.content.slice(0, 200) + "..."
+                            ? `${msg.content.slice(0, 200)}...`
                             : msg.content;
 
                         return (

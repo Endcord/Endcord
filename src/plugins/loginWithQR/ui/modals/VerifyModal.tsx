@@ -7,7 +7,7 @@
 import { BaseText } from "@components/BaseText";
 import { Button, TextButton } from "@components/Button";
 import { RenderModalProps } from "@endcord/discord-types";
-import { images } from "@equicordplugins/loginWithQR/images";
+import { images } from "@plugins/loginWithQR/images";
 import { getIntlMessage } from "@utils/discord";
 import { t as translateText } from "@utils/i18n";
 import { findByPropsLazy } from "@webpack";

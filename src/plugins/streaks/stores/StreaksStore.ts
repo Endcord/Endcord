@@ -108,10 +108,10 @@ export const useStreaksStore = proxyLazy(() => zustandCreate((set: any, get: any
 
             if (res.ok) {
                 await DataStore.del("vc-streaks-data");
-                console.log("Successfully migrated local streaks to API");
+                console.debug("Successfully migrated local streaks to API");
             }
         } catch (e) {
             console.error("Failed to migrate streaks", e);
         }
     }
-} as StreaksState)));
+})));

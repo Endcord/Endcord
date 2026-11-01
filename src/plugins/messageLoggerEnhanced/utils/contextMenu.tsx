@@ -116,14 +116,14 @@ export const contextMenuPath: NavContextMenuPatchCallback = (children, props) =>
                     action={() => openLogModal()}
                 />
 
-                {Object.keys(idFunctions).map(IdType => renderOpenLogs(IdType as idKeys, props))}
+                {Object.keys(idFunctions).map(IdType => renderOpenLogs(IdType, props))}
 
                 <Menu.MenuSeparator />
 
                 {Object.keys(idFunctions).map(IdType => (
                     <React.Fragment key={IdType}>
-                        {renderListOption("blacklistedIds", IdType as idKeys, props)}
-                        {renderListOption("whitelistedIds", IdType as idKeys, props)}
+                        {renderListOption("blacklistedIds", IdType, props)}
+                        {renderListOption("whitelistedIds", IdType, props)}
                     </React.Fragment>
                 ))}
 

@@ -7,12 +7,12 @@
 import { Flex } from "@components/Flex";
 import { Heading } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
+import type { Guild, RenderModalProps } from "@endcord/discord-types";
 import { getErrorMessage } from "@plugins/serverBackup/api";
 import { createBackup, saveBackupFile, serializeBackup } from "@plugins/serverBackup/backup";
 import { ChannelTypes, GuildBackup } from "@plugins/serverBackup/types";
 import { copyWithToast } from "@utils/discord";
 import { t } from "@utils/i18n";
-import type { Guild, RenderModalProps } from "@vencord/discord-types";
 import { Modal, openModal, showToast, useEffect, useState } from "@webpack/common";
 
 export function openExportModal(guild: Guild) {

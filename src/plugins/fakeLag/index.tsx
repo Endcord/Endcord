@@ -57,13 +57,15 @@ function showOverlay() {
     const root = document.createElement("div");
     root.id = ROOT_ID;
     root.className = "ec-fake-lag-root";
+    // eslint-disable-next-line no-restricted-syntax -- a fixed template, the title is set as text below
     root.innerHTML = `
         <svg class="ec-fake-lag-logo" viewBox="0 0 127.14 96.36" aria-hidden="true">
             <path fill="currentColor" d="${CLYDE_PATH}"/>
         </svg>
-        <p class="ec-fake-lag-title">${settings.store.title}</p>
+        <p class="ec-fake-lag-title"></p>
         <div class="ec-fake-lag-track"><div class="ec-fake-lag-track-fill"></div></div>
     `;
+    root.querySelector(".ec-fake-lag-title")!.textContent = settings.store.title;
     document.body.appendChild(root);
 
     const autoHide = Number(settings.store.autoHideSeconds) || 0;

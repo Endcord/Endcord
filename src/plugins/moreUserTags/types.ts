@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import type { Channel, Message, Permissions, User } from "@vencord/discord-types";
+import type { Channel, Message, Permissions, User } from "@endcord/discord-types";
 
 import { tags } from "./consts";
 

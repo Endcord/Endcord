@@ -1891,8 +1891,7 @@ namespace EndcordInstaller.UI
                 var asm = Assembly.GetExecutingAssembly();
                 foreach (var name in asm.GetManifestResourceNames())
                 {
-                    if (name.EndsWith("app_logo.png", StringComparison.OrdinalIgnoreCase) ||
-                        name.EndsWith("logonobg.png", StringComparison.OrdinalIgnoreCase))
+                    if (name.EndsWith("app_logo.png", StringComparison.OrdinalIgnoreCase))
                     {
                         using (var s = asm.GetManifestResourceStream(name))
                         {

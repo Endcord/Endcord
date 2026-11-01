@@ -19,12 +19,27 @@
 
 // @ts-check
 
+import { zipSync } from "fflate";
 import { readFileSync } from "fs";
 import { appendFile, mkdir, readdir, readFile, rm, writeFile } from "fs/promises";
-import { join } from "path";
-import Zip from "zip-local";
+import { join, relative } from "path";
 
-import { BUILD_TIMESTAMP, commonOpts, globPlugins, IS_DEV, IS_REPORTER, IS_ANTI_CRASH_TEST, VERSION, commonRendererPlugins, buildOrWatchAll, stringifyValues } from "./common.mjs";
+import { BUILD_TIMESTAMP, buildOrWatchAll, commonOpts, commonRendererPlugins, globPlugins, IS_ANTI_CRASH_TEST, IS_DEV, IS_REPORTER, stringifyValues,VERSION } from "./common.mjs";
+
+/**
+ * @param {string} folder
+ * @param {string} output
+ */
+async function zipFolder(folder, output) {
+    /** @type {Record<string, Uint8Array>} */
+    const files = {};
+    for (const entry of await readdir(folder, { recursive: true, withFileTypes: true })) {
+        if (!entry.isFile()) continue;
+        const path = join(entry.parentPath, entry.name);
+        files[relative(folder, path).replaceAll("\\", "/")] = await readFile(path);
+    }
+    await writeFile(output, zipSync(files, { level: 9 }));
+}
 
 /**
  * @type {import("esbuild").BuildOptions}
@@ -172,7 +187,7 @@ async function buildExtension(target, files) {
         await writeFile(dest, content);
     }));
 
-    console.info("Unpacked Extension written to dist/" + target);
+    console.info(`Unpacked Extension written to dist/${target}`);
 }
 
 const appendCssRuntime = readFile("dist/Endcord.user.css", "utf-8").then(content => {
@@ -188,10 +203,10 @@ if (!process.argv.includes("--skip-extension")) {
         buildExtension("firefox-unpacked", ["background.js", "content.js", "manifestv2.json", "icon.png"]),
     ]);
 
-    Zip.sync.zip("dist/chromium-unpacked").compress().save("dist/extension-chrome.zip");
+    await zipFolder("dist/chromium-unpacked", "dist/extension-chrome.zip");
     console.info("Packed Chromium Extension written to dist/extension-chrome.zip");
 
-    Zip.sync.zip("dist/firefox-unpacked").compress().save("dist/extension-firefox.zip");
+    await zipFolder("dist/firefox-unpacked", "dist/extension-firefox.zip");
     console.info("Packed Firefox Extension written to dist/extension-firefox.zip");
 } else {
     await appendCssRuntime;

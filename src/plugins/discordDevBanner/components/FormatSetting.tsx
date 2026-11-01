@@ -45,13 +45,13 @@ export function FormatSetting(setValue) {
                 ref={el => {
                     if (el) {
                         el.style.height = "auto";
-                        el.style.height = el.scrollHeight + "px";
+                        el.style.height = `${el.scrollHeight}px`;
                     }
                 }}
                 onInput={e => {
                     const el = e.currentTarget;
                     el.style.height = "auto";
-                    el.style.height = el.scrollHeight + "px";
+                    el.style.height = `${el.scrollHeight}px`;
                 }}
             />
 

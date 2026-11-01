@@ -6,9 +6,9 @@
 
 import "./styles.css";
 
+import { getIsEndcordHidden, onHiddenChange } from "@api/EndcordVisibility";
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { getIsEndcordHidden, onHiddenChange } from "@plugins/hideEndcord";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 import { findComponentByCodeLazy } from "@webpack";

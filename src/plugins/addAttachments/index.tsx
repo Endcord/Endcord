@@ -6,12 +6,12 @@
 
 import { ChatBarButton } from "@api/ChatButtons";
 import { UploadIcon } from "@components/Icons";
+import { Message } from "@endcord/discord-types";
+import { MessageFlags, MessageType } from "@endcord/discord-types/enums";
 import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
 import { pluralise } from "@utils/misc";
 import definePlugin from "@utils/types";
-import { Message } from "@vencord/discord-types";
-import { MessageFlags, MessageType } from "@vencord/discord-types/enums";
 import { findByPropsLazy } from "@webpack";
 import { AuthenticationStore, ChannelStore, EditMessageStore, MessageStore, PermissionsBits, PermissionStore, RestAPI, SelectedChannelStore, showToast, Toasts } from "@webpack/common";
 

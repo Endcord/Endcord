@@ -17,7 +17,7 @@ import { showToast, Toasts } from "@webpack/common";
 const LOCAL_FAVS_KEY = "UnlimitedFavoriteGIFs_localFavs";
 const LIMIT_RE = /\.toBinary\(t\)\.length>\d+/;
 
-function log(...args: any[]) { console.log("[UnlimitedFavoriteGIFs]", ...args); }
+function log(...args: any[]) { console.debug("[UnlimitedFavoriteGIFs]", ...args); }
 function warn(...args: any[]) { console.warn("[UnlimitedFavoriteGIFs]", ...args); }
 
 async function getLocalFavs(): Promise<any[]> {
@@ -26,11 +26,6 @@ async function getLocalFavs(): Promise<any[]> {
 
 async function saveLocalFavs(list: any[]): Promise<void> {
     await DataStore.set(LOCAL_FAVS_KEY, list);
-}
-
-function gifKey(gif: any): string {
-    if (typeof gif === "string") return gif;
-    return gif?.url ?? gif?.src ?? JSON.stringify(gif);
 }
 
 const settings = definePluginSettings({
@@ -93,7 +88,7 @@ function applyRuntimePatch() {
             }
 
             const isArrow = patched.startsWith("(");
-            const wrapped = "0," + (isArrow ? "" : "function") + patched.slice(patched.indexOf("("));
+            const wrapped = `0,${isArrow ? "" : "function"}${patched.slice(patched.indexOf("("))}`;
             webpackReq.m[key] = (0, eval)(wrapped);
 
             delete webpackReq.c[key];

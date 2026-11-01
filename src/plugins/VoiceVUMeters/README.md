@@ -32,4 +32,4 @@ On 2026-10-01, two synthetic participants sent independently encoded, encrypted 
 
 Restore the backed-up wrapper and renderer files and remove the companion bridge files if they were newly installed. Restart Discord after the call. The local activation backup is `backups/2026-10-01/voice-native-stereo`, with evidence in `reports/2026-10-01-voice-native-stereo`. No DevTools, hotkeys, focus automation or clipboard injection were used. Protected audio processes survived activation.
 
-This contribution includes the native helper source and its tests. Build the helper and place the resulting `participant_tap.node` beside `Install-Bridge.ps1` before installation. No precompiled native addon is included in this PR. The optional companion requires an existing compatible DiscordStereoLoader installation.
+This contribution includes the native helper source and its tests. Build the helper, place the resulting `participant_tap.node` beside `Install-Bridge.ps1`, and pass its SHA-256 as `-TapSha256` when installing. No precompiled native addon is included in this PR. The optional companion requires an existing compatible DiscordStereoLoader installation.

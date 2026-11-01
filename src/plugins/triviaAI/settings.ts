@@ -9,6 +9,7 @@ import { OptionType } from "@utils/types";
 
 export const settings = definePluginSettings({
     apiKey: {
+        sensitive: true,
         type: OptionType.STRING,
         description: "API Key.",
         default: "",
@@ -36,6 +37,7 @@ export const settings = definePluginSettings({
         default: 500
     },
     endpoint: {
+        sensitive: true,
         type: OptionType.STRING,
         description: "OpenAI Compatible AI Endpoint.",
         default: "https://openrouter.ai/api/v1/chat/completions",

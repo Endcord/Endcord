@@ -38,7 +38,7 @@ const settings = definePluginSettings({
         description: "Caret color",
         default: 0xffffff,
         component: () => {
-            const hex = "#" + ((settings.store.caretColor ?? 0xffffff).toString(16).padStart(6, "0"));
+            const hex = `#${(settings.store.caretColor ?? 0xffffff).toString(16).padStart(6, "0")}`;
             return (
                 <div>
                     <Forms.FormTitle tag="h3">{t("Caret Color")}</Forms.FormTitle>
@@ -165,9 +165,9 @@ function applyCaretPosition() {
         updatingCaret = false;
         return;
     }
-    const newLeft = rect.right + "px";
-    const newTop = rect.top + "px";
-    const newHeight = rect.height + "px";
+    const newLeft = `${rect.right}px`;
+    const newTop = `${rect.top}px`;
+    const newHeight = `${rect.height}px`;
     updatingCaret = true;
     if (el.style.left !== newLeft || el.style.top !== newTop) {
         if (el.style.display !== "none") stopBlink();

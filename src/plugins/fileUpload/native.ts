@@ -4,9 +4,12 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { fetchPublicUrl, readBody } from "@main/utils/http";
 import { IpcMainInvokeEvent } from "electron";
 
 import { NativeUploadResult, NestUploadResponse } from "./types";
+
+const MAX_REUPLOAD_BYTES = 512 * 1024 * 1024;
 
 export async function uploadToNest(
     _: IpcMainInvokeEvent,
@@ -118,6 +121,10 @@ export async function uploadToS3(
     uploadUrl: string,
     headers: Record<string, string>
 ): Promise<NativeUploadResult> {
+    if (!isValidHttpsUrl(uploadUrl)) {
+        return { success: false, error: "Invalid or non-HTTPS upload URL" };
+    }
+
     try {
         const response = await fetch(uploadUrl, {
             method: "PUT",
@@ -505,7 +512,7 @@ export async function fetchFile(
 
     try {
 
-        const response = await fetch(url);
+        const response = await fetchPublicUrl(url);
 
         if (!response.ok) {
 
@@ -513,11 +520,12 @@ export async function fetchFile(
 
         }
 
-        const data = await response.arrayBuffer();
+        const data = await readBody(response, MAX_REUPLOAD_BYTES);
+        if (!data) return { success: false, error: "File is too large" };
 
         const contentType = response.headers.get("content-type") || "";
 
-        return { success: true, data, contentType };
+        return { success: true, data: data.buffer, contentType };
 
     } catch (e) {
 

@@ -12,10 +12,10 @@ import definePlugin, { OptionType } from "@utils/types";
 function getMessage(opts) {
     const inputOption = findOption(opts, "input", "");
 
-    let queryURL = "" + searchEngines[settings.store.defaultEngine] + encodeURIComponent(inputOption);
+    let queryURL = `${searchEngines[settings.store.defaultEngine]}${encodeURIComponent(inputOption)}`;
 
     if (settings.store.customEngineURL) {
-        queryURL = "" + [settings.store.customEngineURL] + encodeURIComponent(inputOption);
+        queryURL = `${[settings.store.customEngineURL]}${encodeURIComponent(inputOption)}`;
     }
 
     if (settings.store.hyperlink && !settings.store.embed) {
@@ -27,9 +27,9 @@ function getMessage(opts) {
     else if (!settings.store.embed) {
         return `<${queryURL}>`;
     }
-    else {
+
         return queryURL;
-    }
+
 }
 
 const searchEngines = {

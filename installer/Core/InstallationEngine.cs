@@ -86,6 +86,9 @@ namespace EndcordInstaller.Core
         /// <summary>Optional override folder for payload assets (used by tests or dev mode).</summary>
         public static string CustomPayloadDirectory { get; set; }
 
+        // Processes are matched by name alone, so the self-tests' fake clients would close the developer's real Discord
+        public static bool LeaveProcessesAlone { get; set; }
+
         /// <summary>Checks which targets have another client mod injected that would conflict with Endcord.</summary>
         public static List<ConflictItem> FindConflicts(IEnumerable<DiscordInstall> targets)
         {
@@ -102,7 +105,7 @@ namespace EndcordInstaller.Core
 
         public static bool IsProcessRunning(DiscordInstall install)
         {
-            if (install == null) return false;
+            if (install == null || LeaveProcessesAlone) return false;
             try
             {
                 return Process.GetProcessesByName(install.ProcessName).Length > 0;

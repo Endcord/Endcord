@@ -5,10 +5,10 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
+import { Message } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
-import { Message } from "@vencord/discord-types";
 import { React, RelationshipStore } from "@webpack/common";
 
 const HEBREW_UNICODE_REGEX = /[\u0590-\u05FF]/;
@@ -244,8 +244,8 @@ export default definePlugin({
         {
             find: "PrivateChannel.renderAvatar",
             replacement: {
-                match: /(return \i\.isMultiUserDM\(\))(?<=function\(\i,(\i),\i\){.*)/,
-                replace: "if($2.rawRecipients[0] && $2.rawRecipients[0]?.id){if($self.shouldHideUser($2.rawRecipients[0].id)) return null;}$1"
+                match: /return(\(0,\i\.jsx\)\(\i\.\i,\{id:(\i)\.id,children:\i=>\{let\{role:)/,
+                replace: "if($2.rawRecipients[0]?.id&&$self.shouldHideUser($2.rawRecipients[0].id))return null;return$1"
             }
         },
         {
@@ -278,6 +278,6 @@ export default definePlugin({
     },
 
     start() {
-        console.log("[hideSoap] Plugin started - Hebrew/Jewish text detection enabled");
+        console.debug("[hideSoap] Plugin started - Hebrew/Jewish text detection enabled");
     }
 });

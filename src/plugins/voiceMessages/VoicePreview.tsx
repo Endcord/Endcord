@@ -24,7 +24,7 @@ export const VoicePreview = ({
     });
 
     const durationSeconds = recording ? Math.floor(durationMs / 1000) : 0;
-    const durationDisplay = Math.floor(durationSeconds / 60) + ":" + (durationSeconds % 60).toString().padStart(2, "0");
+    const durationDisplay = `${Math.floor(durationSeconds / 60)}:${(durationSeconds % 60).toString().padStart(2, "0")}`;
 
     if (src && !recording)
         return <VoiceMessage key={src} src={src} waveform={waveform} />;

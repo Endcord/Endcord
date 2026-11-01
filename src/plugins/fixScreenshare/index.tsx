@@ -165,7 +165,7 @@ export default definePlugin({
         window.addEventListener("unhandledrejection", preventMediaRejection);
 
         try {
-            const proto = Object.getPrototypeOf(window.location) as any;
+            const proto = Object.getPrototypeOf(window.location);
 
             origReload = proto.reload.bind(window.location);
             proto.reload = function () {
@@ -228,7 +228,7 @@ export default definePlugin({
             preventMediaRejection = null;
         }
         try {
-            const proto = Object.getPrototypeOf(window.location) as any;
+            const proto = Object.getPrototypeOf(window.location);
             if (origReload) { proto.reload = origReload; origReload = undefined; }
             if (origAssign) { proto.assign = origAssign; origAssign = undefined; }
             if (origReplace) { proto.replace = origReplace; origReplace = undefined; }

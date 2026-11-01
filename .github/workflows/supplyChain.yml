@@ -1,0 +1,61 @@
+name: Supply chain
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+        branches:
+            - main
+    schedule:
+        - cron: "0 6 * * 1"
+permissions:
+    contents: read
+jobs:
+    review:
+        if: github.event_name == 'pull_request'
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+              with:
+                  fail-on-severity: moderate
+
+    audit:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6, installs pnpm using packageManager
+            - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+              with:
+                  node-version: 24
+                  cache: "pnpm"
+            - run: pnpm install --frozen-lockfile
+            - run: pnpm audit
+            - name: Two builds from the same source must match
+              run: node scripts/verifyReproducible.mjs
+            - name: List what ships
+              run: pnpm sbom --sbom-format cyclonedx --prod > sbom.cdx.json
+            - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+              with:
+                  name: sbom
+                  path: sbom.cdx.json
+
+    scorecard:
+        if: github.event_name != 'pull_request'
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            security-events: write
+            id-token: write
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+              with:
+                  persist-credentials: false
+            - uses: ossf/scorecard-action@fa7117db83c52d787ae5a89f350999701505d78e # v2.5.0
+              with:
+                  results_file: scorecard.sarif
+                  results_format: sarif
+                  publish_results: true
+            - uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4
+              with:
+                  sarif_file: scorecard.sarif

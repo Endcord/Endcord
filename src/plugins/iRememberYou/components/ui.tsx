@@ -107,7 +107,7 @@ function UserRow({ user, allowOwner = true }: { user: IStorageUser, allowOwner?:
 
 function SearchElement({ usersCollection }: { usersCollection: Data["usersCollection"]; }) {
     const [current, setCurrent] = React.useState("");
-    const list = Object.values(usersCollection).flatMap(col => Object.values(col.users)) as IStorageUser[];
+    const list = Object.values(usersCollection).flatMap(col => Object.values(col.users));
 
     return (
         <section className={cl("search")}>

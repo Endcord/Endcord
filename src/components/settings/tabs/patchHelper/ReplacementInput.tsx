@@ -64,7 +64,7 @@ export function ReplacementInput({ replacement, setReplacement, replacementError
 
                     {Object.entries(RegexGuide).map(([placeholder, desc]) => (
                         <Forms.FormText key={placeholder}>
-                            {Parser.parse("`" + placeholder + "`")}: {desc}
+                            {Parser.parse(`\`${placeholder}\``)}: {desc}
                         </Forms.FormText>
                     ))}
                 </div>

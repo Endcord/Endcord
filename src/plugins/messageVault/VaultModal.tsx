@@ -56,7 +56,7 @@ const toDateInput = (ts?: number) => ts ? new Date(ts - new Date(ts).getTimezone
 
 function MessageRow({ m, terms, replies, actions, onJump }: { m: IndexedMessage; terms: string[]; replies?: number; actions: React.ReactNode; onJump(): void; }) {
     const { t } = useI18n();
-    const content = m.c.length > 400 ? m.c.slice(0, 400) + "…" : m.c;
+    const content = m.c.length > 400 ? `${m.c.slice(0, 400)}…` : m.c;
     return (
         <article className={cl("row")}>
             <header className={cl("row-head")}>
@@ -123,8 +123,8 @@ function SearchTab({ initial, onClose }: { initial?: { channelId?: string; }; on
         let cancelled = false;
         const q: SearchQuery = {
             text, author,
-            from: from ? new Date(from + "T00:00:00").getTime() : undefined,
-            to: to ? new Date(to + "T23:59:59.999").getTime() : undefined,
+            from: from ? new Date(`${from}T00:00:00`).getTime() : undefined,
+            to: to ? new Date(`${to}T23:59:59.999`).getTime() : undefined,
             replyTo: replyTo?.id,
         };
         if (scope === "channel" && channelId) q.channelId = channelId;
@@ -225,7 +225,7 @@ function SavedTab({ onClose }: { onClose(): void; }) {
                 const s = m as SavedMessage;
                 return (
                     <MessageRow key={s.id} m={s} terms={[]} onJump={onClose} actions={<>
-                        <span className={cl("in-collection")}>{s.collection}{s.tags.length ? ` · ${s.tags.map(x => "#" + x).join(" ")}` : ""}</span>
+                        <span className={cl("in-collection")}>{s.collection}{s.tags.length ? ` · ${s.tags.map(x => `#${x}`).join(" ")}` : ""}</span>
                         <button className={cl("action")} onClick={() => openSaveModal(s, reload)}>{t("Edit")}</button>
                         <button className={cl("action", "action-danger")} onClick={() => removeSaved(s.id).then(reload)}>{t("Remove")}</button>
                     </>} />
@@ -317,7 +317,7 @@ export function openSaveModal(source: Message | IndexedMessage | SavedMessage, o
         a: source.author.id,
         an: (source.author as any).globalName ?? source.author.username,
         c: (source.content ?? "").slice(0, 2000),
-        ts: new Date(source.timestamp as any).getTime(),
+        ts: new Date(source.timestamp).getTime(),
         r: (source as any).messageReference?.message_id ?? null,
         at: source.attachments?.length ?? 0,
     };

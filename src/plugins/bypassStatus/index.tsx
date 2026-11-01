@@ -70,7 +70,7 @@ async function showNotification(message: Message, guildId: string | undefined): 
             title: `${(message.author as any).globalName} ${guildId ? `(#${channel?.name}, ${ChannelStore.getChannel(channel?.parent_id)?.name})` : ""}`,
             body: message.content,
             icon: UserStore.getUser(message.author.id).getAvatarURL(undefined, undefined, false),
-            onClick: function (): void {
+            onClick (): void {
                 NavigationRouter.transitionTo(`/channels/${guildId ?? "@me"}/${message.channel_id}/${message.id}`);
             }
         });

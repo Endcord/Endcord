@@ -8,11 +8,11 @@ import "./style.css";
 
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
+import type { Channel } from "@endcord/discord-types";
+import { ChannelType } from "@endcord/discord-types/enums";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import definePlugin, { OptionType } from "@utils/types";
-import type { Channel } from "@vencord/discord-types";
-import { ChannelType } from "@vencord/discord-types/enums";
 import { useStateFromStores, VoiceStateStore } from "@webpack/common";
 
 const cl = classNameFactory("vc-voicecount-");

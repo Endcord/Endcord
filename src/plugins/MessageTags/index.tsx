@@ -9,11 +9,11 @@ import { get, set } from "@api/DataStore";
 import { updateMessage } from "@api/MessageUpdater";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
+import { Message, RenderModalProps } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { t as translateText } from "@utils/i18n";
 import { ModalCloseButton, ModalContent, ModalHeader, ModalRoot, ModalSize, openModal } from "@utils/modal";
 import definePlugin from "@utils/types";
-import { Message, RenderModalProps } from "@vencord/discord-types";
 import { Button, Menu, MessageActions, React, Text, TextInput } from "@webpack/common";
 
 const KEY = "Testcord_MessageTags";
@@ -153,7 +153,7 @@ export default definePlugin({
     dependencies: ["ContextMenuAPI", "MessageAccessoriesAPI", "MessageUpdaterAPI"],
 
     contextMenus: {
-        "message"(children, { message }: { message: Message; }) {
+        "message": function(children, { message }: { message: Message; }) {
             if (!message?.id) return;
             const current = getTags(message.id);
             const group = findGroupChildrenByChildId("copy-text", children) ?? children;
@@ -162,7 +162,7 @@ export default definePlugin({
                     {PRESET_TAGS.map(t => (
                         <Menu.MenuCheckboxItem
                             key={t}
-                            id={"tc-tag-" + t}
+                            id={`tc-tag-${t}`}
                             label={t}
                             checked={current.includes(t)}
                             action={() => toggleTag(message, t)}
@@ -178,7 +178,7 @@ export default definePlugin({
     },
 
     toolboxActions: {
-        "Open Tagged Messages"() {
+        "Open Tagged Messages": function() {
             openModal(props => <TagsModal rootProps={props} />);
         }
     },

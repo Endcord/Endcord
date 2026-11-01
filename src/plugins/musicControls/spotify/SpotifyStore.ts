@@ -92,8 +92,8 @@ export const SpotifyStore = proxyLazyWebpack(() => {
 
         public openExternal(path: string) {
             const url = settings.store.useSpotifyUris || isPluginEnabled(OpenInAppPlugin.name)
-                ? "spotify:" + path.replaceAll("/", (_, idx) => idx === 0 ? "" : ":")
-                : "https://open.spotify.com" + path;
+                ? `spotify:${path.replaceAll("/", (_, idx) => idx === 0 ? "" : ":")}`
+                : `https://open.spotify.com${path}`;
 
             EndcordNative.native.openExternal(url);
         }

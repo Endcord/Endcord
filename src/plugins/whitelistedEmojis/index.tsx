@@ -132,7 +132,7 @@ const expressionPickerPatch: NavContextMenuPatchCallback = (children, { target }
     if (!dataset) return;
     if (dataset.type !== "emoji") return;
 
-    const emoji = dataset as ContextMenuEmoji;
+    const emoji = dataset;
 
     if ("name" in emoji) {
         children.push(buildMenuItems(emoji));
@@ -198,7 +198,7 @@ function useWhitelistedEmojis(): SavedEmoji[] {
         cacheListeners.add(listener);
         return () => void cacheListeners.delete(listener);
     }, []);
-    return cache_allowedList as SavedEmoji[];
+    return cache_allowedList;
 }
 
 const WhiteListedEmojisComponent = (): JSX.Element => {
@@ -410,7 +410,7 @@ export default definePlugin({
             }
         }
     ],
-    settings: settings,
+    settings,
     async start() {
         cache_allowedList = await getAllowedList();
         notifyCacheChange();

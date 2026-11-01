@@ -71,15 +71,6 @@ function scheduleDelete(channelId: string, messageId: string, delaySec: number) 
     notifyListeners();
 }
 
-function cancelTimer(messageId: string) {
-    const entry = activeTimers.get(messageId);
-    if (entry) {
-        clearTimeout(entry.timerId);
-        activeTimers.delete(messageId);
-        notifyListeners();
-    }
-}
-
 function cleanup() {
     for (const [, entry] of activeTimers) {
         clearTimeout(entry.timerId);
@@ -195,7 +186,7 @@ const SelfDestructButton: ChatBarButtonFactory = ({ isMainChat }) => {
     }
 
     const delaySec = settings.store.delay ?? 30;
-    const delayStr = delaySec >= 60 ? `${Math.floor(delaySec / 60)}m${delaySec % 60 ? (delaySec % 60) + "s" : ""}` : `${delaySec}s`;
+    const delayStr = delaySec >= 60 ? `${Math.floor(delaySec / 60)}m${delaySec % 60 ? `${delaySec % 60}s` : ""}` : `${delaySec}s`;
 
     const tooltip = active
         ? `SelfDestruct: ON (${delayStr}) — click to disable`

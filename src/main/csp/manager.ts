@@ -5,17 +5,18 @@
  */
 
 import { NativeSettings } from "@main/settings";
+import { handleIpc } from "@main/utils/ipc";
 import { IpcEvents } from "@shared/IpcEvents";
-import { dialog, ipcMain, IpcMainInvokeEvent } from "electron";
+import { dialog, IpcMainInvokeEvent } from "electron";
 
 import { CspPolicies, ImageAndCssSrc } from ".";
 
 export type CspRequestResult = "invalid" | "cancelled" | "unchecked" | "ok" | "conflict";
 
 export function registerCspIpcHandlers() {
-    ipcMain.handle(IpcEvents.CSP_REMOVE_OVERRIDE, removeCspRule);
-    ipcMain.handle(IpcEvents.CSP_REQUEST_ADD_OVERRIDE, addCspRule);
-    ipcMain.handle(IpcEvents.CSP_IS_DOMAIN_ALLOWED, isDomainAllowed);
+    handleIpc(IpcEvents.CSP_REMOVE_OVERRIDE, removeCspRule);
+    handleIpc(IpcEvents.CSP_REQUEST_ADD_OVERRIDE, addCspRule);
+    handleIpc(IpcEvents.CSP_IS_DOMAIN_ALLOWED, isDomainAllowed);
 }
 
 function validate(url: string, directives: string[]) {
@@ -36,7 +37,9 @@ function validate(url: string, directives: string[]) {
 function getMessage(url: string, directives: string[], callerName: string) {
     const domain = new URL(url).host;
 
-    const message = `${callerName} wants to allow connections to ${domain}`;
+    // The caller picks this name, so it must not be able to pose as Discord or as the system
+    const caller = String(callerName ?? "").replace(/\s+/g, " ").trim().slice(0, 40);
+    const message = `The Endcord plugin or feature "${caller || "Unknown"}" wants to allow connections to ${domain}`;
 
     let detail =
         `Unless you recognise and fully trust ${domain}, you should cancel this request!\n\n` +

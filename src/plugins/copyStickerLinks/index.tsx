@@ -14,7 +14,7 @@ import { t } from "@utils/i18n";
 import definePlugin from "@utils/types";
 import { Menu, React, StickersStore } from "@webpack/common";
 
-const StickerExt = [, "png", "png", "json", "gif"] as const;
+const StickerExt = [undefined, "png", "png", "json", "gif"] as const;
 
 type PartialSticker = Pick<Sticker, "id" | "format_type">;
 

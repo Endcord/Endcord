@@ -60,7 +60,7 @@ interface PatchInfo {
     id: string;
     match: string;
     error?: string;
-};
+}
 
 const report = {
     badPatches: [] as PatchInfo[],
@@ -84,7 +84,9 @@ const IGNORED_DISCORD_ERRORS = [
     "search for 'name' in undefined",
     "Attempting to set fast connect zstd when unsupported",
     // The reporter runs on the logged out login page
-    "Could not complete Remote Auth login"
+    "Could not complete Remote Auth login",
+    // The reporter requires every module, and this runs Discord's desktop-only ones in a browser
+    /Cannot read properties of undefined \(reading 'nativeModules'\)/
 ] as Array<string | RegExp>;
 
 function toCodeBlock(s: string, indentation = 0, isDiscord = false) {
@@ -148,7 +150,7 @@ async function printReport() {
 
     console.log();
 
-    console.log("# Endcord Report" + (CANARY ? " (Canary)" : ""));
+    console.log(`# Endcord Report${CANARY ? " (Canary)" : ""}`);
 
     console.log();
 
@@ -168,7 +170,7 @@ async function printReport() {
     console.log();
 
     console.log("## Bad Webpack Finds");
-    report.badWebpackFinds.forEach(p => console.log("- " + toCodeBlock(p, "- ".length)));
+    report.badWebpackFinds.forEach(p => console.log(`- ${toCodeBlock(p, "- ".length)}`));
 
     console.log();
 
@@ -254,7 +256,7 @@ async function printReport() {
         }
 
         const body = JSON.stringify({
-            username: "Endcord Reporter" + (CANARY ? " (Canary)" : ""),
+            username: `Endcord Reporter${CANARY ? " (Canary)" : ""}`,
             embeds
         });
 
@@ -266,7 +268,7 @@ async function printReport() {
         // used by venbot to ensure webhook invocations are genuine (since we will pass the webhook url as a workflow input which is publicly visible)
         // generate a secret with something like `openssl rand -hex 128`
         if (process.env.WEBHOOK_SECRET) {
-            headers["X-Signature"] = "sha256=" + createHmac("sha256", process.env.WEBHOOK_SECRET).update(body).digest("hex");
+            headers["X-Signature"] = `sha256=${createHmac("sha256", process.env.WEBHOOK_SECRET).update(body).digest("hex")}`;
         }
 
         await fetch(process.env.WEBHOOK_URL, {
@@ -372,6 +374,7 @@ page.on("console", async e => {
                 switch (message) {
                     case "A fatal error occurred:":
                         process.exit(1);
+                        break;
                     case "Webpack Find Fail:":
                         process.exitCode = 1;
                         report.badWebpackFinds.push(otherMessage);

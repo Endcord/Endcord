@@ -72,7 +72,7 @@ export function getThemeInfo(css: string, fileName: string): UserThemeHeader {
             accum = line.substring(l + 1);
         }
         else {
-            accum += " " + line.replace("\\n", "\n").replace(escapedAtRegex, "@");
+            accum += ` ${line.replace("\\n", "\n").replace(escapedAtRegex, "@")}`;
         }
     }
     header[field] = accum.trim();

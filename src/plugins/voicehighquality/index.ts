@@ -112,7 +112,7 @@ export default definePlugin({
         const boosted = settings.store.prioritizeAudioQuality
             ? Math.min(bitrate, 510)
             : bitrate;
-        console.log(`🎙️ [rz Plugin] Audio Bitrate: ${boosted} kbps`);
+        console.debug(`🎙️ [rz Plugin] Audio Bitrate: ${boosted} kbps`);
         return boosted;
     },
 
@@ -137,17 +137,17 @@ export default definePlugin({
     },
 
     start() {
-        console.log("🎙️ [rz Studio Audio] ACTIVATED");
-        console.log("📊 Settings:");
-        console.log("   • Bitrate: " + settings.store.audioBitrate + " kbps");
-        console.log("   • Krisp: " + (settings.store.enableKrispNoiseSuppression ? "ON" : "OFF"));
-        console.log("   • Echo Cancel: " + (settings.store.enableEchoCancellation ? "ON" : "OFF"));
-        console.log("   • AGC: " + (settings.store.enableAutoGainControl ? "ON" : "OFF"));
-        console.log("   • Prioritize Quality: " + (settings.store.prioritizeAudioQuality ? "ON" : "OFF"));
-        console.log("🔥 Maximum quality mode enabled!");
+        console.debug("🎙️ [rz Studio Audio] ACTIVATED");
+        console.debug("📊 Settings:");
+        console.debug(`   • Bitrate: ${settings.store.audioBitrate} kbps`);
+        console.debug(`   • Krisp: ${settings.store.enableKrispNoiseSuppression ? "ON" : "OFF"}`);
+        console.debug(`   • Echo Cancel: ${settings.store.enableEchoCancellation ? "ON" : "OFF"}`);
+        console.debug(`   • AGC: ${settings.store.enableAutoGainControl ? "ON" : "OFF"}`);
+        console.debug(`   • Prioritize Quality: ${settings.store.prioritizeAudioQuality ? "ON" : "OFF"}`);
+        console.debug("🔥 Maximum quality mode enabled!");
     },
 
     stop() {
-        console.log("🎙️ [rz Studio Audio] Deactivated");
+        console.debug("🎙️ [rz Studio Audio] Deactivated");
     }
 });

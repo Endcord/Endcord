@@ -31,7 +31,7 @@ function patchLatest() {
             return (curr.startsWith("app-") && isNewer(curr, prev))
                 ? curr
                 : prev;
-        }, currentVersion as string);
+        }, currentVersion);
 
         if (latestVersion === currentVersion) return;
 

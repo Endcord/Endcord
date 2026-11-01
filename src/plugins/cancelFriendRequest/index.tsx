@@ -168,6 +168,6 @@ export default definePlugin({
         document.querySelectorAll<HTMLElement>("[data-cfp]").forEach(el => {
             delete el.dataset.cfp;
         });
-        console.log("[CancelFriendRequest] Stopped.");
+        console.debug("[CancelFriendRequest] Stopped.");
     },
 });

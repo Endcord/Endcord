@@ -21,14 +21,15 @@
 
 // Be very careful with imports in this file to avoid circular dependency issues.
 // Only import pure modules that don't import other parts of Endcord.
-import monacoHtmlLocal from "file://monacoWin.html?minify";
 import * as DataStore from "@api/DataStore";
 import type { Settings } from "@api/Settings";
 import { getThemeInfo } from "@main/themes";
 import { debounce } from "@shared/debounce";
+import { isSafeExternalUrl } from "@shared/externalLinks";
 import { localStorage } from "@utils/localStorage";
 import { getStylusWebStoreUrl } from "@utils/web";
 import { EXTENSION_BASE_URL, metaReady, RENDERER_CSS_URL } from "@utils/web-metadata";
+import monacoHtmlLocal from "file://monacoWin.html?minify";
 
 // listeners for ipc.on
 const cssListeners = new Set<(css: string) => void>();
@@ -56,7 +57,11 @@ window.EndcordNative = {
     native: {
         getVersions: () => ({}),
         supportsWindowsMaterial: () => false,
-        openExternal: async (url) => void open(url, "_blank"),
+        openExternal: async url => {
+            if (!isSafeExternalUrl(url)) throw "Disallowed URL.";
+
+            open(url, "_blank");
+        },
         getRendererCss: async () => {
             if (IS_USERSCRIPT)
                 // need to wait for next tick for _vcUserScriptRendererCss to be set
@@ -71,7 +76,8 @@ window.EndcordNative = {
     },
 
     updater: {
-        getRepo: async () => ({ ok: true, value: "https://github.com/rootpoii/endcord" }),
+        getRepo: async () => ({ ok: true, value: "https://github.com/Endcord/Endcord" }),
+        confirmUpdate: async () => { },
         getUpdates: async () => ({ ok: true, value: [] }),
         update: async () => ({ ok: true, value: false }),
         rebuild: async () => ({ ok: true, value: true }),

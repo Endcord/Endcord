@@ -6,9 +6,9 @@
 
 import { BaseText } from "@components/BaseText";
 import { Channel, Guild, User } from "@endcord/discord-types";
-import { ChannelTabsProps, closeTab, ensureUnreadFallbackCountsLoaded, getNotificationDotState, getUnreadFallbackCounts, isTabSelected, moveDraggedTabs, moveToTab, openedTabs, settings, updateUnreadFallbackCounts } from "@equicordplugins/channelTabs/util";
-import { ActivityIcon, CircleQuestionIcon, DiscoveryIcon, EnvelopeIcon, FriendsIcon, ICYMIIcon, NitroIcon, QuestIcon, ShopIcon } from "@equicordplugins/channelTabs/util/icons";
-import { getActiveAutoCompletes } from "@equicordplugins/questify/utils/completion";
+import { ChannelTabsProps, closeTab, ensureUnreadFallbackCountsLoaded, getNotificationDotState, getUnreadFallbackCounts, isTabSelected, moveDraggedTabs, moveToTab, openedTabs, settings, updateUnreadFallbackCounts } from "@plugins/channelTabs/util";
+import { ActivityIcon, CircleQuestionIcon, DiscoveryIcon, EnvelopeIcon, FriendsIcon, ICYMIIcon, NitroIcon, QuestIcon, ShopIcon } from "@plugins/channelTabs/util/icons";
+import { getActiveAutoCompletes } from "@plugins/questify/utils/completion";
 import { classNameFactory } from "@utils/css";
 import { getGuildAcronym, getIntlMessage } from "@utils/discord";
 import { classes } from "@utils/misc";
@@ -170,7 +170,7 @@ function ChannelTabContent(props: ChannelTabsProps & {
     guild?: Guild,
     channel?: Channel;
 }) {
-    const { guild, guildId, channel, channelId, compact } = props;
+    const { guild, guildId, channel, channelId } = props;
     const userId = UserStore.getCurrentUser()?.id;
     const recipients = channel?.recipients;
     const {
@@ -183,7 +183,7 @@ function ChannelTabContent(props: ChannelTabsProps & {
             const recipientId = recipients?.[0] ?? "";
 
             return [
-                !!((Object.keys(TypingStore.getTypingUsers(props.channelId)) as string[]).filter(id => id !== userId).length),
+                !!((Object.keys(TypingStore.getTypingUsers(props.channelId))).filter(id => id !== userId).length),
                 PresenceStore.getStatus(recipientId),
                 PresenceStore.isMobileOnline(recipientId)
             ];
@@ -201,7 +201,7 @@ function ChannelTabContent(props: ChannelTabsProps & {
                     <TypingIndicator isTyping={isTyping} />
                 </>
             );
-        else {
+
             let name = `${getIntlMessage("UNKNOWN_CHANNEL")} (${channelId})`;
             switch (channelId) {
                 case "customize-community":
@@ -226,7 +226,7 @@ function ChannelTabContent(props: ChannelTabsProps & {
                     <BaseText className={cl("name-text")}>{name}</BaseText>
                 </>
             );
-        }
+
     }
 
     if (channel && recipients?.length) {
@@ -250,7 +250,7 @@ function ChannelTabContent(props: ChannelTabsProps & {
                     {!showStatusIndicators && <TypingIndicator isTyping={isTyping} />}
                 </>
             );
-        } else {
+        }
             // Group DM
             return (
                 <>
@@ -260,7 +260,7 @@ function ChannelTabContent(props: ChannelTabsProps & {
                     <TypingIndicator isTyping={isTyping} />
                 </>
             );
-        }
+
     }
 
     // handle special synthetic pages

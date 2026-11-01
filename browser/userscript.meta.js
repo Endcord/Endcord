@@ -3,9 +3,9 @@
 // @description     Endcord for Discord in your browser: plugins, themes and a settings panel right inside Discord
 // @version         %version%
 // @author          rootpoii (https://github.com/rootpoii)
-// @namespace       https://github.com/rootpoii/Endcord
-// @supportURL      https://github.com/rootpoii/Endcord/issues
-// @icon            https://raw.githubusercontent.com/rootpoii/Endcord/refs/heads/main/browser/icon.png
+// @namespace       https://github.com/Endcord/Endcord
+// @supportURL      https://github.com/Endcord/Endcord/issues
+// @icon            https://raw.githubusercontent.com/Endcord/Endcord/refs/heads/main/browser/icon.png
 // @license         GPL-3.0
 // @match           *://*.discord.com/*
 // @grant           GM_xmlhttpRequest

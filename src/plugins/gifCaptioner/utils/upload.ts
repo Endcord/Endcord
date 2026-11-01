@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import type { Channel, Message } from "@endcord/discord-types";
+import { CloudUploadPlatform } from "@endcord/discord-types/enums";
 import { showError, showSent, showUploading } from "@plugins/gifCaptioner/ui/statusCard";
 import { sendMessage } from "@utils/discord";
-import type { Channel, Message } from "@vencord/discord-types";
-import { CloudUploadPlatform } from "@vencord/discord-types/enums";
 import { ChannelStore, CloudUploader, FluxDispatcher, SelectedChannelStore, SelectedGuildStore, UserStore } from "@webpack/common";
 
 interface MessageCreatePayload {

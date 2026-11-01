@@ -8,10 +8,10 @@ import { BaseText } from "@components/BaseText";
 import { Flex } from "@components/Flex";
 import { LinkIcon } from "@components/Icons";
 import { Link } from "@components/Link";
-import { apiConstants } from "@equicordplugins/songSpotlight.desktop/lib/api";
-import { useSongStore } from "@equicordplugins/songSpotlight.desktop/lib/stores/SongStore";
-import { cl, formatCoverTooltip, formatDurationMs } from "@equicordplugins/songSpotlight.desktop/lib/utils";
-import { Native, useRender } from "@equicordplugins/songSpotlight.desktop/service";
+import { apiConstants } from "@plugins/songSpotlight.desktop/lib/api";
+import { useSongStore } from "@plugins/songSpotlight.desktop/lib/stores/SongStore";
+import { cl, formatCoverTooltip, formatDurationMs } from "@plugins/songSpotlight.desktop/lib/utils";
+import { Native, useRender } from "@plugins/songSpotlight.desktop/service";
 import {
     CardClasses,
     ExplicitTag,
@@ -20,11 +20,11 @@ import {
     PlayButton,
     PuzzlePieceIcon,
     TrashIcon,
-} from "@equicordplugins/songSpotlight.desktop/ui/common";
-import AudioPlayer from "@equicordplugins/songSpotlight.desktop/ui/components/AudioPlayer";
-import ProgressCircle from "@equicordplugins/songSpotlight.desktop/ui/components/ProgressCircle";
-import ServiceIcon from "@equicordplugins/songSpotlight.desktop/ui/components/ServiceIcon";
-import { openSettingsModal } from "@equicordplugins/songSpotlight.desktop/ui/settings";
+} from "@plugins/songSpotlight.desktop/ui/common";
+import AudioPlayer from "@plugins/songSpotlight.desktop/ui/components/AudioPlayer";
+import ProgressCircle from "@plugins/songSpotlight.desktop/ui/components/ProgressCircle";
+import ServiceIcon from "@plugins/songSpotlight.desktop/ui/components/ServiceIcon";
+import { openSettingsModal } from "@plugins/songSpotlight.desktop/ui/settings";
 import { RenderInfoEntry, RenderInfoEntryBased, RenderSongInfo } from "@song-spotlight/api/handlers";
 import { Song as SongType } from "@song-spotlight/api/structs";
 import { isListLayout, sid } from "@song-spotlight/api/util";

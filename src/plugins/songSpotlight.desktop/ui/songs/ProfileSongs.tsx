@@ -9,18 +9,18 @@ import { Flex } from "@components/Flex";
 import { LinkIcon, PencilIcon } from "@components/Icons";
 import { Link } from "@components/Link";
 import { User } from "@endcord/discord-types";
-import { listData } from "@equicordplugins/songSpotlight.desktop/lib/api";
-import { useAuthorizationStore } from "@equicordplugins/songSpotlight.desktop/lib/stores/AuthorizationStore";
-import { useSongStore } from "@equicordplugins/songSpotlight.desktop/lib/stores/SongStore";
-import { cl } from "@equicordplugins/songSpotlight.desktop/lib/utils";
-import settings from "@equicordplugins/songSpotlight.desktop/settings";
+import { listData } from "@plugins/songSpotlight.desktop/lib/api";
+import { useAuthorizationStore } from "@plugins/songSpotlight.desktop/lib/stores/AuthorizationStore";
+import { useSongStore } from "@plugins/songSpotlight.desktop/lib/stores/SongStore";
+import { cl } from "@plugins/songSpotlight.desktop/lib/utils";
+import settings from "@plugins/songSpotlight.desktop/settings";
 import {
     CardClasses,
     MoreHorizontalIcon,
     OverlayClasses,
     Spinner,
-} from "@equicordplugins/songSpotlight.desktop/ui/common";
-import { openSettingsModal } from "@equicordplugins/songSpotlight.desktop/ui/settings";
+} from "@plugins/songSpotlight.desktop/ui/common";
+import { openSettingsModal } from "@plugins/songSpotlight.desktop/ui/settings";
 import { sid } from "@song-spotlight/api/util";
 import { copyWithToast } from "@utils/discord";
 import { t } from "@utils/i18n";

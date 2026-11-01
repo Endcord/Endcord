@@ -6,10 +6,10 @@
 
 import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
 import { addContextMenuPatch, removeContextMenuPatch } from "@api/ContextMenu";
+import type { Message } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { t as translateText } from "@utils/i18n";
 import definePlugin from "@utils/types";
-import type { Message } from "@vencord/discord-types";
 import { ContextMenuApi, Menu, Parser, React,showToast, useEffect, useState } from "@webpack/common";
 
 const MARKER = "\u200B\u200C\u200D";
@@ -64,7 +64,7 @@ function invertSBox(sbox: Uint8Array): Uint8Array {
 }
 
 function encrypt(plaintext: string, technique: number): string {
-    const prefixed = "NC:" + plaintext;
+    const prefixed = `NC:${plaintext}`;
     const raw = new TextEncoder().encode(prefixed);
     const base = (technique + 1) * 7919 + 31337;
     const xorRng = seededRng(base);

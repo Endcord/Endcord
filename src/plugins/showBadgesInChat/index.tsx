@@ -100,8 +100,8 @@ function CheckBadge({ badge, author }: { badge: string; author: User; }): JSX.El
                     <RoleIconComponent
                         className={roleIcon}
                         name={
-                            "Discord Nitro" +
-                            (author.premiumType === 3 ? " Basic" : author.premiumType === 1 ? " Classic" : "")
+                            `Discord Nitro${
+                            author.premiumType === 3 ? " Basic" : author.premiumType === 1 ? " Classic" : ""}`
                         }
                         size={20}
                         src={"https://cdn.discordapp.com/badge-icons/2ba85e8026a8614b640c2837bcdfe21b.png"}

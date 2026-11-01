@@ -67,7 +67,7 @@ export default definePlugin({
                     replace: " $self.patchTimeslots($&)"
                 },
                 {
-                    match: /\[\{.{0,25}\i.\i.FPS_15.{0,500}\}\]/,
+                    match: /\[\{.{0,25}\i\.\i\.FPS_(?:15|30).{0,500}\}\]/,
                     replace: " $self.patchFramerates($&)"
                 }
             ]

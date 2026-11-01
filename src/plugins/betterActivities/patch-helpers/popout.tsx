@@ -18,7 +18,7 @@ export function showAllActivitiesComponent({ activity, user, ...props }: Readonl
     if (!currentUser) return null;
 
     const [currentActivity, setCurrentActivity] = useState<Activity | null>(
-        activity?.type !== 4 ? activity! : null
+        activity?.type !== 4 ? activity : null
     );
 
     const activities = useStateFromStores(
@@ -66,7 +66,7 @@ export function showAllActivitiesComponent({ activity, user, ...props }: Readonl
                             activity={currentActivity}
                             user={user}
                             // fetch optional application
-                            application={getActivityApplication(currentActivity!)}
+                            application={getActivityApplication(currentActivity)}
                             currentUser={currentUser}
                             {...generalProps}
                         />
@@ -81,7 +81,7 @@ export function showAllActivitiesComponent({ activity, user, ...props }: Readonl
                 </div>
             </ErrorBoundary>
         );
-    } else {
+    }
         return (
             <ErrorBoundary noop>
                 <div
@@ -112,5 +112,5 @@ export function showAllActivitiesComponent({ activity, user, ...props }: Readonl
                 </div>
             </ErrorBoundary>
         );
-    }
+
 }

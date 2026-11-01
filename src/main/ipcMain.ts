@@ -9,31 +9,27 @@ import "./ipcPlugins";
 import "./settings";
 
 import { debounce } from "@shared/debounce";
+import { isSafeExternalUrl } from "@shared/externalLinks";
 import { IpcEvents } from "@shared/IpcEvents";
 import { BrowserWindow, ipcMain, nativeTheme, shell, systemPreferences } from "electron";
 import monacoHtml from "file://monacoWin.html?minify&base64";
 import { FSWatcher, mkdirSync, readFileSync, watch, writeFileSync } from "fs";
 import { open, readdir, readFile } from "fs/promises";
 import { release } from "os";
-import { join, normalize } from "path";
+import { join } from "path";
 
 import { registerCspIpcHandlers } from "./csp/manager";
 import { getThemeInfo, stripBOM, UserThemeHeader } from "./themes";
-import { ALLOWED_PROTOCOLS, QUICK_CSS_PATH, SETTINGS_DIR, THEMES_DIR } from "./utils/constants";
+import { QUICK_CSS_PATH, SETTINGS_DIR, THEMES_DIR } from "./utils/constants";
+import { ensureSafePath } from "./utils/ensureSafePath";
 import { makeLinksOpenExternally } from "./utils/externalLinks";
+import { handleIpc } from "./utils/ipc";
 
 const RENDERER_CSS_PATH = join(__dirname, IS_VESKTOP ? "endcordDesktopRenderer.css" : "renderer.css");
 
 mkdirSync(THEMES_DIR, { recursive: true });
 
 registerCspIpcHandlers();
-
-export function ensureSafePath(basePath: string, path: string) {
-    const normalizedBasePath = normalize(basePath + "/");
-    const newPath = join(basePath, path);
-    const normalizedPath = normalize(newPath);
-    return normalizedPath.startsWith(normalizedBasePath) ? normalizedPath : null;
-}
 
 function readCss() {
     return readFile(QUICK_CSS_PATH, "utf-8").catch(() => "");
@@ -63,29 +59,26 @@ function getThemeData(fileName: string) {
     return readFile(safePath, "utf-8");
 }
 
-ipcMain.handle(IpcEvents.OPEN_QUICKCSS, () => shell.openPath(QUICK_CSS_PATH));
+handleIpc(IpcEvents.OPEN_QUICKCSS, () => shell.openPath(QUICK_CSS_PATH));
 
-ipcMain.handle(IpcEvents.OPEN_EXTERNAL, (_, url) => {
-    try {
-        var { protocol } = new URL(url);
-    } catch {
-        throw "Malformed URL";
-    }
-    if (!ALLOWED_PROTOCOLS.includes(protocol))
-        throw "Disallowed protocol.";
+handleIpc(IpcEvents.OPEN_EXTERNAL, (_, url) => {
+    if (!isSafeExternalUrl(url)) throw "Disallowed URL.";
 
+    // eslint-disable-next-line no-restricted-syntax -- checked just above
     shell.openExternal(url);
 });
 
 
-ipcMain.handle(IpcEvents.GET_QUICK_CSS, () => readCss());
-ipcMain.handle(IpcEvents.SET_QUICK_CSS, (_, css) =>
-    writeFileSync(QUICK_CSS_PATH, css)
-);
+handleIpc(IpcEvents.GET_QUICK_CSS, () => readCss());
+handleIpc(IpcEvents.SET_QUICK_CSS, (_, css) => {
+    if (typeof css !== "string") throw new Error("Invalid CSS");
 
-ipcMain.handle(IpcEvents.GET_THEMES_LIST, () => listThemes());
-ipcMain.handle(IpcEvents.GET_THEME_DATA, (_, fileName) => getThemeData(fileName));
-ipcMain.handle(IpcEvents.GET_THEME_SYSTEM_VALUES, () => {
+    writeFileSync(QUICK_CSS_PATH, css);
+});
+
+handleIpc(IpcEvents.GET_THEMES_LIST, () => listThemes());
+handleIpc(IpcEvents.GET_THEME_DATA, (_, fileName) => getThemeData(fileName));
+handleIpc(IpcEvents.GET_THEME_SYSTEM_VALUES, () => {
     let accentColor = systemPreferences.getAccentColor?.() ?? "";
 
     if (accentColor.length && accentColor[0] !== "#") {
@@ -97,10 +90,10 @@ ipcMain.handle(IpcEvents.GET_THEME_SYSTEM_VALUES, () => {
     };
 });
 
-ipcMain.handle(IpcEvents.OPEN_THEMES_FOLDER, () => shell.openPath(THEMES_DIR));
-ipcMain.handle(IpcEvents.OPEN_SETTINGS_FOLDER, () => shell.openPath(SETTINGS_DIR));
+handleIpc(IpcEvents.OPEN_THEMES_FOLDER, () => shell.openPath(THEMES_DIR));
+handleIpc(IpcEvents.OPEN_SETTINGS_FOLDER, () => shell.openPath(SETTINGS_DIR));
 
-ipcMain.handle(IpcEvents.INIT_FILE_WATCHERS, ({ sender }) => {
+handleIpc(IpcEvents.INIT_FILE_WATCHERS, ({ sender }) => {
     let quickCssWatcher: FSWatcher | undefined;
     let rendererCssWatcher: FSWatcher | undefined;
 
@@ -132,7 +125,7 @@ ipcMain.on(IpcEvents.GET_MONACO_THEME, e => {
     e.returnValue = nativeTheme.shouldUseDarkColors ? "vs-dark" : "vs-light";
 });
 
-ipcMain.handle(IpcEvents.OPEN_MONACO_EDITOR, async () => {
+handleIpc(IpcEvents.OPEN_MONACO_EDITOR, async () => {
     const title = "Endcord QuickCSS Editor";
     const existingWindow = BrowserWindow.getAllWindows().find(w => w.title === title);
     if (existingWindow && !existingWindow.isDestroyed()) {
@@ -158,7 +151,7 @@ ipcMain.handle(IpcEvents.OPEN_MONACO_EDITOR, async () => {
     await win.loadURL(`data:text/html;base64,${monacoHtml}`);
 });
 
-ipcMain.handle(IpcEvents.GET_RENDERER_CSS, () => readFile(RENDERER_CSS_PATH, "utf-8"));
+handleIpc(IpcEvents.GET_RENDERER_CSS, () => readFile(RENDERER_CSS_PATH, "utf-8"));
 
 
 if (IS_DISCORD_DESKTOP) {

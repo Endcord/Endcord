@@ -12,7 +12,7 @@ import { definePluginSettings } from "@api/Settings";
 import { AttachmentIcon, GifIcon, ImageIcon, Microphone, StickerIcon, VideoIcon } from "@components/Icons";
 import { Activity, ApplicationStream, Channel, Message, OnlineStatus, User } from "@endcord/discord-types";
 import { MessageFlags } from "@endcord/discord-types/enums";
-import betterActivities from "@equicordplugins/betterActivities";
+import betterActivities from "@plugins/betterActivities";
 import showMeYourName from "@plugins/showMeYourName";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
@@ -150,7 +150,7 @@ function getMessageContent(message: Message): MessageContent | null {
 function MessagePreviewContent({ channel, user }: { channel: Channel; user: User | null | undefined; }) {
     const lastMessage = useStateFromStores(
         [MessageStore],
-        () => MessageStore.getLastMessage(channel.id) as Message | undefined
+        () => MessageStore.getLastMessage(channel.id)
     );
 
     if (channel.isSystemDM()) {
@@ -220,7 +220,7 @@ function SubText({ channel, user, activities, applicationStream, voiceChannel, s
 }
 
 function Timestamp({ channel }: { channel: Channel; }) {
-    const lastMessage = useStateFromStores([MessageStore], () => MessageStore.getLastMessage(channel.id) as Message | undefined);
+    const lastMessage = useStateFromStores([MessageStore], () => MessageStore.getLastMessage(channel.id));
 
     if (!lastMessage) return null;
 
@@ -281,14 +281,14 @@ export default definePlugin({
 
     renderMemberListDecorator({ channel }: DecoratorProps) {
         if (!channel) return null;
-        if (settings.store.hideMuted && UserGuildSettingsStore.isChannelMuted(null!, channel.id)) return null;
+        if (settings.store.hideMuted && UserGuildSettingsStore.isChannelMuted(null, channel.id)) return null;
         return <Timestamp channel={channel} />;
     },
 
     getSubText(props: PrivateChannelProps) {
         const { channel, user, activities, status, applicationStream, voiceChannel } = props;
 
-        if (settings.store.hideMuted && UserGuildSettingsStore.isChannelMuted(null!, channel.id)) {
+        if (settings.store.hideMuted && UserGuildSettingsStore.isChannelMuted(null, channel.id)) {
             const hasActivity = hasRelevantActivity({ activities, status, applicationStream, voiceChannel });
             if (hasActivity) {
                 return (
@@ -303,7 +303,7 @@ export default definePlugin({
             return null;
         }
 
-        const lastMessage = MessageStore.getLastMessage(channel.id) as Message | undefined;
+        const lastMessage = MessageStore.getLastMessage(channel.id);
         const hasActivity = hasRelevantActivity({ activities, status, applicationStream, voiceChannel });
         const showActivity = shouldShowActivity(lastMessage, hasActivity);
 

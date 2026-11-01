@@ -57,7 +57,7 @@ const isOurId = (id: unknown): id is number => typeof id === "number" && id >= I
 export const profileBadgeId = (key: string) => PROFILE_ID_PREFIX + key;
 
 const BadgeTypes = findByPropsLazy("PREMIUM_TENURE", "GAME_VARIETY", "ACCOUNT_AGE") as Record<string | number, string | number>;
-const BadgeDirectoryStore = findStoreLazy("BadgeDirectoryStore") as any;
+const BadgeDirectoryStore = findStoreLazy("BadgeDirectoryStore");
 // profile badge id ("premium_tenure_12_month_v2") -> badge type id, Discord's own mapping
 const profileIdToTypeId = findByCodeLazy('"number"==typeof', ".toUpperCase()]") as (id: string) => number | undefined;
 

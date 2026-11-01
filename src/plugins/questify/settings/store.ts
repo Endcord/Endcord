@@ -14,7 +14,7 @@ import { ReorderQuestsSetting } from "@plugins/questify/components/reorderQuests
 import { SettingsSearch } from "@plugins/questify/components/settingsSearch";
 import { OptionType } from "@utils/types";
 
-import { defaultAcknowledgedNotices, defaultAllowChangingDangerousSettings, defaultAutoCompleteQuestsSimultaneously, defaultAutoCompleteQuestTypes, defaultClaimedSubsort, defaultCompleteVideoQuestsQuicker, defaultDisableAccountPanelPromo, defaultDisableAccountPanelQuestProgress, defaultDisableFriendsListPromo, defaultDisableMembersListPromo, defaultDisableOrbsAndQuestsBadges, defaultDisableQuestsEverything, defaultDisableRelocationNotices, defaultDisableSponsoredBanner, defaultExpiredSubsort, defaultHiddenQuestStatuses, defaultHideNonAutoCompletableQuests, defaultIgnoredQuestIDs, defaultIgnoredSubsort, defaultIsOnQuestsPage, defaultLastQuestPageFilters, defaultLastQuestPageSort, defaultLeftClickAction, defaultMakeMobileVideoQuestsDesktopCompatible, defaultMiddleClickAction, defaultNewExcludedQuestAlertSound, defaultNewExcludedQuestAlertVolume, defaultNewQuestAlertSound, defaultNewQuestAlertVolume, defaultNotifyOnNewExcludedQuests, defaultNotifyOnNewQuests, defaultNotifyOnQuestComplete, defaultPreventVideoQuestsPausing, defaultQuestButtonBadgeColor, defaultQuestButtonBadgeCount, defaultQuestButtonDisplay, defaultQuestButtonIncludedTypes, defaultQuestButtonIndicator, defaultQuestCompletedAlertSound, defaultQuestCompletedAlertVolume, defaultQuestFetchInterval, defaultQuestOrder, defaultQuestTileClaimedColorSetting, defaultQuestTileExpiredColorSetting, defaultQuestTileGradient, defaultQuestTileIgnoredColorSetting, defaultQuestTilePreload, defaultQuestTileUnclaimedColorSetting, defaultRememberQuestPageFilters, defaultRememberQuestPageSort, defaultResumeInterruptedQuests, defaultResumeQuestIDs, defaultRightClickAction, defaultUnclaimedSubsort, type QuestButtonAction, type QuestButtonDisplayMode, type QuestButtonIncludedTypes, type QuestButtonIndicatorMode, type QuestOrderStatus } from "./def";
+import { defaultAcknowledgedNotices, defaultAllowChangingDangerousSettings, defaultAutoCompleteQuestsSimultaneously, defaultAutoCompleteQuestTypes, defaultClaimedSubsort, defaultCompleteVideoQuestsQuicker, defaultDisableAccountPanelPromo, defaultDisableAccountPanelQuestProgress, defaultDisableFriendsListPromo, defaultDisableMembersListPromo, defaultDisableOrbsAndQuestsBadges, defaultDisableQuestsEverything, defaultDisableRelocationNotices, defaultDisableSponsoredBanner, defaultExpiredSubsort, defaultHiddenQuestStatuses, defaultHideNonAutoCompletableQuests, defaultIgnoredQuestIDs, defaultIgnoredSubsort, defaultIsOnQuestsPage, defaultLastQuestPageFilters, defaultLastQuestPageSort, defaultLeftClickAction, defaultMakeMobileVideoQuestsDesktopCompatible, defaultMiddleClickAction, defaultNewExcludedQuestAlertSound, defaultNewExcludedQuestAlertVolume, defaultNewQuestAlertSound, defaultNewQuestAlertVolume, defaultNotifyOnNewExcludedQuests, defaultNotifyOnNewQuests, defaultNotifyOnQuestComplete, defaultPreventVideoQuestsPausing, defaultQuestButtonBadgeColor, defaultQuestButtonBadgeCount, defaultQuestButtonDisplay, defaultQuestButtonIncludedTypes, defaultQuestButtonIndicator, defaultQuestCompletedAlertSound, defaultQuestCompletedAlertVolume, defaultQuestFetchInterval, defaultQuestOrder, defaultQuestTileClaimedColorSetting, defaultQuestTileExpiredColorSetting, defaultQuestTileGradient, defaultQuestTileIgnoredColorSetting, defaultQuestTilePreload, defaultQuestTileUnclaimedColorSetting, defaultRememberQuestPageFilters, defaultRememberQuestPageSort, defaultResumeInterruptedQuests, defaultResumeQuestIDs, defaultRightClickAction, defaultUnclaimedSubsort } from "./def";
 
 const MIGRATION_TARGET = 1;
 const CURRENT_SETTINGS = PlainSettings.plugins.Questify;
@@ -174,20 +174,20 @@ export const settings = definePluginSettings({
     questButtonDisplay: {
         type: OptionType.CUSTOM,
         description: "Which display type to use for the Quest button in the server list.",
-        default: defaultQuestButtonDisplay as QuestButtonDisplayMode,
+        default: defaultQuestButtonDisplay,
         restartNeeded: true,
         hidden: true,
     },
     questButtonIncludedTypes: {
         type: OptionType.CUSTOM,
         description: "Which reward types and Quest types to include when displaying Quest counts on the Quest button.",
-        default: defaultQuestButtonIncludedTypes as QuestButtonIncludedTypes,
+        default: defaultQuestButtonIncludedTypes,
         hidden: true,
     },
     questButtonIndicator: {
         type: OptionType.CUSTOM,
         description: "Which display type to use for the unclaimed indicator on the Quest button in the server list.",
-        default: defaultQuestButtonIndicator as QuestButtonIndicatorMode,
+        default: defaultQuestButtonIndicator,
         hidden: true,
     },
     questButtonBadgeCount: {
@@ -199,25 +199,25 @@ export const settings = definePluginSettings({
     questButtonBadgeColor: {
         type: OptionType.NUMBER | OptionType.CUSTOM,
         description: "The color of the Quest button badge in the server list.",
-        default: defaultQuestButtonBadgeColor as number | null,
+        default: defaultQuestButtonBadgeColor,
         hidden: true,
     },
     questButtonLeftClickAction: {
         type: OptionType.CUSTOM,
         description: "The action to perform when left-clicking the Quest button in the server list.",
-        default: defaultLeftClickAction as QuestButtonAction,
+        default: defaultLeftClickAction,
         hidden: true,
     },
     questButtonMiddleClickAction: {
         type: OptionType.CUSTOM,
         description: "The action to perform when middle-clicking the Quest button in the server list.",
-        default: defaultMiddleClickAction as QuestButtonAction,
+        default: defaultMiddleClickAction,
         hidden: true,
     },
     questButtonRightClickAction: {
         type: OptionType.CUSTOM,
         description: "The action to perform when right-clicking the Quest button in the server list.",
-        default: defaultRightClickAction as QuestButtonAction,
+        default: defaultRightClickAction,
         hidden: true,
     },
     questNotifications: {
@@ -246,7 +246,7 @@ export const settings = definePluginSettings({
     questCompletedAlertSound: {
         type: OptionType.STRING | OptionType.CUSTOM,
         description: "The sound to play when a Quest is completed.",
-        default: defaultQuestCompletedAlertSound as string | null,
+        default: defaultQuestCompletedAlertSound,
         hidden: true,
     },
     questCompletedAlertVolume: {
@@ -264,7 +264,7 @@ export const settings = definePluginSettings({
     newQuestAlertSound: {
         type: OptionType.STRING | OptionType.CUSTOM,
         description: "The sound to play when new Quests are detected.",
-        default: defaultNewQuestAlertSound as string | null,
+        default: defaultNewQuestAlertSound,
         hidden: true,
     },
     newQuestAlertVolume: {
@@ -276,7 +276,7 @@ export const settings = definePluginSettings({
     newExcludedQuestAlertSound: {
         type: OptionType.STRING | OptionType.CUSTOM,
         description: "The sound to play when new excluded Quests are detected.",
-        default: defaultNewExcludedQuestAlertSound as string | null,
+        default: defaultNewExcludedQuestAlertSound,
         hidden: true,
     },
     newExcludedQuestAlertVolume: {
@@ -334,7 +334,7 @@ export const settings = definePluginSettings({
     questOrder: {
         type: OptionType.CUSTOM,
         description: "Sort order for Quest status groups.",
-        default: Array.from(defaultQuestOrder) as QuestOrderStatus[],
+        default: Array.from(defaultQuestOrder),
         hidden: true,
     },
     hiddenQuestStatuses: {

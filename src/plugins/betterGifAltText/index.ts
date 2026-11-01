@@ -50,7 +50,7 @@ export default definePlugin({
             .slice(0, 20)
             .join(" ");
         if (name.length > 300) {
-            name = name.slice(0, 300) + "...";
+            name = `${name.slice(0, 300)}...`;
         }
 
         if (name) props.alt += ` - ${name}`;

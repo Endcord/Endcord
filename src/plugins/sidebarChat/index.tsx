@@ -165,7 +165,7 @@ async function openPopoutFromUserMenu(userId: string) {
 
         const channel = await waitForChannel(channelId);
         if (channel) openPopout(channel.id);
-        return;
+
     } catch {
         const fallbackChannelId = await waitForDmChannel(userId);
         if (!fallbackChannelId) return;
@@ -355,7 +355,7 @@ export default definePlugin({
     },
 
     toolboxActions: {
-        "Open Previous Chat"() {
+        "Open Previous Chat": function() {
             FluxDispatcher.dispatch({
                 // @ts-ignore
                 type: "VC_SIDEBAR_CHAT_PREVIOUS",
@@ -483,8 +483,6 @@ export default definePlugin({
 });
 
 const Header = ({ guild, channel }: { guild: Guild; channel: Channel; }) => {
-    const recipientId = channel.isPrivate() ? channel.getRecipientId() as string : null;
-
     const name = useStateFromStores([UserStore, RelationshipStore], () => getChannelTitle(channel), [channel.id, channel.name]);
 
     const parentChannel = useStateFromStores(

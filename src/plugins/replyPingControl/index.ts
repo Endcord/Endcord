@@ -63,7 +63,7 @@ export default definePlugin({
 
         if (isWhitelisted || alwaysPingOnReply) {
             if (!message.mentions.some(mention => mention.id === user.id)) {
-                message.mentions.push(user as any);
+                message.mentions.push(user);
             }
         } else {
             message.mentions = message.mentions.filter(mention => mention.id !== user.id);

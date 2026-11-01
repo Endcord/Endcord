@@ -27,7 +27,7 @@ import { MacOSVibrancySettings } from "./MacVibrancySettings";
 import { NotificationSection } from "./NotificationSettings";
 import { WindowsMaterialSettings } from "./WindowsMaterialSettings";
 
-const REPO_URL = "https://github.com/rootpoii/Endcord";
+const REPO_URL = "https://github.com/Endcord/Endcord";
 
 type KeysOfType<Object, Type> = {
     [K in keyof Object]: Object[K] extends Type ? K : never;

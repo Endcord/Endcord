@@ -42,7 +42,7 @@ function GuildSelector() {
                 return (
                     <img
                         className={cl("guild-icon")}
-                        src={IconUtils.getGuildIconURL({ id: guild.id, icon: guild.icon, size: 32 })!}
+                        src={IconUtils.getGuildIconURL({ id: guild.id, icon: guild.icon, size: 32 })}
                     />
                 );
             }}

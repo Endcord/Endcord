@@ -7,6 +7,7 @@
 import { useSettings } from "@api/Settings";
 import { authorizeCloud, deauthorizeCloud } from "@api/SettingsSync/cloudSetup";
 import { deleteCloudSettings, eraseAllCloudData, getCloudSettings, getCloudSyncDirection, putCloudSettings, setCloudSyncDirection } from "@api/SettingsSync/cloudSync";
+import { isSecureCloudUrl } from "@api/SettingsSync/cloudUrl";
 import { BaseText } from "@components/BaseText";
 import { Button, ButtonProps } from "@components/Button";
 import { CheckedTextInput } from "@components/CheckedTextInput";
@@ -25,12 +26,7 @@ import { classes } from "@utils/misc";
 import { IconComponent } from "@utils/types";
 import { ConfirmModal,openModal, Select, Tooltip, useState } from "@webpack/common";
 function validateUrl(url: string) {
-    try {
-        new URL(url);
-        return true;
-    } catch {
-        return "Invalid URL";
-    }
+    return isSecureCloudUrl(url) || t("The address has to start with https://");
 }
 
 const SectionHeading = ({ text }: { text: string; }) => (
@@ -61,7 +57,7 @@ function CloudSetupSection() {
             <SectionHeading text={t("Cloud Integrations")} />
 
             <Paragraph size="md" className={Margins.bottom20}>
-                {t("Endcord comes with a cloud integration that adds goodies like settings sync across devices. It")}{" "}<Link href="https://endcord.com/cloud/privacy">{t("respects your privacy")}</Link>{t(", and the")}{" "}<Link href="https://github.com/rootpoii/Endcord">{t("source code")}</Link>{" "}{t("is AGPL 3.0 licensed so you can host it yourself.")}
+                {t("Endcord comes with a cloud integration that adds goodies like settings sync across devices. It")}{" "}<Link href="https://endcord.com/cloud/privacy">{t("respects your privacy")}</Link>{t(", and the")}{" "}<Link href="https://github.com/Endcord/Endcord">{t("source code")}</Link>{" "}{t("is AGPL 3.0 licensed so you can host it yourself.")}
             </Paragraph>
             <FormSwitch
                 key="backend"

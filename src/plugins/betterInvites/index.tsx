@@ -101,7 +101,7 @@ export default definePlugin({
             <div className="vc-bi-header-inner">
                 <img
                     alt=""
-                    className={classes(AvatarStyles.avatar, AvatarStyles.clickable) + " vc-bi-inviter-avatar"}
+                    className={`${classes(AvatarStyles.avatar, AvatarStyles.clickable)} vc-bi-inviter-avatar`}
                     onClick={() => openUserProfile(inviter.id)}
                     src={inviter.avatar
                         ? `https://cdn.discordapp.com/avatars/${inviter.id}/${inviter.avatar}.webp?size=80`

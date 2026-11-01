@@ -24,7 +24,7 @@ export default definePlugin({
     dependencies: ["Settings", "ConcatenatedModules"],
     startAt: StartAt.WebpackReady,
     toolboxActions: {
-        "Open Icons Tab"() {
+        "Open Icons Tab": function() {
             SettingsRouter.openUserSettings("endcord_icon_viewer_panel");
         },
     },

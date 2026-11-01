@@ -30,7 +30,7 @@ const TrashIcon = findComponentByCodeLazy("2.81h8.36a3");
 const PlusIcon = findComponentByCodeLazy("0v-5h5a1");
 
 const hexToInt = (hex: string): number => parseInt(hex.replace("#", ""), 16);
-const intToHex = (n: number): string => "#" + n.toString(16).padStart(6, "0");
+const intToHex = (n: number): string => `#${n.toString(16).padStart(6, "0")}`;
 
 const PatternsComponent = ErrorBoundary.wrap(() => {
     const { patterns } = settings.store;

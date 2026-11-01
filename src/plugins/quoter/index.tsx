@@ -6,11 +6,11 @@
 
 import { definePluginSettings } from "@api/Settings";
 import { FormSwitch } from "@components/FormSwitch";
+import { Message, RenderModalProps } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { getCurrentChannel } from "@utils/discord";
 import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
-import { Message, RenderModalProps } from "@vencord/discord-types";
 import { IconUtils, Menu, Modal, openModal, TextInput, UploadHandler, useEffect, useState } from "@webpack/common";
 
 import { QuoteIcon } from "./components/QuoteIcon";

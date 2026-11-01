@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import type { Channel, Guild } from "@endcord/discord-types";
 import { chooseFile, saveFile } from "@utils/web";
-import type { Channel, Guild } from "@vencord/discord-types";
 import { ChannelStore, Constants } from "@webpack/common";
 
 import { request } from "./api";

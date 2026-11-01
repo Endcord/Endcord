@@ -218,10 +218,10 @@ export function useSettings(paths?: UseSettings<Settings>[]) {
                     SettingsStore.removeChangeListener(p, forceUpdate);
                 }
             });
-        } else {
+        }
             SettingsStore.addGlobalChangeListener(forceUpdate);
             return () => SettingsStore.removeGlobalChangeListener(forceUpdate);
-        }
+
     }, [paths]);
 
     return SettingsStore.store;

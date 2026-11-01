@@ -38,7 +38,7 @@ const INVISIBLE_CHARS_REGEX = /[\u200B-\u200D\u200E\u200F\u202A-\u202E\u2060-\u2
 
 function log(message: string) {
     if (!settings.store.verboseLogs) return;
-    console.log(`[ZeroWidthSanitizer] ${message}`);
+    console.debug(`[ZeroWidthSanitizer] ${message}`);
 }
 
 function sanitize(text: string): { result: string; found: boolean; } {

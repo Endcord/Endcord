@@ -21,18 +21,17 @@
 import "../suppressExperimentalWarnings.js";
 import "../checkNodeVersion.js";
 
-import { exec, execSync } from "child_process";
+import { execSync } from "child_process";
 import esbuild, { build, context } from "esbuild";
 import { constants as FsConstants, readFileSync } from "fs";
 import { access, readdir, readFile } from "fs/promises";
 import { minify as minifyHtml } from "html-minifier-terser";
-import { optimize as optimizeSvg } from 'svgo';
+import { builtinModules } from "module";
 import { join, relative, resolve } from "path";
-import { promisify } from "util";
+import { optimize as optimizeSvg } from "svgo";
 
 import { getPluginTarget } from "../utils.mjs";
 import { createLazyPluginAnalyzer } from "./lazyPlugins.mjs";
-import { builtinModules } from "module";
 
 /** @type {import("../../package.json")} */
 const PackageJSON = JSON.parse(readFileSync("package.json", "utf-8"));
@@ -87,7 +86,7 @@ export async function buildOrWatchAll(buildConfigs) {
     } else {
         await Promise.all(buildConfigs.map(async cfg => {
             const res = await build(process.env.ENDCORD_METAFILE ? { ...cfg, metafile: true } : cfg);
-            if (res.metafile) (await import("fs")).writeFileSync(cfg.outfile + ".meta.json", JSON.stringify(res.metafile));
+            if (res.metafile) (await import("fs")).writeFileSync(`${cfg.outfile ?? cfg.outdir}.meta.json`, JSON.stringify(res.metafile));
             return res;
         }))
             .catch(error => {
@@ -250,7 +249,7 @@ export const gitRemotePlugin = {
             namespace: "git-remote", path: args.path
         }));
         build.onLoad({ filter, namespace: "git-remote" }, async () => {
-            let remote = process.env.ENDCORD_REMOTE || "rootpoii/endcord";
+            const remote = process.env.ENDCORD_REMOTE || "Endcord/Endcord";
             return { contents: `export default "${remote}"` };
         });
     }
@@ -353,10 +352,10 @@ export const stylePlugin = {
 
             return {
                 loader: "js",
-                contents: styleModule
+                contents: `${styleModule
                     .replaceAll("STYLE_SOURCE", JSON.stringify(css))
                     .replaceAll("STYLE_NAME", JSON.stringify(path))
-                    + `\n((window.EndcordPluginStyles ??= {})[${JSON.stringify(folder)}] ??= []).push(${JSON.stringify(path)});\n`
+                     }\n((window.EndcordPluginStyles ??= {})[${JSON.stringify(folder)}] ??= []).push(${JSON.stringify(path)});\n`
             };
         });
         onLoad({ filter: /\.css$/, namespace: "managed-style" }, async ({ path }) => {

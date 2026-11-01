@@ -308,7 +308,7 @@ function LMessage({ log, isGroupStart, reset, }: LMessageProps) {
                             id="jump-to-message"
                             label={t("Jump To Message")}
                             action={() => {
-                                NavigationRouter.transitionTo(`/channels/${ChannelStore.getChannel(message.channel_id)?.guild_id ?? "@me"}/${message.channel_id}${message.id ? "/" + message.id : ""}`);
+                                NavigationRouter.transitionTo(`/channels/${ChannelStore.getChannel(message.channel_id)?.guild_id ?? "@me"}/${message.channel_id}${message.id ? `/${message.id}` : ""}`);
                                 closeAllModals();
                             }}
                         />

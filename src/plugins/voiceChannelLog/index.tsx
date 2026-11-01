@@ -64,7 +64,7 @@ export default definePlugin({
     },
 
     toolboxActions: {
-        "Voice Channel Logs"() {
+        "Voice Channel Logs": function() {
             const channelId = SelectedChannelStore.getVoiceChannelId();
             if (!channelId) return;
             const channel = ChannelStore.getChannel(channelId);

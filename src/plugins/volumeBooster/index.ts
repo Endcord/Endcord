@@ -106,10 +106,10 @@ export default definePlugin({
             replacement: [
                 {
                     match: /(\.settings\.audioContextSettings.+?)(\i\[\i\])=(\i\.volume)(.+?setLocalVolume\(\i,).+?\)/,
-                    replace: (_, rest1, localVolume, syncVolume, rest2) => rest1
-                        + `(${localVolume}>200?void 0:${localVolume}=${syncVolume})`
-                        + rest2
-                        + `${localVolume}??${syncVolume})`
+                    replace: (_, rest1, localVolume, syncVolume, rest2) => `${rest1
+                         }(${localVolume}>200?void 0:${localVolume}=${syncVolume})${
+                         rest2
+                         }${localVolume}??${syncVolume})`
                 }
             ]
         }

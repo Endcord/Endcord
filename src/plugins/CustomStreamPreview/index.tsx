@@ -8,11 +8,11 @@ import { UserAreaButton, UserAreaRenderProps } from "@api/UserArea";
 import { Divider } from "@components/Divider";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
+import { RenderModalProps } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
 import { closeModal, ModalCloseButton as ModalCloseButtonRaw, ModalContent as ModalContentRaw, ModalFooter as ModalFooterRaw, ModalHeader as ModalHeaderRaw, ModalRoot as ModalRootRaw, ModalSize, openModal } from "@utils/modal";
 import definePlugin from "@utils/types";
-import { RenderModalProps } from "@vencord/discord-types";
 import { ApplicationStreamingStore, Button, Forms, React, showToast, Text, Toasts, useEffect, UserStore,useState, useStateFromStores } from "@webpack/common";
 
 import { StreamCreateEvent, StreamDeleteEvent } from "./types";
@@ -21,11 +21,11 @@ import { getSavedPreview, getStreamingState, imageFileToStreamPreview, isSending
 // The low-level Modal* components in @utils/modal are deprecated and typed `never`
 // to push migration; at runtime they still resolve to the real components. Re-type
 // them as renderable components so this modal compiles without changing behavior.
-const ModalRoot = ModalRootRaw as unknown as React.ComponentType<any>;
-const ModalHeader = ModalHeaderRaw as unknown as React.ComponentType<any>;
-const ModalContent = ModalContentRaw as unknown as React.ComponentType<any>;
-const ModalFooter = ModalFooterRaw as unknown as React.ComponentType<any>;
-const ModalCloseButton = ModalCloseButtonRaw as unknown as React.ComponentType<any>;
+const ModalRoot = ModalRootRaw;
+const ModalHeader = ModalHeaderRaw;
+const ModalContent = ModalContentRaw;
+const ModalFooter = ModalFooterRaw;
+const ModalCloseButton = ModalCloseButtonRaw;
 
 const FILE_INPUT_ID = "custom-stream-preview-upload";
 

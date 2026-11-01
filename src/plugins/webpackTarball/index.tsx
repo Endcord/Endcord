@@ -37,7 +37,7 @@ export default definePlugin({
     settings,
 
     toolboxActions: {
-        "Webpack Tarball"() {
+        "Webpack Tarball": function() {
             openModal(props => (
                 <TarModal
                     modalProps={props}

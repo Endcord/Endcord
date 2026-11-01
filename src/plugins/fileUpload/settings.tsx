@@ -68,12 +68,14 @@ export const settings = definePluginSettings({
         hidden: true
     },
     serviceUrl: {
+        sensitive: true,
         type: OptionType.STRING,
         description: "Zipline service URL",
         default: "",
         hidden: true
     },
     ziplineToken: {
+        sensitive: true,
         type: OptionType.STRING,
         description: "Zipline auth token",
         default: "",
@@ -86,18 +88,21 @@ export const settings = definePluginSettings({
         hidden: true
     },
     ezHostKey: {
+        sensitive: true,
         type: OptionType.STRING,
         description: "E-Z Host API key",
         default: "",
         hidden: true
     },
     nestToken: {
+        sensitive: true,
         type: OptionType.STRING,
         description: "Nest API token",
         default: "",
         hidden: true
     },
     encryptingHostKey: {
+        sensitive: true,
         type: OptionType.STRING,
         description: "Encrypting.host API key",
         default: "",
@@ -135,6 +140,7 @@ export const settings = definePluginSettings({
         hidden: true
     },
     s3Endpoint: {
+        sensitive: true,
         type: OptionType.STRING,
         description: "S3-compatible endpoint URL",
         default: "",
@@ -153,18 +159,21 @@ export const settings = definePluginSettings({
         hidden: true
     },
     s3AccessKeyId: {
+        sensitive: true,
         type: OptionType.STRING,
         description: "S3 access key ID",
         default: "",
         hidden: true
     },
     s3SecretAccessKey: {
+        sensitive: true,
         type: OptionType.STRING,
         description: "S3 secret access key",
         default: "",
         hidden: true
     },
     s3SessionToken: {
+        sensitive: true,
         type: OptionType.STRING,
         description: "Optional S3 session token",
         default: "",
@@ -196,12 +205,14 @@ export const settings = definePluginSettings({
         hidden: true
     },
     catboxUserhash: {
+        sensitive: true,
         type: OptionType.STRING,
         description: "Catbox userhash for account binding",
         default: "",
         hidden: true
     },
     sharexConfig: {
+        sensitive: true,
         type: OptionType.STRING,
         description: "ShareX custom uploader JSON",
         default: "",
@@ -238,6 +249,7 @@ export const settings = definePluginSettings({
         hidden: true
     },
     gofileToken: {
+        sensitive: true,
         type: OptionType.STRING,
         description: "Optional GoFile API token",
         default: "",
@@ -250,12 +262,14 @@ export const settings = definePluginSettings({
         hidden: true
     },
     pixelVaultKey: {
+        sensitive: true,
         type: OptionType.STRING,
         description: "PixelVault upload key",
         default: "",
         hidden: true
     },
     pixelDrainKey: {
+        sensitive: true,
         type: OptionType.STRING,
         description: "Optional PixelDrain API key",
         default: "",
@@ -287,6 +301,7 @@ export const settings = definePluginSettings({
         hidden: true
     },
     corsProxyUrl: {
+        sensitive: true,
         type: OptionType.STRING,
         description: "CORS proxy URL used for browser uploads",
         default: CORS_PROXY,
@@ -316,18 +331,21 @@ export const settings = definePluginSettings({
         default: false
     },
     webdavUrl: {
+        sensitive: true,
         type: OptionType.STRING,
         description: "WebDAV server URL",
         default: "",
         hidden: true
     },
     webdavUsername: {
+        sensitive: true,
         type: OptionType.STRING,
         description: "WebDAV username",
         default: "",
         hidden: true
     },
     webdavPassword: {
+        sensitive: true,
         type: OptionType.STRING,
         description: "WebDAV password or app token",
         default: "",
@@ -547,7 +565,7 @@ export function SettingsComponent() {
         <>
             <SettingsSection id="upload-service" name="Upload Service" description={t("Choose where FileUpload sends new files.")}>
                 <ServicePicker
-                    value={store.serviceType as ServiceType}
+                    value={store.serviceType}
                     onChange={service => {
                         store.serviceType = service;
                         update();

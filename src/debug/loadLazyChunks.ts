@@ -50,14 +50,12 @@ export async function loadLazyChunks() {
         const CompleteLazyChunkRegex = canonicalizeMatch(/(?:(?:Promise\.all\(\[)?((?:\i\.e\("?[^)]+?"?\),?)+?)(?:\]\))?)\.then\(\i(?:\.\i)?\.bind\(\i,"?([^)]+?)"?(?:,[^)]+?)?\)\)/g);
         const PartialLazyChunkRegex = canonicalizeMatch(/(?:(?:Promise\.all\(\[)?((?:\i\.e\("?[^)]+?"?\),?)+?)(?:\]\))?)\.then\(\i\.bind\(\i,"?([^)]+?)"?\)\)/g);
 
-        let foundCssDebuggingLoad = false;
-
         async function searchAndLoadLazyChunks(factoryCode: string) {
             // Workaround to avoid loading the CSS debugging chunk which turns the app pink
             // const hasCssDebuggingLoad = foundCssDebuggingLoad ? false : (foundCssDebuggingLoad = factoryCode.includes(".cssDebuggingEnabled&&"));
 
             // Disabled for now since this causes lots of chunks concatenated into the same module get marked as invalid, and thus not loaded.
-            const hasCssDebuggingLoad = foundCssDebuggingLoad = false;
+            const hasCssDebuggingLoad = false;
 
             const lazyChunks = factoryCode.matchAll(hasCssDebuggingLoad ? CompleteLazyChunkRegex : PartialLazyChunkRegex);
             const validChunkGroups = new Set<[chunkIds: PropertyKey[], entryPoint: PropertyKey]>();

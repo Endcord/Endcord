@@ -5,11 +5,11 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
+import type { Channel, Message } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
 import { useForceUpdater } from "@utils/react";
 import definePlugin, { OptionType } from "@utils/types";
-import type { Channel, Message } from "@vencord/discord-types";
 import { ChannelStore, FluxDispatcher, useEffect } from "@webpack/common";
 
 const logger = new Logger("SurfaceTranslate");
@@ -152,14 +152,14 @@ async function fetchTranslation(text: string, signal: AbortSignal): Promise<stri
     const targetBaseLanguage = getBaseLanguage(targetLanguage);
     if (!targetBaseLanguage) return null;
 
-    const url = "https://translate-pa.googleapis.com/v1/translate?" + new URLSearchParams({
+    const url = `https://translate-pa.googleapis.com/v1/translate?${new URLSearchParams({
         "params.client": "gtx",
         "dataTypes": "TRANSLATION",
         "key": "AIzaSyDLEeFI5OtFBwYBIoK_jj5m32rZK5CkCXA", // some google API key
         "query.sourceLanguage": "auto",
         "query.targetLanguage": targetLanguage,
         "query.text": text,
-    });
+    })}`;
     const response = await fetch(url, { signal });
     if (response.status === 429) {
         rateLimitedUntil = Date.now() + 60_000;

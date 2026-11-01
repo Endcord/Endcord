@@ -62,7 +62,7 @@ export const settings = definePluginSettings({
     },
     userBasedCategoryList: {
         type: OptionType.CUSTOM,
-        default: {} as Record<string, Category[]>
+        default: {}
     }
 });
 

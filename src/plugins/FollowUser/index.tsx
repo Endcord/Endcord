@@ -7,10 +7,10 @@
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { definePluginSettings, useSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
+import type { Channel, User } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { classes } from "@utils/misc";
 import definePlugin, { OptionType } from "@utils/types";
-import type { Channel, User } from "@vencord/discord-types";
 import { findByPropsLazy, findComponentByCodeLazy, findStoreLazy } from "@webpack";
 import {
     ChannelStore,

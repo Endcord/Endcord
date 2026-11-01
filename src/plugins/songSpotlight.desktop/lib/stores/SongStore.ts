@@ -8,7 +8,7 @@ import type { UserData } from "@song-spotlight/api/structs";
 import { proxyLazy } from "@utils/lazy";
 import { UserStore, zustandCreate } from "@webpack/common";
 
-import { ZustandDefinition, ZustandStore } from "./zustand";
+import { ZustandStore } from "./zustand";
 
 interface Data {
     data: UserData;
@@ -56,6 +56,6 @@ export const useSongStore: ZustandStore<SongState> = proxyLazy(() =>
                     self: get().users[UserStore.getCurrentUser()?.id],
                 });
             },
-        })) as ZustandDefinition<SongState>,
+        })),
     )
 );

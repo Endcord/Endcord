@@ -6,9 +6,9 @@
 
 import { BaseText } from "@components/BaseText";
 import { Flex } from "@components/Flex";
+import { RenderModalProps } from "@endcord/discord-types";
 import { LANGUAGES } from "@plugins/voiceMessageTranscriber.desktop/utils/languages";
 import { t } from "@utils/i18n";
-import { RenderModalProps } from "@vencord/discord-types";
 import { Modal, openModal, SearchableSelect, useState } from "@webpack/common";
 
 import { TranscriptionModal } from "./TranscriptionModal";
@@ -81,7 +81,7 @@ export function LanguageSelectionModal(props: { modalProps: RenderModalProps, sr
                             value: "translate"
                         }]}
                         value={task}
-                        onChange={v => setTask(v as string)}
+                        onChange={v => setTask(v)}
                     />
                 </div>
             </Flex>

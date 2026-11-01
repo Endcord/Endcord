@@ -97,7 +97,7 @@ function DearrowButton({ component }: { component: Component<Props>; }) {
                 <button
                     onMouseEnter={onMouseEnter}
                     onMouseLeave={onMouseLeave}
-                    className={"vc-dearrow-toggle-" + (embed.dearrow.enabled ? "on" : "off")}
+                    className={`vc-dearrow-toggle-${embed.dearrow.enabled ? "on" : "off"}`}
                     onClick={() => {
                         const { enabled, oldThumb, oldTitle } = embed.dearrow;
                         settings.store.dearrowByDefault = !enabled;

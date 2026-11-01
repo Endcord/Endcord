@@ -1,4 +1,4 @@
-param([switch]$AuditOnly)
+param([switch]$AuditOnly, [string]$TapSha256)
 $ErrorActionPreference = 'Stop'
 $payload = Join-Path $env:LOCALAPPDATA 'DiscordStereoLoader/payload'
 $voice = Join-Path $payload 'discord_voice.node'
@@ -11,7 +11,11 @@ $content = [IO.File]::ReadAllText($index)
 $marker = 'module.exports = VoiceEngine;'
 if (-not $content.Contains($marker)) { throw 'Unsupported voice wrapper. No files were changed.' }
 if ($AuditOnly) { Write-Output 'Audited native voice binary and wrapper found. No files were changed.'; return }
-$backup = Join-Path $payload ('meter-backup-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
+# This addon is compiled locally, so its hash can't be pinned here: whoever built it has to vouch for the file being copied into Discord
+$tap = Join-Path $PSScriptRoot 'participant_tap.node'
+if (-not $TapSha256) { throw "Pass -TapSha256 with the hash of the participant_tap.node you built. No files were changed." }
+if ((Get-FileHash -LiteralPath $tap).Hash -ne $TapSha256) { throw 'participant_tap.node does not match -TapSha256. No files were changed.' }
+$backup =Join-Path $payload ('meter-backup-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
 New-Item -ItemType Directory -Path $backup | Out-Null
 Copy-Item -LiteralPath $index -Destination (Join-Path $backup 'index.js')
 foreach ($file in 'participant_bridge.cjs','participant_tap.node') {

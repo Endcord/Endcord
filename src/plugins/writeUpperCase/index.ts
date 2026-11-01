@@ -28,9 +28,9 @@ const presendObject: MessageSendListener = (_, msg) => {
 
         if (!blockedWordsArray.some(word => element.toLowerCase().startsWith(word.toLocaleLowerCase()))) {
             return element.charAt(0).toUpperCase() + element.slice(1);
-        } else {
-            return element;
         }
+            return element;
+
     }).join("");
 };
 

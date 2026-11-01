@@ -282,12 +282,12 @@ export default definePlugin({
 
         if (props.application_id != null) {
             return !settings.store.ignoredActivities.some(activity => activity.id === props.application_id) || (settings.store.listMode === FilterMode.Whitelist && settings.store.idsList.includes(props.application_id));
-        } else {
+        }
             const exePath = RunningGameStore.getRunningGames().find(game => game.name === props.name)?.exePath;
             if (exePath) {
                 return !settings.store.ignoredActivities.some(activity => activity.id === exePath);
             }
-        }
+
 
         return true;
     },

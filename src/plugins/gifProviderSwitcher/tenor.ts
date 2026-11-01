@@ -30,11 +30,11 @@ interface TenorCategoryTag {
 }
 
 async function fetchApi<TResult>(path: string, params: Record<string, string>) {
-    const url = `https://api.tenor.com/v1${path}?` + new URLSearchParams({
+    const url = `https://api.tenor.com/v1${path}?${new URLSearchParams({
         key: TENOR_KEY,
         locale: LocaleStore.locale.replace("-", "_").toLowerCase(),
         ...params
-    });
+    })}`;
 
     const res = await fetch(url);
     if (!res.ok)
@@ -86,7 +86,7 @@ function toDiscordGif(item: TenorResult): DiscordGif | null {
     const { gif, [format]: mediaItem } = item.media[0];
 
     return {
-        id: id,
+        id,
         title: title || h1_title,
         url: itemurl,
         gif_src: gif.url,

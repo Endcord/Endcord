@@ -7,8 +7,11 @@
 import { PlainSettings } from "@api/Settings";
 import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
+import { Plugin, PluginSettingDefCommon } from "@utils/types";
 import { chooseFile, saveFile } from "@utils/web";
 import { moment, Toasts } from "@webpack/common";
+
+import Plugins from "~plugins";
 
 const toast = (type: string, message: string) =>
     Toasts.show({
@@ -40,18 +43,42 @@ function isSafeObject(obj: any) {
     return true;
 }
 
-export async function importSettings(data: string) {
+function getSensitiveKeys(plugin: Plugin) {
+    return Object.entries(plugin.settings?.def ?? {})
+        .filter(([, setting]) => (setting as PluginSettingDefCommon).sensitive)
+        .map(([key]) => key);
+}
+
+// Whoever controls an import must not get to redirect this device's keys, choose who can act for the user, or stop
+// its updates. A backup file may fill in a plugin that has nothing configured here; the cloud never touches these
+function keepLocalSettings(imported: any, source: "file" | "cloud") {
+    for (const [pluginName, plugin] of Object.entries(Plugins)) {
+        const keys = getSensitiveKeys(plugin);
+        const local = PlainSettings.plugins[pluginName] ?? {};
+        const isConfigured = keys.some(key => local[key] && local[key] !== (plugin.settings!.def[key] as { default?: unknown; }).default);
+        if (source === "file" && !isConfigured) continue;
+
+        for (const key of keys) {
+            if (key in local) ((imported.plugins ??= {})[pluginName] ??= {})[key] = local[key];
+            else delete imported.plugins?.[pluginName]?.[key];
+        }
+    }
+
+    for (const key of ["cloud", "autoUpdate", "autoUpdateNotification"]) imported[key] = PlainSettings[key];
+}
+
+export async function importSettings(data: string, source: "file" | "cloud" = "file") {
     try {
         var parsed = JSON.parse(data);
     } catch (err) {
-        console.log(data);
-        throw new Error("Failed to parse JSON: " + String(err));
+        throw new Error(`Failed to parse JSON: ${String(err)}`);
     }
 
     if (!isSafeObject(parsed))
         throw new Error("Unsafe Settings");
 
     if ("settings" in parsed && "quickCss" in parsed) {
+        keepLocalSettings(parsed.settings, source);
         Object.assign(PlainSettings, parsed.settings);
         await EndcordNative.settings.set(parsed.settings);
         await EndcordNative.quickCss.set(parsed.quickCss);
@@ -60,7 +87,12 @@ export async function importSettings(data: string) {
 }
 
 export async function exportSettings({ minify }: { minify?: boolean; } = {}) {
-    const settings = EndcordNative.settings.get();
+    const settings = structuredClone(EndcordNative.settings.get());
+    // Backups get shared for support and cloud sync leaves the device
+    for (const [pluginName, plugin] of Object.entries(Plugins)) {
+        for (const key of getSensitiveKeys(plugin)) delete settings.plugins[pluginName]?.[key];
+    }
+
     const quickCss = await EndcordNative.quickCss.get();
     return JSON.stringify({ settings, quickCss }, null, minify ? undefined : 4);
 }

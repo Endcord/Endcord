@@ -186,7 +186,7 @@ export function uwuify(message: string): string {
 
     }
 
-    answer += " " + selectRandomElement(endings);
+    answer += ` ${selectRandomElement(endings)}`;
     return answer;
 }
 

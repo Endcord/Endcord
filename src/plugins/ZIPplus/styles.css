@@ -410,6 +410,11 @@
     margin-top: 8px;
 }
 
+.zp-load-button {
+    width: 100%;
+    cursor: pointer;
+}
+
 .zp-injected-preview .zp-error,
 .zp-injected-preview .zp-loading {
     background: transparent;

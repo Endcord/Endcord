@@ -370,5 +370,5 @@ export function setLastFilterChoices(filters: { group: string, filter: string; }
         acc[getFilterChoiceKey(item)] = item;
 
         return acc;
-    }, {} as Record<string, { group: string, filter: string; }>);
+    }, {});
 }

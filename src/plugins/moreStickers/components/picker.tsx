@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { PickerContent, PickerContentHeader, PickerContentRow, PickerContentRowGrid, PickerHeaderProps, SidebarProps, Sticker, StickerCategoryType, StickerPack } from "@equicordplugins/moreStickers/types";
-import { sendSticker } from "@equicordplugins/moreStickers/upload";
-import { clPicker, FFmpegStateContext } from "@equicordplugins/moreStickers/utils";
+import { PickerContent, PickerContentHeader, PickerContentRow, PickerContentRowGrid, PickerHeaderProps, SidebarProps, Sticker, StickerCategoryType, StickerPack } from "@plugins/moreStickers/types";
+import { sendSticker } from "@plugins/moreStickers/upload";
+import { clPicker, FFmpegStateContext } from "@plugins/moreStickers/utils";
 import { debounce } from "@shared/debounce";
 import { t } from "@utils/i18n";
 import { Modal,openModal, React, TextInput } from "@webpack/common";

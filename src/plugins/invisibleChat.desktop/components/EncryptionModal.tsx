@@ -6,10 +6,10 @@
 
 import { FormSwitch } from "@components/FormSwitch";
 import { Heading } from "@components/Heading";
+import { RenderModalProps } from "@endcord/discord-types";
 import { encrypt } from "@plugins/invisibleChat.desktop/index";
 import { insertTextIntoChatInputBox } from "@utils/discord";
 import { t } from "@utils/i18n";
-import { RenderModalProps } from "@vencord/discord-types";
 import { Modal, openModal, React, TextInput } from "@webpack/common";
 
 function EncModal(props: RenderModalProps) {

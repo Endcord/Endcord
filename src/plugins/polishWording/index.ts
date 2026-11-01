@@ -269,11 +269,9 @@ function capitalize(textInput: string): string {
             } else {
                 result += element;
             }
-        } else {
+        } else if (element) {
             // This a delimiter (whitespace/newline regex), so we'll add it to the string to properly reconstruct without being lossy
-            if (element) {
-                result += element;
-            }
+            result += element;
         }
     }
 
@@ -307,7 +305,7 @@ function addPeriods(textInput: string) {
                 /[A-Za-z0-9]/.test(lastChar) && // If it doesn't already end with punctuation
                 !urlRegex.test(strippedLine) // If it doesn't end with a link
             ) {
-                processedLines.push(strippedLine + ".");
+                processedLines.push(`${strippedLine}.`);
                 continue;
             }
 

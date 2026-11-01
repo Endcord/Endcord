@@ -7,11 +7,11 @@
 import { get, set } from "@api/DataStore";
 import { updateMessage } from "@api/MessageUpdater";
 import { Flex } from "@components/Flex";
+import { Message, RenderModalProps } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
 import { ModalCloseButton, ModalContent, ModalHeader, ModalRoot, ModalSize, openModal } from "@utils/modal";
 import definePlugin from "@utils/types";
-import { Message, RenderModalProps } from "@vencord/discord-types";
 import { Button, ChannelStore, GuildStore, MessageActions, React, SearchableSelect, Text, TextInput } from "@webpack/common";
 import type { SVGProps } from "react";
 
@@ -150,7 +150,7 @@ export default definePlugin({
     },
 
     toolboxActions: {
-        "Open Bookmarks"() {
+        "Open Bookmarks": function() {
             openBookmarks();
         }
     },

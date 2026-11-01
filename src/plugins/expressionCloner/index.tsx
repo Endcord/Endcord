@@ -137,7 +137,7 @@ function getGuildCandidates(data: Data) {
             return !stickers || stickers.length < stickerSlots;
         }
 
-        const { isAnimated } = data as Emoji;
+        const { isAnimated } = data;
 
         const emojiSlots = getGuildMaxEmojiSlots(g);
         const emojis = EmojiStore.getGuildEmoji(g.id);
@@ -192,7 +192,7 @@ async function doClone(guildId: string, data: Sticker | Emoji) {
 
         new Logger("ExpressionCloner").error("Failed to clone", data.name, "to", guildId, e);
         Toasts.show({
-            message: "Failed to clone: " + message,
+            message: `Failed to clone: ${message}`,
             type: Toasts.Type.FAILURE,
             id: Toasts.genId()
         });
@@ -245,7 +245,7 @@ function CloneModal({ data }: { data: Sticker | Emoji; }) {
                                 onMouseLeave={onMouseLeave}
                                 onMouseEnter={onMouseEnter}
                                 role="button"
-                                aria-label={"Clone to " + g.name}
+                                aria-label={`Clone to ${g.name}`}
                                 aria-disabled={isCloning}
                                 style={{
                                     borderRadius: "50%",

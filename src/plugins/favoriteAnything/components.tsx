@@ -6,10 +6,10 @@
 
 import { BaseText } from "@components/BaseText";
 import { Button } from "@components/Button";
+import { Embed, ListRow, Message, MessageAttachment, ScrollerBaseRef } from "@endcord/discord-types";
+import { ChannelType } from "@endcord/discord-types/enums";
 import { t } from "@utils/i18n";
 import { LazyComponentWrapper } from "@utils/lazyReact";
-import { Embed, ListRow, Message, MessageAttachment, ScrollerBaseRef } from "@vencord/discord-types";
-import { ChannelType } from "@vencord/discord-types/enums";
 import { findByCodeLazy, findComponentByCode, findComponentByCodeLazy, findCssClassesLazy, proxyLazyWebpack } from "@webpack";
 import { ChannelStore, ExpressionPickerStore, ListScrollerThin, lodash, PermissionsBits, PermissionStore, React, useCallback, useEffect, useMemo, useRef, useState, useStateFromStores } from "@webpack/common";
 import { ComponentProps, ReactNode } from "react";
@@ -48,7 +48,7 @@ export const AttachmentPreview = proxyLazyWebpack(() => {
     const MessageComponent = findComponentByCode("this.renderAttachments") as LazyComponentWrapper<MessageComponentClass>;
 
     class MessageAttachmentsComponent extends MessageComponent {
-        render(): ReactNode {
+        override render(): ReactNode {
             return this.renderAttachments(this.props.message);
         }
     }
@@ -264,7 +264,7 @@ export function EmbedAccessory() {
             const format = isProxiedVideo ? FavoriteItemFormat.VIDEO : FavoriteItemFormat.IMAGE;
 
             // External videos' content.url usually doesn't point to a valid resource that could be embedded
-            const url = !isProxiedVideo ? embed.url! : video.url;
+            const url = !isProxiedVideo ? embed.url : video.url;
 
             return { ...video, format, src, url };
         }

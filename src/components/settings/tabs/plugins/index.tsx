@@ -149,7 +149,7 @@ function PluginSettings() {
                         <div>{changes.map((s, i) => (
                             <>
                                 {i > 0 && ", "}
-                                {Parser.parse("`" + s.split(".")[0] + "`")}
+                                {Parser.parse(`\`${s.split(".")[0]}\``)}
                             </>
                         ))}</div>
                     </>

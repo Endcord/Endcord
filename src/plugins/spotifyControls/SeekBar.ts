@@ -13,7 +13,7 @@ export const SeekBar = LazyComponent(() => {
     // Discord's Slider does not update `state.value` when `props.initialValue` changes if state.value is not nullish.
     // We extend their class and override their `getDerivedStateFromProps` to update the value
     return class SeekBar extends SliderClass {
-        static getDerivedStateFromProps(props: any, state: any) {
+        static override getDerivedStateFromProps(props: any, state: any) {
             const newState = super.getDerivedStateFromProps!(props, state);
             if (newState) {
                 newState.value = props.initialValue;

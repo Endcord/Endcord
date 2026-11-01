@@ -695,7 +695,7 @@ function getPreviewSrc(src: string, mode = getPreviewMode()) {
 }
 
 function getPreviewMode(): PreviewMode {
-    return (settings.store.previewMode as PreviewMode | undefined) ?? "webp";
+    return (settings.store.previewMode) ?? "webp";
 }
 
 function makePreviewSrc(src: string, mode: PreviewMode) {
@@ -775,6 +775,6 @@ function addEndpointHost(hosts: Set<string>, endpoint: string) {
         const url = new URL(endpoint.includes("://") ? endpoint : `https://${endpoint.replace(/^\/\//, "")}`);
         hosts.add(url.hostname);
     } catch {
-        return;
+
     }
 }

@@ -5,10 +5,10 @@
  */
 
 import type { NavContextMenuPatchCallback } from "@api/ContextMenu";
+import { RelationshipType } from "@endcord/discord-types/enums";
 import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
 import definePlugin from "@utils/types";
-import { RelationshipType } from "@vencord/discord-types/enums";
 import { findByPropsLazy } from "@webpack";
 import { Menu, RelationshipStore } from "@webpack/common";
 

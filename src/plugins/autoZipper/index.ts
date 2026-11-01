@@ -32,7 +32,7 @@ function parseExtensions() {
     const exts = settings.store.extensions.split(",").map(ext => ext.trim().toLowerCase());
     exts.forEach(ext => {
         if (ext && !ext.startsWith(".")) {
-            extensionsToZip.add("." + ext);
+            extensionsToZip.add(`.${ext}`);
         } else if (ext) {
             extensionsToZip.add(ext);
         }
@@ -53,12 +53,12 @@ async function zipFile(file: File): Promise<File> {
     });
 
     const baseName = file.name.substring(0, file.name.lastIndexOf(".")) || file.name;
-    return new File([zipData as BlobPart], `${baseName}.zip`, { type: "application/zip" });
+    return new File([zipData], `${baseName}.zip`, { type: "application/zip" });
 }
 
 async function zipFolder(folderName: string, fileEntries: Record<string, Uint8Array>): Promise<File> {
     const zipData = zipSync(fileEntries);
-    return new File([zipData as BlobPart], `${folderName}.zip`, { type: "application/zip" });
+    return new File([zipData], `${folderName}.zip`, { type: "application/zip" });
 }
 
 async function readFileEntry(entry: FileSystemFileEntry): Promise<File> {

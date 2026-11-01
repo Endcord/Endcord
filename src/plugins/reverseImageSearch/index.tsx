@@ -34,7 +34,7 @@ function makeSearchItem(src: string) {
             id="search-image"
         >
             {Object.keys(Engines).map((engine, i) => {
-                const key = "search-image-" + engine;
+                const key = `search-image-${engine}`;
                 return (
                     <Menu.MenuItem
                         key={key}

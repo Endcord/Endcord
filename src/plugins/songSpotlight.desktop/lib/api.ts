@@ -63,10 +63,10 @@ export async function authFetch(url: string | URL, options?: RequestInit, retrie
         if (res.status === 401) {
             const retry = !retried && await refreshAccessToken();
             if (retry) return await authFetch(url, options, true);
-            else {
+
                 useAuthorizationStore.getState().deleteTokens();
                 showToast("You have been signed out from Song Spotlight. Please sign in again.", Toasts.Type.FAILURE);
-            }
+
         } else {
             showToast(
                 !text.includes("<body>") && res.status >= 400 && res.status <= 599

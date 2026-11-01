@@ -45,8 +45,8 @@ async function buildAttachments(files: File[]): Promise<MessageAttachment[]> {
             content_type: undefined,
             size: file.size,
             spoiler: false,
-            url: url + "#",
-            proxy_url: url + "#",
+            url: `${url}#`,
+            proxy_url: `${url}#`,
         };
 
         if (file.type.startsWith("image/")) {

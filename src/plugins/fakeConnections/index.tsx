@@ -10,6 +10,7 @@ import { get as dsGet, set as dsSet } from "@api/DataStore";
 import { definePluginSettings } from "@api/Settings";
 import { Button } from "@components/Button";
 import ErrorBoundary from "@components/ErrorBoundary";
+import { isSafeLink } from "@shared/externalLinks";
 import { Devs } from "@utils/constants";
 import { t as translateText } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
@@ -83,7 +84,7 @@ function getPlatformIcon(type: string, theme: string): string | null {
 function ConnectionRow({ connection, theme }: { connection: FakeConnection; theme: string; }) {
     const iconSrc = getPlatformIcon(connection.type, theme);
     const textColor = settings.store.textColor === "black" ? "rgba(0,0,0,0.85)" : "#ffffff";
-    const hasLink = connection.url.trim().length > 0;
+    const hasLink = connection.url.trim().length > 0 && isSafeLink(connection.url);
 
     const inner = (
         <div className="vc-fc-account-name">

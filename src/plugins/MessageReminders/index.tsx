@@ -8,11 +8,11 @@ import { findGroupChildrenByChildId } from "@api/ContextMenu";
 import { get, set } from "@api/DataStore";
 import { showNotification } from "@api/Notifications";
 import { Flex } from "@components/Flex";
+import { Message, RenderModalProps } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
 import { ModalCloseButton, ModalContent, ModalHeader, ModalRoot, ModalSize, openModal } from "@utils/modal";
 import definePlugin from "@utils/types";
-import { Message, RenderModalProps } from "@vencord/discord-types";
 import { Button, ChannelStore, Menu, MessageActions, React, showToast, Text } from "@webpack/common";
 
 const KEY = "Testcord_Reminders";
@@ -128,7 +128,7 @@ export default definePlugin({
     tags: ["Utility", "Chat"],
 
     contextMenus: {
-        "message"(children, { message }: { message: Message; }) {
+        "message": function(children, { message }: { message: Message; }) {
             if (!message?.id || !ChannelStore.getChannel(message.channel_id)) return;
             const group = findGroupChildrenByChildId("pin", children) ?? children;
             group.push(
@@ -136,7 +136,7 @@ export default definePlugin({
                     {PRESETS.map(p => (
                         <Menu.MenuItem
                             key={p.label}
-                            id={"tc-remind-" + p.label}
+                            id={`tc-remind-${p.label}`}
                             label={p.label}
                             action={() => addReminder(message, p.at())}
                         />
@@ -147,7 +147,7 @@ export default definePlugin({
     },
 
     toolboxActions: {
-        "Open Reminders"() {
+        "Open Reminders": function() {
             openModal(props => <RemindersModal rootProps={props} />);
         }
     },

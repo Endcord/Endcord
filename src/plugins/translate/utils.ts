@@ -86,14 +86,14 @@ export async function translate(kind: "received" | "sent", text: string): Promis
 }
 
 async function googleTranslate(text: string, sourceLang: string, targetLang: string): Promise<TranslationValue> {
-    const url = "https://translate-pa.googleapis.com/v1/translate?" + new URLSearchParams({
+    const url = `https://translate-pa.googleapis.com/v1/translate?${new URLSearchParams({
         "params.client": "gtx",
         "dataTypes": "TRANSLATION",
         "key": "AIzaSyDLEeFI5OtFBwYBIoK_jj5m32rZK5CkCXA", // some google API key
         "query.sourceLanguage": sourceLang,
         "query.targetLanguage": targetLang,
         "query.text": text,
-    });
+    })}`;
 
     const res = await fetch(url);
     if (!res.ok)
@@ -147,7 +147,7 @@ async function deeplTranslate(text: string, sourceLang: string, targetLang: stri
         case 200:
             break;
         case -1:
-            throw "Failed to connect to DeepL API: " + data;
+            throw `Failed to connect to DeepL API: ${data}`;
         case 403:
             throw "Invalid DeepL API key or version";
         case 456:

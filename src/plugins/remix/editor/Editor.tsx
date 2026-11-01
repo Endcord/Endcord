@@ -38,7 +38,7 @@ export const Editor = (props: { url?: string; }) => {
             />}
             {file && (<>
                 <Toolbar />
-                <Canvas file={file!} />
+                <Canvas file={file} />
             </>)}
         </div>
     );

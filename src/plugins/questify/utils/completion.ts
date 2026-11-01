@@ -1203,16 +1203,14 @@ async function runEntry(quest: Quest, entry: AutoCompleteEntry): Promise<void> {
     } finally {
         clearEntryTimers(entry);
 
-        if (activeAutoCompletes.get(entry.questId) !== entry) {
-            return;
-        }
+        if (activeAutoCompletes.get(entry.questId) === entry) {
+            activeAutoCompletes.delete(entry.questId);
+            resetQuestsToResume(quest);
+            updateResumeState();
 
-        activeAutoCompletes.delete(entry.questId);
-        resetQuestsToResume(quest);
-        updateResumeState();
-
-        if (!getQuestifySettings().autoCompleteQuestsSimultaneously && !suppressQueueDrain) {
-            runNextQueuedQuest();
+            if (!getQuestifySettings().autoCompleteQuestsSimultaneously && !suppressQueueDrain) {
+                runNextQueuedQuest();
+            }
         }
     }
 }

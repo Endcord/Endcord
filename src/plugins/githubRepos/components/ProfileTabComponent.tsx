@@ -5,9 +5,9 @@
  */
 
 import { BaseText } from "@components/BaseText";
-import { fetchOrgRepos, fetchReposByUserId, fetchReposByUsername, fetchUserInfo, fetchUserOrgs } from "@equicordplugins/githubRepos/githubApi";
-import { GitHubRepo, RepoGroup, RepoSortMode } from "@equicordplugins/githubRepos/types";
-import { buildRepoGroups, PERSONAL_GROUP_KEY, sortGroups } from "@equicordplugins/githubRepos/utils";
+import { fetchOrgRepos, fetchReposByUserId, fetchReposByUsername, fetchUserInfo, fetchUserOrgs } from "@plugins/githubRepos/githubApi";
+import { GitHubRepo, RepoGroup, RepoSortMode } from "@plugins/githubRepos/types";
+import { buildRepoGroups, PERSONAL_GROUP_KEY, sortGroups } from "@plugins/githubRepos/utils";
 import { t } from "@utils/i18n";
 import { React, useEffect, UserProfileStore, useState } from "@webpack/common";
 

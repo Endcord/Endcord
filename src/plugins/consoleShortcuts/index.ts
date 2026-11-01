@@ -8,7 +8,7 @@ import { loadLazyChunks } from "@debug/loadLazyChunks";
 import { Devs } from "@utils/constants";
 import { getCurrentChannel, getCurrentGuild } from "@utils/discord";
 import { runtimeHashMessageKey } from "@utils/intlHash";
-import { SYM_LAZY_CACHED, SYM_LAZY_GET } from "@utils/lazy";
+import { SYM_LAZY_GET } from "@utils/lazy";
 import { sleep } from "@utils/misc";
 import { relaunch } from "@utils/native";
 import { canonicalizeMatch, canonicalizeReplace, canonicalizeReplacement } from "@utils/patches";
@@ -101,7 +101,7 @@ function makeShortcuts() {
         wpexs: (code: string) => extract(findModuleId(code)!),
         loadLazyChunks: IS_DEV ? loadLazyChunks : () => { throw new Error("loadLazyChunks is dev only."); },
         find,
-        findAll: findAll,
+        findAll,
         findByProps,
         findAllByProps: (...props: string[]) => findAll(filters.byProps(...props)),
         findByCode: newFindWrapper(filters.byCode),
@@ -190,7 +190,7 @@ function loadAndCacheShortcut(key: string, val: any, forceLoad: boolean) {
 
     function unwrapProxy(value: any) {
         if (value[SYM_LAZY_GET]) {
-            forceLoad ? currentVal[SYM_LAZY_GET]() : currentVal[SYM_LAZY_CACHED];
+            if (forceLoad) currentVal[SYM_LAZY_GET]();
         } else if (value.$$endcordGetWrappedComponent) {
             return forceLoad ? value.$$endcordGetWrappedComponent() : value;
         }

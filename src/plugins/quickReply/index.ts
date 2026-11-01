@@ -103,7 +103,7 @@ function onKeydown(e: KeyboardEvent) {
 }
 
 function jumpIfOffScreen(channelId: string, messageId: string) {
-    const element = document.getElementById("message-content-" + messageId);
+    const element = document.getElementById(`message-content-${messageId}`);
     if (!element) return;
 
     const vh = Math.max(document.documentElement.clientHeight, window.innerHeight);
@@ -150,11 +150,11 @@ function getNextMessage(isUp: boolean, isReply: boolean) {
         const msg = findNextNonDeleted(currentlyReplyingId);
         currentlyReplyingId = msg?.id ?? null;
         return msg;
-    } else {
+    }
         const msg = findNextNonDeleted(currentlyEditingId);
         currentlyEditingId = msg?.id ?? null;
         return msg;
-    }
+
 }
 
 function shouldMention(message: Message) {

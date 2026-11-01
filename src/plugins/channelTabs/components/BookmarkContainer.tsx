@@ -5,8 +5,8 @@
  */
 
 import { BaseText } from "@components/BaseText";
-import { BasicChannelTabsProps, Bookmark, BookmarkFolder, BookmarkProps, getDiscordFolderIcon, isBookmarkFolder, isTabSelected, navigateToBookmark, openedTabs, settings, UseBookmarkMethods, useBookmarks } from "@equicordplugins/channelTabs/util";
-import { CircleQuestionIcon, DiscoveryIcon, EnvelopeIcon, FriendsIcon, NitroIcon, QuestIcon, ShopIcon } from "@equicordplugins/channelTabs/util/icons";
+import { BasicChannelTabsProps, Bookmark, BookmarkFolder, BookmarkProps, getDiscordFolderIcon, isBookmarkFolder, isTabSelected, navigateToBookmark, openedTabs, settings, UseBookmarkMethods, useBookmarks } from "@plugins/channelTabs/util";
+import { CircleQuestionIcon, DiscoveryIcon, EnvelopeIcon, FriendsIcon, NitroIcon, QuestIcon, ShopIcon } from "@plugins/channelTabs/util/icons";
 import { classNameFactory } from "@utils/css";
 import { getGuildAcronym, getIntlMessage } from "@utils/discord";
 import { t } from "@utils/i18n";
@@ -108,7 +108,7 @@ function BookmarkIcon({ bookmark }: { bookmark: Bookmark | BookmarkFolder; }) {
                 src={UserStore.getUser(channel.recipients[0]).getAvatarURL(undefined, 128)}
             />
         );
-        else return (
+        return (
             <img
                 src={channel.icon
                     ? `https://${window.GLOBAL_ENV.CDN_HOST}/channel-icons/${channel?.id}/${channel?.icon}.png`
@@ -142,8 +142,8 @@ function FolderBookmarkItem({ bookmark, bookmarks, folderIndex, bookmarkIndex, m
         canDrag: () => !searchActive,
         item: () => ({
             index: bookmarkIndex, // index within folder
-            folderIndex: folderIndex, // the folder its in
-            bookmark: bookmark,
+            folderIndex, // the folder its in
+            bookmark,
             isFromFolder: true
         }),
         collect: monitor => ({
@@ -303,7 +303,7 @@ function Bookmark(props: BookmarkProps & { isExpanded?: boolean; onToggleFolder?
             return {
                 index: currentIndex !== -1 ? currentIndex : index,
                 folderIndex: undefined, // not in a folder (bar)
-                bookmark: bookmark, // include full bookmark data
+                bookmark, // include full bookmark data
                 isFromFolder: false
             };
         },

@@ -13,7 +13,8 @@ export const metaReady = new Promise<void>(res => resolveMetaReady = res);
 
 if (IS_EXTENSION) {
     const listener = (e: MessageEvent) => {
-        if (e.data?.type === "endcord:meta") {
+        // Other frames can post here too, and this decides where the editor loads its code from
+        if (e.source === window && e.data?.type === "endcord:meta") {
             ({ EXTENSION_BASE_URL, EXTENSION_VERSION, RENDERER_CSS_URL } = e.data.meta);
             window.removeEventListener("message", listener);
             resolveMetaReady();
