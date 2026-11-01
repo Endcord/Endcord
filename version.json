@@ -1,29 +1,31 @@
 {
-  "version": "4.0.31",
-  "hash": "8691dec",
-  "updatedAt": 1793289952748,
-  "date": "2026-10-29T16:05:52.748Z",
+  "version": "4.0.32",
+  "hash": "479410c",
+  "updatedAt": 1793492336908,
+  "date": "2026-11-01T00:18:56.908Z",
   "downloadUrl": "https://endcord.com/download",
   "bundle": "https://endcord.com/EndcordFiles.tar.gz",
+  "installerSha256": "d5df46b18a69990800a9bc353fd835aba0fae80055542a878d709f0fe0cfe5bf",
+  "signature": "MEYCIQDyBkx7caWJkEsqu4hIlgkcU3fWfNf3Hn6IDevwVshOFwIhAKwX5/V4hyVhDERjCAH0swQxB2DxaDDwtRg4lSkRp9JF",
   "assets": [
     {
       "name": "patcher.js",
-      "url": "https://raw.githubusercontent.com/rootpoii/endcord/main/dist/patcher.js",
-      "sha256": "07be233727fe560dab44cf6cb721197f38ddef468fb282f3d642f379e6165ee8"
+      "url": "https://raw.githubusercontent.com/Endcord/Endcord/main/dist/patcher.js",
+      "sha256": "c443950c7f50a598bdf8a11713880920e54360918a51f637863ca6d95cf8b588"
     },
     {
       "name": "preload.js",
-      "url": "https://raw.githubusercontent.com/rootpoii/endcord/main/dist/preload.js",
-      "sha256": "b36464ae25804b1f0ed5b65e074f3ba77016c6b6bcfb3a52f0c1ff56b89f4646"
+      "url": "https://raw.githubusercontent.com/Endcord/Endcord/main/dist/preload.js",
+      "sha256": "f8efa2d5da3a912d99e260a7698aec7f77b72bda9a6a6f7fa04cb0861156bfcd"
     },
     {
       "name": "renderer.js",
-      "url": "https://raw.githubusercontent.com/rootpoii/endcord/main/dist/renderer.js",
-      "sha256": "34dbebd76b986bd39cbbff893ad64d2be226e0ca6da66375fed909ef07ae9eb1"
+      "url": "https://raw.githubusercontent.com/Endcord/Endcord/main/dist/renderer.js",
+      "sha256": "447566e7421f2849b076a4101455e38031c16fe73d01c7ae7ec22fc223b9ac22"
     },
     {
       "name": "renderer.css",
-      "url": "https://raw.githubusercontent.com/rootpoii/endcord/main/dist/renderer.css",
+      "url": "https://raw.githubusercontent.com/Endcord/Endcord/main/dist/renderer.css",
       "sha256": "8c80c30df3aa169a220ba51ba013a7c5eb7f0f12e886f823167b72796eba6338"
     }
   ]
