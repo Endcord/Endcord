@@ -266,7 +266,7 @@ for (const name of ["CON", "con.css", "NUL", "nul.theme.css", "AUX.txt", "PRN", 
 for (const name of ["theme.css", "my theme.theme.css", "console.css", "nullable.css", "com10.css", "auxiliary.css", "a.b.c", ".hidden"])
     check(`file name allowed: ${name}`, m.isSafeFileName(name) === true);
 const themes = join(OUT, "themes");
-for (const path of ["../settings.json", "..\\settings.json", "sub/../../x", "CON", "sub/NUL.css", "a.css:evil"])
+for (const path of ["../settings.json", ...(IS_WINDOWS ? ["..\\settings.json"] : []), "sub/../../x", "CON", "sub/NUL.css", "a.css:evil"])
     check(`path refused: ${path}`, m.ensureSafePath(themes, path) === null);
 check("a normal path still works", m.ensureSafePath(themes, "sub/theme.css") === join(themes, "sub", "theme.css"));
 
