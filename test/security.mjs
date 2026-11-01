@@ -640,9 +640,9 @@ check("a plain key becomes a property access", /^(\.|\[")/.test(m.canonicalizeMa
 const frame = (url, origin) => ({ senderFrame: { url, origin } });
 const { SET_SETTINGS, GET_QUICK_CSS, SET_QUICK_CSS, OPEN_EXTERNAL } = m.IpcEvents;
 
-for (const origin of ["https://discord.com", "https://ptb.discord.com", "https://canary.discord.com"])
+for (const origin of ["https://discord.com", "https://ptb.discord.com", "https://canary.discord.com", "https://discordapp.com"])
     check(`IPC accepts ${origin}`, m.isTrustedSender(frame(`${origin}/app`, origin), SET_SETTINGS) === true);
-for (const origin of ["http://discord.com", "https://discord.com.evil.example", "https://evildiscord.com", "https://evil.example", "https://discordapp.com", "file://", "null"])
+for (const origin of ["http://discord.com", "https://discord.com.evil.example", "https://evildiscord.com", "https://evil.example", "http://discordapp.com", "https://discordapp.com.evil.example", "https://evildiscordapp.com", "https://ptb.discordapp.com", "https://media.discordapp.net", "file://", "null"])
     check(`IPC refuses ${origin}`, m.isTrustedSender(frame(`${origin}/x`, origin), SET_SETTINGS) === false);
 
 check("IPC refuses a frame that is gone", m.isTrustedSender({ senderFrame: null }, SET_SETTINGS) === false);
@@ -685,6 +685,8 @@ function loadPreload(protocol, origin) {
 
 const onDiscord = loadPreload("https:", "https://discord.com");
 check("Discord gets Endcord", onDiscord.exposed.includes("EndcordNative") && onDiscord.renderer && onDiscord.discord === 1, onDiscord);
+const onOldProfile = loadPreload("https:", "https://discordapp.com");
+check("a Stable profile still on discordapp.com gets Endcord", onOldProfile.exposed.includes("EndcordNative") && onOldProfile.renderer, onOldProfile);
 const onSplash = loadPreload("file:", "file://");
 check("the splash screen keeps Discord's preload and gets nothing else", onSplash.exposed.length === 0 && !onSplash.renderer && onSplash.discord === 1, onSplash);
 const onForeignPage = loadPreload("https:", "https://evil.example");

@@ -64,7 +64,7 @@ const expect = (ok, name, input) => {
 const startedAt = Date.now();
 const BASE = join(OUT, "themes");
 const PATH_PARTS = ["..", ".", "a", "b.css", "/", "\\", "//", "\\\\", "C:", "C:\\", "..\\", "../", "%2e%2e", "\0", ":", "CON", "nul.css", "a.css.", "a.css ", "...", "....", "\u2025", "\uff0e\uff0e"];
-const ORIGIN_TRICKS = ["https://discord.com", "https://discord.com.", "https://discord.com:443", "https://discord.com.evil.example", "https://evil.example#discord.com", "http://discord.com", "HTTPS://DISCORD.COM", "https://discord.com\n", " https://discord.com", "https://xdiscord.com", "https://canary.discord.com.evil.example", "https://evil-discord.com", "https://discord.com@evil.example"];
+const ORIGIN_TRICKS = ["https://discord.com", "https://discord.com.", "https://discord.com:443", "https://discord.com.evil.example", "https://evil.example#discord.com", "http://discord.com", "HTTPS://DISCORD.COM", "https://discord.com\n", " https://discord.com", "https://xdiscord.com", "https://canary.discord.com.evil.example", "https://evil-discord.com", "https://discord.com@evil.example", "https://discordapp.com", "http://discordapp.com", "https://discordapp.com.evil.example", "https://xdiscordapp.com", "https://canary.discordapp.com"];
 const TOKEN_PARTS = ["abcdefghijklmnopqrstuvwxyz", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "0123456789-_"].join("");
 const randomToken = length => Array.from({ length }, () => pick(TOKEN_PARTS)).join("");
 
@@ -88,7 +88,7 @@ for (let i = 0; i < ROUNDS; i++) {
 
     // Only exact Discord origins pass, and the check can't be fooled by what surrounds the name
     const origin = pick(ORIGIN_TRICKS) + pick(["", "", "/", ".", "x", "\n"]);
-    if (m.isDiscordOrigin(origin)) expect(/^https:\/\/((ptb|canary)\.)?discord\.com$/.test(origin), "isDiscordOrigin accepted a lookalike", origin);
+    if (m.isDiscordOrigin(origin)) expect(["https://discord.com", "https://ptb.discord.com", "https://canary.discord.com", "https://discordapp.com"].includes(origin), "isDiscordOrigin accepted a lookalike", origin);
 
     // A secret never survives, wherever it sits in the text, and scrubbing twice changes nothing
     // The first part is 23 characters for a 17-digit id, 26 for a 19-digit one

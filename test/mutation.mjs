@@ -15,7 +15,7 @@ const ROOT = join(import.meta.dirname, "..");
 const MUTATIONS = [
     ["IPC stops checking the sender", "src/main/utils/ipc.ts", "if (!isTrustedSender(event, channel)) throw new Error(`Refused ${channel}`);", ""],
     ["The editor page gets every channel", "src/main/utils/ipc.ts", "return EDITOR_CHANNELS.has(channel);", "return true;"],
-    ["Origin check loses its end anchor", "src/shared/trustedOrigins.ts", String.raw`discord\.com$/`, String.raw`discord\.com/`],
+    ["Origin check loses its end anchor", "src/shared/trustedOrigins.ts", String.raw`discord\.com)$/`, String.raw`discord\.com)/`],
     ["Origin check accepts plain http", "src/shared/trustedOrigins.ts", "^https:", "^https?:"],
     ["Preload trusts every page", "src/preload.ts", "isDiscordOrigin(window.origin)", "true"],
     ["Link check allows every protocol", "src/shared/externalLinks.ts", "return LINK_PROTOCOLS.includes(new URL(href ?? \"\", \"https://discord.com/\").protocol);", "return true;"],
