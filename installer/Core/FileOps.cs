@@ -112,6 +112,19 @@ namespace EndcordInstaller.Core
             return File.ReadAllText(path, Utf8);
         }
 
+        /// <summary>Lower-case hex SHA-256 of a file.</summary>
+        public static string Sha256(string path)
+        {
+            using (var sha = System.Security.Cryptography.SHA256.Create())
+            using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                var hash = sha.ComputeHash(fs);
+                var sb = new StringBuilder(hash.Length * 2);
+                foreach (var b in hash) sb.Append(b.ToString("x2"));
+                return sb.ToString();
+            }
+        }
+
         /// <summary>Reads at most <paramref name="maxBytes"/> as Latin-1 (safe for binary stubs like asar files).</summary>
         public static string ReadSmall(string path, int maxBytes)
         {

@@ -1,6 +1,6 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -288,7 +288,7 @@ export default definePlugin({
         {
             find: ".getUserIsAdmin(",
             replacement: {
-                match: /(function \i\(\i,\i)\){(.{0,250}.getUserIsAdmin\(.+?return!1})/,
+                match: /(function(?: \i)?\(\i,\i)\){(.{0,250}.getUserIsAdmin\(.+?return!1})/,
                 replace: (_, rest1, rest2) => `${rest1},fakeNitroOriginal){if(!fakeNitroOriginal)return false;${rest2}`
             }
         },
@@ -329,7 +329,7 @@ export default definePlugin({
         {
             find: ",updateTheme(",
             replacement: {
-                match: /(function \i\(\i\){let{backgroundGradientPresetId:(\i).+?)(\i\.\i\.updateAsync.+?theme=(.+?),.+?},\i\))/,
+                match: /(function(?: \i)?\(\i\){let{backgroundGradientPresetId:(\i).+?)(\i\.\i\.updateAsync.+?theme=(.+?),.+?},\i\))/,
                 replace: (_, rest, backgroundGradientPresetId, originalCall, theme) => `${rest}$self.handleGradientThemeSelect(${backgroundGradientPresetId},${theme},()=>${originalCall});`
             }
         },
@@ -420,23 +420,6 @@ export default definePlugin({
             replacement: {
                 match: /(?<=type:"(?:SOUNDBOARD_SOUNDS_RECEIVED|GUILD_SOUNDBOARD_SOUND_CREATE|GUILD_SOUNDBOARD_SOUND_UPDATE|GUILD_SOUNDBOARD_SOUNDS_UPDATE)".+?available:)\i\.available/g,
                 replace: "true"
-            }
-        },
-        // Free accounts have no premium SKU. The emoji picker calls this once per emoji,
-        // and each warn() freezes the client. Drop the logs and keep the original false return.
-        // Separate patches: ConsoleJanitor removes the first warning too, and a shared find would then skip the second.
-        {
-            find: "Cannot find the corresponding SKU to the user's premium type ",
-            replacement: {
-                match: /\i\.warn\(`Cannot find the corresponding SKU to the user's premium type \$\{[^`]+\.premiumType\}`\),/,
-                replace: ""
-            }
-        },
-        {
-            find: "Cannot find the corresponding product catalog entry to the user's SKU ",
-            replacement: {
-                match: /\i\.warn\(`Cannot find the corresponding product catalog entry to the user's SKU \$\{[^`]+\.premiumType\}`\),/,
-                replace: ""
             }
         }
     ],

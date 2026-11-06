@@ -46,9 +46,14 @@ export async function loadLazyChunks() {
         // True if resolved, false otherwise
         const chunksSearchPromises = [] as Array<() => boolean>;
 
+        // Only quoted chunk ids, the way older Discord wrote them. Newer Discord writes plain numbers, and requiring the
+        // entry point of every one of those groups never finishes; their chunks are loaded with the rest further down,
+        // so their patches are still tested
+        const QuotedChunkIdsRegex = /\("([^"]+?)"\)/g;
+
         // This regex loads all language packs which makes webpack finds testing extremely slow, so for now, we prioritize using the one which doesnt include those
-        const CompleteLazyChunkRegex = canonicalizeMatch(/(?:(?:Promise\.all\(\[)?((?:\i\.e\("?[^)]+?"?\),?)+?)(?:\]\))?)\.then\(\i(?:\.\i)?\.bind\(\i,"?([^)]+?)"?(?:,[^)]+?)?\)\)/g);
-        const PartialLazyChunkRegex = canonicalizeMatch(/(?:(?:Promise\.all\(\[)?((?:\i\.e\("?[^)]+?"?\),?)+?)(?:\]\))?)\.then\(\i\.bind\(\i,"?([^)]+?)"?\)\)/g);
+        const CompleteLazyChunkRegex = canonicalizeMatch(/(?:(?:Promise\.all\(\[)?((?:\i\.e\("?[^)"]+"?\),?)+?)(?:\]\))?)\.then\(\i(?:\.\i)?\.bind\(\i,"?([^)]+?)"?(?:,[^)]+?)?\)\)/g);
+        const PartialLazyChunkRegex = canonicalizeMatch(/(?:(?:Promise\.all\(\[)?((?:\i\.e\("?[^)"]+"?\),?)+?)(?:\]\))?)\.then\(\i\.bind\(\i,"?([^)]+?)"?\)\)/g);
 
         async function searchAndLoadLazyChunks(factoryCode: string) {
             // Workaround to avoid loading the CSS debugging chunk which turns the app pink
@@ -64,7 +69,7 @@ export async function loadLazyChunks() {
 
             await Promise.all(Array.from(lazyChunks).map(async ([, rawChunkIds, entryPoint]) => {
                 const chunkIds = rawChunkIds
-                    ?.matchAll(Webpack.ChunkIdsRegex)
+                    ?.matchAll(QuotedChunkIdsRegex)
                     .map(m => {
                         const numChunkId = Number(m[1]);
                         return Number.isNaN(numChunkId) ? m[1] : String(numChunkId);

@@ -133,7 +133,8 @@ export type WebpackRequire = ((moduleId: PropertyKey) => ModuleExports) & {
      */
     t: (this: WebpackRequire, value: any, mode: number) => any;
     /**
-     * Define getter functions for harmony exports. For every prop in "definiton" (the module exports), set a getter in "exports" for the getter function in the "definition", like this:
+     * Define getter functions for harmony exports. Newer Webpack also passes exports that never change as plain values, in "values", defined with `value` instead of `get`.
+     * For every prop in "definiton" (the module exports), set a getter in "exports" for the getter function in the "definition", like this:
      * @example
      * const exports = {};
      * const definition = { exportName: () => someExportedValue };
@@ -147,7 +148,7 @@ export type WebpackRequire = ((moduleId: PropertyKey) => ModuleExports) & {
      * }
      * // exports is now { exportName: someExportedValue } (but each value is actually a getter)
      */
-    d: (this: WebpackRequire, exports: Record<PropertyKey, any>, definiton: Record<PropertyKey, () => ModuleExports>) => void;
+    d: (this: WebpackRequire, exports: Record<PropertyKey, any>, definiton: Record<PropertyKey, () => ModuleExports>, values?: Record<PropertyKey, ModuleExports>) => void;
     /** The ensure chunk handlers, which are used to ensure the files of the chunks are loaded, or load if necessary */
     f: EnsureChunkHandlers;
     /**

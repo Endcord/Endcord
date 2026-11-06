@@ -95,9 +95,12 @@ async function getUrls(
     }
 
     // If no MBIDs are present, try searching MusicBrainz: first by ISRC (if present), then by name.
+    // MusicBrainz searches with Lucene, where these characters mean something, so each value escapes them before the
+    // whole query is encoded for the address
+    const lucene = (value: string) => value.replace(/[+\-&|!(){}[\]^"~*?:\\/]/g, "\\$&");
     const nameQuery = encodeURIComponent(
-        `artist:"${artistName}" AND recording:"${trackName}"${releaseName ? ` AND release:"${releaseName}"` : ""}`
-    ).replace(/[!()*\-~]/g, "\\$&");
+        `artist:"${lucene(artistName)}" AND recording:"${lucene(trackName)}"${releaseName ? ` AND release:"${lucene(releaseName)}"` : ""}`
+    );
 
     const queries = additionalInfo?.isrc
         ? [encodeURIComponent(`isrc:${additionalInfo.isrc}`), nameQuery]

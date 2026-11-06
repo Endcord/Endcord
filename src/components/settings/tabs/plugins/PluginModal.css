@@ -16,6 +16,22 @@
     margin-top: 8px;
 }
 
+/* The setting someone searched for, pointed out for a moment */
+.ec-setting-found {
+    margin: -8px;
+    padding: 8px;
+    border-radius: var(--ec-radius);
+    animation: ec-setting-found 2.4s ease-out;
+}
+
+@keyframes ec-setting-found {
+    0%,
+    40% {
+        background: color-mix(in srgb, var(--ec-cobalt) 22%, transparent);
+        box-shadow: inset 0 0 0 1px var(--ec-cobalt-hi);
+    }
+}
+
 .vc-plugin-modal-tag {
     align-items: center;
     border: 1px solid var(--border-normal);
@@ -24,4 +40,16 @@
     justify-content: center;
     padding: 6px 12px;
     color: var(--text-default);
+}
+
+.vc-plugin-modal-ban-risk {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid color-mix(in srgb, var(--ec-ember) 45%, transparent);
+    background: color-mix(in srgb, var(--ec-ember) 10%, transparent);
+    color: var(--ec-coral);
 }

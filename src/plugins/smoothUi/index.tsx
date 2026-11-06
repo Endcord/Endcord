@@ -8,7 +8,7 @@ import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 
-const STYLE_ID = "equicord-smooth-ui";
+const STYLE_ID = "ec-smooth-ui";
 
 const settings = definePluginSettings({
     transitionDuration: {
@@ -53,7 +53,7 @@ function buildCSS(): string {
     const easing = settings.store.animationType ?? "ease";
 
     return `
-@keyframes equicord-smooth-ui-pop-in {
+@keyframes ec-smooth-ui-pop-in {
     from {
         opacity: 0;
         transform: translateY(4px) scale(0.985);
@@ -64,7 +64,7 @@ function buildCSS(): string {
     }
 }
 
-@keyframes equicord-smooth-ui-message-in {
+@keyframes ec-smooth-ui-message-in {
     from {
         opacity: 0;
         transform: translateY(3px);
@@ -84,7 +84,7 @@ ${settings.store.animatePopouts !== false ? `
 [role="dialog"],
 [role="menu"],
 [role="tooltip"] {
-    animation: equicord-smooth-ui-pop-in var(--smooth-ui-duration) var(--smooth-ui-easing) both;
+    animation: ec-smooth-ui-pop-in var(--smooth-ui-duration) var(--smooth-ui-easing) both;
     transform-origin: top center;
 }
 ` : ""}
@@ -102,7 +102,7 @@ button,
 
 ${settings.store.animateMessages === true ? `
 [id^="chat-messages-"] {
-    animation: equicord-smooth-ui-message-in var(--smooth-ui-duration) var(--smooth-ui-easing) both;
+    animation: ec-smooth-ui-message-in var(--smooth-ui-duration) var(--smooth-ui-easing) both;
 }
 ` : ""}
 

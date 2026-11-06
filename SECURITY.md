@@ -46,7 +46,8 @@ Each boundary assumes the one before it failed. A page that somehow reaches the 
 | Threat | Protection | Tested by |
 | --- | --- | --- |
 | Swapped or tampered update | ECDSA P-256 signed manifest, SHA-256 for each file | `test/security.mjs` |
-| A release that breaks on start | Keeps the previous version and restores it after three failed loads | `test/security.mjs` |
+| A file planted next to the installer | Each payload file has to match the SHA-256 embedded when the installer was built | installer self-test |
+| A release that breaks on start | Keeps the previous version and restores it after three failed loads, if the kept copy is still what was saved | `test/security.mjs` |
 | Crash or power cut during an update | A journal on disk; a half-finished swap is undone at the next start | `test/security.mjs` |
 | Settings lost in a crash | Atomic writes with `fsync`, plus a last-good backup | `test/security.mjs` |
 | A page reaching native code | Origin check in the preload and on every IPC call | `test/security.mjs` |
@@ -54,7 +55,7 @@ Each boundary assumes the one before it failed. A page that somehow reaches the 
 | Script in links and hrefs | One shared protocol check for web and desktop | `test/security.mjs`, `test/fuzz.mjs` |
 | Files written outside their folder | Path and Windows device name checks | `test/security.mjs`, `test/fuzz.mjs` |
 | A planted `powershell.exe` | Programs run by full path, enforced by lint | `scripts/eslint/endcordRules.mjs` |
-| Secrets in logs and backups | Log redaction; `sensitive` settings stay out of exports and sync | `test/security.mjs`, lint |
+| Secrets in logs and backups | Log redaction; `sensitive` settings (keys, and the addresses data goes to) stay out of exports and sync | `test/security.mjs`, lint |
 | Zip bombs and oversized replies | Limits that don't trust the size a server claims | `test/security.mjs` |
 | A hostile dependency update | Locked versions, new releases held back for a week, install scripts allowlisted | `pnpm-workspace.yaml`, CI |
 
@@ -70,4 +71,4 @@ node scripts/verifyReproducible.mjs --release version.json
 
 It rebuilds with the same inputs and compares the result against the signed hashes.
 
-Windows and macOS will warn about the installer, because it isn't code-signed. `installerSha256` in the signed `version.json` is the hash to check it against.
+Windows and macOS will warn about the installer, because it isn't code-signed. `installerSha256` in the signed `version.json` is the hash to check it against; the site serves the same value as `EndcordInstaller.exe.sha256`. The installer itself only installs payload files that match the hashes embedded when it was built, so a file dropped next to it under one of their names is refused.

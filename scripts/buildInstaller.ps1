@@ -40,9 +40,16 @@ foreach ($pName in $payloadNames) {
     }
 }
 
+# The installer refuses any payload file whose hash isn't in this list, so a file planted next to the exe can't be installed
+$hashFile = Join-Path $distDir "payload.sha256"
+$hashLines = foreach ($pName in $payloadNames) {
+    $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $distDir $pName)).Hash.ToLowerInvariant()
+    "$hash  $pName"
+}
+[System.IO.File]::WriteAllLines($hashFile, [string[]]$hashLines, (New-Object System.Text.UTF8Encoding($false)))
+
 Write-Host "[2/5] Collecting installer C# sources..." -ForegroundColor Cyan
 $csFiles = @()
-$csFiles += (Join-Path $repoRoot "InstallerGUI.cs")
 $csFiles += Get-ChildItem -Path (Join-Path $repoRoot "installer") -Recurse -Filter "*.cs" | Select-Object -ExpandProperty FullName
 
 Write-Host ("  -> Found " + $csFiles.Count + " source files.") -ForegroundColor Gray
@@ -52,13 +59,14 @@ $cscArgs = @(
     "/optimize+",
     "/utf8output",
     "/out:$outExe",
-    "/win32icon:`"$(Join-Path $repoRoot 'app_icon.ico')`"",
-    "/win32manifest:`"$(Join-Path $repoRoot 'app.manifest')`"",
+    "/win32icon:`"$(Join-Path $repoRoot 'assets/app_icon.ico')`"",
+    "/win32manifest:`"$(Join-Path $repoRoot 'installer/app.manifest')`"",
     "/resource:`"$(Join-Path $repoRoot 'dist\patcher.js')`",patcher.js",
     "/resource:`"$(Join-Path $repoRoot 'dist\preload.js')`",preload.js",
     "/resource:`"$(Join-Path $repoRoot 'dist\renderer.js')`",renderer.js",
     "/resource:`"$(Join-Path $repoRoot 'dist\renderer.css')`",renderer.css",
-    "/resource:`"$(Join-Path $repoRoot 'app_logo.png')`",app_logo.png",
+    "/resource:`"$hashFile`",payload.sha256",
+    "/resource:`"$(Join-Path $repoRoot 'assets/app_logo.png')`",app_logo.png",
     "/r:System.dll",
     "/r:System.Core.dll",
     "/r:System.Drawing.dll",
@@ -109,4 +117,6 @@ if ((-not $NoSite) -and (Test-Path $siteDir)) {
     Compress-Archive -Path $outExe -DestinationPath $zipPath -Force
 }
 
+# The installer isn't code-signed, so this hash is what people can check their download against
+Write-Host ("SHA-256 of EndcordInstaller.exe: " + (Get-FileHash -Algorithm SHA256 -LiteralPath $outExe).Hash.ToLowerInvariant()) -ForegroundColor Gray
 Write-Host "Build & Test complete!" -ForegroundColor Green

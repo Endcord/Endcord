@@ -12,7 +12,6 @@ import { isPluginEnabled } from "./PluginManager";
  * plugin's patches still match, plus pairs that do the same job. Turning one on offers to turn the other off.
  */
 const ConflictPairs: ReadonlyArray<readonly [string, string]> = [
-    ["MusicControls", "SpotifyControls"],
     ["CustomTimestamps", "RealtimeTimestamps"],
     ["MessageLogger", "MessageLoggerEnhanced"],
     ["AnonymiseFileNames", "ClipUpload"],
@@ -22,6 +21,8 @@ const ConflictPairs: ReadonlyArray<readonly [string, string]> = [
     ["CleanerChannelGroups", "ShowHiddenChannels"],
     ["ContentWarning", "PinIcon"],
     ["CustomUserColors", "IrcColors"],
+    ["F8Break", "HideEndcord"],
+    ["ChannelTabs", "RecentChannelSwitcher"],
     ["RoleColorEverywhere", "VoiceFakeDetector"],
 ];
 

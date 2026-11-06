@@ -1,0 +1,597 @@
+/* Measured from Discord's badge directory and its rarity pills, so the two can sit side by side */
+.ec-badge-details-root {
+    --ec-badge-modal-width: 100vw;
+    --ec-badge-modal-height: 100vh;
+    --ec-badge-directory-width: 208px;
+    --ec-badge-slot-size: 48px;
+
+    overflow: hidden;
+    width: var(--ec-badge-modal-width);
+    max-width: none;
+    max-height: none;
+}
+
+@media (width >= 680px) {
+    .ec-badge-details-root {
+        --ec-badge-modal-width: 680px;
+        --ec-badge-directory-width: 264px;
+    }
+}
+
+@media (height >= 560px) {
+    .ec-badge-details-root {
+        --ec-badge-modal-height: 560px;
+    }
+}
+
+.ec-badge-details-content {
+    position: relative;
+    display: flex;
+    overflow: hidden;
+    width: 100%;
+    height: var(--ec-badge-modal-height);
+}
+
+/* ---- The profile's badges ---- */
+
+.ec-badge-details-directory {
+    display: flex;
+    flex: 0 0 var(--ec-badge-directory-width);
+    flex-direction: column;
+    overflow: hidden;
+    border-inline-end: 1px solid var(--border-muted);
+    background: var(--background-surface-high);
+}
+
+.ec-badge-details-directory-header {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    gap: var(--space-8, 8px);
+    padding: var(--space-24, 24px);
+}
+
+.ec-badge-details-directory-title-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-8, 8px);
+}
+
+.ec-badge-details-avatar {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+}
+
+.ec-badge-details-directory-title {
+    margin: 0;
+    color: var(--text-strong);
+    font: 600 20px/1.2 var(--font-display);
+    overflow-wrap: anywhere;
+}
+
+.ec-badge-details-directory-subtitle {
+    color: var(--text-subtle);
+    font: 500 14px/1.2857 var(--font-primary);
+}
+
+.ec-badge-details-directory-content {
+    display: flex;
+    flex: 1 1 0%;
+    flex-direction: column;
+    gap: var(--space-24, 24px);
+    overflow-y: auto;
+    min-height: 0;
+    margin-block-start: calc(var(--space-4, 4px) * -1);
+    padding: var(--space-4, 4px) var(--space-24, 24px) var(--space-24, 24px);
+    scrollbar-color: var(--scrollbar-thin-thumb) transparent;
+    scrollbar-width: thin;
+}
+
+.ec-badge-details-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ec-badge-details-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-8, 8px);
+}
+
+.ec-badge-details-slot {
+    position: relative;
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: var(--ec-badge-slot-size);
+    height: var(--ec-badge-slot-size);
+    padding: 0;
+    border: 1px solid var(--border-muted);
+    border-radius: var(--radius-sm, 8px);
+    background: var(--background-mod-subtle);
+    cursor: pointer;
+}
+
+.ec-badge-details-slot:hover {
+    background: var(--control-secondary-background-hover);
+}
+
+.ec-badge-details-slot:active {
+    background: var(--control-secondary-background-active);
+}
+
+.ec-badge-details-slot-selected {
+    border-color: var(--brand-400);
+}
+
+.ec-badge-details-slot-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    pointer-events: none;
+}
+
+.ec-badge-details-directory-footer {
+    display: flex;
+    flex-shrink: 0;
+    padding: var(--space-16, 16px);
+    border-block-start: 1px solid var(--border-subtle);
+}
+
+.ec-badge-details-full-width {
+    width: 100%;
+}
+
+/* ---- The chosen badge ---- */
+
+.ec-badge-details-detail {
+    position: relative;
+    z-index: 0;
+    display: flex;
+    flex: 1 1 0%;
+    flex-direction: column;
+    overflow-y: auto;
+    min-width: 0;
+    background: var(--background-base-lower);
+    scrollbar-color: var(--scrollbar-thin-thumb) transparent;
+    scrollbar-width: thin;
+}
+
+.ec-badge-details-close {
+    position: absolute;
+    z-index: 2;
+    inset-block-start: var(--space-16, 16px);
+    inset-inline-end: var(--space-16, 16px);
+}
+
+.ec-badge-details-detail-scroller {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-12, 12px);
+    padding: var(--space-16, 16px) var(--space-24, 24px) var(--space-24, 24px);
+}
+
+.ec-badge-details-detail-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-8, 8px);
+    width: 100%;
+    min-height: 24px;
+}
+
+.ec-badge-details-graphic {
+    flex-shrink: 0;
+    max-width: 100%;
+    height: 120px;
+    object-fit: contain;
+}
+
+/* Nitro's moving art has room around it, as in Discord */
+.ec-badge-details-graphic-animated-nitro {
+    height: 150px;
+    margin: calc(var(--space-12, 12px) * -1);
+}
+
+.ec-badge-details-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-24, 24px);
+    width: 100%;
+}
+
+.ec-badge-details-identity {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-4, 4px);
+    width: 100%;
+}
+
+.ec-badge-details-eyebrow {
+    display: block;
+    width: 100%;
+    margin-block-end: var(--space-4, 4px);
+    color: var(--text-subtle);
+    font: 500 14px/1.2857 var(--font-primary);
+    font-style: normal;
+    text-align: center;
+    text-transform: none;
+}
+
+.ec-badge-details-title {
+    margin: 0;
+    color: var(--text-strong);
+    font-family: var(--font-nitro, var(--font-display-marketing-header));
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.0833;
+    text-align: center;
+    text-transform: uppercase;
+    overflow-wrap: anywhere;
+}
+
+/* Nitro's levels are set in its slanted type, as Discord does */
+.ec-badge-details-title-nitro {
+    font-style: italic;
+    white-space: nowrap;
+}
+
+.ec-badge-details-beta {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 0 var(--space-8, 8px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-round, 999px);
+    color: var(--text-subtle);
+    font: 600 12px/16px var(--font-primary);
+    text-transform: uppercase;
+}
+
+.ec-badge-details-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-4, 4px);
+    width: 100%;
+    min-height: 16px;
+}
+
+.ec-badge-details-segment-group {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-4, 4px);
+    min-width: 0;
+}
+
+.ec-badge-details-segment {
+    min-width: 0;
+    color: var(--text-subtle);
+    font: 500 12px/1.3333 var(--font-primary);
+    text-align: center;
+}
+
+.ec-badge-details-dot {
+    flex-shrink: 0;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--text-subtle);
+}
+
+.ec-badge-details-card {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-16, 16px);
+    box-sizing: border-box;
+    width: 100%;
+    padding: var(--space-16, 16px);
+    border-radius: var(--radius-md, 12px);
+    background: var(--background-mod-muted);
+}
+
+.ec-badge-details-card-header {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-16, 16px);
+    width: 100%;
+}
+
+.ec-badge-details-card-header-stacked {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-12, 12px);
+}
+
+.ec-badge-details-text-group {
+    display: flex;
+    flex: 1 1 0%;
+    flex-direction: column;
+    gap: var(--space-8, 8px);
+    min-width: 160px;
+    text-align: start;
+}
+
+.ec-badge-details-label {
+    color: var(--text-subtle);
+    font: 500 12px/1.3333 var(--font-primary);
+}
+
+.ec-badge-details-text {
+    color: var(--text-default);
+    font: 500 14px/1.2857 var(--font-primary);
+}
+
+/* Discord's Nitro button */
+.ec-badge-details-button-expressive {
+    border: none;
+    background: var(--premium-tier-2-purple-for-gradients, #b473f5);
+    background-image: linear-gradient(90deg, var(--premium-tier-2-purple-for-gradients, #b473f5), var(--premium-tier-2-pink-for-gradients, #e292aa));
+    color: var(--white, #fff);
+}
+
+.ec-badge-details-button-expressive:hover {
+    filter: brightness(1.08);
+}
+
+.ec-badge-details-divider {
+    width: 100%;
+    height: 1px;
+    background: var(--border-subtle);
+}
+
+.ec-badge-details-levels-heading {
+    color: var(--text-default);
+    font: 500 14px/1.2857 var(--font-primary);
+}
+
+.ec-badge-details-levels {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-4, 4px);
+    box-sizing: border-box;
+}
+
+.ec-badge-details-level {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-4, 4px);
+    box-sizing: border-box;
+    width: min-content;
+    min-width: 77px;
+    max-width: 120px;
+    padding: var(--space-8, 8px) 0;
+}
+
+.ec-badge-details-level-icon {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+}
+
+.ec-badge-details-level-locked .ec-badge-details-level-icon {
+    opacity: 0.4;
+}
+
+.ec-badge-details-level-text {
+    width: 100%;
+    min-width: 48px;
+    text-align: center;
+    overflow-wrap: break-word;
+}
+
+.ec-badge-details-level-name,
+.ec-badge-details-level-milestone {
+    display: block;
+    font-family: var(--font-primary);
+    font-size: 12px;
+    line-height: 1.3333;
+}
+
+.ec-badge-details-level-name {
+    color: var(--text-default);
+    font-weight: 600;
+}
+
+.ec-badge-details-level-milestone {
+    color: var(--text-subtle);
+    font-weight: 400;
+}
+
+.ec-badge-details-level-muted {
+    color: var(--text-muted);
+}
+
+.ec-badge-details-lock {
+    width: 8px;
+    height: 8px;
+    margin-inline-end: 2px;
+    color: var(--text-muted);
+    vertical-align: -0.25px;
+}
+
+.ec-badge-details-hidden {
+    position: absolute;
+    overflow: hidden;
+    width: 1px;
+    height: 1px;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.ec-badge-details-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-8, 8px);
+    box-sizing: border-box;
+    width: 100%;
+    padding: var(--space-12, 12px);
+    border: 1px solid var(--icon-feedback-info);
+    border-radius: var(--radius-sm, 8px);
+    background: var(--background-feedback-info);
+    color: var(--text-strong);
+    font: 400 14px/1.2857 var(--font-primary);
+}
+
+.ec-badge-details-notice svg {
+    flex-shrink: 0;
+    margin-top: 1px;
+    color: var(--icon-feedback-info);
+}
+
+/* On a narrow window the list goes under the badge, as in Discord */
+@media (width <= 485px) {
+    .ec-badge-details-content {
+        flex-direction: column;
+    }
+
+    .ec-badge-details-directory {
+        flex: 0 1 32%;
+        order: 1;
+        min-height: 0;
+        border-block-start: 1px solid var(--border-muted);
+        border-inline-end: none;
+    }
+
+    .ec-badge-details-directory-header {
+        gap: var(--space-4, 4px);
+        padding: var(--space-12, 12px) var(--space-16, 16px);
+    }
+
+    .ec-badge-details-directory-content {
+        padding-inline: var(--space-16, 16px);
+    }
+
+    .ec-badge-details-detail {
+        order: 0;
+        min-height: 0;
+    }
+
+    .ec-badge-details-detail-scroller {
+        padding-inline: var(--space-16, 16px);
+    }
+}
+
+.ec-badge-rarity {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-4, 4px);
+    box-sizing: border-box;
+    max-width: 100%;
+    padding: 0 var(--space-8, 8px);
+    border: 1px solid transparent;
+    border-radius: var(--radius-round, 999px);
+    font: 600 12px/16px var(--font-primary);
+    text-transform: uppercase;
+}
+
+.ec-badge-rarity svg {
+    flex-shrink: 0;
+}
+
+.ec-badge-rarity-label {
+    overflow: hidden;
+    min-width: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ec-badge-rarity-common {
+    border-color: var(--badge-common-border);
+    background: var(--badge-common-background);
+    color: var(--badge-common-text);
+}
+
+/* Discord draws the rarer ones with a gradient ring */
+.ec-badge-rarity-rare::before,
+.ec-badge-rarity-epic::before,
+.ec-badge-rarity-mythic::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    padding: 1px;
+    border-radius: inherit;
+    background: linear-gradient(-78deg, var(--ec-rarity-ring-start), var(--ec-rarity-ring-end));
+    mask: linear-gradient(#fff 0 0) content-box exclude, linear-gradient(#fff 0 0);
+    pointer-events: none;
+}
+
+.ec-badge-rarity-rare {
+    --ec-rarity-ring-start: var(--badge-rare-border-gradient-start);
+    --ec-rarity-ring-end: var(--badge-rare-border-gradient-end);
+
+    background: var(--badge-rare-background);
+    color: var(--badge-rare-text);
+}
+
+.ec-badge-rarity-epic {
+    --ec-rarity-ring-start: var(--badge-epic-border-gradient-start);
+    --ec-rarity-ring-end: var(--badge-epic-border-gradient-end);
+
+    background: var(--badge-epic-background);
+    color: var(--badge-epic-text);
+}
+
+.ec-badge-rarity-mythic {
+    --ec-rarity-ring-start: var(--badge-mythic-border-gradient-start);
+    --ec-rarity-ring-end: var(--badge-mythic-border-gradient-end);
+
+    background: var(--badge-mythic-background);
+    color: var(--badge-mythic-text);
+}
+
+/* Endcord's own rarity, above Mythic: the night sky, with a ring of light slowly going round */
+@property --ec-celestial-turn {
+    syntax: "<angle>";
+    inherits: false;
+    initial-value: 0deg;
+}
+
+.ec-badge-rarity-celestial {
+    background: linear-gradient(100deg, #10182a, #1d2b46 55%, #241d46);
+    color: #dceaff;
+    text-shadow: 0 0 6px rgb(156 203 255 / 60%);
+}
+
+.ec-badge-rarity-celestial::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    padding: 1px;
+    border-radius: inherit;
+    background: conic-gradient(from var(--ec-celestial-turn), #9ccbff, #b69cff, #ff9db3, #f2c14e, #9ccbff);
+    mask: linear-gradient(#fff 0 0) content-box exclude, linear-gradient(#fff 0 0);
+    pointer-events: none;
+    animation: ec-celestial-turn 6s linear infinite;
+}
+
+.ec-badge-rarity-celestial svg {
+    color: #f2c14e;
+    filter: drop-shadow(0 0 3px rgb(242 193 78 / 70%));
+}
+
+@keyframes ec-celestial-turn {
+    to { --ec-celestial-turn: 360deg; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ec-badge-rarity-celestial::before {
+        animation: none;
+    }
+}

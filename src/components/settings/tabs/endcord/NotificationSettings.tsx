@@ -6,12 +6,13 @@
 
 import { openNotificationLogModal } from "@api/Notifications/notificationLog";
 import { useSettings } from "@api/Settings";
+import { EndcordModal } from "@components/EndcordModal";
 import { ErrorCard } from "@components/ErrorCard";
 import { Flex } from "@components/Flex";
 import { t, useI18n } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import { identity } from "@utils/misc";
-import { Button, Forms, Modal, openModal, Select, Slider } from "@webpack/common";
+import { Button, Forms, openModal, Select, Slider } from "@webpack/common";
 
 export function NotificationSection() {
     const { t } = useI18n();
@@ -35,13 +36,13 @@ export function NotificationSection() {
 
 export function openNotificationSettingsModal() {
     openModal(props => (
-        <Modal
+        <EndcordModal
             {...props}
             size="lg"
             title={t("Notification Settings")}
         >
             <NotificationSettings />
-        </Modal>
+        </EndcordModal>
     ));
 }
 

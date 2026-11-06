@@ -5,6 +5,7 @@
  */
 
 import type { Settings } from "@api/Settings";
+import { BOOT_AND_SETTINGS_REQUEST, BOOT_REQUEST } from "@shared/bootGuard";
 import { IpcEvents } from "@shared/IpcEvents";
 import { SettingsStore } from "@shared/SettingsStore";
 import { mergeDefaults } from "@utils/mergeDefaults";
@@ -12,6 +13,7 @@ import { ipcMain } from "electron";
 import { mkdirSync, readFileSync } from "fs";
 import { join } from "path";
 
+import { beginBootFor } from "./bootGuard";
 import { DATA_DIR, NATIVE_SETTINGS_FILE, SETTINGS_DIR, SETTINGS_FILE } from "./utils/constants";
 import { readJsonDurably, writeFileDurably } from "./utils/durableFile";
 import { handleIpc, isTrustedSender } from "./utils/ipc";
@@ -66,7 +68,19 @@ RendererSettings.addGlobalChangeListener(() => {
     }
 });
 
-ipcMain.on(IpcEvents.GET_SETTINGS, e => e.returnValue = isTrustedSender(e, IpcEvents.GET_SETTINGS) ? RendererSettings.plain : null);
+ipcMain.on(IpcEvents.GET_SETTINGS, (e, request?: unknown) => {
+    if (!isTrustedSender(e, IpcEvents.GET_SETTINGS)) {
+        e.returnValue = null;
+        return;
+    }
+
+    // The start record rides on this channel because the page needs it synchronously, and a synchronous call on a
+    // channel nobody listens to hangs the page. A new renderer can be loaded by a main process from before it,
+    // after an update and a reload, and that one answers this with plain settings, which reads as a normal start
+    e.returnValue = request === BOOT_REQUEST ? { bootState: beginBootFor(e) }
+        : request === BOOT_AND_SETTINGS_REQUEST ? { bootState: beginBootFor(e), settings: RendererSettings.plain }
+            : RendererSettings.plain;
+});
 
 handleIpc(IpcEvents.SET_SETTINGS, (_, data: Settings, pathToNotify?: string) => {
     // This replaces the whole store and goes straight to disk

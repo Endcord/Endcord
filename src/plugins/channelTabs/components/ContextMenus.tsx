@@ -9,12 +9,13 @@ import { Heading } from "@components/Heading";
 import { BookCheckIcon, OpenExternalIcon, PencilIcon, StarFilled, StarOutlined, TrashIcon, UnsendIcon, WindowTopOutlineIcon, XLargeBoldIcon } from "@components/Icons";
 import { Paragraph } from "@components/Paragraph";
 import { RenderModalProps } from "@endcord/discord-types";
+import { loadAllIcons } from "@plugins/_core/concatenatedModules";
 import { bookmarkFolderColors, bookmarkPlaceholderName, closeOtherTabs, closeTab, closeTabsToTheLeft, closeTabsToTheRight, createTab, getDiscordFolderIcon, getDiscordFolderIconNames, hasClosedTabs, isBookmarkFolder, openedTabs, reopenClosedTab, settings, toggleCompactTab } from "@plugins/channelTabs/util";
 import { Bookmark, BookmarkFolder, Bookmarks, ChannelTabsProps, UseBookmarkMethods } from "@plugins/channelTabs/util/types";
 import { getIntlMessage } from "@utils/discord";
 import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
-import { Button, ChannelStore, closeModal, ColorPicker, FluxDispatcher, Menu, Modal, openModal, ReadStateStore, ReadStateUtils, Select, TextInput, useMemo, useState } from "@webpack/common";
+import { Button, ChannelStore, closeModal, ColorPicker, FluxDispatcher, Menu, Modal, openModal, ReadStateStore, ReadStateUtils, Select, TextInput, useEffect, useMemo, useState } from "@webpack/common";
 
 const legacyFolderColors: Record<string, string> = {
     "var(--channeltabs-red)": bookmarkFolderColors.Red,
@@ -127,7 +128,14 @@ function FolderIconPickerModal({ modalProps, modalKey, name, color, iconName, on
 }) {
     const [search, setSearch] = useState("");
     const [localColor, setLocalColor] = useState(normalizeFolderColor(color));
-    const iconNames = useMemo(() => getDiscordFolderIconNames(), []);
+    // The icons Discord hasn't shown yet arrive a moment after the picker opens
+    const [iconsLoaded, setIconsLoaded] = useState(false);
+    useEffect(() => {
+        let open = true;
+        loadAllIcons().then(() => open && setIconsLoaded(true));
+        return () => { open = false; };
+    }, []);
+    const iconNames = useMemo(() => getDiscordFolderIconNames(), [iconsLoaded]);
     const filteredIconNames = useMemo(() => {
         const normalized = search.trim().toLowerCase();
         if (!normalized) return iconNames;

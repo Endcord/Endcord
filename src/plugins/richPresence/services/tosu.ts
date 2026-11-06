@@ -191,10 +191,12 @@ async function onMessage(data: string) {
         }
     }
 
-    if (beatmap.set > 0) {
+    if (Number.isSafeInteger(beatmap.set) && beatmap.set > 0) {
         const mapBg = await getAsset(`https://assets.ppy.sh/beatmaps/${beatmap.set}/covers/list@2x.jpg`);
-        const res = await fetch(mapBg.replace(/^mp:/, "https://media.discordapp.net/"), { method: "HEAD" });
-        if (res.ok) assets.large_image = mapBg;
+        if (typeof mapBg === "string" && mapBg.startsWith("mp:")) {
+            const res = await fetch(`https://media.discordapp.net/${mapBg.slice(3)}`, { method: "HEAD" });
+            if (res.ok) assets.large_image = mapBg;
+        }
     }
 
     FluxDispatcher.dispatch({ type: "LOCAL_ACTIVITY_UPDATE", activity, socketId: SOCKET_ID });

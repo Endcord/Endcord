@@ -100,9 +100,26 @@
     background: #10182a;
 }
 
+.ec-card-heart {
+    display: block;
+    cursor: pointer;
+    transition: transform var(--ec-motion-fast) var(--ec-ease-out);
+}
+
+.ec-card-heart:hover {
+    transform: scale(1.08);
+}
+
+.ec-card-heart:active {
+    transform: scale(0.94);
+}
+
 .ec-card-pixel-art {
     display: block;
     image-rendering: pixelated;
+}
+
+.ec-card-art .ec-card-pixel-art {
     filter: drop-shadow(0 3px 0 rgb(0 0 0 / 35%));
 }
 

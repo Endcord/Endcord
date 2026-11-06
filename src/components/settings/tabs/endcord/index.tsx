@@ -1,20 +1,23 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 import { openNotificationLogModal } from "@api/Notifications/notificationLog";
-import { useSettings } from "@api/Settings";
+import { BadgeDateFormat, useSettings } from "@api/Settings";
+import { floatHearts } from "@components/delight";
 import { Divider } from "@components/Divider";
+import { CodeIcon, FolderPixelIcon, ListIcon, RestartPixelIcon } from "@components/EndcordIcons";
 import { FormSwitch } from "@components/FormSwitch";
 import { Heart } from "@components/Heart";
-import { FolderIcon, GithubIcon, LogIcon, PaintbrushIcon, RestartIcon } from "@components/Icons";
+import { GithubIcon } from "@components/Icons";
 import { QuickAction, QuickActionCard } from "@components/settings/QuickAction";
 import { HEART_PALETTE, HEART_ROWS, PANDA_PALETTE, PANDA_ROWS, PixelArt, SpecialCard } from "@components/settings/SpecialCard";
 import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
 import { openContributorModal } from "@components/settings/tabs/plugins/ContributorModal";
 import { openPluginModal } from "@components/settings/tabs/plugins/PluginModal";
+import { formatShortDate } from "@plugins/_api/badges/discordBadges";
 import SettingsPlugin from "@plugins/_core/settings";
 import { IS_WINDOWS } from "@utils/constants";
 import { setEndcordLanguage, SUPPORTED_LANGUAGES, useI18n } from "@utils/i18n";
@@ -25,6 +28,7 @@ import { ConfirmModal, Forms, openModal, Select, UserStore } from "@webpack/comm
 
 import { MacOSVibrancySettings } from "./MacVibrancySettings";
 import { NotificationSection } from "./NotificationSettings";
+import { SecurityStatus } from "./SecurityStatus";
 import { WindowsMaterialSettings } from "./WindowsMaterialSettings";
 
 const REPO_URL = "https://github.com/Endcord/Endcord";
@@ -35,19 +39,35 @@ type KeysOfType<Object, Type> = {
 
 function Switches() {
     const { t } = useI18n();
-    const settings = useSettings(["useQuickCss", "enableReactDevtools", "frameless", "winNativeTitleBar", "transparent", "winCtrlQ", "disableMinSize", "disableBackgroundMemoryTrim", "gpuRasterization"]);
+    const settings = useSettings(["useQuickCss", "uiSounds", "pixelStyle", "hideContributorBadge", "enableReactDevtools", "frameless", "winNativeTitleBar", "transparent", "winCtrlQ", "disableMinSize", "disableBackgroundMemoryTrim", "gpuRasterization"]);
 
     const Switches = [
         {
             key: "useQuickCss",
             title: t("Enable Custom CSS"),
         },
+        {
+            key: "uiSounds",
+            title: t("Play quiet sounds in Endcord's settings"),
+            description: t("A soft click on switches, and a tone when something succeeds or fails"),
+        },
+        {
+            key: "pixelStyle",
+            title: t("Pixel style"),
+            description: t("Pixel corners, icons and lettering in Endcord's screens, like the installer"),
+        },
+        {
+            key: "hideContributorBadge",
+            title: t("Hide the Endcord badges"),
+            description: t("Leaves the developer and contributor badges off every profile on this PC. Other people who use Endcord still see them"),
+        },
         !IS_WEB && {
             key: "enableReactDevtools",
             title: t("Enable React Developer Tools"),
             restartRequired: true
         },
-        !IS_WEB && (!IS_DISCORD_DESKTOP || !IS_WINDOWS ? {
+        // Endcord Desktop keeps its own window as it is (desktop/src/main.ts)
+        IS_DISCORD_DESKTOP && (!IS_WINDOWS ? {
             key: "frameless",
             title: t("Disable the window frame"),
             restartRequired: true
@@ -56,7 +76,7 @@ function Switches() {
             title: t("Use Windows' native title bar instead of Discord's custom one"),
             restartRequired: true
         }),
-        !IS_WEB && {
+        IS_DISCORD_DESKTOP && {
             key: "transparent",
             title: t("Enable window transparency"),
             description: t("A theme that supports transparency is required or this will do nothing. Stops the window from being resizable as a side effect"),
@@ -67,7 +87,7 @@ function Switches() {
             title: t("Disable minimum window size"),
             restartRequired: true
         },
-        !IS_WEB && IS_WINDOWS && {
+        IS_DISCORD_DESKTOP && IS_WINDOWS && {
             key: "winCtrlQ",
             title: t("Register Ctrl+Q as shortcut to close Discord (Alternative to Alt+F4)"),
             restartRequired: true
@@ -78,7 +98,7 @@ function Switches() {
             description: t("Can make scrolling smoother on some graphics cards, but uses 50-80 MB more memory"),
             restartRequired: true
         },
-        IS_DISCORD_DESKTOP && {
+        !IS_WEB && {
             key: "disableBackgroundMemoryTrim",
             title: t("Keep caches while Discord is minimized or in the tray"),
             description: t("By default Endcord frees cached memory a minute after the window is hidden"),
@@ -149,12 +169,45 @@ function LanguageSection() {
     );
 }
 
+// Shown with a real date, so each choice says what it looks like
+const SAMPLE_DATE = new Date(2023, 2, 14);
+const BADGE_DATE_FORMATS: BadgeDateFormat[] = ["numeric", "dmy", "mdy", "ymd", "long", "discord"];
+
+function BadgeDateSection() {
+    const { t } = useI18n();
+    const settings = useSettings(["badgeDateFormat"]);
+
+    const label = (format: BadgeDateFormat) => {
+        if (format === "discord") return t("As Discord writes it");
+        const sample = formatShortDate(SAMPLE_DATE, format);
+        return format === "numeric" ? t("{date} (your language's order)", { date: sample }) : sample;
+    };
+
+    return (
+        <section className={Margins.bottom20}>
+            <Forms.FormTitle tag="h5">{t("Badge dates")}</Forms.FormTitle>
+            <Forms.FormText className={Margins.bottom8} style={{ color: "var(--text-muted)" }}>
+                {t("How badges write dates, like Nitro's \"Subscriber since\".")}
+            </Forms.FormText>
+            <Select
+                options={BADGE_DATE_FORMATS.map(format => ({ label: label(format), value: format }))}
+                closeOnSelect={true}
+                select={(value: BadgeDateFormat) => settings.badgeDateFormat = value}
+                isSelected={(value: BadgeDateFormat) => value === settings.badgeDateFormat}
+                serialize={identity}
+            />
+        </section>
+    );
+}
+
 function EndcordSettings() {
     const { t } = useI18n();
     const user = UserStore?.getCurrentUser();
 
     return (
         <SettingsTab>
+            {IS_STANDALONE && !IS_UPDATER_DISABLED && <SecurityStatus />}
+
             {user && isPluginDev(user.id) && (
                 <SpecialCard
                     accent="bamboo"
@@ -175,7 +228,7 @@ function EndcordSettings() {
                 title={t("Support Endcord")}
                 subtitle={t("Free and open source, always")}
                 description={t("Endcord is built in our spare time. If it makes Discord better for you, a donation helps us keep testing, translating and shipping new features.")}
-                art={<PixelArt rows={HEART_ROWS} palette={HEART_PALETTE} pixel={7} />}
+                art={<span className="ec-card-heart" onClick={event => floatHearts(event.currentTarget)}><PixelArt rows={HEART_ROWS} palette={HEART_PALETTE} pixel={7} /></span>}
                 actions={
                     <>
                         <button className="ec-card-button ec-card-button-primary" onClick={() => EndcordNative.native.openExternal(REPO_URL)}>
@@ -195,24 +248,24 @@ function EndcordSettings() {
 
                 <QuickActionCard>
                     <QuickAction
-                        Icon={LogIcon}
+                        Icon={ListIcon}
                         text={t("Notification Log")}
                         action={openNotificationLogModal}
                     />
                     <QuickAction
-                        Icon={PaintbrushIcon}
+                        Icon={CodeIcon}
                         text={t("Edit QuickCSS")}
                         action={() => EndcordNative.quickCss.openEditor()}
                     />
                     {!IS_WEB && (
                         <>
                             <QuickAction
-                                Icon={RestartIcon}
+                                Icon={RestartPixelIcon}
                                 text={t("Relaunch Discord")}
                                 action={relaunch}
                             />
                             <QuickAction
-                                Icon={FolderIcon}
+                                Icon={FolderPixelIcon}
                                 text={t("Open Settings Folder")}
                                 action={() => EndcordNative.settings.openFolder()}
                             />
@@ -230,6 +283,7 @@ function EndcordSettings() {
 
             <section className={Margins.top16}>
                 <LanguageSection />
+                <BadgeDateSection />
 
                 <Forms.FormTitle tag="h5">{t("Settings")}</Forms.FormTitle>
                 <Forms.FormText className={Margins.bottom20} style={{ color: "var(--text-muted)" }}>

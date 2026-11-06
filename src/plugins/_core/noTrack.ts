@@ -1,6 +1,6 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -99,14 +99,23 @@ export default definePlugin({
                     return;
                 }
 
-                const srcRequest = new XMLHttpRequest();
-                srcRequest.open("GET", assetPath, false);
-                srcRequest.send();
-
-                // Final condition to see if this is the Sentry WebpackInstance
-                // This is matching window.DiscordSentry=, but without `window` to avoid issues on some proxies
-                if (!srcRequest.responseText.includes(".DiscordSentry=")) {
+                // Discord names these bundles after what they are. Only a bundle with some other name is downloaded
+                // again to look inside, since that blocks the page while it loads
+                const fileName = assetPath.slice(assetPath.lastIndexOf("/") + 1).toLowerCase();
+                if (/libdiscore|fast-connect/.test(fileName)) {
                     return;
+                }
+
+                if (!fileName.includes("sentry")) {
+                    const srcRequest = new XMLHttpRequest();
+                    srcRequest.open("GET", assetPath, false);
+                    srcRequest.send();
+
+                    // Final condition to see if this is the Sentry WebpackInstance
+                    // This is matching window.DiscordSentry=, but without `window` to avoid issues on some proxies
+                    if (!srcRequest.responseText.includes(".DiscordSentry=")) {
+                        return;
+                    }
                 }
 
                 new Logger("NoTrack", "#8caaee").info("Disabling Sentry by erroring its WebpackInstance");

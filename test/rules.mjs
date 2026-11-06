@@ -72,5 +72,16 @@ check("the page can't import electron", flags("layer-boundaries", importing("ele
 check("type imports don't exist at runtime", !flags("layer-boundaries", 'import type { x } from "@main/themes";', "src/api/a.ts"));
 check("plugins aren't a layer", !flags("layer-boundaries", importing("@plugins/other"), "src/plugins/x/index.ts"));
 
+// ---- webpack-common-at-load --------------------------------------------------------------------------------
+const common = 'import { React, useState, Toasts } from "@webpack/common";\n';
+const atLoad = code => flags("webpack-common-at-load", common + code, "src/components/a.ts");
+check("React.memo while the file loads is refused", atLoad("export const Card = React.memo(() => null);"));
+check("so is keeping a hook for later", atLoad("const use = useState;"));
+check("inside a function it waits for Discord", !atLoad("export function Card() { return React.memo(() => null); }"));
+check("an arrow function waits too", !atLoad("export const make = () => React.memo(() => null);"));
+check("types aren't values", !atLoad("interface P extends React.HTMLProps<HTMLDivElement> { a: 1; }\nlet x: React.ComponentType | undefined;"));
+check("values that are there from the start pass", !atLoad("const type = Toasts.Type;"));
+check("\"as\" still runs", atLoad("const x = React as any;"));
+
 console.log(failed ? `\n${failed} FAILED` : "\nALL PASSED");
 process.exit(failed ? 1 : 0);

@@ -37,11 +37,12 @@ export default definePlugin({
             find: 'type:"IDLE",idle:',
             replacement: [
                 {
-                    match: /(?<=Date\.now\(\)-\i>)\i\.\i\|\|/,
+                    // The timeout is a constant, or on Canary the number itself (6e5)
+                    match: /(?<=Date\.now\(\)-\i>)(?:\i\.\i|[\d.]+(?:e\d+)?)\|\|/,
                     replace: "$self.getIdleTimeout()||"
                 },
                 {
-                    match: /Math\.min\((\i\*\i\.\i\.\i\.SECOND),\i\.\i\)/,
+                    match: /Math\.min\((\i\*\i\.\i\.\i\.SECOND),(?:\i\.\i|[\d.]+(?:e\d+)?)\)/,
                     replace: "$1" // Decouple idle from afk (phone notifications will remain at user setting or 10 min maximum)
                 },
                 {

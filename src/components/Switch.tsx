@@ -1,6 +1,6 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2023 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -8,6 +8,7 @@ import "./Switch.css";
 
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
+import { playUiSound } from "@utils/uiSounds";
 import { useState } from "@webpack/common";
 import type { FocusEvent } from "react";
 
@@ -71,7 +72,10 @@ export function Switch({ checked, onChange, disabled }: SwitchProps) {
                     className={switchCls("input")}
                     tabIndex={0}
                     checked={checked}
-                    onChange={e => onChange(e.currentTarget.checked)}
+                    onChange={e => {
+                        playUiSound(e.currentTarget.checked ? "on" : "off");
+                        onChange(e.currentTarget.checked);
+                    }}
                 />
             </div>
         </div>

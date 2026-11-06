@@ -206,13 +206,6 @@ export default definePlugin({
             }
         },
         {
-            find: "Cannot find the corresponding SKU to the user's premium type ",
-            replacement: {
-                match: /\i\.warn\(`Cannot find the corresponding SKU to the user's premium type \$\{[^`]+\.premiumType\}`\),/,
-                replace: ""
-            }
-        },
-        {
             find: '("Spotify")',
             predicate: () => settings.store.disableSpotifyLogger,
             replacement: {

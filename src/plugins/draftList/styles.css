@@ -1,0 +1,77 @@
+.ec-drafts-list {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ec-drafts-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    background: var(--card-background-default);
+}
+
+.ec-drafts-open {
+    display: grid;
+    flex: 1;
+    gap: 4px;
+    min-width: 0;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+}
+
+.ec-drafts-open:hover {
+    background: color-mix(in srgb, var(--text-default) 5%, transparent);
+}
+
+.ec-drafts-place {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    min-width: 0;
+    font-size: 14px;
+}
+
+.ec-drafts-name {
+    overflow: hidden;
+    color: var(--text-strong);
+    font-weight: 600;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.ec-drafts-where,
+.ec-drafts-time {
+    flex-shrink: 0;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.ec-drafts-time {
+    margin-inline-start: auto;
+}
+
+.ec-drafts-text {
+    display: -webkit-box;
+    overflow: hidden;
+    color: var(--text-default);
+    font-size: 14px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.ec-drafts-row > :last-child {
+    margin-inline-end: 8px;
+}

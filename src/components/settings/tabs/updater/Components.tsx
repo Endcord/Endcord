@@ -14,6 +14,7 @@ import { classes } from "@utils/misc";
 import { relaunch } from "@utils/native";
 import { changes, checkForUpdates, update, updateError } from "@utils/updater";
 import { Button, ConfirmModal, Forms, openModal, React, Toasts, useState } from "@webpack/common";
+import type { PropsWithChildren } from "react";
 
 import { runWithDispatch } from "./runWithDispatch";
 
@@ -69,7 +70,7 @@ export function Newer(props: CommonProps) {
     );
 }
 
-export function Updatable(props: CommonProps) {
+export function Updatable({ children, ...props }: PropsWithChildren<CommonProps>) {
     const { t } = useI18n();
     const [updates, setUpdates] = useState(changes);
     const [isChecking, setIsChecking] = useState(false);
@@ -148,6 +149,7 @@ export function Updatable(props: CommonProps) {
                 >
                     {t("Check for Updates")}
                 </Button>
+                {children}
             </Flex>
         </>
     );

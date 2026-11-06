@@ -1,6 +1,6 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2023 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -56,7 +56,7 @@ export default definePlugin({
             predicate: () => settings.store.voiceBackground,
             replacement: [
                 {
-                    match: /(?<=function \i\((\i)\)\{)(?=(?:Object\.assign\([^;]+\);)*let.{20,40},style:)/,
+                    match: /(?<=function(?: \i)?\((\i)\)\{)(?=(?:Object\.assign\([^;]+\);)*let.{20,40},style:)/,
                     replace: "Object.assign($1.style=$1.style||{},$self.getVoiceBackgroundStyles($1));"
                 }
             ]

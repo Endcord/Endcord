@@ -1,9 +1,10 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { EndcordOnly } from "@api/EndcordVisibility";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Logger } from "@utils/Logger";
 import { JSX, ReactNode } from "react";
@@ -40,9 +41,11 @@ export function _modifyAccessories(
     try {
         for (const [key, accessory] of accessories.entries()) {
             const res = (
-                <ErrorBoundary noop message={`Failed to render ${key} Message Accessory`} key={key}>
-                    <accessory.render {...props} />
-                </ErrorBoundary>
+                <EndcordOnly key={key}>
+                    <ErrorBoundary noop message={`Failed to render ${key} Message Accessory`}>
+                        <accessory.render {...props} />
+                    </ErrorBoundary>
+                </EndcordOnly>
             );
 
             elements.splice(

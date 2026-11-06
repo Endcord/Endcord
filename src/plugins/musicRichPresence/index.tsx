@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { definePluginSettings, migratePluginSetting, migratePluginSettings } from "@api/Settings";
+import { definePluginSettings, migratePluginSetting, migrateRemovedPlugin } from "@api/Settings";
 import { Button, LinkButton } from "@components/Button";
 import { Card } from "@components/Card";
 import { Heading } from "@components/Heading";
@@ -99,12 +99,14 @@ export const settings = definePluginSettings({
         ] as const
     },
     instanceBaseURL: {
+        sensitive: true,
         description: "The base url of your ListenBrainz instance.",
         type: OptionType.STRING,
         placeholder: "https://example.org",
         onChange: invalidateListenBrainzCache
     },
     instanceAPIBaseUrl: {
+        sensitive: true,
         description: "The base url of your ListenBrainz API.",
         type: OptionType.STRING,
         placeholder: "https://api.example.org",
@@ -281,7 +283,7 @@ function CustomInstanceAboutComponent() {
     return null;
 }
 
-migratePluginSettings("MusicRichPresence", "LastFMRichPresence");
+migrateRemovedPlugin("MusicRichPresence", "LastFMRichPresence", { keepSettings: true });
 migratePluginSetting("MusicRichPresence", "showLastFmLogo", "showLogo");
 export default definePlugin({
     name: "MusicRichPresence",

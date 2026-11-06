@@ -1,6 +1,6 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 OpenAsar
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -18,7 +18,7 @@ async function lookupAsset(applicationId: string, key: string): Promise<string> 
     return (await ApplicationAssetUtils.fetchAssetIds(applicationId, [key]))[0];
 }
 
-const apps: any = {};
+const apps = new Map<string, any>();
 async function lookupApp(applicationId: string): Promise<string> {
     const socket: any = {};
     await fetchApplicationsRPC(socket, applicationId);
@@ -52,10 +52,10 @@ export default definePlugin({
         if (assets?.small_image) assets.small_image = await lookupAsset(activity.application_id, assets.small_image);
 
         if (activity) {
-            const appId = activity.application_id;
-            apps[appId] ||= await lookupApp(appId);
+            const appId = String(activity.application_id);
+            if (!apps.has(appId)) apps.set(appId, await lookupApp(appId));
 
-            const app = apps[appId];
+            const app = apps.get(appId);
             activity.name ||= app.name;
         }
 

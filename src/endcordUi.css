@@ -1,0 +1,191 @@
+/* What Endcord's own screens share, so they read as one product: the installer's colors and one way of moving */
+:root {
+    --ec-night: #10182a;
+    --ec-panel: #162137;
+    --ec-panel-hi: #1d2b46;
+    --ec-line: #253452;
+    --ec-line-strong: #33456a;
+    --ec-ice: #9ccbff;
+    --ec-cobalt: #3d74e0;
+    --ec-cobalt-hi: #5288f0;
+    --ec-paper: #f3f6fb;
+    --ec-mist: #b3bfd4;
+    --ec-bamboo: #74d49a;
+    --ec-honey: #f2c14e;
+    --ec-ember: #f0776b;
+    --ec-coral: #ff9a8f;
+    --ec-night-gradient: linear-gradient(135deg, var(--ec-panel-hi) 0%, var(--ec-panel) 45%, var(--ec-night) 100%);
+    --ec-dots: radial-gradient(rgb(156 203 255 / 11%) 1px, transparent 1.4px);
+    --ec-font-display: "Barlow", "Bahnschrift", "Segoe UI", system-ui, sans-serif;
+
+    /* Smooth corners. Pixel style swaps them for the installer's stepped ones, so a rule uses both and gets one */
+    --ec-pc: none;
+    --ec-pc4: none;
+    --ec-radius: 8px;
+    --ec-radius-lg: 12px;
+    --ec-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ec-motion-fast: 140ms;
+    --ec-motion-base: 260ms;
+    --ec-motion-slow: 420ms;
+}
+
+:root[data-ec-pixel] {
+    /* Two steps per corner, like the installer's buttons. --ec-pc4 is the same with bigger steps, for big frames */
+    --ec-pc: polygon(0 6px, 3px 6px, 3px 3px, 6px 3px, 6px 0, calc(100% - 6px) 0, calc(100% - 6px) 3px, calc(100% - 3px) 3px, calc(100% - 3px) 6px, 100% 6px, 100% calc(100% - 6px), calc(100% - 3px) calc(100% - 6px), calc(100% - 3px) calc(100% - 3px), calc(100% - 6px) calc(100% - 3px), calc(100% - 6px) 100%, 6px 100%, 6px calc(100% - 3px), 3px calc(100% - 3px), 3px calc(100% - 6px), 0 calc(100% - 6px));
+    --ec-pc4: polygon(0 8px, 4px 8px, 4px 4px, 8px 4px, 8px 0, calc(100% - 8px) 0, calc(100% - 8px) 4px, calc(100% - 4px) 4px, calc(100% - 4px) 8px, 100% 8px, 100% calc(100% - 8px), calc(100% - 4px) calc(100% - 8px), calc(100% - 4px) calc(100% - 4px), calc(100% - 8px) calc(100% - 4px), calc(100% - 8px) 100%, 8px 100%, 8px calc(100% - 4px), 4px calc(100% - 4px), 4px calc(100% - 8px), 0 calc(100% - 8px));
+    --ec-radius: 0px;
+    --ec-radius-lg: 0px;
+}
+
+.reduce-motion {
+    --ec-motion-fast: 0ms;
+    --ec-motion-base: 0ms;
+    --ec-motion-slow: 0ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --ec-motion-fast: 0ms;
+        --ec-motion-base: 0ms;
+        --ec-motion-slow: 0ms;
+    }
+}
+
+.ec-mark-tile {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: var(--ec-radius);
+    background: var(--ec-panel-hi);
+    clip-path: var(--ec-pc);
+}
+
+.ec-theme ::selection {
+    background: rgb(156 203 255 / 30%);
+    color: var(--white);
+}
+
+.ec-theme li::marker {
+    color: var(--ec-ice);
+}
+
+/* Cards and tiles: the edge color sits behind a fill inset by one pixel, so the edge follows pixel corners too */
+.ec-theme :is(.vc-addon-card, .vc-card-normal, .vc-settings-quickActions-pill, .ec-security-root, .ec-diagnostics-tile, .ec-studio-preset, .vc-plugins-stat) {
+    position: relative;
+    isolation: isolate;
+    border: 0;
+    border-radius: var(--ec-radius);
+    background: var(--ec-edge, var(--ec-line));
+    clip-path: var(--ec-pc);
+}
+
+.ec-theme :is(.vc-addon-card, .vc-card-normal, .vc-settings-quickActions-pill, .ec-security-root, .ec-diagnostics-tile, .ec-studio-preset, .vc-plugins-stat)::before {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    z-index: -1;
+    border-radius: max(0px, var(--ec-radius) - 1px);
+    background: var(--ec-fill, var(--ec-panel));
+    clip-path: var(--ec-pc);
+    transition: background-color var(--ec-motion-fast) ease;
+}
+
+.ec-theme :is(.vc-addon-card, .vc-settings-quickActions-pill, .ec-studio-preset, .vc-plugins-stat):hover {
+    --ec-edge: var(--ec-line-strong);
+    --ec-fill: var(--ec-panel-hi);
+}
+
+.ec-theme :is(.vc-settings-quickActions-pill, .ec-studio-preset, .vc-plugins-stat):focus-visible {
+    --ec-edge: var(--ec-ice);
+
+    outline: none;
+}
+
+/* Buttons and switches keep Discord's shapes unless pixel style is on */
+[data-ec-pixel] .ec-theme :is(.vc-btn-base, [data-mana-component="button"], .vc-switch-container, .ec-whats-new-icon) {
+    border-radius: 0;
+    clip-path: var(--ec-pc);
+}
+
+.ec-theme :is(.vc-btn-base, [data-mana-component="button"]):focus-visible,
+.ec-theme .vc-switch-focusVisible {
+    box-shadow: none;
+    outline: 2px solid var(--ec-ice);
+    outline-offset: -2px;
+}
+
+[data-ec-pixel] .ec-theme .vc-switch-slider rect {
+    rx: 0;
+}
+
+/* Discord's class names change with its builds, so these only hold on to the part that doesn't */
+[data-ec-pixel] .ec-theme[role="dialog"] > [class*="outerContainer_"] > [class*="container_"] {
+    border-radius: 0;
+    clip-path: var(--ec-pc4);
+}
+
+/* A bar. In pixel style it is made of blocks, like the installer's progress bar */
+.ec-pixel-meter {
+    display: block;
+    overflow: hidden;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--ec-line);
+}
+
+.ec-pixel-meter > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--ec-meter, var(--ec-ice));
+    animation: ec-meter-fill var(--ec-motion-slow) var(--ec-ease-out);
+}
+
+[data-ec-pixel] .ec-pixel-meter {
+    height: 8px;
+    border-radius: 0;
+    background: repeating-linear-gradient(90deg, var(--ec-line) 0 6px, transparent 6px 8px);
+}
+
+[data-ec-pixel] .ec-pixel-meter > span {
+    min-width: 6px;
+    background: repeating-linear-gradient(90deg, var(--ec-meter, var(--ec-ice)) 0 6px, transparent 6px 8px);
+    animation-timing-function: steps(12);
+}
+
+/* Endcord's icons come in both styles, and only one shows */
+:root:not([data-ec-pixel]) .ec-icon-pixel,
+[data-ec-pixel] .ec-icon-smooth {
+    display: none;
+}
+
+.ec-wordmark {
+    color: var(--ec-paper);
+    font-family: var(--ec-font-display);
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    line-height: 1.15;
+}
+
+@keyframes ec-meter-fill {
+    from {
+        clip-path: inset(0 100% 0 0);
+    }
+}
+
+@keyframes ec-rise {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+    }
+}
+
+@keyframes ec-sink {
+    to {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+    }
+}

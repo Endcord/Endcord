@@ -8,7 +8,7 @@ import { Flex } from "@components/Flex";
 import { FormSwitch } from "@components/FormSwitch";
 import { Heading } from "@components/Heading";
 import { RenderModalProps } from "@endcord/discord-types";
-import { characters } from "@plugins/sekaiStickers/characters.json";
+import { characters } from "@plugins/sekaiStickers/characters";
 import { t } from "@utils/i18n";
 import { ChannelStore, Modal, openModal, React, SelectedChannelStore, Slider, TextArea, UploadHandler } from "@webpack/common";
 

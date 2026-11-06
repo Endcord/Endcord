@@ -19,6 +19,8 @@
 // --dry-run   steps 1-3 only; nothing outside this folder (and the Desktop installer copy) changes
 // --site-only steps 1-4: refresh the local site folder, leave the public repo alone
 // --push      also push the release commit to GitHub (without it, nothing leaves this PC)
+// --desktop   also release Endcord Desktop (desktop/): its zip goes to the site, its six update files and its own
+//             signed desktop/version.json to the public repo. Its version is in desktop/app.json
 
 import { execFileSync } from "child_process";
 import { createHash, createPrivateKey, createPublicKey, sign, verify } from "crypto";
@@ -47,6 +49,9 @@ const args = process.argv.slice(2);
 const dryRun = args.includes("--dry-run");
 const siteOnly = args.includes("--site-only");
 const push = args.includes("--push");
+const desktop = args.includes("--desktop");
+// What Endcord Desktop's updater swaps in (ENDCORD_FILES in src/main/updater/common.ts for that build)
+const DESKTOP_FILES = ["endcordDesktopMain.js", "endcordDesktopPreload.js", "endcordDesktopRenderer.js", "endcordDesktopRenderer.css", "main.js", "preload.js"];
 const setVersion = args.includes("--set-version") ? args[args.indexOf("--set-version") + 1] : null;
 
 const step = msg => console.log(`\n== ${msg}`);
@@ -70,7 +75,7 @@ function signManifest({ version, hash, updatedAt, installerSha256, assets }, key
 
 // ---- 1. Checks -------------------------------------------------------------------------------------
 
-const installerSource = join(ROOT, "InstallerGUI.cs");
+const installerSource = join(ROOT, "installer", "InstallerGUI.cs");
 const packageJsonPath = join(ROOT, "package.json");
 
 if (setVersion) {
@@ -126,6 +131,13 @@ run(process.execPath, ["scripts/buildMacInstaller.mjs"]);
 step("Building and testing EndcordInstaller.exe");
 run("powershell", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "scripts/buildInstaller.ps1", ...(dryRun ? ["-NoSite"] : [])]);
 
+if (desktop) {
+    step("Building Endcord Desktop");
+    // From the endcordDesktop* files the release build above made, so they carry the same hash and time
+    run(process.execPath, ["scripts/build/buildDesktopApp.mjs"]);
+    run(process.execPath, ["test/desktop.mjs"]);
+}
+
 // ---- 3. version.json -------------------------------------------------------------------------------
 
 // Git's GNU tar can come first on PATH and reads "C:\..." as a remote host, so use Windows' own tar there
@@ -156,6 +168,32 @@ writeFileSync(join(DIST, "version.json"), versionJson);
 step("version.json");
 console.log(versionJson);
 
+// Endcord Desktop's own manifest, signed the same way. Its version names the Electron it was built on, so an app on an
+// older Electron downloads the new zip instead of taking files that may not run on it (needsNewApp in the updater)
+let desktopBuild = null;
+let desktopJson = "";
+if (desktop) {
+    desktopBuild = JSON.parse(readFileSync(join(DIST, "desktop-build.json"), "utf8"));
+    const appDir = join(DIST, desktopBuild.folder, "resources", "app");
+    const desktopAssets = DESKTOP_FILES.map(name => ({ name, url: `${RAW_BASE}/desktop/${name}`, sha256: sha256(join(appDir, name)) }));
+    const desktopVersion = `${desktopBuild.version}+electron${desktopBuild.electron}`;
+    const desktopData = {
+        version: desktopVersion,
+        hash: buildHash,
+        updatedAt: releasedAt,
+        date: new Date(releasedAt).toISOString(),
+        downloadUrl: "https://endcord.com/download",
+        // The zip isn't code-signed either: this is what people can check their download against
+        installerSha256: desktopBuild.zipSha256,
+        signature: signManifest({ version: desktopVersion, hash: buildHash, updatedAt: releasedAt, installerSha256: desktopBuild.zipSha256, assets: desktopAssets }, signingKey),
+        assets: desktopAssets
+    };
+    desktopJson = `${JSON.stringify(desktopData, null, 2)}\n`;
+    writeFileSync(join(DIST, "desktop-version.json"), desktopJson);
+    step("desktop/version.json");
+    console.log(desktopJson);
+}
+
 if (dryRun) {
     console.log("Dry run finished. Nothing was copied to the site or the public repo.");
     process.exit(0);
@@ -176,7 +214,14 @@ copyFileSync(join(ROOT, "install.sh"), join(SITE_DIR, "EndcordInstallerCli-linux
 copyFileSync(join(DIST, "extension-chrome.zip"), join(SITE_DIR, "EndcordWeb.zip"));
 copyFileSync(join(DIST, "EndcordInstaller-macOS.zip"), join(SITE_DIR, "EndcordInstaller-macOS.zip"));
 writeFileSync(join(SITE_DIR, "version.json"), versionJson);
-console.log(`Copied the update files, ${BUNDLE}, install.sh, EndcordWeb.zip, EndcordInstaller-macOS.zip and version.json (the Windows installer was copied by its build).`);
+// The hash the download page should show next to the installer: the same one the signed manifest carries
+writeFileSync(join(SITE_DIR, "EndcordInstaller.exe.sha256"), `${installerSha256}  EndcordInstaller.exe\n`);
+if (desktopBuild) {
+    copyFileSync(join(DIST, desktopBuild.zip), join(SITE_DIR, desktopBuild.zip));
+    copyFileSync(join(DIST, `${desktopBuild.zip}.sha256`), join(SITE_DIR, `${desktopBuild.zip}.sha256`));
+    console.log(`Copied ${desktopBuild.zip} and its checksum.`);
+}
+console.log(`Copied the update files, ${BUNDLE}, install.sh, EndcordWeb.zip, EndcordInstaller-macOS.zip, version.json and EndcordInstaller.exe.sha256 (the Windows installer was copied by its build).`);
 
 if (siteOnly) {
     console.log(`\nSite folder refreshed; the public repo was not touched. Upload ${SITE_DIR} to endcord.com when you're ready.`);
@@ -195,6 +240,13 @@ const releasePaths = [...UPDATE_FILES.map(name => `dist/${name}`), "version.json
 mkdirSync(join(PUBLIC_REPO, "dist"), { recursive: true });
 for (const name of UPDATE_FILES) copyFileSync(join(DIST, name), join(PUBLIC_REPO, "dist", name));
 writeFileSync(join(PUBLIC_REPO, "version.json"), versionJson);
+if (desktopBuild) {
+    const appDir = join(DIST, desktopBuild.folder, "resources", "app");
+    mkdirSync(join(PUBLIC_REPO, "desktop"), { recursive: true });
+    for (const name of DESKTOP_FILES) copyFileSync(join(appDir, name), join(PUBLIC_REPO, "desktop", name));
+    writeFileSync(join(PUBLIC_REPO, "desktop", "version.json"), desktopJson);
+    releasePaths.push(...DESKTOP_FILES.map(name => `desktop/${name}`), "desktop/version.json");
+}
 // dist/ is gitignored in the public repo, so the update files are added explicitly
 git(PUBLIC_REPO, "add", "-f", "--", ...releasePaths);
 // Only the release files go into this commit, even if other changes are staged
@@ -210,3 +262,4 @@ if (!push) {
 }
 
 console.log(`\nLast step: upload ${SITE_DIR} to endcord.com so new downloads get EndcordInstaller.exe ${version} and the new install.sh.`);
+console.log(`Until that upload, the installer on the site doesn't match the installerSha256 in the version.json clients now read (${installerSha256}).`);

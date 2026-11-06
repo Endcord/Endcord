@@ -1,6 +1,6 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -37,6 +37,8 @@ declare global {
     export var Endcord: typeof import("./Endcord");
     export var EndcordStyles: Map<string, Style>;
     export var EndcordPluginStyles: Record<string, string[]> | undefined;
+    /** CSS of Endcord's own screens, or where it is in the desktop build (see enableScreenStyles in @api/Styles) */
+    export var EndcordScreenStyles: Array<string | { k: string; }> | undefined;
     export var appSettings: {
         set(setting: string, v: any): void;
     };

@@ -1,0 +1,8 @@
+name: Endcord CodeQL
+# Only what reaches users is scanned. Plugins ending in .dev are left out of every release build
+# (scripts/build/common.mjs), and the benchmark and tests only run on a developer's PC or in CI
+paths-ignore:
+    - src/plugins/*.dev/**
+    - src/userplugins/**
+    - benchmark/**
+    - test/**

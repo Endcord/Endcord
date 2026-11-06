@@ -1,12 +1,13 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2023 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 import "./styles.css";
 
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
+import { migrateRemovedPlugin } from "@api/Settings";
 import { Message } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
@@ -49,6 +50,8 @@ function getMessageContent(message: Message) {
 }
 
 let tooltipTimeout: any;
+
+migrateRemovedPlugin("Translate", "Translate+");
 
 export default definePlugin({
     name: "Translate",

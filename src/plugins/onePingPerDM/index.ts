@@ -48,7 +48,8 @@ export default definePlugin({
                     replace: "$&if(!$self.isPrivateChannelRead(arguments[0]?.message))return;else "
                 },
                 {
-                    match: /sound:(\i\?\i:void 0,volume:\i,onClick)/,
+                    // Newer Discord writes the volume as a number
+                    match: /sound:(\i\?\i:void 0,volume:(?:\i|[\d.]+),onClick)/,
                     replace: "sound:!$self.isPrivateChannelRead(arguments[0]?.message)?undefined:$1"
                 }
             ]

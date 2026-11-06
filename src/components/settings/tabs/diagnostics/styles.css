@@ -1,0 +1,100 @@
+.ec-diagnostics-tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.ec-diagnostics-tile {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px 14px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    background: var(--card-background-default);
+}
+
+.ec-diagnostics-value {
+    color: var(--text-strong);
+    font-size: 24px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+}
+
+.ec-diagnostics-label {
+    color: var(--text-muted);
+    font-size: 13px;
+    line-height: 1.35;
+}
+
+.ec-diagnostics-action {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.ec-diagnostics-table {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.ec-diagnostics-row {
+    display: grid;
+    grid-template-columns: minmax(120px, 220px) 1fr 76px;
+    align-items: center;
+    gap: 12px;
+    padding: 5px 8px;
+    border-radius: 6px;
+    transition: background-color var(--ec-motion-fast) ease;
+}
+
+.ec-diagnostics-row:hover {
+    background: var(--background-mod-subtle);
+}
+
+.ec-diagnostics-name {
+    overflow: hidden;
+    color: var(--text-default);
+    font-size: 14px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ec-diagnostics-health-row {
+    grid-template-columns: minmax(120px, 1fr) auto;
+    width: 100%;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.ec-diagnostics-health-row:focus-visible {
+    outline: 2px solid var(--ec-ice);
+    outline-offset: -2px;
+}
+
+.ec-diagnostics-problem {
+    color: var(--ec-honey);
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.ec-diagnostics-all-good {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+    color: var(--ec-bamboo);
+}
+
+.ec-diagnostics-time {
+    color: var(--text-muted);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}

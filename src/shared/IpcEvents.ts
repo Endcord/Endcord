@@ -1,6 +1,6 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2023 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -29,6 +29,15 @@ export const enum IpcEvents {
     UPDATE = "EndcordUpdate",
     BUILD = "EndcordBuild",
     CONFIRM_UPDATE = "EndcordConfirmUpdate",
+    GET_UPDATE_TRUST = "EndcordGetUpdateTrust",
+    TAKE_ROLLBACK_NOTICE = "EndcordTakeRollbackNotice",
+
+    BOOT_CONFIRM = "EndcordBootConfirm",
+    BOOT_REPORT_CRASH = "EndcordBootReportCrash",
+    BOOT_REQUEST_SAFE_MODE = "EndcordBootRequestSafeMode",
+
+    GET_MEMORY_STATS = "EndcordGetMemoryStats",
+    TRIM_MEMORY = "EndcordTrimMemory",
 
     OPEN_MONACO_EDITOR = "EndcordOpenMonacoEditor",
     GET_MONACO_THEME = "EndcordGetMonacoTheme",

@@ -4,9 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import "./QuickAction.css";
+import "./QuickAction.css?screen";
 
-import { Card } from "@components/Card";
 import { classNameFactory } from "@utils/css";
 import type { ComponentType, PropsWithChildren, ReactNode } from "react";
 
@@ -32,8 +31,8 @@ export function QuickAction(props: QuickActionProps) {
 
 export function QuickActionCard(props: PropsWithChildren) {
     return (
-        <Card className={cl("card")}>
+        <div className={cl("card")}>
             {props.children}
-        </Card>
+        </div>
     );
 }

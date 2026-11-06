@@ -1,9 +1,10 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2023 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { getIsEndcordHidden } from "@api/EndcordVisibility";
 import { Logger } from "@utils/Logger";
 import { Menu, React } from "@webpack/common";
 import type { ReactElement } from "react";
@@ -120,6 +121,8 @@ interface ContextMenuProps {
 
 export function _usePatchContextMenu(props: ContextMenuProps) {
     if (!Menu.MenuItem) return props; // Prevent crashes in case we fail to acquire menu items for some reason
+    // Menus are built each time they open, so while Endcord is hidden they simply get none of its entries
+    if (getIsEndcordHidden()) return props;
 
     props = {
         ...props,

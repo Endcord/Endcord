@@ -1,6 +1,6 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -50,7 +50,15 @@ const publicLookup: LookupFunction = (hostname, options, callback) => {
     });
 };
 
-function requestPublicUrl(url: URL, method: string, signal?: AbortSignal) {
+interface PublicRequest {
+    signal?: AbortSignal;
+    method?: string;
+    /** Added after the defaults, so a caller can set its own. Node refuses a name or value that would break the request */
+    headers?: Record<string, string>;
+    body?: Uint8Array;
+}
+
+function requestPublicUrl(url: URL, { method = "GET", signal, headers, body }: PublicRequest) {
     return new Promise<IncomingMessage>((resolve, reject) => {
         const request = (url.protocol === "https:" ? httpsRequest : httpRequest)(url, {
             method,
@@ -58,17 +66,17 @@ function requestPublicUrl(url: URL, method: string, signal?: AbortSignal) {
             signal,
             timeout: IDLE_TIMEOUT_MS,
             // Nothing here unpacks a compressed response
-            headers: { "User-Agent": ENDCORD_USER_AGENT, "Accept-Encoding": "identity" }
+            headers: { "User-Agent": ENDCORD_USER_AGENT, "Accept-Encoding": "identity", ...headers }
         }, resolve);
 
         request.on("timeout", () => request.destroy(new Error(`${url.hostname} timed out`)));
         request.on("error", reject);
-        request.end();
+        request.end(body);
     });
 }
 
 /** For URLs that came from the renderer. Redirects are followed by hand so each hop gets the same check */
-export async function fetchPublicUrl(url: string, { signal, method = "GET" }: { signal?: AbortSignal; method?: string; } = {}) {
+export async function fetchPublicUrl(url: string, options: PublicRequest = {}) {
     for (let redirects = 0; redirects <= MAX_REDIRECTS; redirects++) {
         const parsed = new URL(url);
         if (parsed.protocol !== "https:" && parsed.protocol !== "http:") throw new Error("Disallowed URL");
@@ -77,7 +85,7 @@ export async function fetchPublicUrl(url: string, { signal, method = "GET" }: { 
         const host = parsed.hostname.replace(/^\[|\]$/g, "");
         if (isIP(host) && isPrivateAddress(host)) throw new Error("Disallowed URL");
 
-        const response = await requestPublicUrl(parsed, method, signal);
+        const response = await requestPublicUrl(parsed, options);
         const status = response.statusCode!;
         const { location } = response.headers;
 

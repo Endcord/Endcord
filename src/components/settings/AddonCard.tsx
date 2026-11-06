@@ -1,13 +1,15 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2023 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import "./AddonCard.css";
+import "./AddonCard.css?screen";
 
+import { enableScreenStyles } from "@api/Styles";
 import { AddonBadge } from "@components/settings/PluginBadge";
 import { Switch } from "@components/Switch";
+import { BAN_RISK_LEAD } from "@utils/banRisk";
 import { classNameFactory } from "@utils/css";
 import { useI18n } from "@utils/i18n";
 import { Text, useRef } from "@webpack/common";
@@ -23,6 +25,9 @@ interface Props {
     disabled?: boolean;
     isNew?: boolean;
     isPopular?: boolean;
+    /** Why Discord could suspend an account for using it */
+    banRisk?: string;
+    needsFix?: boolean;
     onMouseEnter?: MouseEventHandler<HTMLDivElement>;
     onMouseLeave?: MouseEventHandler<HTMLDivElement>;
 
@@ -31,7 +36,9 @@ interface Props {
     author?: ReactNode;
 }
 
-export function AddonCard({ disabled, isNew, isPopular, name, infoButton, footer, author, enabled, setEnabled, description, onMouseEnter, onMouseLeave }: Props) {
+export function AddonCard({ disabled, isNew, isPopular, banRisk, needsFix, name, infoButton, footer, author, enabled, setEnabled, description, onMouseEnter, onMouseLeave }: Props) {
+    // Also shown outside the settings, in the new plugins dialog
+    enableScreenStyles();
     const { t } = useI18n();
     const titleRef = useRef<HTMLDivElement>(null);
     const titleContainerRef = useRef<HTMLDivElement>(null);
@@ -60,8 +67,10 @@ export function AddonCard({ disabled, isNew, isPopular, name, infoButton, footer
                                 {name}
                             </div>
                         </div>
-                        {isPopular && <AddonBadge text={t("POPULAR")} color="#5865F2" />}
-                        {isNew && <AddonBadge text={t("NEW")} color="#ED4245" />}
+                        {needsFix && <AddonBadge text={t("NEEDS FIX")} tone="fix" title={t("Discord changed code this plugin relies on, so part of it may not work until Endcord updates it")} />}
+                        {banRisk && <AddonBadge text={t("BAN RISK")} tone="risk" title={`${t(BAN_RISK_LEAD)} ${t(banRisk)}`} />}
+                        {isPopular && !needsFix && !banRisk && <AddonBadge text={t("POPULAR")} tone="popular" />}
+                        {isNew && <AddonBadge text={t("NEW")} />}
                     </Text>
 
                     {!!author && (

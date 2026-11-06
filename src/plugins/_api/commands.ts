@@ -1,6 +1,6 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -24,6 +24,12 @@ export default definePlugin({
                     // textCommands = builtInCommands.filter(...)
                     match: /(?<=\w=)(\w)(\.filter\(.{0,60}tableflip)/,
                     replace: "Endcord.Api.Commands._init($1)$2",
+                },
+                {
+                    // Discord now lists only its own few text commands (gif, me, shrug...) unless an experiment is on,
+                    // from a copy made before any plugin registers its commands. Add the plugins' commands to that list
+                    match: /(let \i=\i\?(\i):)(\i)(?=,\i=\i\.getConfig\(\{location:"getBuiltInCommands"\})/,
+                    replace: "$1Endcord.Api.Commands._withEndcord($3,$2)"
                 }
             ],
         },

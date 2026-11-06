@@ -71,7 +71,7 @@ export default definePlugin({
     },
 
     stop() {
-        removeFromArray(SettingsPlugin.customEntries, e => e.key === "endcord_login_with_qr" || e.key === "equicord_login_with_qr");
+        removeFromArray(SettingsPlugin.customEntries, e => e.key === "endcord_login_with_qr");
         unload();
     },
 });

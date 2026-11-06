@@ -15,7 +15,7 @@ export default definePlugin({
 
     patches: [
         {
-            find: "={linkCount:0,onlyLinks:!1};function ",
+            find: "linkCount:0,onlyLinks:",
             replacement: {
                 // SimpleEmbedTypes.has(embed.type) && isEmbedInline(embed)
                 match: /\i\.has\(\i\.type\)&&\(0,\i\.\i\)\(\i\)/,

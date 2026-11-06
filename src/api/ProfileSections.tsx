@@ -1,9 +1,10 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2025 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { EndcordOnly } from "@api/EndcordVisibility";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Logger } from "@utils/Logger";
 import { useEffect, useState } from "@webpack/common";
@@ -69,5 +70,5 @@ function ProfileSections({ userId, isSideBar }: { userId: string; isSideBar: boo
 
 /** @internal Injected by ProfileSectionsAPI patch (do NOT call directly) */
 export function renderProfileSections(props: { userId: string; isSideBar: boolean; }) {
-    return <ProfileSections {...props} />;
+    return <EndcordOnly><ProfileSections {...props} /></EndcordOnly>;
 }

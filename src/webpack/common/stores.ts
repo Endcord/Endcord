@@ -1,6 +1,6 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2023 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -147,7 +147,6 @@ waitForStore("PrivateChannelSortStore", m => PrivateChannelSortStore = m);
 waitForStore("ApplicationStreamingSettingsStore", m => ApplicationStreamingSettingsStore = m);
 waitForStore("ChannelSectionStore", m => ChannelSectionStore = m);
 waitForStore("ExpandedGuildFolderStore", m => ExpandedGuildFolderStore = m);
-waitForStore("AuthSessionsStore", m => AuthSessionsStore = m);
 waitForStore("ClientThemesBackgroundStore", m => ClientThemesBackgroundStore = m);
 waitForStore("ConnectedAccountsStore", m => ConnectedAccountsStore = m);
 waitForStore("ChannelMemberStore", m => ChannelMemberStore = m);
@@ -179,8 +178,6 @@ export let ApplicationStreamingSettingsStore: t.ApplicationStreamingSettingsStor
 export let ChannelSectionStore: t.ChannelSectionStore;
 
 export let ExpandedGuildFolderStore: t.ExpandedGuildFolderStore;
-
-export let AuthSessionsStore: t.AuthSessionsStore;
 
 export let ClientThemesBackgroundStore: t.ClientThemesBackgroundStore;
 

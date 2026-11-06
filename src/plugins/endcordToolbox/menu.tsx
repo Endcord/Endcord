@@ -6,10 +6,13 @@
 
 import { openNotificationLogModal } from "@api/Notifications/notificationLog";
 import { isPluginEnabled, isSettingDisabled, isSettingHidden, plugins } from "@api/PluginManager";
+import { IS_SAFE_MODE, restartInSafeMode } from "@api/SafeMode";
 import { Settings, useSettings } from "@api/Settings";
 import { openPluginModal, openSettingsTabModal, PluginsTab, ThemesTab, UpdaterTab } from "@components/settings";
+import { openShortcutsModal } from "@components/shortcuts";
 import { t } from "@utils/i18n";
 import { localStorage } from "@utils/localStorage";
+import { relaunch } from "@utils/native";
 import { useAwaiter } from "@utils/react";
 import { wordsFromCamel, wordsToTitle } from "@utils/text";
 import { OptionType, Plugin } from "@utils/types";
@@ -354,7 +357,14 @@ function buildCustomPluginEntries() {
     return <Menu.MenuGroup>{submenuEntries}</Menu.MenuGroup>;
 }
 
-export function renderPopout(onClose: () => void) {
+export const getAvailableUpdate = () => _updateAvailable ? _latestVersion : undefined;
+
+export function openUpdater() {
+    if (UpdaterTab) openSettingsTabModal(UpdaterTab);
+    else EndcordNative.native.openExternal(_latestUrl || "https://github.com/Endcord/Endcord/releases");
+}
+
+export function ToolboxMenu({ onClose }: { onClose(): void; }) {
     const [updateAvailable, setUpdateAvailable] = useState(_updateAvailable);
 
     return (
@@ -367,7 +377,7 @@ export function renderPopout(onClose: () => void) {
                     <Menu.MenuItem
                         id="endcord-open-updater"
                         label={t("Update Endcord")}
-                        action={() => UpdaterTab ? openSettingsTabModal(UpdaterTab) : EndcordNative.native.openExternal(_latestUrl || "https://github.com/Endcord/Endcord/releases")}
+                        action={openUpdater}
                     />
                     <Menu.MenuItem
                         id="endcord-dismiss-update"
@@ -403,6 +413,16 @@ export function renderPopout(onClose: () => void) {
                 id="notifications"
                 label={t("Open Notification Log")}
                 action={openNotificationLogModal}
+            />
+            <Menu.MenuItem
+                id="shortcuts"
+                label={t("Keyboard Shortcuts")}
+                action={openShortcutsModal}
+            />
+            <Menu.MenuItem
+                id="safe-mode"
+                label={IS_SAFE_MODE ? t("Restart Normally") : t("Restart in Safe Mode")}
+                action={IS_SAFE_MODE ? relaunch : restartInSafeMode}
             />
 
             {buildThemeMenu()}

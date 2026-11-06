@@ -1,6 +1,6 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -48,6 +48,11 @@ export const _init = function (cmds: EndcordCommand[]) {
         new Logger("CommandsAPI").error("Failed to load CommandsApi", e, " - cmds is", cmds);
     }
     return cmds;
+} as never;
+
+/** Discord's short list of commands, with every plugin command added */
+export const _withEndcord = function (short: EndcordCommand[], all: EndcordCommand[]) {
+    return short.concat(all.filter(c => c.isEndcordCommand));
 } as never;
 
 export const _handleCommand = function (cmd: EndcordCommand, args: CommandArgument[], ctx: CommandContext) {

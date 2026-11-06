@@ -17,7 +17,7 @@ import endcord from "./scripts/eslint/endcordRules.mjs";
 export default tseslint.config(
     { ignores: ["dist", "packages/endcord-types"] },
     {
-        files: ["src/**/*.{tsx,ts,mts,mjs,js,jsx}", "test/**/*.mjs", "scripts/**/*.{ts,mjs}", "browser/*.ts", "eslint.config.mjs"],
+        files: ["src/**/*.{tsx,ts,mts,mjs,js,jsx}", "test/**/*.mjs", "scripts/**/*.{ts,mjs}", "browser/*.ts", "desktop/src/*.ts", "eslint.config.mjs"],
         settings: {
             react: {
                 version: "18"
@@ -33,7 +33,7 @@ export default tseslint.config(
         }
     },
     {
-        files: ["src/**/*.{tsx,ts,mts,mjs,js,jsx}", "test/**/*.mjs", "scripts/**/*.{ts,mjs}", "browser/*.ts", "eslint.config.mjs"],
+        files: ["src/**/*.{tsx,ts,mts,mjs,js,jsx}", "test/**/*.mjs", "scripts/**/*.{ts,mjs}", "browser/*.ts", "desktop/src/*.ts", "eslint.config.mjs"],
         plugins: {
             "endcord": endcord,
             "simple-header": header,
@@ -181,6 +181,7 @@ export default tseslint.config(
             "endcord/layer-boundaries": "error",
             "endcord/patch-replace-groups": "error",
             "endcord/sensitive-settings": "error",
+            "endcord/webpack-common-at-load": "error",
 
             // Security Rules
             "no-eval": "error",

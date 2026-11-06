@@ -1,0 +1,43 @@
+/*
+ * Discord renamed these colors, and plugin styles still ask for the old names. A name that no longer exists doesn't
+ * just lose its color: the whole declaration stops applying, which is how text turns black and borders disappear.
+ * :where() keeps every line at zero specificity, so a theme that sets an old name still wins.
+ */
+:where(.theme-dark, .theme-darker, .theme-midnight, .theme-light) {
+    --text-normal: var(--text-default);
+    --text-secondary: var(--text-subtle);
+    --text-faint: var(--text-muted);
+    --text-danger: var(--text-feedback-critical);
+    --text-warning: var(--text-feedback-warning);
+    --text-positive: var(--text-feedback-positive);
+    --text-link-low-saturation: var(--text-link);
+    --header-primary: var(--text-strong);
+    --header-secondary: var(--text-subtle);
+    --interactive-normal: var(--interactive-text-default);
+    --interactive-hover: var(--interactive-text-hover);
+    --interactive-active: var(--interactive-text-active);
+    --icon-secondary: var(--icon-subtle);
+    --background-primary: var(--background-base-low);
+    --background-secondary: var(--background-base-lower);
+    --background-tertiary: var(--background-base-lowest);
+    --background-base-lower-alt: var(--background-base-lower);
+    --background-accent-tertiary: var(--background-mod-strong);
+    --background-modifier-hover: var(--background-mod-subtle);
+    --background-modifier-active: var(--background-mod-normal);
+    --background-modifier-selected: var(--background-mod-normal);
+    --background-modifier-accent: var(--border-subtle);
+    --background-modifier-border: var(--border-subtle);
+    --brand-experiment: var(--brand-500);
+    --brand-experiment-560: var(--brand-560);
+    --brand-experiment-30a: color-mix(in srgb, var(--brand-500) 30%, transparent);
+    --brand-experiment-10a: color-mix(in srgb, var(--brand-500) 10%, transparent);
+    --input-background: var(--input-background-default);
+    --input-border: var(--input-border-default);
+    --focus-primary: var(--border-focus);
+    --button-secondary-background: var(--control-secondary-background-default);
+    --button-danger-background: var(--status-danger);
+    --badge-background-brand: var(--badge-primary-background);
+    --badge-text-brand: var(--badge-primary-text);
+    --badge-expressive-background-default: var(--badge-expressive-background);
+    --badge-expressive-text-default: var(--badge-expressive-text);
+}

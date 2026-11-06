@@ -1,0 +1,8 @@
+[data-ec-streamer-shield] [class*="privateChannels_"] a[href^="/channels/@me/"]:not([href="/channels/@me/message-requests"]) {
+    filter: blur(6px);
+    transition: filter var(--ec-motion-base) var(--ec-ease-out);
+}
+
+[data-ec-streamer-shield-reveal] [class*="privateChannels_"] a[href^="/channels/@me/"]:hover {
+    filter: none;
+}

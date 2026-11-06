@@ -7,7 +7,7 @@
 // A ratchet: these numbers may only go down. Nobody has to fix old debt to get a change in, but nothing can add to it.
 // Run with --update after paying some off, so the gain can't be lost again.
 
-import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "fs";
 import { dirname, join, relative, sep } from "path";
 import { fileURLToPath } from "url";
 
@@ -44,8 +44,18 @@ function measure() {
         metrics.longestFile = Math.max(metrics.longestFile, lines);
     }
 
-    // Only asked for right after a release build: dist can hold a dev or reporter build at any other time
-    if (process.argv.includes("--bundle")) metrics.rendererKilobytes = Math.ceil(statSync(join(ROOT, "dist", "renderer.js")).size / 1024);
+    // Only asked for right after a release build: dist can hold a dev or reporter build at any other time.
+    // rendererKilobytes is the script that always runs. The code of lazy plugins after it (@shared/pluginChunks) only
+    // runs for plugins that are on, and the translation tables (@shared/externalLocales) never run
+    if (process.argv.includes("--bundle")) {
+        const renderer = readFileSync(join(ROOT, "dist", "renderer.js"), "latin1");
+        const tablesAt = renderer.lastIndexOf("\n/*endcord-locales\n");
+        const codeEnd = tablesAt === -1 ? renderer.length : tablesAt;
+        const chunksAt = renderer.lastIndexOf("\n/*endcord-chunks ", codeEnd);
+        metrics.rendererKilobytes = Math.ceil((chunksAt === -1 ? codeEnd : chunksAt) / 1024);
+        metrics.pluginChunkKilobytes = chunksAt === -1 ? 0 : Math.ceil((codeEnd - chunksAt) / 1024);
+        metrics.mainProcessKilobytes = Math.ceil(readFileSync(join(ROOT, "dist", "patcher.js")).length / 1024);
+    }
 
     return metrics;
 }
@@ -60,7 +70,7 @@ if (process.argv.includes("--update") || !existsSync(BASELINE)) {
 
 const baseline = JSON.parse(readFileSync(BASELINE, "utf8"));
 // The bundle may grow a little between releases, the rest may not grow at all
-const allowance = { rendererKilobytes: 1.02 };
+const allowance = { rendererKilobytes: 1.02, pluginChunkKilobytes: 1.05, mainProcessKilobytes: 1.05 };
 
 let failed = false;
 for (const [name, limit] of Object.entries(baseline)) {

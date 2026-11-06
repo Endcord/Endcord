@@ -1,13 +1,13 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Vendicated and Megumin
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 import { getIsEndcordHidden } from "@api/EndcordVisibility";
 import { definePluginSettings } from "@api/Settings";
-import { BackupRestoreIcon, MainSettingsIcon, PaintbrushIcon, PatchHelperIcon, PlaceholderIcon, PluginsIcon, UpdaterIcon, VesktopSettingsIcon } from "@components/Icons";
-import { BackupAndRestoreTab, EndcordTab,PatchHelperTab, PluginsTab, ThemesTab, UpdaterTab } from "@components/settings/tabs";
+import { BackupRestoreIcon, ClockIcon, MainSettingsIcon, PaintbrushIcon, PatchHelperIcon, PlaceholderIcon, PluginsIcon, UpdaterIcon, VesktopSettingsIcon } from "@components/Icons";
+import { BackupAndRestoreTab, DiagnosticsTab, EndcordTab, PatchHelperTab, PluginsTab, ThemesTab, UpdaterTab } from "@components/settings/tabs";
 import { Devs } from "@utils/constants";
 import { isTruthy } from "@utils/guards";
 import { t } from "@utils/i18n";
@@ -102,7 +102,7 @@ export default definePlugin({
             find: "#{intl::COPY_VERSION}",
             replacement: [
                 {
-                    match: /"text-xxs\/normal".{0,300}?(?=null!=(\i)&&(.{0,20}\i\.\i.{0,200}?,children:).{0,15}?("span"),{className:(\i\.\i),children:\["Build Override: ",\1\.id,\i\]\}\)\}\))/,
+                    match: /"(?:text-xxs|footnote)\/normal".{0,300}?(?=null!=(\i)&&(.{0,20}\i\.\i.{0,200}?,children:).{0,15}?("span"),{className:(\i\.\i),children:\["Build Override: ",\1\.id,\i\]\}\)\}\))/,
                     replace: (m, _buildOverride, makeRow, component, className) => {
                         return `${m},$self.makeInfoElements(${component},{className:${className}}).map(e=>${makeRow}e})),`;
                     }
@@ -194,6 +194,12 @@ export default definePlugin({
                 Component: BackupAndRestoreTab,
                 Icon: BackupRestoreIcon
             }),
+            buildEntry({
+                key: "endcord_diagnostics",
+                title: "Diagnostics",
+                Component: DiagnosticsTab,
+                Icon: ClockIcon
+            }),
             !IS_STANDALONE && PatchHelperTab && buildEntry({
                 key: "endcord_patch_helper",
                 title: "Patch Helper",
@@ -269,7 +275,7 @@ export default definePlugin({
     get additionalInfo() {
         if (IS_DEV) return " (Dev)";
         if (IS_WEB) return " (Web)";
-        if (IS_VESKTOP) return ` (Vesktop v${VesktopNative.app.getVersion()})`;
+        if (IS_VESKTOP) return ` (Endcord Desktop v${VesktopNative.app.getVersion()})`;
         if (IS_STANDALONE) return " (Standalone)";
         return "";
     },

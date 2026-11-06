@@ -1,20 +1,24 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2023 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 import "./ipcMain";
 
-import { app, net, protocol } from "electron";
+import { app, type BrowserWindow, net, protocol } from "electron";
 import { join } from "path";
 import { pathToFileURL } from "url";
 
 import { initCsp } from "./csp";
+import { initMemoryTrim } from "./memoryTrim";
+import { preOpenRenderer } from "./preOpenRenderer";
 import { RendererSettings } from "./settings";
 import { IS_VANILLA, THEMES_DIR } from "./utils/constants";
 import { ensureSafePath } from "./utils/ensureSafePath";
 import { installExt } from "./utils/extensions";
+
+if (IS_VESKTOP) preOpenRenderer();
 
 if (IS_VESKTOP || !IS_VANILLA) {
     app.whenReady().then(() => {
@@ -68,4 +72,12 @@ if (IS_VESKTOP || !IS_VANILLA) {
 
 if (IS_DISCORD_DESKTOP) {
     require("./patcher");
+}
+
+/**
+ * Endcord Desktop hands its Discord window over once it's made (see desktop/src/main.ts), for what the patcher does to
+ * Discord's own window that doesn't depend on the window's options
+ */
+export function setupMainWindow(win: BrowserWindow) {
+    if (!RendererSettings.store.disableBackgroundMemoryTrim) initMemoryTrim(win);
 }

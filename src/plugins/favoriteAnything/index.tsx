@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { definePluginSettings, migratePluginSettings } from "@api/Settings";
+import { definePluginSettings, migratePluginSettings, migrateRemovedPlugin } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import { getIntlMessage } from "@utils/discord";
 import definePlugin, { OptionType } from "@utils/types";
@@ -32,6 +32,7 @@ function hasFavourites() {
 }
 
 migratePluginSettings("FavoriteAnything", "FavouriteAnything");
+migrateRemovedPlugin("FavoriteAnything", "FavoriteMedia");
 export default definePlugin({
     name: "FavoriteAnything",
     description: "Favorite any image, video, or file attachment",
@@ -119,8 +120,9 @@ export default definePlugin({
             find: "#{intl::FAVORITE_GIFS_LIMIT_REACHED_BODY}",
             replacement: {
                 // Intercept add/remove actions to generate a valid thumbnail url before storing the item
-                match: /function (\i)\((\i)\)\{(?=\i\.\i\.updateAsync\("favoriteGifs")/g,
-                replace: "async function $1($2){await $self.fixFavItem($2);await "
+                // Canary puts these functions in the module's exports, without a name
+                match: /function(?: (\i))?\((\i)\)\{(?=\i\.\i\.updateAsync\("favoriteGifs")/g,
+                replace: (_, name, item) => `async function${name ? ` ${name}` : ""}(${item}){await $self.fixFavItem(${item});await `
             }
         }
     ],

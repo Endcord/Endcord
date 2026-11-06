@@ -6,7 +6,7 @@
 
 import { Flex } from "@components/Flex";
 import { RenderModalProps } from "@endcord/discord-types";
-import { characters } from "@plugins/sekaiStickers/characters.json";
+import { characters } from "@plugins/sekaiStickers/characters";
 import { t } from "@utils/i18n";
 import { Modal,React, ScrollerThin, TextInput } from "@webpack/common";
 

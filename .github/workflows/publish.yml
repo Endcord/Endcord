@@ -4,13 +4,17 @@ on:
         tags:
             - v*
 
+# Read-only unless a job asks for more
+permissions:
+    contents: read
+
 jobs:
     Publish:
         if: github.repository == 'Vendicated/Vencord'
         runs-on: ubuntu-latest
 
         steps:
-            - uses: actions/checkout@v7
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
             - name: check that tag matches package.json version
               run: |
@@ -20,10 +24,10 @@ jobs:
                       exit 1
                   fi
 
-            - uses: pnpm/action-setup@v6 # Install pnpm using packageManager key in package.json
+            - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6, installs pnpm using packageManager key in package.json
 
             - name: Use Node.js 19
-              uses: actions/setup-node@v6
+              uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
               with:
                   node-version: 24
                   cache: "pnpm"

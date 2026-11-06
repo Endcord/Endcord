@@ -24,6 +24,7 @@
 import * as DataStore from "@api/DataStore";
 import type { Settings } from "@api/Settings";
 import { getThemeInfo } from "@main/themes";
+import { addSuspects, beginBoot, BootRecord, BootState, confirmBoot, readBootRecord } from "@shared/bootGuard";
 import { debounce } from "@shared/debounce";
 import { isSafeExternalUrl } from "@shared/externalLinks";
 import { localStorage } from "@utils/localStorage";
@@ -39,6 +40,24 @@ const NOOP_ASYNC = async () => { };
 const setCssDebounced = debounce((css: string) => EndcordNative.quickCss.set(css));
 
 const themeStore = DataStore.createStore("EndcordThemes", "EndcordThemeData");
+
+// The start record that decides safe mode, see @shared/bootGuard
+const BOOT_KEY = "EndcordBoot";
+let bootState: BootState | undefined;
+
+function readStoredBoot() {
+    try {
+        return readBootRecord(JSON.parse(localStorage.getItem(BOOT_KEY) || "null"));
+    } catch {
+        return readBootRecord(null);
+    }
+}
+
+function writeStoredBoot(record: BootRecord) {
+    try {
+        localStorage.setItem(BOOT_KEY, JSON.stringify(record));
+    } catch { }
+}
 
 // probably should make this less cursed at some point
 window.EndcordNative = {
@@ -73,11 +92,15 @@ window.EndcordNative = {
                 .then(res => res.text());
         },
         onRendererCssUpdate: NOOP,
+        getMemoryStats: async () => ({ usedMb: 0, freedMb: 0, trims: 0 }),
+        trimMemory: async () => 0,
     },
 
     updater: {
         getRepo: async () => ({ ok: true, value: "https://github.com/Endcord/Endcord" }),
-        confirmUpdate: async () => { },
+        confirmUpdate: async () => false,
+        getTrust: async () => ({ checkedAt: 0, signed: false, installedFiles: "unknown", pending: false, hasPrevious: false, rejected: null }),
+        takeRollbackNotice: async () => null,
         getUpdates: async () => ({ ok: true, value: [] }),
         update: async () => ({ ok: true, value: false }),
         rebuild: async () => ({ ok: true, value: true }),
@@ -124,6 +147,27 @@ window.EndcordNative = {
                 ? "vs-light"
                 : "vs-dark";
         }
+    },
+
+    boot: {
+        begin() {
+            const [record, state] = beginBoot(readStoredBoot());
+            writeStoredBoot(record);
+            bootState = state;
+            return state;
+        },
+        confirm: async enabledPlugins => writeStoredBoot(confirmBoot(readStoredBoot(), bootState?.safeMode ? null : enabledPlugins)),
+        reportCrash: async plugins => writeStoredBoot(addSuspects(readStoredBoot(), plugins)),
+        requestSafeMode: async () => writeStoredBoot({ ...readStoredBoot(), safeNext: true }),
+    },
+
+    // The web builds keep their translation tables and all plugin code inside the script
+    i18n: {
+        readTable: () => null
+    },
+
+    pluginChunks: {
+        load: () => false
     },
 
     settings: {

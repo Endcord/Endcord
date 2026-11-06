@@ -197,7 +197,8 @@ export default definePlugin({
             predicate: () => getQuestifySettings().disableQuestsEverything || getQuestifySettings().disableRelocationNotices,
             replacement: [
                 {
-                    match: /GLOBAL_DISCOVERY_TABS/g,
+                    // The list of tabs the sidebar filters. Newer Discord no longer keeps its export name
+                    match: /\i\.\i(?=\.filter\(\i=>\(\i!==\i\.GlobalDiscoveryTab\.QUESTS)/,
                     replace: '$&.filter(tab=>tab!=="quests")'
                 }
             ]
@@ -322,17 +323,17 @@ export default definePlugin({
             ]
         },
         {
-            // Prevent Video Quests from pausing on lost focus.
-            find: "[QV] | Pausing video | playerState:",
+            // Prevent Video Quests from pausing when the window loses focus: the quest's own video player
+            find: "onTrackQuestContentClick:",
             predicate: () => !getQuestifySettings().disableQuestsEverything && getQuestifySettings().preventVideoQuestsPausing,
             replacement: {
-                match: /(?<=setCaptionEnabled\),)({focused:)(\i)/,
-                replace: "$2=true,$1questifyFocused"
+                match: /(?<=pauseOnLostVisibility:)!\i/,
+                replace: "false",
             }
         },
         {
-            // Prevent Video Quests from pausing on lost focus.
-            find: ",listenForHlsErrors:!1",
+            // And the player that plays a quest's reward video
+            find: "rewardRemainingSeconds:",
             predicate: () => !getQuestifySettings().disableQuestsEverything && getQuestifySettings().preventVideoQuestsPausing,
             replacement: {
                 match: /(?<=pauseOnLostVisibility:)!\i/,
@@ -548,7 +549,7 @@ export default definePlugin({
         {
             // Allow non-shareable Quests to embed in chat and to have
             // their share URLs copyable from the embed context menu.
-            find: "NOT_SHAREABLE}function",
+            find: "sharePolicy!==",
             group: true,
             predicate: () => !getQuestifySettings().disableQuestsEverything,
             replacement: {

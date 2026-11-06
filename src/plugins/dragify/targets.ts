@@ -206,9 +206,9 @@ function inspectElements(elements: HTMLElement[], context: InspectionContext): R
             ?? "";
         const combined = `${href} ${src} ${style}`;
         resolved.hasAttachment ||= Boolean(dataAttachment)
-            || /(?:cdn|media)\.discordapp\.(?:com|net)\/attachments\//i.test(combined)
-            || /discord\.com\/attachments\//i.test(combined)
-            || /cdn\.discordapp\.com\/ephemeral-attachments\//i.test(combined);
+            || /(?:^|[\s("'])https:\/\/(?:cdn|media)\.discordapp\.(?:com|net)\/attachments\//i.test(combined)
+            || /(?:^|[\s("'])https:\/\/(?:[a-z]+\.)?discord\.com\/attachments\//i.test(combined)
+            || /(?:^|[\s("'])https:\/\/cdn\.discordapp\.com\/ephemeral-attachments\//i.test(combined);
 
         resolved.userId ??= resolveUserId(element, context);
         resolved.avatarUserId ??= resolveAvatarUserId(element);

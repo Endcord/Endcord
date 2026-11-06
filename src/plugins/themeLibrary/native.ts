@@ -6,10 +6,15 @@
 
 import { THEMES_DIR } from "@main/utils/constants";
 import { ensureSafePath } from "@main/utils/ensureSafePath";
+import { readBody } from "@main/utils/http";
 import { IpcMainInvokeEvent } from "electron";
 import { existsSync, writeFileSync } from "fs";
 
 import type { Theme } from "./types";
+
+// A theme is a stylesheet, and the biggest ones are well under a megabyte
+const MAX_THEME_BYTES = 5 * 1024 * 1024;
+const FETCH_TIMEOUT_MS = 30_000;
 
 function getThemePath(theme: Theme): string | null {
     if (!theme?.name) return null;
@@ -27,7 +32,17 @@ export async function downloadTheme(_: IpcMainInvokeEvent, theme: Theme) {
     const path = getThemePath(theme);
     if (!path) throw new Error("Invalid theme name");
 
-    const download = await fetch(`https://themes.equicord.org/api/download/${encodeURIComponent(theme.id)}`);
-    const content = await download.text();
-    writeFileSync(path, content);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+    try {
+        const download = await fetch(`https://themes.equicord.org/api/download/${encodeURIComponent(theme.id)}`, { signal: controller.signal });
+        if (!download.ok) throw new Error(`Theme library returned ${download.status}`);
+
+        const content = await readBody(download, MAX_THEME_BYTES);
+        if (!content) throw new Error("Theme is too large");
+
+        writeFileSync(path, content);
+    } finally {
+        clearTimeout(timeout);
+    }
 }

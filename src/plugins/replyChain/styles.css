@@ -1,0 +1,76 @@
+.ec-replychain-list {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ec-replychain-item {
+    position: relative;
+    display: flex;
+    gap: 12px;
+    padding: 8px 10px;
+    border-radius: 8px;
+}
+
+/* The thread line from one message to the reply under it */
+.ec-replychain-item:not(:last-child)::after {
+    position: absolute;
+    top: 44px;
+    bottom: -6px;
+    left: 25px;
+    width: 2px;
+    border-radius: 1px;
+    background: var(--border-subtle);
+    content: "";
+}
+
+.ec-replychain-current {
+    background: color-mix(in srgb, var(--text-link) 9%, transparent);
+}
+
+.ec-replychain-avatar {
+    flex-shrink: 0;
+    border-radius: 50%;
+}
+
+.ec-replychain-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.ec-replychain-head {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+}
+
+.ec-replychain-name {
+    color: var(--text-strong);
+    font-weight: 600;
+}
+
+.ec-replychain-time {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.ec-replychain-jump {
+    min-height: 0;
+    margin-inline-start: auto;
+    padding: 0;
+}
+
+.ec-replychain-content {
+    color: var(--text-default);
+    font-size: 15px;
+    line-height: 1.375;
+    overflow-wrap: anywhere;
+}
+
+.ec-replychain-note {
+    padding: 4px 10px 8px;
+    color: var(--text-muted);
+    font-size: 13px;
+}

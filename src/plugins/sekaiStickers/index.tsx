@@ -9,8 +9,9 @@ import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
-import { openModal } from "@webpack/common";
+import { openModal, showToast, Toasts } from "@webpack/common";
 
+import { loadCharacters } from "./characters";
 import SekaiStickersModal from "./Components/SekaiStickersModal";
 import { kanadeSvg } from "./kanade.svg";
 
@@ -22,9 +23,19 @@ const settings = definePluginSettings({
     }
 });
 
+async function openStickerMaker() {
+    try {
+        await loadCharacters();
+    } catch {
+        showToast(t("Couldn't load the Sekai stickers. Check your connection and try again."), Toasts.Type.FAILURE);
+        return;
+    }
+    openModal(props => <SekaiStickersModal modalProps={props} settings={settings} />);
+}
+
 const SekaiStickerChatButton: ChatBarButtonFactory = () => {
     return (
-        <ChatBarButton onClick={() => openModal(props => <SekaiStickersModal modalProps={props} settings={settings} />)} tooltip={t("Sekai Stickers")}>
+        <ChatBarButton onClick={openStickerMaker} tooltip={t("Sekai Stickers")}>
             {kanadeSvg()}
         </ChatBarButton>
     );

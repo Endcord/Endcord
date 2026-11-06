@@ -7,8 +7,10 @@
 import "./styles.css";
 
 import badges from "@plugins/_api/badges";
+import { CONTRIBUTOR_ICON, DEVELOPER_ICON } from "@plugins/_api/badges/badgeArt";
 import { Devs } from "@utils/constants";
-import { isPluginDev } from "@utils/misc";
+import { t } from "@utils/i18n";
+import { isEndcordDeveloper, isPluginDev } from "@utils/misc";
 import definePlugin from "@utils/types";
 import { findComponentByCodeLazy, findCssClassesLazy } from "@webpack";
 
@@ -51,17 +53,21 @@ function CheckBadge({ badge, author }: { badge: string; author: User; }): JSX.El
                     ))}
                 </span>
             );
-        case "EndcordContributer":
-            return isPluginDev(author.id) ? (
+        case "EndcordContributer": {
+            // Chat has room for one: a developer shows the panda, everyone else who helped the bamboo
+            if (!isPluginDev(author.id) && !isEndcordDeveloper(author.id)) return null;
+            const developer = isEndcordDeveloper(author.id);
+            return (
                 <span style={{ order: settings.store.EndcordContributorPosition }}>
                     <RoleIconComponent
                         className={roleIcon}
-                        name="Endcord Contributor"
+                        name={developer ? t("Endcord Developer") : t("Endcord Contributor")}
                         size={20}
-                        src={"https://iili.io/C3jZGrg.th.png"}
+                        src={developer ? DEVELOPER_ICON : CONTRIBUTOR_ICON}
                     />
                 </span>
-            ) : null;
+            );
+        }
         case "VencordDonor":
             // Same list as EndcordDonor above; rendering it twice would duplicate every donor badge
             return null;

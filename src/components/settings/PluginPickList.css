@@ -1,0 +1,43 @@
+.ec-pick-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ec-pick-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 10px;
+    border-radius: var(--ec-radius);
+    clip-path: var(--ec-pc);
+    cursor: pointer;
+    transition: background-color var(--ec-motion-fast) ease;
+}
+
+.ec-pick-row:hover {
+    background: var(--background-mod-subtle);
+}
+
+.ec-pick-text {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.ec-pick-name {
+    color: var(--text-strong);
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.ec-pick-description {
+    color: var(--text-muted);
+    font-size: 13px;
+    line-height: 1.4;
+}

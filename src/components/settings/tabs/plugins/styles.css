@@ -20,7 +20,7 @@
     margin-top: 16px;
     display: grid;
     gap: 16px;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
 }
 
 .vc-plugins-info-button {
@@ -56,15 +56,33 @@
 .vc-addon-badge {
     padding: 0 6px;
     font-family: var(--font-display);
-    font-weight: 500;
-    border-radius: 8px;
+    font-weight: 600;
+    border-radius: 6px;
     height: 16px;
-    font-size: 12px;
+    font-size: 11px;
     line-height: 16px;
-    color: var(--white-500);
+    background: color-mix(in srgb, var(--brand-500) 18%, transparent);
+    color: var(--text-link);
     text-align: center;
     white-space: nowrap;
     flex-shrink: 0;
+}
+
+.vc-addon-badge-popular {
+    background: color-mix(in srgb, var(--ec-honey) 16%, transparent);
+    color: var(--ec-honey);
+}
+
+.vc-addon-badge-risk {
+    background: color-mix(in srgb, var(--ec-ember) 20%, transparent);
+    color: var(--ec-coral);
+    cursor: help;
+}
+
+.vc-addon-badge-fix {
+    background: color-mix(in srgb, var(--ec-ember) 18%, transparent);
+    color: var(--ec-coral);
+    cursor: help;
 }
 
 .vc-plugins-dep-name {
@@ -81,6 +99,9 @@
 .vc-plugins-restart-button {
     margin-top: 0.5em;
     background: var(--icon-status-idle) !important;
+
+    /* White text doesn't read on yellow */
+    color: var(--ec-night) !important;
 }
 
 .vc-plugins-info-icon:not(:hover, :focus) {
@@ -93,35 +114,284 @@
     gap: 1.25em;
 }
 
-.vc-plugins-stats-bar {
+.vc-plugins-list-heading {
     display: flex;
+    align-items: baseline;
+    justify-content: space-between;
     gap: 12px;
-    margin-top: 14px;
-    margin-bottom: 4px;
 }
 
-.vc-plugins-stat-badge {
-    display: inline-flex;
+.vc-plugins-count {
+    color: var(--text-muted);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+
+.vc-plugins-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-top: 28px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.vc-plugins-stats {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.vc-plugins-stat {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    padding: 12px 14px;
+    color: var(--ec-paper);
+    text-align: left;
+    cursor: pointer;
+    transition: transform var(--ec-motion-fast) var(--ec-ease-out);
+}
+
+.vc-plugins-stat:hover {
+    transform: translateY(-1px);
+}
+
+.vc-plugins-stat-wide {
+    --ec-meter: var(--ec-bamboo);
+
+    flex-grow: 2;
+}
+
+.ec-theme .vc-plugins-stat-selected,
+.ec-theme .vc-plugins-stat-selected:hover {
+    --ec-edge: var(--ec-ice);
+    --ec-fill: var(--ec-panel-hi);
+}
+
+.vc-plugins-stat-head {
+    display: flex;
     align-items: center;
     gap: 8px;
-    background: var(--background-secondary);
-    border: 1px solid var(--border-subtle, rgb(255 255 255 / 8%));
-    border-radius: 8px;
-    padding: 6px 14px;
+    overflow: hidden;
+    color: var(--ec-mist);
+    font-family: var(--ec-font-display);
     font-size: 13px;
-    box-shadow: 0 1px 3px rgb(0 0 0 / 10%);
+    font-weight: 600;
+    white-space: nowrap;
 }
 
-.vc-plugins-stat-label {
-    color: var(--text-muted);
-    font-weight: 500;
+.vc-plugins-stat-head svg {
+    flex-shrink: 0;
+    color: var(--ec-ice);
 }
 
-.vc-plugins-stat-val {
+.vc-plugins-stat-value {
+    color: var(--ec-paper);
+    font-family: var(--ec-font-display);
+    font-size: 30px;
+    font-variant-numeric: tabular-nums;
     font-weight: 700;
-    color: var(--text-normal);
+    line-height: 1.1;
 }
 
-.vc-plugins-stat-val-enabled {
-    color: var(--status-positive, #23a55a);
+.vc-plugins-stat-on .vc-plugins-stat-head svg,
+.vc-plugins-stat-on .vc-plugins-stat-value {
+    color: var(--ec-bamboo);
+}
+
+.vc-plugins-stat .ec-pixel-meter {
+    margin-top: 6px;
+}
+
+.vc-plugins-preview {
+    margin: 4px 0 16px;
+    overflow: hidden;
+    border-radius: var(--ec-radius-lg);
+    background: var(--ec-night);
+    box-shadow: inset 0 0 0 1px var(--ec-line);
+    clip-path: var(--ec-pc4);
+}
+
+.vc-plugins-preview :is(img, video) {
+    display: block;
+    width: 100%;
+    max-height: 340px;
+    object-fit: contain;
+}
+
+.vc-plugins-setting-hits {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.vc-plugins-setting-hit {
+    max-width: 100%;
+    overflow: hidden;
+    padding: 3px 9px;
+    border-radius: var(--ec-radius);
+    background: color-mix(in srgb, var(--ec-cobalt) 18%, transparent);
+    color: var(--ec-ice);
+    font-size: 12px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+    clip-path: var(--ec-pc);
+}
+
+.vc-plugins-setting-hit:hover {
+    background: color-mix(in srgb, var(--ec-cobalt) 30%, transparent);
+}
+
+.vc-plugins-setting-more {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.vc-plugins-profiles {
+    margin-bottom: 16px;
+}
+
+.vc-plugins-profiles-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 8px;
+}
+
+.vc-plugins-profiles-label {
+    flex: 1;
+    color: var(--ec-mist);
+    font-family: var(--ec-font-display);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.vc-plugins-text-button {
+    padding: 0;
+    background: none;
+    color: var(--text-link);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.vc-plugins-text-button:hover {
+    text-decoration: underline;
+}
+
+.vc-plugins-profiles-hint {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.vc-plugins-profile-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.vc-plugins-profile {
+    --ec-edge: var(--ec-line);
+    --ec-fill: var(--ec-panel);
+
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    align-items: stretch;
+    border-radius: 999px;
+    background: var(--ec-edge);
+    clip-path: var(--ec-pc);
+}
+
+[data-ec-pixel] .vc-plugins-profile {
+    border-radius: 0;
+}
+
+.vc-plugins-profile::before {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    z-index: -1;
+    border-radius: inherit;
+    background: var(--ec-fill);
+    clip-path: var(--ec-pc);
+}
+
+.vc-plugins-profile:hover {
+    --ec-edge: var(--ec-line-strong);
+    --ec-fill: var(--ec-panel-hi);
+}
+
+.vc-plugins-profile-active,
+.vc-plugins-profile-active:hover {
+    --ec-edge: var(--ec-bamboo);
+    --ec-fill: color-mix(in srgb, var(--ec-bamboo) 12%, var(--ec-panel));
+}
+
+.vc-plugins-profile-switch {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 4px 6px 14px;
+    background: none;
+    color: var(--ec-paper);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.vc-plugins-profile-count {
+    color: var(--ec-mist);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+}
+
+.vc-plugins-profile-active .vc-plugins-profile-count {
+    color: var(--ec-bamboo);
+}
+
+.vc-plugins-profile-more {
+    padding: 0 12px 0 6px;
+    background: none;
+    color: var(--ec-mist);
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.vc-plugins-profile-more:hover {
+    color: var(--ec-paper);
+}
+
+.vc-plugins-profile-switch:focus-visible,
+.vc-plugins-profile-more:focus-visible {
+    outline: 2px solid var(--ec-ice);
+    outline-offset: -2px;
+}
+
+.vc-plugins-change {
+    margin-bottom: 12px;
+}
+
+.vc-plugins-change-title {
+    margin: 0 0 4px;
+    color: var(--text-strong);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.vc-plugins-change-names {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 13px;
+    line-height: 1.5;
 }

@@ -10,8 +10,8 @@ import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 
 export default definePlugin({
-    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     name: "RichMagnetLinks",
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     description: "Renders magnet links like message links",
     tags: ["Appearance", "Chat"],
     patches: [

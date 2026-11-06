@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { isHostOf } from "@shared/hosts";
+
 const URL_KEYWORDS = ["url", "src", "proxy"];
 const URL_CONTAINER_KEYS = ["gif", "media", "image", "video", "thumbnail", "preview", "result", "item"];
 
@@ -52,11 +54,11 @@ export function scoreUrl(url: string) {
     const { host } = new URL(url);
 
     let score = 0;
-    if (host.endsWith("discordapp.net") || host.endsWith("discordapp.com")) score += 100;
-    if (host.includes("images-ext")) score += 20;
-    if (host.includes("media.discordapp.net") || host.includes("cdn.discordapp.com")) score += 10;
-    if (host.endsWith("klipy.com")) score += 5;
-    if (host.endsWith("tenor.com")) score += 5;
+    if (isHostOf(host, "discordapp.net") || isHostOf(host, "discordapp.com")) score += 100;
+    if (/^images-ext-\d+\.discordapp\.net$/.test(host)) score += 20;
+    if (host === "media.discordapp.net" || host === "cdn.discordapp.com") score += 10;
+    if (isHostOf(host, "klipy.com")) score += 5;
+    if (isHostOf(host, "tenor.com")) score += 5;
     if (url.includes(".gif")) score += 1;
 
     return score;
@@ -82,7 +84,7 @@ export function ensureGifUrl(url: string): string {
     const parsed = new URL(url);
     const host = parsed.hostname;
 
-    if (host.includes("tenor.com")) {
+    if (isHostOf(host, "tenor.com")) {
         const paths = parsed.pathname.split("/").filter(Boolean);
         if (paths.length >= 2) {
             const idSegment = paths[paths.length - 2];
@@ -94,7 +96,7 @@ export function ensureGifUrl(url: string): string {
         return parsed.href;
     }
 
-    if (host.includes("giphy.com")) {
+    if (isHostOf(host, "giphy.com")) {
         const paths = parsed.pathname.split("/").filter(Boolean);
         if (paths.length >= 2) {
             const gifId = paths[paths.length - 2];

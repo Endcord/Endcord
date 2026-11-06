@@ -1,6 +1,6 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2024 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -166,6 +166,9 @@ function NewPluginsModal({ modalProps, newPlugins, newSettings }: ModalComponent
 }
 
 export async function openNewPluginsModal() {
+    // Someone setting Endcord up gets the welcome screen, which shows them the plugins; this list of what's new since
+    // their last visit would only open on top of it. What there is now becomes what they know
+    if (Settings.welcomePending) return writeKnownSettings();
     const newPlugins = await getNewPlugins();
     const newSettings = await getNewSettings();
     // Nothing to show: still record the settings of plugins loaded since last time, as their baseline

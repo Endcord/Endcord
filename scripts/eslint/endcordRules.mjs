@@ -4,6 +4,10 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { readdirSync, readFileSync } from "fs";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
+
 // Rules for mistakes only this codebase can make. Each one exists because the mistake reached the code at least once.
 
 const CANONICAL_IDENT = "[A-Za-z_$][\\w$]*";
@@ -125,11 +129,65 @@ const layerBoundaries = {
     }
 };
 
+// What src/webpack/common hands out only once Discord's own code has loaded: React, its hooks, the stores.
+// Reading one while a file loads gets undefined, and the throw stops every file after it. That once kept Endcord
+// from starting at all (PluginCard called React.memo as it loaded)
+const COMMON_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "src", "webpack", "common");
+let lateNames;
+function lateBindings() {
+    if (lateNames) return lateNames;
+    lateNames = new Set();
+    for (const file of readdirSync(COMMON_DIR)) {
+        if (!/\.tsx?$/.test(file)) continue;
+        for (const m of readFileSync(join(COMMON_DIR, file), "utf8").matchAll(/^export let (\w+)/gm)) lateNames.add(m[1]);
+    }
+    return lateNames;
+}
+
+const DEFERRED = new Set(["FunctionDeclaration", "FunctionExpression", "ArrowFunctionExpression", "MethodDefinition"]);
+// TypeScript nodes that still run: "x as T", "x!", "x satisfies T"
+const RUNTIME_TS = new Set(["TSAsExpression", "TSNonNullExpression", "TSSatisfiesExpression", "TSTypeAssertion"]);
+
+const webpackCommonAtLoad = {
+    meta: {
+        type: "problem",
+        docs: { description: "Values from @webpack/common that are set late can't be used while a file loads" },
+        messages: { early: "{{name}} from @webpack/common isn't there yet when this file loads. Use it inside a function, or make it the first time it's needed." }
+    },
+    create(context) {
+        const late = lateBindings();
+        const imported = new Set();
+        return {
+            ImportDeclaration(node) {
+                if (node.source.value !== "@webpack/common" || node.importKind === "type") return;
+                for (const spec of node.specifiers) {
+                    if (spec.type === "ImportSpecifier" && spec.importKind !== "type" && late.has(spec.imported.name)) imported.add(spec.local.name);
+                }
+            },
+            Identifier(node) {
+                if (!imported.has(node.name)) return;
+                const { parent } = node;
+                if (parent.type === "ImportSpecifier") return;
+                if (parent.type === "MemberExpression" && parent.property === node && !parent.computed) return;
+                if (parent.type === "Property" && parent.key === node && !parent.computed && !parent.shorthand) return;
+
+                for (let n = parent; n; n = n.parent) {
+                    if (DEFERRED.has(n.type) || (n.type === "PropertyDefinition" && !n.static)) return;
+                    // Types, like "extends React.HTMLProps<...>", are gone before anything runs
+                    if (n.type.startsWith("TS") && !RUNTIME_TS.has(n.type)) return;
+                }
+                context.report({ node, messageId: "early", data: { name: node.name } });
+            }
+        };
+    }
+};
+
 export default {
     rules: {
         "absolute-program": absoluteProgram,
         "layer-boundaries": layerBoundaries,
         "patch-replace-groups": patchReplaceGroups,
-        "sensitive-settings": sensitiveSettings
+        "sensitive-settings": sensitiveSettings,
+        "webpack-common-at-load": webpackCommonAtLoad
     }
 };

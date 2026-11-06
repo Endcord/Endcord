@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import "@plugins/questify/settings.css";
+import "@plugins/questify/settingsStyle";
 
 import { Card } from "@components/Card";
 import { Heading } from "@components/Heading";

@@ -35,8 +35,8 @@ const settings = definePluginSettings({
 });
 
 export default definePlugin({
-    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     name: "MessageNotifier",
+    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     description: "Get toasts for when chosen users send a message",
     tags: ["Chat", "Notifications"],
     settings,

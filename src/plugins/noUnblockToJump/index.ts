@@ -1,6 +1,6 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Sofia Lima
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 

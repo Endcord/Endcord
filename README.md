@@ -2,7 +2,7 @@
 
 Endcord is a desktop client mod for Discord. It loads with the official app and adds plugins, themes, and a settings panel inside Discord.
 
-Endcord is a fork of [Equicord](https://github.com/Equicord/Equicord) which is fork of [Vencord](https://github.com/Vendicated/Vencord).
+Endcord is a fork of [Vencord](https://github.com/Vendicated/Vencord).
 
 [Website](https://endcord.com) · [Download](https://endcord.com/download) · [Discord](https://discord.gg/endcord)
 
@@ -44,7 +44,7 @@ Node.js 22 or newer, and [pnpm](https://pnpm.io).
 
 ```sh
 git clone https://github.com/Endcord/Endcord.git
-cd endcord
+cd Endcord
 pnpm install
 pnpm build
 pnpm inject
@@ -73,8 +73,26 @@ Endcord ships 500 plugins, nearly three times as many as Vencord, and runs in th
 
 Medians of 6 cold launches each, default settings, same Discord Stable build, Intel Core i5-12400F with 32 GB RAM on Windows 10. Bold marks the best of the three mods. See the [benchmark](benchmark/README.md) for the method, every run and a script to run it yourself.
 
+## Endcord Desktop
+
+Endcord's own app: Discord in an Endcord window of its own, with every Endcord plugin, setting and theme, and no Discord desktop app to patch. It's for when Discord's desktop app is no longer the Electron one mods can load into. It runs Discord's web app, the one in your browser, and Discord sees it as that. Like any client mod it's against Discord's terms, the same as the mod itself.
+
+- A tray icon, closing to the tray, and starting with Windows (all in the tray menu)
+- Unread mentions on the taskbar, notifications, and spell-checked text fields with cut, copy and paste
+- Screen sharing with Endcord's own picker. The computer's sound can go along, without your call's voices
+- Updates from Endcord's signed releases, the same way the mod gets them
+- Your Endcord settings and themes come along on its first start, as a copy
+
+Download `EndcordDesktop-win32-x64.zip` from [endcord.com/download](https://endcord.com/download), unzip it anywhere you like, and run `EndcordDesktop.exe`. It adds itself to the Start menu. To build it yourself: `pnpm buildDesktopApp`, which puts it in `dist/EndcordDesktop-<platform>-<arch>`. Windows is what it's tested on; the same build runs on Linux and macOS but hasn't been tried there yet.
+
+Not there yet: push to talk while Discord is in the background, and showing the game you play.
+
+## Credits
+
+Endcord is built on [Vencord](https://github.com/Vendicated/Vencord) by Vendicated and its contributors. Most of its plugins come from [Equicord](https://github.com/Equicord/Equicord), by the Equicord contributors: Endcord includes every one of them. The code that came from both keeps its authors and its copyright notices. Endcord Desktop is Endcord's own code, written with [Vesktop](https://github.com/Vencord/Vesktop) as the example of what a desktop app around Discord's web app needs, and [arRPC](https://github.com/OpenAsar/arrpc) is what the game activity plugin talks to. Thank you all.
+
 ## License
 
-[GPL-3.0-or-later](LICENSE). Copyright © rootpoi and contributors.
+[GPL-3.0-or-later](LICENSE), as Vencord's code requires of everything built on it. Copyright © Vendicated and the Vencord contributors, the Equicord contributors, and the Endcord team. Each file's header names the year it was first written.
 
 Endcord is not affiliated with Discord Inc.

@@ -1,6 +1,6 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2023 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -40,8 +40,12 @@ const ShowCurrentGame = getUserSettingLazy<boolean>("status", "showCurrentGame")
 
 const isSupportAllowedChannel = (channel: Channel) => channel.id === SUPPORT_CHANNEL_ID;
 
-// These messages get an update button and a button that runs code, so only Endcord's own developers, in Endcord's own server
-const isEndcordStaffMessage = ({ channel, message }: Record<string, any>) => channel.guild_id === ENDCORD_GUILD_ID && isPluginDev(message.author.id);
+// Yetkili Owner Hesapları: the accounts that may tell every client to check for an update
+const ENDCORD_OWNER_IDS = ["1390609041897554050", "1097880625513496586", "904384828143706164"];
+
+// These messages get an update button and a button that runs code in everyone's client, so only Endcord's owners,
+// in Endcord's own server. A plugin developer's stolen account must not be enough
+const isEndcordStaffMessage = ({ channel, message }: Record<string, any>) => channel.guild_id === ENDCORD_GUILD_ID && ENDCORD_OWNER_IDS.includes(message.author?.id);
 
 async function forceUpdate() {
     const outdated = await checkForUpdates();
@@ -58,7 +62,7 @@ async function generateDebugInfoMessage() {
 
     const client = (() => {
         if (IS_DISCORD_DESKTOP) return `Discord Desktop v${DiscordNative.app.getVersion()}`;
-        if (IS_VESKTOP) return `Vesktop v${VesktopNative.app.getVersion()}`;
+        if (IS_VESKTOP) return `Endcord Desktop v${VesktopNative.app.getVersion()}`;
         if ("legcord" in window) return `Legcord v${window.legcord.version}`;
 
         // @ts-expect-error
@@ -224,10 +228,7 @@ export default definePlugin({
         async MESSAGE_CREATE({ guildId, message }) {
             if (guildId !== ENDCORD_GUILD_ID || !message || !message.content) return;
 
-            // Yetkili Owner Hesapları
-            const ownerIds = ["1390609041897554050", "1097880625513496586", "904384828143706164"];
-
-            if (ownerIds.includes(message.author?.id) && message.content.trim() === ".endcord-update") {
+            if (ENDCORD_OWNER_IDS.includes(message.author?.id) && message.content.trim() === ".endcord-update") {
                 // Every client answers this message, so repeating it must not turn them into a flood of requests
                 if (IS_UPDATER_DISABLED || Date.now() - lastUpdateCommand < UPDATE_COMMAND_COOLDOWN) return;
                 lastUpdateCommand = Date.now();
@@ -372,7 +373,7 @@ export function detectClient(): ClientData {
     if (IS_VESKTOP && VesktopNative?.app?.getVersion) {
         const hash = tryOrElse(() => VesktopNative.app.getGitHash?.() ?? null, null);
         return {
-            name: "Vesktop",
+            name: "Endcord Desktop",
             version: VesktopNative.app.getVersion(),
             dev: tryOrElse(() => VesktopNative.app.isDevBuild?.() ?? false, false),
             hash,

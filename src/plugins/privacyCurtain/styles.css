@@ -1,0 +1,63 @@
+/* The whole window goes behind frosted night blue, so nothing in it can be read */
+html.ec-curtain-on #app-mount {
+    filter: blur(22px);
+    transition: filter 400ms var(--ec-ease-out, ease-out);
+    pointer-events: none;
+    user-select: none;
+}
+
+.ec-curtain {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    display: grid;
+    place-items: center;
+    background: color-mix(in srgb, var(--ec-night) 62%, transparent);
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 300ms ease, visibility 0s linear 300ms;
+    pointer-events: none;
+}
+
+html.ec-curtain-on .ec-curtain {
+    visibility: visible;
+    opacity: 1;
+    transition: opacity 400ms ease;
+}
+
+.ec-curtain-card {
+    display: grid;
+    gap: 8px;
+    justify-items: center;
+    padding: 28px 36px;
+    border: 1px solid var(--ec-line);
+    border-radius: 14px;
+    background: var(--ec-panel);
+    color: var(--ec-paper);
+    text-align: center;
+}
+
+.ec-curtain-card > :first-child {
+    margin-bottom: 8px;
+}
+
+.ec-curtain-title {
+    margin: 0;
+    font-family: var(--ec-font-display);
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.ec-curtain-hint {
+    margin: 0;
+    color: var(--ec-mist);
+    font-size: 14px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html.ec-curtain-on #app-mount,
+    .ec-curtain,
+    html.ec-curtain-on .ec-curtain {
+        transition: none;
+    }
+}

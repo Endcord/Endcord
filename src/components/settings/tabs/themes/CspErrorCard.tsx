@@ -61,7 +61,7 @@ export function CspErrorCard() {
             <Forms.FormText>{t("Some images, styles, or fonts were blocked because they come from disallowed domains.")}</Forms.FormText>
             <Forms.FormText>{t("It is highly recommended to move them to GitHub or Imgur. But you may also allow domains if you fully trust them.")}</Forms.FormText>
             <Forms.FormText>
-                {t("After allowing a domain, you have to fully close (from tray / task manager) and restart {app} to apply the change.", { app: IS_DISCORD_DESKTOP ? "Discord" : "Vesktop" })}
+                {t("After allowing a domain, you have to fully close (from tray / task manager) and restart {app} to apply the change.", { app: IS_DISCORD_DESKTOP ? "Discord" : "Endcord Desktop" })}
             </Forms.FormText>
 
             <Forms.FormTitle tag="h5" className={classes(Margins.top16, Margins.bottom8)}>{t("Blocked URLs")}</Forms.FormTitle>

@@ -7,6 +7,7 @@
 import { normalizeCorsProxyUrl, toProxiedUrl } from "@plugins/fileUpload/constants";
 import { settings } from "@plugins/fileUpload/settings";
 import { fallbackServiceOrder, serviceLabels, ServiceType, ShareXUploaderConfig, UploadResponse } from "@plugins/fileUpload/types";
+import { isUrlOn } from "@shared/hosts";
 import { copyToClipboard } from "@utils/clipboard";
 import { insertTextIntoChatInputBox } from "@utils/discord";
 import { Logger } from "@utils/Logger";
@@ -177,6 +178,13 @@ function getHeaderEntries(headers?: HeadersInit): [string, string][] {
     return Object.entries(headers);
 }
 
+interface ResponseInit {
+    status: number;
+    statusText: string;
+    url: string;
+    headers: Iterable<[string, string]>;
+}
+
 class XhrResponse {
     ok: boolean;
     headers: Headers;
@@ -184,32 +192,36 @@ class XhrResponse {
     statusText: string;
     url: string;
 
-    constructor(private xhr: XMLHttpRequest) {
-        this.status = xhr.status;
-        this.statusText = xhr.statusText;
-        this.url = xhr.responseURL;
+    constructor(private body: string, init: ResponseInit) {
+        this.status = init.status;
+        this.statusText = init.statusText;
+        this.url = init.url;
         this.ok = this.status >= 200 && this.status < 300;
         this.headers = new Headers();
+        for (const [name, value] of init.headers) this.headers.append(name, value);
+    }
 
-        const rawHeaders = xhr.getAllResponseHeaders();
-        for (const line of rawHeaders.trim().split(/[\r\n]+/)) {
+    static fromXhr(xhr: XMLHttpRequest) {
+        const headers: [string, string][] = [];
+        for (const line of xhr.getAllResponseHeaders().trim().split(/[\r\n]+/)) {
             if (!line) continue;
 
             const separatorIndex = line.indexOf(":");
             if (separatorIndex < 0) continue;
 
-            this.headers.append(line.slice(0, separatorIndex).trim(), line.slice(separatorIndex + 1).trim());
+            headers.push([line.slice(0, separatorIndex).trim(), line.slice(separatorIndex + 1).trim()]);
         }
+
+        const body = typeof xhr.response === "string" ? xhr.response : xhr.responseText;
+        return new XhrResponse(body, { status: xhr.status, statusText: xhr.statusText, url: xhr.responseURL, headers });
     }
 
     async text(): Promise<string> {
-        return typeof this.xhr.response === "string"
-            ? this.xhr.response
-            : this.xhr.responseText;
+        return this.body;
     }
 
     async json(): Promise<unknown> {
-        return JSON.parse(await this.text());
+        return JSON.parse(this.body);
     }
 }
 
@@ -235,7 +247,49 @@ function setXhrUploadProgress(event: ProgressEvent) {
     });
 }
 
+interface NativeRequestResult {
+    status: number;
+    statusText: string;
+    headers: [string, string][];
+    body: Uint8Array;
+}
+
+// On desktop the main process sends the request, so the server needs no CORS headers and no public proxy sees the
+// file. A cancel or timeout stops the wait; the request itself can't be pulled back once it is on its way
+async function nativeUploadRequest(url: string, options: RequestInit): Promise<XhrResponse> {
+    const method = (options.method || "GET").toUpperCase();
+    const hasBody = !["GET", "HEAD"].includes(method) && options.body != null && !(options.body instanceof ReadableStream);
+    // Request serialises the body the way the page would send it, with the multipart boundary in the content type
+    const request = new Request("https://endcord.invalid/", { method, headers: options.headers, body: hasBody ? options.body : undefined });
+    const body = hasBody ? new Uint8Array(await request.arrayBuffer()) : null;
+
+    const controller = new AbortController();
+    activeAbortController = controller;
+    const timeout = setTimeout(() => controller.abort(), getUploadTimeoutMs());
+    setUploadState({
+        status: uploadState.currentServiceLabel
+            ? `Uploading via ${uploadState.currentServiceLabel}...`
+            : "Uploading..."
+    });
+
+    try {
+        const result = await new Promise<NativeRequestResult>((resolve, reject) => {
+            controller.signal.addEventListener("abort", () => reject(new Error(cancelRequested ? "Upload cancelled by user" : "Upload timed out")), { once: true });
+            Native!.sendRequest(url, method, Object.fromEntries(request.headers), body).then(resolve, reject);
+        });
+
+        return new XhrResponse(new TextDecoder().decode(result.body), { status: result.status, statusText: result.statusText, url, headers: result.headers });
+    } finally {
+        clearTimeout(timeout);
+        if (activeAbortController === controller) {
+            activeAbortController = null;
+        }
+    }
+}
+
 async function uploadRequestWithTimeout(url: string, options: RequestInit): Promise<XhrResponse> {
+    if (Native) return nativeUploadRequest(url, options);
+
     const requestUrl = toProxyUrl(url);
 
     return new Promise((resolve, reject) => {
@@ -250,7 +304,7 @@ async function uploadRequestWithTimeout(url: string, options: RequestInit): Prom
         }
 
         xhr.upload.onprogress = setXhrUploadProgress;
-        xhr.onload = () => resolve(new XhrResponse(xhr));
+        xhr.onload = () => resolve(XhrResponse.fromXhr(xhr));
         xhr.onerror = () => reject(new Error("Upload failed"));
         xhr.onabort = () => reject(new Error(cancelRequested ? "Upload cancelled by user" : "Upload timed out"));
         xhr.onloadend = () => {
@@ -790,7 +844,7 @@ async function uploadToTmpfiles(fileBlob: Blob, filename: string): Promise<strin
         throw new Error("No URL returned from upload");
     }
 
-    return url.includes("tmpfiles.org/") && !url.includes("/dl/")
+    return isUrlOn(url, "tmpfiles.org") && !new URL(url).pathname.startsWith("/dl/")
         ? url.replace(/tmpfiles\.org\/(\d+)/, "tmpfiles.org/dl/$1")
         : url;
 }

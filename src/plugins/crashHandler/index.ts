@@ -1,11 +1,12 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 import { DataStore } from "@api/index";
 import { showNotification } from "@api/Notifications";
+import { noteCrash, noteRecovered } from "@api/SafeMode";
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
@@ -66,6 +67,7 @@ export default definePlugin({
 
     handleCrash(_this: any, errorState: any) {
         DataStore.del("KeepCurrentChannel_previousData");
+        noteCrash(errorState?.error);
 
         if (IS_DEV) {
             try {
@@ -193,6 +195,7 @@ export default definePlugin({
 
         try {
             _this.setState({ error: null, info: null });
+            noteRecovered();
         } catch (err) {
             CrashHandlerLogger.debug("Failed to update crash handler component.", err);
         }

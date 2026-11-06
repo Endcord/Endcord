@@ -17,7 +17,7 @@ export function WindowsMaterialSettings() {
     const { t } = useI18n();
     const settings = useSettings(["windowsMaterial"]);
 
-    if (!IS_WINDOWS || IS_WEB || !EndcordNative.native.supportsWindowsMaterial()) return null;
+    if (!IS_WINDOWS || !IS_DISCORD_DESKTOP || !EndcordNative.native.supportsWindowsMaterial()) return null;
 
     return (
         <ErrorBoundary noop>
@@ -43,7 +43,7 @@ export function WindowsMaterialSettings() {
                         value: "tabbed"
                     },
                     {
-                        label: t("Acrylic (blurs the window behind Vesktop for a translucent background)"),
+                        label: t("Acrylic (blurs the window behind Discord for a translucent background)"),
                         value: "acrylic"
                     }
                 ]}

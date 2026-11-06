@@ -5,7 +5,7 @@
  */
 
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
-import { definePluginSettings, migratePluginSettings } from "@api/Settings";
+import { definePluginSettings, migratePluginSettings, migrateRemovedPlugin } from "@api/Settings";
 import { Button } from "@components/Button";
 import { RemixIcon } from "@components/Icons";
 import type { RenderModalProps } from "@endcord/discord-types";
@@ -491,6 +491,7 @@ function openGifMakerFromItem(item) {
 }
 
 migratePluginSettings("GifMaker", "gifMaker");
+migrateRemovedPlugin("GifMaker", "GifCaptioner");
 export default definePlugin({
     name: "GifMaker",
     description: "Create and caption GIFs from any media in chat or the GIF picker.",

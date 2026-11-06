@@ -1,0 +1,15 @@
+.ec-localtimes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 12px;
+    align-items: center;
+    margin-top: 2px;
+    color: var(--text-muted);
+    font-size: 12px;
+    line-height: 16px;
+}
+
+.ec-localtimes > svg {
+    flex-shrink: 0;
+    margin-inline-end: -6px;
+}

@@ -1,0 +1,111 @@
+.ec-whats-new-pill {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    max-width: calc(100vw - 40px);
+    padding: 4px;
+    border: 1px solid var(--ec-line);
+    border-radius: 999px;
+    background: var(--ec-night-gradient);
+    box-shadow: 0 2px 6px rgb(0 0 0 / 22%), 0 16px 40px rgb(0 0 0 / 42%);
+    animation: ec-rise var(--ec-motion-slow) var(--ec-ease-out);
+}
+
+.ec-whats-new-leaving {
+    animation: ec-sink var(--ec-motion-base) var(--ec-ease-out) forwards;
+}
+
+.ec-whats-new-pill-open {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    padding: 6px 12px 6px 10px;
+    border-radius: 999px;
+    background: none;
+    color: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color var(--ec-motion-fast) ease;
+}
+
+.ec-whats-new-pill-open:hover {
+    background: var(--background-mod-subtle);
+}
+
+.ec-whats-new-pill-link {
+    color: var(--text-link);
+}
+
+.ec-whats-new-pill-close {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    margin-right: 2px;
+    border-radius: 50%;
+    background: none;
+    color: var(--icon-muted);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color var(--ec-motion-fast) ease, color var(--ec-motion-fast) ease;
+}
+
+.ec-whats-new-pill-close:hover {
+    background: var(--background-mod-normal);
+    color: var(--text-default);
+}
+
+.ec-whats-new-pill-open:focus-visible,
+.ec-whats-new-pill-close:focus-visible {
+    outline: 2px solid var(--brand-500);
+    outline-offset: 1px;
+}
+
+.ec-whats-new-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ec-whats-new-item {
+    display: flex;
+    gap: 14px;
+    animation: ec-rise var(--ec-motion-slow) var(--ec-ease-out) backwards;
+}
+
+.ec-whats-new-icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: var(--background-mod-subtle);
+    color: var(--text-default);
+}
+
+.ec-whats-new-item-title {
+    margin: 0;
+    color: var(--text-default);
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.ec-whats-new-item-description {
+    margin: 2px 0 0;
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.45;
+}

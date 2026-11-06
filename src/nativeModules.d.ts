@@ -10,3 +10,9 @@ declare module "~pluginNatives" {
     const pluginNatives: Record<string, Record<string, (event: Electron.IpcMainInvokeEvent, ...args: unknown[]) => unknown>>;
     export default pluginNatives;
 }
+
+declare module "~pluginNativeMethods" {
+    /** The methods each plugin's native.ts exports, by plugin name, read when building (see nativeMethodsPlugin) */
+    const methods: Record<string, string[]>;
+    export default methods;
+}

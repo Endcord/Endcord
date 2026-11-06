@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import "./LinkIconButton.css";
+import "./LinkIconButton.css?screen";
 
 import { GithubIcon, WebsiteIcon } from "@components/Icons";
 import { getTheme, Theme } from "@utils/discord";

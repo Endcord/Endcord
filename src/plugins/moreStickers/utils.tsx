@@ -6,6 +6,7 @@
 
 import type { FFmpeg } from "@ffmpeg/ffmpeg";
 import { classNameFactory } from "@utils/css";
+import type { PluginNative } from "@utils/types";
 import { waitFor } from "@webpack";
 import { React } from "@webpack/common";
 
@@ -15,13 +16,22 @@ export const cl = classNameFactory("vc-more-stickers-");
 export const clPicker = (className: string, ...args: any[]) => cl(`picker-${className}`, ...args);
 
 const CORS_PROXY = "https://cors.keiran0.workers.dev?url=";
+const Native = IS_WEB ? null : EndcordNative.pluginHelpers.MoreStickers as PluginNative<typeof import("./native")>;
 
 function corsUrl(url: string | URL) {
     return CORS_PROXY + encodeURIComponent(url.toString());
 }
 
-export function corsFetch(url: string | URL, init?: RequestInit) {
-    return fetch(corsUrl(url), init);
+/**
+ * Reads a page or file the page itself can't, because the site sends no CORS headers. On desktop the main process
+ * fetches it with its own address checks; the browser build has no native side, so it goes through a public proxy
+ */
+export async function corsFetch(url: string | URL, init?: RequestInit): Promise<Response> {
+    if (!Native) return fetch(corsUrl(url), init);
+
+    const headers = init?.headers ? Object.fromEntries(new Headers(init.headers)) : undefined;
+    const { status, contentType, data } = await Native.fetchResource(url.toString(), headers);
+    return new Response([204, 205, 304].includes(status) ? null : data, { status, headers: contentType ? { "content-type": contentType } : {} });
 }
 
 export class Mutex {

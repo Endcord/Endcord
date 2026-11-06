@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import "@plugins/questify/settings.css";
+import "@plugins/questify/settingsStyle";
 
 import { setSettingsSearchQuery, useSettingsSearchMatchCount, useSettingsSearchQuery } from "@plugins/questify/settings/search";
 import { q } from "@plugins/questify/utils/ui";

@@ -185,7 +185,7 @@ export default definePlugin({
     name: "ChannelNotes",
     description: "Keep private notes on any channel, DM or group chat: rules, who is who, things to remember. Notes stay on your device.",
     tags: ["Utility", "Chat"],
-    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
+    authors: [Devs.rootpoi],
     searchTerms: ["notes", "memo", "reminder", "not"],
     dependencies: ["HeaderBarAPI"],
 

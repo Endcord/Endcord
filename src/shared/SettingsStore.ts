@@ -50,6 +50,7 @@ export class SettingsStore<T extends object> {
     private prefixListeners = new Map<string, Set<(newData: any, path: string) => void>>();
     private globalListeners = new Set<(newData: T, path: string) => void>();
     private readonly proxyContexts = new WeakMap<any, ProxyContext<T>>();
+    private readonly proxies = new WeakMap<object, any>();
 
     private readonly proxyHandler: ProxyHandler<any> = (() => {
         const self = this;
@@ -150,12 +151,20 @@ export class SettingsStore<T extends object> {
     }
 
     private makeProxy(object: any, root: T = object, path = "") {
+        // Plugins read settings while Discord draws, and each step of settings.plugins.Name.key made a new proxy.
+        // The same object at the same path gets the same one back instead
+        const cached = this.proxies.get(object);
+        const context = this.proxyContexts.get(object);
+        if (cached && context?.root === root && context.path === path) return cached;
+
         this.proxyContexts.set(object, {
             root,
             path
         });
 
-        return new Proxy(object, this.proxyHandler);
+        const proxy = new Proxy(object, this.proxyHandler);
+        this.proxies.set(object, proxy);
+        return proxy;
     }
 
     private notifyPrefixListeners(pathString: string, pathElements: string[], value: any) {

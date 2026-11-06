@@ -29,7 +29,7 @@ export const DISCORD_SETTINGS_ROUTES: SettingsRoute[] = [
     { route: "authorized_apps", label: "Authorized Apps", keywords: ["oauth", "apps"] },
     { route: "family_center", label: "Family Center", keywords: ["family", "safety"] },
     { route: "advanced", label: "Advanced", keywords: ["developer"] },
-    { route: "endcord_main", label: "Endcord", keywords: ["vencord", "equicord"] },
+    { route: "endcord_main", label: "Endcord", keywords: ["endcord"] },
     { route: "endcord_plugins", label: "Endcord Plugins", keywords: ["plugins"] },
     { route: "endcord_themes", label: "Endcord Themes", keywords: ["themes", "css"] },
     { route: "endcord_updater", label: "Endcord Updater", keywords: ["update"] },
@@ -52,11 +52,11 @@ const ROUTE_ALIASES = new Map<string, string[]>([
     ["chat", ["chat_panel"]],
     ["authorized_apps", ["authorized_apps_panel"]],
     ["family_center", ["family_center_panel"]],
-    ["endcord_main", ["endcord_main_panel", "equicord_main", "equicord_main_panel", "endcord_changelog", "endcord_changelog_panel", "equicord_changelog", "equicord_changelog_panel"]],
-    ["endcord_plugins", ["endcord_plugins_panel", "equicord_plugins", "equicord_plugins_panel"]],
-    ["endcord_themes", ["endcord_themes_panel", "equicord_themes", "equicord_themes_panel"]],
-    ["endcord_updater", ["endcord_updater_panel", "equicord_updater", "equicord_updater_panel"]],
-    ["endcord_backup_restore", ["endcord_backup_restore_panel", "equicord_backup_restore", "equicord_backup_restore_panel"]]
+    ["endcord_main", ["endcord_main_panel"]],
+    ["endcord_plugins", ["endcord_plugins_panel"]],
+    ["endcord_themes", ["endcord_themes_panel"]],
+    ["endcord_updater", ["endcord_updater_panel"]],
+    ["endcord_backup_restore", ["endcord_backup_restore_panel"]]
 ]);
 
 const ROUTE_LOOKUP = (() => {

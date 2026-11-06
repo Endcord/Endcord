@@ -4,9 +4,10 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import "./styles.css";
+import "./styles.css?screen";
 
 export * from "./BaseTab";
+export { default as DiagnosticsTab } from "./diagnostics";
 export { default as EndcordTab } from "./endcord";
 export { default as PatchHelperTab } from "./patchHelper";
 export { default as PluginsTab } from "./plugins";

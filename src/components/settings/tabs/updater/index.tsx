@@ -1,19 +1,16 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 import { useSettings } from "@api/Settings";
 import { Button } from "@components/Button";
-import { Card } from "@components/Card";
 import { Divider } from "@components/Divider";
-import { Flex } from "@components/Flex";
 import { FormSwitch } from "@components/FormSwitch";
-import { HeadingSecondary } from "@components/Heading";
 import { Link } from "@components/Link";
-import { Paragraph } from "@components/Paragraph";
 import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
+import { openWhatsNewModal } from "@components/whatsNew";
 import { useI18n } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import { classes } from "@utils/misc";
@@ -24,35 +21,6 @@ import { Forms, React } from "@webpack/common";
 import gitHash from "~git-hash";
 
 import { CommonProps, HashLink, Newer, Updatable } from "./Components";
-
-function VesktopSection() {
-    const { t } = useI18n();
-    if (!IS_VESKTOP) return null;
-
-    const [isVesktopOutdated] = useAwaiter<boolean>(VesktopNative.app.isOutdated, { fallbackValue: false });
-
-    return (
-        <Flex className={Margins.bottom20} flexDirection="column" gap="1em">
-            <Card variant="info">
-                <HeadingSecondary>{t("Vesktop & Endcord")}</HeadingSecondary>
-                <Paragraph>{t("Vesktop and Endcord are two separate things. This updater is for Endcord.")}</Paragraph>
-                <Paragraph className={Margins.top8}>
-                    {t("You receive separate popups for Vesktop updates. You can also manually update by installing the")} <Link href="https://vesktop.dev/install">{t("latest version")}</Link>.
-                </Paragraph>
-            </Card>
-
-            {isVesktopOutdated && (
-                <Card variant="warning">
-                    <HeadingSecondary>{t("Vesktop Outdated")}</HeadingSecondary>
-                    <Flex flexDirection="column" gap="0.5em">
-                        <Paragraph>{t("Your version of Vesktop is outdated.")}</Paragraph>
-                        <Button variant="link" onClick={() => VesktopNative.app.openUpdater()}>{t("Open Vesktop Updater")}</Button>
-                    </Flex>
-                </Card>
-            )}
-        </Flex>
-    );
-}
 
 function Updater() {
     const { t } = useI18n();
@@ -70,8 +38,6 @@ function Updater() {
 
     return (
         <SettingsTab>
-            <VesktopSection />
-
             <FormSwitch
                 title={t("Automatically update")}
                 description={t("Automatically update Endcord without confirmation prompt")}
@@ -109,7 +75,11 @@ function Updater() {
 
             {isNewer
                 ? <Newer {...commonProps} />
-                : <Updatable {...commonProps} />
+                : (
+                    <Updatable {...commonProps}>
+                        <Button variant="secondary" onClick={() => openWhatsNewModal()}>{t("What's New")}</Button>
+                    </Updatable>
+                )
             }
         </SettingsTab>
     );

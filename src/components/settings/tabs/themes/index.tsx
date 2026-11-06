@@ -1,16 +1,14 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import "./styles.css";
+import "./styles.css?screen";
 
-import { BaseText } from "@components/BaseText";
 import { Card } from "@components/Card";
 import { Flex } from "@components/Flex";
 import { Link } from "@components/Link";
-import { Margins } from "@components/margins";
 import { Paragraph } from "@components/Paragraph";
 import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
 import { useI18n } from "@utils/i18n";
@@ -56,15 +54,12 @@ function ThemesTab() {
             <Flex flexDirection="column" gap="1em">
                 <CspErrorCard />
 
-                <Card variant="warning">
-                    <BaseText tag="h3" size="md" weight="medium" className={Margins.bottom8}>{t("Theme Performance")}</BaseText>
-                    <Paragraph>
-                        {t("Themes and custom CSS have the potential to cause major lag! If you experience performance issues, try disabling your themes and CSS to see if they're the cause. The most common cause of lag is the :has() operator.")}
-                    </Paragraph>
-                </Card>
-
                 {currentTab === ThemeTab.LOCAL && <LocalThemesTab />}
                 {currentTab === ThemeTab.ONLINE && <OnlineThemesTab />}
+
+                <Paragraph className="ec-themes-note">
+                    {t("If Discord feels slow, try turning your themes and custom CSS off. The :has() selector is the most common cause.")}
+                </Paragraph>
             </Flex>
         </SettingsTab>
     );

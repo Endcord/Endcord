@@ -108,6 +108,7 @@ export const settings = definePluginSettings({
         hidden: true,
     },
     spotifyLyricsApiUrl: {
+        sensitive: true,
         type: OptionType.STRING,
         description: "Spotify lyrics API base URL.",
         hidden: true,
@@ -221,6 +222,7 @@ export const settings = definePluginSettings({
         default: false,
     },
     websocketURL: {
+        sensitive: true,
         type: OptionType.STRING,
         description: "Default is ws://localhost:24123",
         default: "ws://localhost:24123",

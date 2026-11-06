@@ -1,6 +1,6 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2023 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -17,9 +17,14 @@ export function makeLinksOpenExternally(win: BrowserWindow) {
                 return { action: "allow" };
         }
 
-        // eslint-disable-next-line no-restricted-syntax -- this is the check
-        if (isSafeExternalUrl(url)) shell.openExternal(url);
+        openExternally(url);
 
         return { action: "deny" };
     });
+}
+
+/** Opens a link in the browser, or an app's own link in that app, if it's one that's safe to hand over */
+export function openExternally(url: string) {
+    // eslint-disable-next-line no-restricted-syntax -- this is the check
+    if (isSafeExternalUrl(url)) shell.openExternal(url);
 }

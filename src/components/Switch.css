@@ -7,6 +7,7 @@
     height: 28px;
     position: relative;
     width: 44px;
+    transition: background-color var(--ec-motion-base) var(--ec-ease-out);
 
     .high-contrast-mode & {
         border-color: var(--border-strong);
@@ -35,7 +36,7 @@
     margin: 3px;
     position: absolute;
     width: 28px;
-    transition: 100ms transform ease-in-out;
+    transition: transform var(--ec-motion-base) var(--ec-ease-out);
     overflow: visible;
 }
 

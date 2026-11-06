@@ -1,11 +1,11 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
-import { definePluginSettings } from "@api/Settings";
+import { definePluginSettings, migrateRemovedPlugin } from "@api/Settings";
 import { ImageIcon } from "@components/Icons";
 import type { Channel, Guild, User } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
@@ -455,6 +455,8 @@ function openBannerContextMenu(e: React.MouseEvent, bannerUrl: string) {
         </Menu.Menu>
     ));
 }
+
+migrateRemovedPlugin("ViewIcons", "ProfileMedia");
 
 export default definePlugin({
     name: "ViewIcons",

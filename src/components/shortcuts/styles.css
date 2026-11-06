@@ -1,0 +1,56 @@
+.ec-shortcuts-group + .ec-shortcuts-group {
+    margin-top: 18px;
+}
+
+.ec-shortcuts-title {
+    margin: 0 0 6px;
+    color: var(--ec-mist);
+    font-family: var(--ec-font-display);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.ec-shortcuts-list {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ec-shortcuts-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--ec-line);
+    color: var(--text-default);
+    font-size: 14px;
+}
+
+.ec-shortcuts-row:last-child {
+    border-bottom: 0;
+}
+
+.ec-shortcuts-keys {
+    display: flex;
+    flex-shrink: 0;
+    gap: 4px;
+}
+
+.ec-shortcuts-key {
+    min-width: 24px;
+    padding: 2px 7px;
+    border-radius: 5px;
+    background: var(--ec-panel-hi);
+    box-shadow: inset 0 0 0 1px var(--ec-line-strong), 0 2px 0 var(--ec-night);
+    color: var(--ec-paper);
+    font-family: var(--font-code);
+    font-size: 12px;
+    text-align: center;
+}
+
+[data-ec-pixel] .ec-shortcuts-key {
+    border-radius: 0;
+}

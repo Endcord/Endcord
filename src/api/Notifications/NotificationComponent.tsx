@@ -1,6 +1,6 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2023 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -8,6 +8,7 @@ import "./styles.css";
 
 import { useSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
+import { ENDCORD_THEME } from "@utils/css";
 import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import { React, useEffect, useMemo, useState, useStateFromStores, WindowStore } from "@webpack/common";
@@ -52,7 +53,7 @@ export default ErrorBoundary.wrap(function NotificationComponent({
 
     return (
         <button
-            className={classes("vc-notification-root", className)}
+            className={classes("vc-notification-root", ENDCORD_THEME, className)}
             style={position === "bottom-right" ? { bottom: "1rem" } : { top: "3rem" }}
             onClick={() => {
                 onClick?.();

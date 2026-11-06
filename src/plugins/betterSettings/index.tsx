@@ -135,11 +135,18 @@ export default definePlugin({
             predicate: () => settings.store.disableFade
         },
         { // Disable initial and exit delay for settings menu
-            find: "headerId:void 0,headerIdIsManaged:!1",
-            replacement: {
-                match: /let (\i)=300/,
-                replace: "let $1=0"
-            },
+            // The 300ms used to be a named constant; newer Discord writes the number where the layer waits
+            find: "componentWillLeave=e=>{let{instant:",
+            replacement: [
+                {
+                    match: /(?<=transitionState:\i\.\i\.(?:ENTERED|EXITED)\}\),\i(?:\?\.)?\(\)\},)(?:\i\?0:\i\.\i|300\*!\i)/g,
+                    replace: "0"
+                },
+                {
+                    match: /(?<=closeModal\(this\.props\.modalKey\),setTimeout\(\(\)=>\i\(\),)(?:\i\.\i|300)/,
+                    replace: "0"
+                }
+            ],
             predicate: () => settings.store.disableFade
         },
         { // Load menu TOC eagerly

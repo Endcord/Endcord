@@ -6,6 +6,7 @@
 
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { definePluginSettings } from "@api/Settings";
+import { isSafeMediaUrl, isSnowflake } from "@shared/hosts";
 import { Devs } from "@utils/constants";
 import { sendMessage } from "@utils/discord";
 import { t } from "@utils/i18n";
@@ -84,15 +85,19 @@ function isSyncableUrl(url: string) {
 
 // ── Wallpaper storage helpers ──────────────────────────────────────────────────
 
+// Only channel ids and addresses are kept, so a stored or synced value can't reach the object's prototype
 function getWallpapers(): Record<string, string> {
+    const wallpapers: Record<string, string> = Object.create(null);
     try {
-        return JSON.parse(settings.store.wallpapers || "{}");
-    } catch {
-        return {};
-    }
+        for (const [id, url] of Object.entries(JSON.parse(settings.store.wallpapers || "{}"))) {
+            if (isSnowflake(id) && typeof url === "string") wallpapers[id] = url;
+        }
+    } catch { }
+    return wallpapers;
 }
 
 function saveWallpaper(channelId: string, url: string, skipSync = false) {
+    if (!isSnowflake(channelId)) return;
     const wp = getWallpapers();
     if (url) {
         wp[channelId] = url;
@@ -127,7 +132,7 @@ function saveWallpaper(channelId: string, url: string, skipSync = false) {
 }
 
 function saveLocalWallpaperOnly(channelId: string, url: string) {
-    if (url && !isSyncableUrl(url)) return;
+    if (!isSnowflake(channelId) || (url && !isSyncableUrl(url))) return;
 
     const wp = getWallpapers();
     if (url) wp[channelId] = url;
@@ -205,7 +210,7 @@ function applyWallpaper(channelId?: string) {
     if (!cid) return;
 
     const url = getWallpaper(cid);
-    if (!url) return;
+    if (!url || !isSafeMediaUrl(url)) return;
 
     const opacity = settings.store.opacity ?? 0.3;
     const blur = settings.store.blur ?? 0;

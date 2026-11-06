@@ -2,12 +2,12 @@
     background-color: var(--card-background-default);
     color: var(--interactive-icon-active);
     border: 1px solid var(--border-subtle);
-    border-radius: 8px;
+    border-radius: 12px;
     display: block;
     height: 100%;
     padding: 12px;
     width: 100%;
-    transition: 0.1s ease-out;
+    transition: var(--ec-motion-base) var(--ec-ease-out);
     transition-property: box-shadow, transform, background, opacity;
     box-sizing: border-box;
 }
@@ -44,14 +44,13 @@
 }
 
 .vc-addon-name-author {
-    width: 100%;
+    flex: 1;
+    min-width: 0;
 }
 
 .vc-addon-name {
     display: flex;
-    width: 100%;
     align-items: center;
-    flex-grow: 1;
     gap: 8px;
 }
 
@@ -64,17 +63,15 @@
 }
 
 .vc-addon-title-container {
-    width: 100%;
+    min-width: 0;
     overflow: hidden;
     height: 1.25em;
-    position: relative;
 }
 
 .vc-addon-title {
-    position: absolute;
-    inset: 0;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 @keyframes vc-addon-title {

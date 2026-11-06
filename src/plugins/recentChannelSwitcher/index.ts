@@ -5,7 +5,7 @@
  */
 
 import * as DataStore from "@api/DataStore";
-import { definePluginSettings } from "@api/Settings";
+import { definePluginSettings, migrateRemovedPlugin } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 import { ChannelStore, GuildMemberStore, GuildStore, IconUtils, NavigationRouter, ReadStateStore, SelectedChannelStore, SelectedGuildStore, UserStore } from "@webpack/common";
@@ -577,6 +577,8 @@ function onKeyUp(event: KeyboardEvent) {
 
     finishSwitcher();
 }
+
+migrateRemovedPlugin("RecentChannelSwitcher", "RecentDMSwitcher");
 
 export default definePlugin({
     name: "RecentChannelSwitcher",

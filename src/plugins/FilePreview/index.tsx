@@ -5,6 +5,7 @@
  */
 
 import { addMessagePopoverButton, removeMessagePopoverButton } from "@api/MessagePopover";
+import { isPluginEnabled } from "@api/PluginManager";
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
@@ -48,12 +49,15 @@ export default definePlugin({
             if (attachments.length === 0) return;
 
             const file = attachments[0];
-            const url = file.url?.toLowerCase();
-            if (!url) return;
+            if (!file.url) return;
 
-            const isGoogle = googleExtensions.some(ext => url.endsWith(ext));
-            const isOffice = officeExtensions.some(ext => url.endsWith(ext));
-            const isObject = objectExtensions.some(ext => url.endsWith(ext));
+            // The URL ends in Discord's signature query, so the extension comes from the file name
+            const ext = (file.filename ?? "").toLowerCase().split(".").pop() ?? "";
+            const isGoogle = googleExtensions.includes(ext);
+            const isOffice = officeExtensions.includes(ext);
+            const isObject = objectExtensions.includes(ext);
+            // PdfViewer shows PDFs itself, without sending them to Google
+            if (isGoogle && !settings.store.forceGoogleProvider && isPluginEnabled("PdfViewer")) return;
             if (!isGoogle && !isOffice && !isObject) return;
 
             const tooBig = file.size > 10485760; // 10 MB

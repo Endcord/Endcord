@@ -1,6 +1,6 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -25,6 +25,36 @@ declare module "~plugins" {
     export function getPluginFlag(name: string, flag: "required" | "enabledByDefault"): boolean | undefined;
     /** Runs the hook for every plugin already loaded and for each plugin loaded afterwards */
     export function setPluginLoadHook(hook: (plugin: import("./utils/types").Plugin) => void): void;
+    /**
+     * Gets the code of these lazy plugins in one go, where the desktop build keeps it outside the script, so reading
+     * them afterwards doesn't fetch each one by itself. Does nothing elsewhere
+     */
+    export function preloadPluginCode(names: string[]): void;
+    /** One of the core's own screen styles that the desktop build keeps outside the script, by its file. "" elsewhere */
+    export function getScreenStyle(key: string): string;
+    /**
+     * What the plugin list shows of a lazy plugin whose code isn't loaded, read from its source when building.
+     * undefined for a loaded plugin, one whose details couldn't be read, and in builds that keep all plugin code inside
+     * the script. Short keys, since it ships for every lazy plugin
+     */
+    export function getPluginListInfo(name: string): {
+        /** description */
+        d: string;
+        /** tags */
+        t?: string[];
+        /** search terms */
+        q?: string[];
+        /** dependencies */
+        p?: string[];
+        /** hidden */
+        h?: 1;
+        /** has settings */
+        s?: 1;
+        /** its authors' keys in Devs, when all of them are written that way */
+        w?: string[];
+        /** its sensitive settings; "*" when one couldn't be named and the plugin itself has to be asked */
+        k?: string[];
+    } | undefined;
 }
 
 declare module "~git-hash" {
@@ -47,3 +77,5 @@ declare module "*.css?managed" {
     const name: string;
     export default name;
 }
+
+declare module "*.css?screen";

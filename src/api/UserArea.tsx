@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { EndcordOnly } from "@api/EndcordVisibility";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Logger } from "@utils/Logger";
 import { findComponentByCodeLazy } from "@webpack";
@@ -74,5 +75,5 @@ function UserAreaButtons({ props }: { props: UserAreaRenderProps; }) {
 }
 
 export function _renderButtons(props: UserAreaRenderProps) {
-    return [<UserAreaButtons key="vc-user-area-buttons" props={props} />];
+    return [<EndcordOnly key="vc-user-area-buttons"><UserAreaButtons props={props} /></EndcordOnly>];
 }

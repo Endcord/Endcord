@@ -12,9 +12,10 @@ import { Logger } from "@utils/Logger";
 import { interpolateIfDefined } from "@utils/misc";
 import { Patch, PatchReplacement } from "@utils/types";
 
-import { canSkipPatch, ensurePatchCache, recordMatch, recordScanned } from "./patchCache";
+import { defineExports } from "./defineExports";
+import { cachedPatchesFor, ensurePatchCache, recordMatch, recordScanned } from "./patchCache";
 import { AnyModuleFactory, AnyWebpackRequire, MaybePatchedModuleFactory, PatchedModuleFactory } from "./types";
-import { _blacklistBadModules, _initWebpack, factoryListeners, findModuleFactory, moduleListeners, waitForSubscriptions, wreq } from "./webpack";
+import { _blacklistBadModules, _initWebpack, _notifyStoreSubscriptions, factoryListeners, findModuleFactory, moduleListeners, storeSubscriptions, waitForSubscriptions, wreq } from "./webpack";
 
 export const patches = [] as Patch[];
 
@@ -24,8 +25,28 @@ export const SYM_ORIGINAL_FACTORY = Symbol("WebpackPatcher.originalFactory");
 export const SYM_PATCHED_SOURCE = Symbol("WebpackPatcher.patchedSource");
 export const SYM_PATCHED_BY = Symbol("WebpackPatcher.patchedBy");
 export const allWebpackInstances = new Set<AnyWebpackRequire>();
+/**
+ * Each instance's own module factories object, behind the proxy on wreq.m. Reading and defining factories here skips
+ * a proxy round trip for every one of the thousands of factories Discord defines
+ */
+const originalModulesOf = new WeakMap<AnyWebpackRequire, AnyWebpackRequire["m"]>();
 
 export const patchTimings = [] as Array<[plugin: string, moduleId: PropertyKey, match: PatchReplacement["match"], totalTime: number]>;
+/** Milliseconds each plugin has spent rewriting Discord's code so far, for the Diagnostics page */
+export const patchTimeByPlugin = new Map<string, number>();
+/**
+ * The patches of each plugin that found their module but changed nothing or broke it, which happens when Discord
+ * changes the code they look for. Shown on the plugin's card and in Diagnostics
+ */
+export const patchProblems = new Map<string, Set<string>>();
+/** Which plugins changed each module, so a crash inside one can be traced back to them */
+export const pluginsByModule = new Map<string, string[]>();
+
+function notePatchProblem(plugin: string, match: PatchReplacement["match"]) {
+    let problems = patchProblems.get(plugin);
+    if (!problems) patchProblems.set(plugin, problems = new Set());
+    problems.add(String(match));
+}
 
 export const getBuildNumber = makeLazy(() => {
     try {
@@ -184,6 +205,7 @@ define(Function.prototype, "m", {
         const patchThisInstance = () => {
             logger.info(`Found Webpack module factories${interpolateIfDefined` in ${fileName}`}`);
             allWebpackInstances.add(this);
+            originalModulesOf.set(this, originalModules);
 
             // Proxy (and maybe patch) pre-populated factories
             for (const moduleId in originalModules) {
@@ -205,17 +227,7 @@ define(Function.prototype, "m", {
 
             // Overwrite Webpack's defineExports function to define the export descriptors configurable.
             // This is needed so we can later blacklist specific exports from Webpack search by making them non-enumerable
-            this.d = function (exports, definition) {
-                for (const key in definition) {
-                    if (Object.hasOwn(definition, key) && !Object.hasOwn(exports, key)) {
-                        Object.defineProperty(exports, key, {
-                            enumerable: true,
-                            configurable: true,
-                            get: definition[key],
-                        });
-                    }
-                }
-            };
+            this.d = defineExports;
         };
     }
 });
@@ -283,9 +295,13 @@ const moduleFactoryHandler: ProxyHandler<MaybePatchedModuleFactory> = {
     }
 };
 
+/** Read once: this runs for each of the thousands of factories Discord defines, and a change needs a restart anyway */
+let eagerPatches: boolean | undefined;
+
 function proxyFactoryAndUpdateExisting(moduleFactories: AnyWebpackRequire["m"], moduleId: PropertyKey, newFactory: AnyModuleFactory, receiver: any, ignoreExistingInTarget = false) {
     notifyFactoryListeners(moduleId, newFactory);
-    const proxiedFactory = new Proxy(Settings.eagerPatches ? patchFactory(moduleId, newFactory) : newFactory, moduleFactoryHandler);
+    eagerPatches ??= Settings.eagerPatches;
+    const proxiedFactory = new Proxy(eagerPatches ? patchFactory(moduleId, newFactory) : newFactory, moduleFactoryHandler);
 
     if (updateExistingFactory(moduleFactories, moduleId, newFactory, proxiedFactory, ignoreExistingInTarget)) {
         return true;
@@ -308,14 +324,15 @@ function proxyFactoryAndUpdateExisting(moduleFactories: AnyWebpackRequire["m"], 
 function updateExistingFactory(moduleFactories: AnyWebpackRequire["m"], moduleId: PropertyKey, newFactory: AnyModuleFactory, newProxiedFactory: AnyModuleFactory, ignoreExistingInTarget: boolean) {
     let existingFactory: AnyModuleFactory | undefined;
     for (const wreq of allWebpackInstances) {
-        const instanceModuleFactories = wreq.m[SYM_ORIGINAL_MODULE_FACTORIES] ?? wreq.m;
+        const instanceModuleFactories = originalModulesOf.get(wreq) ?? wreq.m[SYM_ORIGINAL_MODULE_FACTORIES] ?? wreq.m;
 
         if (ignoreExistingInTarget && instanceModuleFactories === moduleFactories) {
             continue;
         }
 
-        if (Object.hasOwn(wreq.m, moduleId)) {
-            existingFactory = wreq.m[moduleId]; // Must use wreq.m here instead of instanceModuleFactories to use our proxy in case the module factories are already proxied.
+        // The proxy on wreq.m only intercepts setting, so its target holds the same (proxied) factories
+        if (Object.hasOwn(instanceModuleFactories, moduleId)) {
+            existingFactory = instanceModuleFactories[moduleId];
             break;
         }
     }
@@ -348,7 +365,7 @@ function updateExistingFactory(moduleFactories: AnyWebpackRequire["m"], moduleId
  */
 function defineInWebpackInstances(moduleId: PropertyKey, factory: AnyModuleFactory) {
     for (const wreq of allWebpackInstances) {
-        define(wreq.m, moduleId, { value: factory });
+        define(originalModulesOf.get(wreq) ?? wreq.m, moduleId, { value: factory });
     }
 }
 
@@ -369,6 +386,16 @@ function notifyFactoryListeners(moduleId: PropertyKey, factory: AnyModuleFactory
 }
 
 /**
+ * Webpack marks a module loaded once its factory has run, and Endcord's searches skip modules that aren't. Newer Webpack
+ * (Discord's Canary since November 2026) no longer tracks it: its modules are just { id, exports }. Then every search
+ * came up empty and plugins broke, so mark them here. Where Webpack does track it, it's false until the factory returns
+ * and Webpack sets it right after, so this leaves those alone
+ */
+function markLoaded(module: { loaded?: boolean; }) {
+    if (module.loaded === undefined) module.loaded = true;
+}
+
+/**
  * Run a (possibly) patched module factory with a wrapper which notifies our listeners.
  *
  * @param patchedFactory The (possibly) patched module factory
@@ -376,12 +403,8 @@ function notifyFactoryListeners(moduleId: PropertyKey, factory: AnyModuleFactory
  * @param argArray The arguments of the call to the factory
  */
 function runFactoryWithWrap(patchedFactory: PatchedModuleFactory, thisArg: unknown, argArray: Parameters<MaybePatchedModuleFactory>) {
-    const originalFactory = patchedFactory[SYM_ORIGINAL_FACTORY];
-
-    if (patchedFactory === originalFactory) {
-        // @ts-expect-error Clear up ORIGINAL_FACTORY if the factory did not have any patch applied
-        delete patchedFactory[SYM_ORIGINAL_FACTORY];
-    }
+    // A factory no patch changed is Discord's own and carries no SYM_ORIGINAL_FACTORY (see patchFactory)
+    const originalFactory: AnyModuleFactory = patchedFactory[SYM_ORIGINAL_FACTORY] ?? patchedFactory;
 
     let [module, exports, require] = argArray;
 
@@ -424,9 +447,12 @@ function runFactoryWithWrap(patchedFactory: PatchedModuleFactory, thisArg: unkno
         }
 
         logger.error("Error in patched module factory:\n", err);
-        return originalFactory.apply(thisArg, argArray);
+        factoryReturn = originalFactory.apply(thisArg, argArray);
+        markLoaded(module);
+        return factoryReturn;
     }
 
+    markLoaded(module);
     exports = module.exports;
 
     if (typeof require === "function" && require.c) {
@@ -463,7 +489,11 @@ function runFactoryWithWrap(patchedFactory: PatchedModuleFactory, thisArg: unkno
         }
     }
 
-    if (typeof exports !== "object" || !waitForSubscriptions.size) {
+    if (storeSubscriptions.size) {
+        _notifyStoreSubscriptions(exports, module.id);
+    }
+
+    if (typeof exports !== "object" || (!waitForSubscriptions.size && !storeSubscriptions.size)) {
         return factoryReturn;
     }
 
@@ -478,6 +508,10 @@ function runFactoryWithWrap(patchedFactory: PatchedModuleFactory, thisArg: unkno
         }
 
         if (exportValue == null) continue;
+
+        if (storeSubscriptions.size) {
+            _notifyStoreSubscriptions(exportValue, module.id);
+        }
 
         for (const [filter, callback] of waitForSubscriptions) {
             try {
@@ -495,7 +529,7 @@ function runFactoryWithWrap(patchedFactory: PatchedModuleFactory, thisArg: unkno
             }
         }
 
-        if (!waitForSubscriptions.size) break;
+        if (!waitForSubscriptions.size && !storeSubscriptions.size) break;
     }
 
     return factoryReturn;
@@ -509,11 +543,34 @@ function runFactoryWithWrap(patchedFactory: PatchedModuleFactory, thisArg: unkno
  * @returns The patched module factory
  */
 function patchFactory(moduleId: PropertyKey, originalFactory: AnyModuleFactory): PatchedModuleFactory {
+    ensurePatchCache(patches);
+
+    // A module that matched no patch on earlier starts of this Discord build is left alone without reading its code
+    const cached = cachedPatchesFor(moduleId);
+    if (cached?.length === 0) {
+        return originalFactory as PatchedModuleFactory;
+    }
+
+    // A known module only tries the patches that matched it before and haven't been used up since
+    const candidates = cached?.filter(patch => patches.includes(patch)) ?? patches;
+    /** Removes a used up patch, and returns the index the loop goes on from */
+    const consume = (index: number) => {
+        if (candidates === patches) {
+            patches.splice(index, 1);
+            return index - 1;
+        }
+
+        const at = patches.indexOf(candidates[index]);
+        if (at !== -1) patches.splice(at, 1);
+        return index;
+    };
+
     const originalFactoryCode = String(originalFactory);
     const isArrowFunction = originalFactoryCode.startsWith("(");
 
     // 0, prefix to turn it into an expression: 0,function(){} would be invalid syntax without the 0,
     let code = `0,${!isArrowFunction ? "function" : ""}${originalFactoryCode.slice(originalFactoryCode.indexOf("("))}`;
+    const unpatchedCode = code;
     let patchedSource = code;
     let patchedFactory = originalFactory;
 
@@ -522,95 +579,58 @@ function patchFactory(moduleId: PropertyKey, originalFactory: AnyModuleFactory):
     const buildNumber = getBuildNumber();
     const shouldCheckBuildNumber = buildNumber !== -1;
 
-    ensurePatchCache(patches);
+    /**
+     * Applies a patch as plain string work and leaves compiling to the end, so a module several plugins patch is
+     * compiled once instead of once per plugin. Returns false if a replacement threw.
+     */
+    const applyAsText = (patch: Patch) => {
+        let newCode = code;
 
-    for (let i = 0; i < patches.length; i++) {
-        const patch = patches[i];
-
-        if (
-            shouldCheckBuildNumber &&
-            (patch.fromBuild != null && buildNumber < patch.fromBuild) ||
-            (patch.toBuild != null && buildNumber > patch.toBuild)
-        ) {
-            patches.splice(i--, 1);
-            continue;
-        }
-
-        if (canSkipPatch(moduleId, patch)) {
-            continue;
-        }
-
-        const moduleMatches = typeof patch.find === "string"
-            ? code.includes(patch.find)
-            : (patch.find.global && (patch.find.lastIndex = 0), patch.find.test(code));
-
-        if (!moduleMatches) {
-            continue;
-        }
-
-        recordMatch(moduleId, patch);
-
-        // Fast path: apply every replacement as plain string work and compile the result once.
-        // The per-replacement path below compiles after each replacement to pinpoint a broken one,
-        // so it only runs if something here throws.
-        if (!IS_REPORTER) {
-            let fastCode = code;
-            let undone = false;
-
-            try {
-                for (const replacement of patch.replacement as PatchReplacement[]) {
-                    if (
-                        shouldCheckBuildNumber &&
-                        (replacement.fromBuild != null && buildNumber < replacement.fromBuild) ||
-                        (replacement.toBuild != null && buildNumber > replacement.toBuild)
-                    ) {
-                        continue;
-                    }
-
-                    const { match } = replacement;
-                    if (typeof match !== "string" && match.global) {
-                        match.lastIndex = 0;
-                    }
-
-                    const newCode = fastCode.replace(match, replacement.replace as string);
-                    if (newCode === fastCode) {
-                        if (!(patch.noWarn || replacement.noWarn)) {
-                            logger.warn(`Patch by ${patch.plugin} had no effect (Module id is ${String(moduleId)}): ${replacement.match}`);
-                        }
-
-                        if (patch.group) {
-                            logger.warn(`Undoing patch group ${patch.find} by ${patch.plugin} because replacement ${replacement.match} had no effect`);
-                            undone = true;
-                            break;
-                        }
-
-                        continue;
-                    }
-
-                    fastCode = newCode;
+        try {
+            for (const replacement of patch.replacement as PatchReplacement[]) {
+                if (
+                    shouldCheckBuildNumber &&
+                    (replacement.fromBuild != null && buildNumber < replacement.fromBuild) ||
+                    (replacement.toBuild != null && buildNumber > replacement.toBuild)
+                ) {
+                    continue;
                 }
 
-                if (!undone && fastCode !== code) {
-                    const pluginsList = patchedBy.has(patch.plugin) ? [...patchedBy] : [...patchedBy, patch.plugin];
-                    const source = `// Webpack Module ${String(moduleId)} - Patched by ${pluginsList.join(", ")}\n${fastCode}\n//# sourceURL=file:///WebpackModule${String(moduleId)}`;
-                    const factory = (0, eval)(source);
-
-                    code = fastCode;
-                    patchedSource = source;
-                    patchedFactory = factory;
-                    patchedBy.add(patch.plugin);
+                const { match } = replacement;
+                if (typeof match !== "string" && match.global) {
+                    match.lastIndex = 0;
                 }
 
-                if (!patch.all) {
-                    patches.splice(i--, 1);
+                const replaced = newCode.replace(match, replacement.replace as string);
+                if (replaced === newCode) {
+                    if (!(patch.noWarn || replacement.noWarn)) {
+                        logger.warn(`Patch by ${patch.plugin} had no effect (Module id is ${String(moduleId)}): ${replacement.match}`);
+                        notePatchProblem(patch.plugin, replacement.match);
+                    }
+
+                    if (patch.group) {
+                        logger.warn(`Undoing patch group ${patch.find} by ${patch.plugin} because replacement ${replacement.match} had no effect`);
+                        return true;
+                    }
+
+                    continue;
                 }
 
-                continue;
-            } catch {
-                // Fall through to the per-replacement path to find and skip the broken replacement
+                newCode = replaced;
             }
+        } catch {
+            return false;
         }
 
+        if (newCode !== code) {
+            code = newCode;
+            patchedBy.add(patch.plugin);
+        }
+        return true;
+    };
+
+    /** Applies a patch one replacement at a time, compiling after each, to find and skip a broken one */
+    const applyOneByOne = (patch: Patch) => {
         const executePatch = traceFunctionWithResults(`patch by ${patch.plugin}`, (match: string | RegExp, replace: string) => {
             if (typeof match !== "string" && match.global) {
                 match.lastIndex = 0;
@@ -637,7 +657,9 @@ function patchFactory(moduleId: PropertyKey, originalFactory: AnyModuleFactory):
             const lastFactory = patchedFactory;
 
             try {
+                const startedAt = performance.now();
                 const [newCode, totalTime] = executePatch(replacement.match, replacement.replace as string);
+                patchTimeByPlugin.set(patch.plugin, (patchTimeByPlugin.get(patch.plugin) ?? 0) + performance.now() - startedAt);
 
                 if (IS_REPORTER) {
                     patchTimings.push([patch.plugin, moduleId, replacement.match, totalTime]);
@@ -646,6 +668,7 @@ function patchFactory(moduleId: PropertyKey, originalFactory: AnyModuleFactory):
                 if (newCode === code) {
                     if (!(patch.noWarn || replacement.noWarn)) {
                         logger.warn(`Patch by ${patch.plugin} had no effect (Module id is ${String(moduleId)}): ${replacement.match}`);
+                        notePatchProblem(patch.plugin, replacement.match);
                         if (IS_DEV) {
                             logger.debug("Function Source:\n", code);
                         }
@@ -684,6 +707,7 @@ function patchFactory(moduleId: PropertyKey, originalFactory: AnyModuleFactory):
                 const shouldSuppressError = patch.plugin === "ContextMenuAPI" && err instanceof SyntaxError && err.message.includes("arguments");
                 if (!shouldSuppressError) {
                     logger.error(`Patch by ${patch.plugin} errored (Module id is ${String(moduleId)}): ${replacement.match}\n`, err);
+                    notePatchProblem(patch.plugin, replacement.match);
 
                     if (IS_DEV) {
                         diffErroredPatch(code, lastCode, lastCode.match(replacement.match)!);
@@ -705,15 +729,73 @@ function patchFactory(moduleId: PropertyKey, originalFactory: AnyModuleFactory):
                 patchedFactory = lastFactory;
             }
         }
+    };
+
+    const batched: Patch[] = [];
+    let batchFailed = false;
+
+    for (let i = 0; i < candidates.length; i++) {
+        const patch = candidates[i];
+
+        if (
+            shouldCheckBuildNumber &&
+            (patch.fromBuild != null && buildNumber < patch.fromBuild) ||
+            (patch.toBuild != null && buildNumber > patch.toBuild)
+        ) {
+            i = consume(i);
+            continue;
+        }
+
+        const moduleMatches = typeof patch.find === "string"
+            ? code.includes(patch.find)
+            : (patch.find.global && (patch.find.lastIndex = 0), patch.find.test(code));
+
+        if (!moduleMatches) {
+            continue;
+        }
+
+        recordMatch(moduleId, patch);
+
+        if (IS_REPORTER) {
+            applyOneByOne(patch);
+        } else {
+            batched.push(patch);
+            if (!applyAsText(patch)) batchFailed = true;
+        }
 
         if (!patch.all) {
-            patches.splice(i--, 1);
+            i = consume(i);
+        }
+    }
+
+    // Everything matched was applied as text: compile it once. If that fails, start over one replacement at a time
+    if (batched.length) {
+        if (!batchFailed && code !== unpatchedCode) {
+            try {
+                patchedSource = `// Webpack Module ${String(moduleId)} - Patched by ${[...patchedBy].join(", ")}\n${code}\n//# sourceURL=file:///WebpackModule${String(moduleId)}`;
+                patchedFactory = (0, eval)(patchedSource);
+            } catch {
+                batchFailed = true;
+            }
+        }
+
+        if (batchFailed) {
+            code = unpatchedCode;
+            patchedSource = unpatchedCode;
+            patchedFactory = originalFactory;
+            patchedBy.clear();
+            for (const patch of batched) applyOneByOne(patch);
         }
     }
 
     recordScanned(moduleId);
+    if (patchedBy.size) pluginsByModule.set(String(moduleId), [...patchedBy]);
 
-    patchedFactory[SYM_ORIGINAL_FACTORY] = originalFactory;
+    // Only a patched factory, which is a new function, gets this. Adding it to Discord's own factory and deleting it
+    // again after the first run turned thousands of them into slow dictionary-mode objects
+    if (patchedFactory !== originalFactory) {
+        patchedFactory[SYM_ORIGINAL_FACTORY] = originalFactory;
+    }
 
     if (IS_DEV && patchedFactory !== originalFactory) {
         originalFactory[SYM_PATCHED_SOURCE] = patchedSource;

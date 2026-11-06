@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Endcord Linux installer GUI — same layout/colors as InstallerGUI.cs
+# Endcord Linux installer GUI — same layout/colors as installer/InstallerGUI.cs
 from __future__ import print_function
 
 import base64
@@ -194,7 +194,10 @@ def download(url):
 def verify_manifest(manifest):
     openssl = shutil.which("openssl")
     if not openssl:
-        print("openssl isn't installed, so the release signature can't be checked. Using the checksums only.")
+        # The checksums come from the same server as the files, so without the signature nothing proves the release is ours
+        if os.environ.get("ENDCORD_ALLOW_UNSIGNED") != "1":
+            raise RuntimeError("openssl isn't installed, so the release signature can't be checked. Install openssl, or set ENDCORD_ALLOW_UNSIGNED=1 to trust the checksums alone")
+        print("openssl isn't installed and ENDCORD_ALLOW_UNSIGNED is set: only the checksums are checked.")
         return
     if not manifest.get("signature"):
         raise RuntimeError("the release isn't signed")

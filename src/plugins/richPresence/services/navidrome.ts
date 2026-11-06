@@ -89,7 +89,7 @@ async function fetchNowPlaying(signal?: AbortSignal): Promise<NdTrack | null> {
         const token = md5Hex((nd_password ?? "") + salt);
 
         const baseUrl = parsedUrl.href.replace(/\/$/, "");
-        const queryParams = `u=${encodeURIComponent(nd_username)}&t=${token}&s=${salt}&v=1.12.0&c=equicord-rpc&f=json`;
+        const queryParams = `u=${encodeURIComponent(nd_username)}&t=${token}&s=${salt}&v=1.12.0&c=endcord-rpc&f=json`;
 
         const res = await fetch(`${baseUrl}/rest/getNowPlaying?${queryParams}`, { signal });
         if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);

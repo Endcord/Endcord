@@ -1,6 +1,6 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -77,7 +77,9 @@ export default definePlugin({
                 // Do not check for unreads when selecting the render level if the channel is hidden
                 {
                     match: /(?<=&&)(?=!\i\.\i\.hasUnread\(this\.record\.id\))/,
-                    replace: "$self.isHiddenChannel(this.record)||"
+                    replace: "$self.isHiddenChannel(this.record)||",
+                    // CleanerChannelGroups takes this whole check out, which leaves nothing for this to do
+                    noWarn: true
                 },
                 // Make channels we dont have access to be the same level as normal ones
                 {

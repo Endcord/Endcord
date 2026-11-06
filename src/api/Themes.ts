@@ -1,9 +1,10 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { IS_SAFE_MODE } from "@api/SafeMode";
 import { Settings, SettingsStore } from "@api/Settings";
 import { ThemeStore } from "@endcord/discord-types";
 import { createAndAppendStyle } from "@utils/css";
@@ -11,28 +12,33 @@ import { PopoutWindowStore } from "@webpack/common";
 
 import { endcordRootNode,userStyleRootNode } from "./Styles";
 
-let style: HTMLStyleElement;
-let themesStyle: HTMLStyleElement;
+let style: HTMLStyleElement | undefined;
+let themesStyle: HTMLStyleElement | undefined;
+let watchingQuickCss = false;
+
+// Empty Custom CSS and no themes, as on most installs, need no stylesheet on the page at all
+function applyQuickCss(css: string) {
+    if (!style && !css) return;
+
+    style ??= createAndAppendStyle("endcord-custom-css", userStyleRootNode);
+    style.textContent = css;
+    // At the time of writing this, changing textContent resets the disabled state
+    style.disabled = !Settings.useQuickCss;
+    updatePopoutWindows();
+}
 
 async function toggle(isEnabled: boolean) {
-    if (!style) {
+    if (!watchingQuickCss) {
         if (isEnabled) {
-            style = createAndAppendStyle("endcord-custom-css", userStyleRootNode);
-            EndcordNative.quickCss.addChangeListener(css => {
-                style.textContent = css;
-                // At the time of writing this, changing textContent resets the disabled state
-                style.disabled = !Settings.useQuickCss;
-                updatePopoutWindows();
-            });
-            style.textContent = await EndcordNative.quickCss.get();
+            watchingQuickCss = true;
+            EndcordNative.quickCss.addChangeListener(applyQuickCss);
+            applyQuickCss(await EndcordNative.quickCss.get());
         }
-    } else
+    } else if (style)
         style.disabled = !isEnabled;
 }
 
 async function initThemes() {
-    themesStyle ??= createAndAppendStyle("endcord-themes", userStyleRootNode);
-
     const { themeLinks, enabledThemes } = Settings;
 
     const { ThemeStore } = require("@webpack/common/stores") as typeof import("@webpack/common/stores");
@@ -65,6 +71,13 @@ async function initThemes() {
         links.push(...localThemes);
     }
 
+    if (!themesStyle && !links.length) return;
+
+    if (!themesStyle) {
+        themesStyle = createAndAppendStyle("endcord-themes", userStyleRootNode);
+        // Custom CSS stays last, so it can still override a theme
+        if (style) userStyleRootNode.insertBefore(themesStyle, style);
+    }
     themesStyle.textContent = links.map(link => `@import url("${link.trim()}");`).join("\n");
     updatePopoutWindows();
 }
@@ -90,7 +103,8 @@ function updatePopoutWindows() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    if (IS_USERSCRIPT) return;
+    // A theme can hide the very button that would turn it off, so safe mode leaves them all out
+    if (IS_USERSCRIPT || IS_SAFE_MODE) return;
 
     initThemes();
 
@@ -101,6 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
     SettingsStore.addChangeListener("enabledThemes", initThemes);
 
     window.addEventListener("message", event => {
+        if (event.origin !== window.location.origin) return;
         const { discordPopoutEvent } = event.data || {};
         if (discordPopoutEvent?.type !== "loaded") return;
 
@@ -113,7 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
 }, { once: true });
 
 export function initQuickCssThemeStore(themeStore: ThemeStore) {
-    if (IS_USERSCRIPT) return;
+    if (IS_USERSCRIPT || IS_SAFE_MODE) return;
 
     initThemes();
 

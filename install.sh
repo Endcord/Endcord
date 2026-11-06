@@ -7,6 +7,7 @@
 #   --install | --repair | --uninstall   choose the action
 #   --all                                 use every Discord install found, no prompt
 #   --local DIR                           install the Endcord files in DIR instead of downloading them
+#   --allow-unsigned                      without openssl the release signature can't be checked; this trusts the checksums alone
 #
 # Endcord's files go to ~/Library/Application Support/Endcord/dist (macOS) or ~/.config/Endcord/dist (Linux).
 # Each Discord install gets a small loader in its resources folder; Discord's own app.asar is kept as _app.asar.
@@ -22,6 +23,7 @@ ORIGINAL_ASAR_MIN_SIZE=100000
 ACTION=""
 PICK=""
 LOCAL_DIR=""
+ALLOW_UNSIGNED="${ENDCORD_ALLOW_UNSIGNED:-}"
 while [ $# -gt 0 ]; do
     case "$1" in
         --install) ACTION=install ;;
@@ -29,6 +31,7 @@ while [ $# -gt 0 ]; do
         --uninstall) ACTION=uninstall ;;
         --all) PICK=all ;;
         --local) shift; LOCAL_DIR="${1:-}" ;;
+        --allow-unsigned) ALLOW_UNSIGNED=1 ;;
         -h|--help) sed -n '2,13p' "$0" 2>/dev/null || true; exit 0 ;;
         *) echo "Unknown option: $1"; exit 1 ;;
     esac
@@ -201,7 +204,9 @@ manifest_value() {
 # Keep the payload in sync with signManifest in scripts/uploadRelease.mjs
 verify_manifest() {
     if ! command -v openssl >/dev/null 2>&1; then
-        say "openssl isn't installed, so the release signature can't be checked. Using the checksums only."
+        # The checksums come from the same server as the files, so without the signature nothing proves the release is ours
+        [ -n "$ALLOW_UNSIGNED" ] || fail "openssl isn't installed, so the release signature can't be checked. Install openssl, or run again with --allow-unsigned to trust the checksums alone."
+        say "openssl isn't installed and --allow-unsigned was given: only the checksums are checked."
         return 0
     fi
     signature=$(manifest_value "$1" signature)

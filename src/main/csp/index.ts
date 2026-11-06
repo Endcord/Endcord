@@ -15,36 +15,43 @@ export const CssSrc = ["style-src", "font-src"];
 export const ImageAndCssSrc = [...ImageSrc, ...CssSrc];
 export const ImageAndMediaSrc = [...ImageSrc, "media-src"];
 export const ScriptSrc = ["script-src", "worker-src"];
+// A theme needs styles, fonts and images, never connect-src: that directive is what would let code injected into
+// the page send data out, so hosts that only ever serve themes don't get it
+export const ThemeSrc = ["style-src", "font-src", "img-src"];
+const ImageOnly = ["img-src"];
+const FrameOnly = ["frame-src"];
 
 // Plugins can whitelist their own domains by importing this object in their native.ts
 // script and just adding to it. But generally, you should just edit this file instead
 
 export const CspPolicies: PolicyMap = {
-    "http://localhost:*": ImageAndCssSrc,
-    "http://127.0.0.1:*": ImageAndCssSrc,
-    "localhost:*": ImageAndCssSrc,
-    "127.0.0.1:*": ImageAndCssSrc,
+    // For working on a theme with a local server. No connect-src, so page code can't reach other local services
+    "http://localhost:*": ThemeSrc,
+    "http://127.0.0.1:*": ThemeSrc,
+    "localhost:*": ThemeSrc,
+    "127.0.0.1:*": ThemeSrc,
 
-    "*.github.io": ImageAndCssSrc, // GitHub pages, used by most themes
+    "*.github.io": ThemeSrc, // GitHub pages, used by most themes
     // GitHub content and raw files: used by most themes, and for the sounds of Moyai, KeyboardSounds, Jumpscare,
-    // WaitForSlot and WebcamStartNotifier (github.com/.../raw/... redirects to raw.githubusercontent.com)
+    // WaitForSlot and WebcamStartNotifier (github.com/.../raw/... redirects to raw.githubusercontent.com).
+    // Plugins like ClearURLs, Animalese and the Control Center's version check fetch from here too
     "github.com": [...ImageAndCssSrc, "media-src"],
     "raw.githubusercontent.com": [...ImageAndCssSrc, "media-src"],
-    "*.gitlab.io": ImageAndCssSrc, // GitLab pages, used by some themes
-    "gitlab.com": ImageAndCssSrc, // GitLab raw, used by some themes
-    "*.codeberg.page": ImageAndCssSrc, // Codeberg pages, used by some themes
-    "codeberg.org": ImageAndCssSrc, // Codeberg raw, used by some themes
+    "*.gitlab.io": ThemeSrc, // GitLab pages, used by some themes
+    "gitlab.com": ThemeSrc, // GitLab raw, used by some themes
+    "*.codeberg.page": ThemeSrc, // Codeberg pages, used by some themes
+    "codeberg.org": ThemeSrc, // Codeberg raw, used by some themes
 
-    "*.githack.com": ImageAndCssSrc, // githack (namely raw.githack.com), used by some themes
-    "jsdelivr.net": ImageAndCssSrc, // jsDelivr, used by very few themes
+    "*.githack.com": ThemeSrc, // githack (namely raw.githack.com), used by some themes
+    "jsdelivr.net": ThemeSrc, // jsDelivr, used by very few themes
 
-    "fonts.googleapis.com": ImageAndCssSrc, // Google Fonts, used by many themes; FontLoader and GifCaptioner also fetch the CSS
+    "fonts.googleapis.com": ImageAndCssSrc, // Google Fonts, used by many themes; FontLoader and GifMaker also fetch the CSS
 
-    "i.imgur.com": ImageSrc, // Imgur, used by some themes
-    "i.ibb.co": ImageSrc, // ImgBB, used by some themes
-    "i.pinimg.com": ImageSrc, // Pinterest, used by some themes
+    "i.imgur.com": ImageOnly, // Imgur, used by some themes
+    "i.ibb.co": ImageOnly, // ImgBB, used by some themes
+    "i.pinimg.com": ImageOnly, // Pinterest, used by some themes
     "*.tenor.com": ImageAndMediaSrc, // Tenor: themes, GifProviderSwitcher search and previews
-    "files.catbox.moe": ImageAndCssSrc, // Catbox, used by some themes
+    "files.catbox.moe": ThemeSrc, // Catbox, used by some themes
 
     "cdn.discordapp.com": ImageAndCssSrc, // Discord CDN, used by Endcord and some themes to load media
     "media.discordapp.net": ImageSrc, // Discord media CDN, possible alternative to Discord CDN
@@ -62,6 +69,12 @@ export const CspPolicies: PolicyMap = {
     "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.31.0-dev.20260914-8d85527a0/": ScriptSrc, // VoiceMessageTranscriber
     "https://cdn.jsdelivr.net/npm/@vap/shiki-worker@0.0.8/": ScriptSrc, // ShikiCodeblocks
     "https://cdn.jsdelivr.net/npm/stegcloak-dist@1.0.0/": ScriptSrc, // InvisibleChat
+    "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/": ScriptSrc, // LoginWithQR, loaded when a QR code is read
+
+    // The online viewers FileViewer opens a file in, as a frame only: nothing else may load from them
+    "https://drive.google.com/viewerng/": FrameOnly,
+    "https://view.officeapps.live.com/op/": FrameOnly,
+    "https://www.viewstl.com": FrameOnly,
 
     // Function Specific
     "api.github.com": ConnectSrc, // used for updating Endcord itself
@@ -83,8 +96,8 @@ export const CspPolicies: PolicyMap = {
     // APIs that bundled plugins call from the renderer; without these the requests fail with "Failed to fetch"
     "badges.equicord.org": ConnectSrc, // GlobalBadges
     "timezone.creations.works": ConnectSrc, // Timezones
-    "cors.keiran0.workers.dev": ConnectSrc, // FileUpload and MoreStickers CORS proxy
-    "corsproxy.io": ConnectSrc, // GifCaptioner
+    // No open CORS proxy: one in connect-src is a door to every host. FileUpload, MoreStickers and GifMaker
+    // fetch through their native.ts on desktop, and the browser build has no CSP to get past
     "lrclib.net": ConnectSrc, // MusicControls lyrics
     "spotify-lyrics-api-pi.vercel.app": ConnectSrc, // MusicControls lyrics
     "api.thecatapi.com": ConnectSrc, // MoreCommands
@@ -107,7 +120,7 @@ export const CspPolicies: PolicyMap = {
     "*.listenbrainz.org": ConnectSrc, // MusicRichPresence
     "coverartarchive.org": ConnectSrc, // MusicRichPresence album art lookup
     "musicbrainz.org": ConnectSrc, // MusicRichPresence track lookup
-    "fonts.google.com": ConnectSrc, // FontLoader, GifCaptioner and GifMaker font search
+    "fonts.google.com": ConnectSrc, // FontLoader and GifMaker font search
     "streaks.equicord.org": ConnectSrc, // Streaks API
     "archive.org": ConnectSrc,
     "*.archive.org": ConnectSrc,

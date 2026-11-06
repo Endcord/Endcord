@@ -1,13 +1,13 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 import type { User } from "@endcord/discord-types";
 import { GuildMemberStore, IconUtils } from "@webpack/common";
 
-import { DevsById } from "./constants";
+import { Devs, DevsById } from "./constants";
 
 /**
  * Calls .join(" ") on the arguments
@@ -63,6 +63,10 @@ export const checkIntersecting = (el: Element) => {
 };
 
 export const isPluginDev = (id: string) => Object.hasOwn(DevsById, id);
+
+/** The people who make Endcord, out of everyone who has helped build it */
+export const EndcordDeveloperIds: readonly string[] = [String(Devs.rootpoi.id), String(Devs.ewlle.id)];
+export const isEndcordDeveloper = (id: string) => EndcordDeveloperIds.includes(id);
 
 export function identity<T>(value: T): T {
     return value;

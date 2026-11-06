@@ -113,14 +113,14 @@ function normaliseUrl(url: string): string {
     }
 
     // x.com links still return an embed with url twitter.com at the moment
-    const xDotComRegex = /(https?:\/\/(?:www\.)?)x\.com(\/.*)?/;
+    const xDotComRegex = /^(https?:\/\/(?:www\.)?)x\.com(\/.*)?$/;
 
     if (xDotComRegex.test(url)) {
         url = url.replace(xDotComRegex, (match, p1, p2) => `${p1}twitter.com${p2 || ""}`);
     }
 
     // tiktok adds ?enable_tiktok_webview=true
-    const tiktokRegex = /(https?:\/\/(?:www\.)?)tiktok\.com(\/.*)?/;
+    const tiktokRegex = /^(https?:\/\/(?:www\.)?)tiktok\.com(\/.*)?$/;
     const searchParams = url.includes("?") ? new URLSearchParams(url.split("?")[1]) : new URLSearchParams();
     if (tiktokRegex.test(url) && !searchParams.has("enable_tiktok_webview")) {
         searchParams.append("enable_tiktok_webview", "true");

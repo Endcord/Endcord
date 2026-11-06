@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import type { BrowserWindow } from "electron";
+import { app, type BrowserWindow } from "electron";
 
 // Most people leave Discord running in the tray all day. Once the window has been out of sight for a while,
 // ask Chromium to behave as if the system were low on memory: it drops decoded images and Blink caches and
@@ -12,6 +12,21 @@ import type { BrowserWindow } from "electron";
 // to the OS until the window is shown again.
 const FIRST_TRIM_DELAY = 60_000;
 const REPEAT_TRIM_INTERVAL = 10 * 60_000;
+// The system takes a moment to reclaim pages after Chromium lets go of them
+const SETTLE_TIME = 3_000;
+
+export interface MemoryStats {
+    usedMb: number;
+    /** Measured before and after each trim, so it can stay at zero */
+    freedMb: number;
+    trims: number;
+}
+
+let freedKilobytes = 0;
+let trims = 0;
+
+const usedKilobytes = () => app.getAppMetrics().reduce((total, { memory }) => total + memory.workingSetSize, 0);
+const toMegabytes = (kilobytes: number) => Math.round(kilobytes / 1024);
 
 async function trim(win: BrowserWindow) {
     if (win.isDestroyed()) return;
@@ -31,6 +46,24 @@ async function trim(win: BrowserWindow) {
     }
 }
 
+/** Returns the megabytes this trim gave back */
+export async function trimAndMeasure(win: BrowserWindow) {
+    const before = usedKilobytes();
+
+    await trim(win);
+    await new Promise(resolve => setTimeout(resolve, SETTLE_TIME));
+
+    const freed = Math.max(0, before - usedKilobytes());
+    freedKilobytes += freed;
+    trims++;
+
+    return toMegabytes(freed);
+}
+
+export function getMemoryStats(): MemoryStats {
+    return { usedMb: toMegabytes(usedKilobytes()), freedMb: toMegabytes(freedKilobytes), trims };
+}
+
 export function initMemoryTrim(win: BrowserWindow) {
     let timer: ReturnType<typeof setTimeout> | undefined;
 
@@ -40,7 +73,7 @@ export function initMemoryTrim(win: BrowserWindow) {
         clearTimeout(timer);
         timer = setTimeout(async () => {
             if (!isOutOfSight()) return;
-            await trim(win);
+            await trimAndMeasure(win);
             if (isOutOfSight()) schedule(REPEAT_TRIM_INTERVAL);
         }, delay);
     };

@@ -1,20 +1,24 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 import { onceDefined } from "@shared/onceDefined";
 import electron, { app, BrowserWindowConstructorOptions, Menu } from "electron";
+import { enableCompileCache, flushCompileCache } from "module";
 import { dirname, join } from "path";
 
 import { initMemoryTrim } from "./memoryTrim";
+import { preOpenRenderer } from "./preOpenRenderer";
 import { RendererSettings } from "./settings";
-import { IS_VANILLA } from "./utils/constants";
+import { DATA_DIR, IS_VANILLA } from "./utils/constants";
 
 console.info("[Endcord] Starting up...");
 
-import { existsSync } from "fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "fs";
+
+if (!IS_VANILLA) preOpenRenderer();
 
 // Our injector file at app/index.js
 const injectorPath = require.main!.filename;
@@ -70,8 +74,8 @@ if (!IS_VANILLA) {
             const original = options.webPreferences.preload;
             options.webPreferences.preload = join(__dirname, "preload.js");
             options.webPreferences.sandbox = false;
-            // work around discord unloading when in background
-            options.webPreferences.backgroundThrottling = false;
+            // backgroundThrottling stays on, as in Discord itself: a minimized or covered window stops drawing.
+            // The switches below keep its timers and connection running at full speed.
 
             if (frameless) {
                 options.frame = false;
@@ -149,14 +153,14 @@ if (!IS_VANILLA) {
         return originalAppend.apply(this, args);
     };
 
-    // disable renderer backgrounding to prevent the app from unloading when in the background
+    // Keep timers and the gateway connection at full speed in the background, so Discord doesn't drop or reload.
+    // Discord adds these two on Windows only; the problem happens on Linux too.
     // https://github.com/electron/electron/issues/2822
     // https://github.com/GoogleChrome/chrome-launcher/blob/5a27dd574d47a75fec0fb50f7b774ebf8a9791ba/docs/chrome-flags-for-tools.md#task-throttling
-    // Work around discord unloading when in background
-    // Discord also recently started adding these flags but only on windows for some reason dunno why, it happens on Linux too
+    // "disable-backgrounding-occluded-windows" is left out on purpose: with it, a window behind a game or browser kept
+    // drawing every frame, which Discord itself doesn't do.
     app.commandLine.appendSwitch("disable-renderer-backgrounding");
     app.commandLine.appendSwitch("disable-background-timer-throttling");
-    app.commandLine.appendSwitch("disable-backgrounding-occluded-windows");
     // Opt-in: GPU rasterization moves painting into the GPU process. It can be smoother on some GPUs, but costs
     // 50-80 MB more memory there, so by default Endcord leaves Chromium's own choice alone like Discord does.
     // Chromium's GPU blocklist still applies; forcing zero-copy or native GPU memory buffers is never done.
@@ -164,9 +168,39 @@ if (!IS_VANILLA) {
         app.commandLine.appendSwitch("enable-gpu-rasterization");
         app.commandLine.appendSwitch("enable-features", "CanvasOopRasterization");
     }
+
+    // Node keeps the compiled code of the scripts it loads between starts, so Discord's 3 MB main bundle isn't
+    // compiled from scratch every time. Node checks each entry against the file's contents, so an update only
+    // recompiles what changed. Window processes don't write one, so this is the main process only.
+    // DATA_DIR, not the folder above: Discord only moves userData to DISCORD_USER_DATA_DIR once its bundle runs
+    const cacheDir = process.env.ENDCORD_COMPILE_CACHE = join(DATA_DIR, "compile-cache");
+    try {
+        // Each Discord update installs to a new app-* folder, so its entries would pile up. Start over on each one
+        const stamp = join(cacheDir, "discord-install");
+        const install = dirname(process.execPath);
+        if (!existsSync(stamp) || readFileSync(stamp, "utf-8") !== install) {
+            rmSync(cacheDir, { recursive: true, force: true });
+            mkdirSync(cacheDir, { recursive: true });
+            writeFileSync(stamp, install);
+        }
+
+        enableCompileCache(cacheDir);
+    } catch { }
 } else {
     console.info("[Endcord] Running in vanilla mode. Not loading Endcord");
 }
 
 console.info("[Endcord] Loading original Discord app.asar");
 require(require.main!.filename);
+
+if (process.env.ENDCORD_COMPILE_CACHE) {
+    // Discord quits without giving Node the chance to write the cache on exit. Write it once its bundle has loaded,
+    // and again after the modules it loads once it's up
+    const flush = () => {
+        try {
+            flushCompileCache();
+        } catch { }
+    };
+    flush();
+    setTimeout(flush, 60_000).unref();
+}

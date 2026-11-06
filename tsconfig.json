@@ -48,5 +48,5 @@
         ],
         "outDir": "dist/types"
     },
-    "include": ["src/**/*", "browser/**/*", "scripts/**/*", "eslint.config.mjs"],
+    "include": ["src/**/*", "browser/**/*", "desktop/**/*", "scripts/**/*", "eslint.config.mjs"],
 }

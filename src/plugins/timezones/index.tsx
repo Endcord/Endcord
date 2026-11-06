@@ -99,6 +99,7 @@ export const settings = definePluginSettings({
     },
 
     databaseUrl: {
+        sensitive: true,
         type: OptionType.STRING,
         description: "Database URL for timezone storage",
         default: "https://timezone.creations.works"

@@ -16,8 +16,9 @@ export default definePlugin({
         {
             find: "ApplicationLauncherCommand=3",
             replacement: {
-                match: /(let \i=)\i\(\d+\)\.CS1\+500/,
-                replace: "$1Number.MAX_SAFE_INTEGER"
+                // The limit as a constant, or on Canary the number written where drafts are cut
+                match: /(let \i=)\i\(\d+\)\.CS1\+500|(?<=\.length>)\d+(?=&&\(\i=\i\.substr\(0,\d+\)\))/,
+                replace: (_, constant) => `${constant ?? ""}Number.MAX_SAFE_INTEGER`
             }
         }
     ]

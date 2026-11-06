@@ -14,10 +14,11 @@ import { recordUse, topFrecent } from "@plugins/commandPalette/state/frecency";
 import { getHotkey, setHotkey } from "@plugins/commandPalette/state/hotkeys";
 import { getPins, isPinned, togglePin } from "@plugins/commandPalette/state/pins";
 import { IS_MAC } from "@utils/constants";
-import { classNameFactory } from "@utils/css";
+import { classNameFactory, ENDCORD_THEME } from "@utils/css";
 import { copyWithToast } from "@utils/discord";
 import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
+import { classes } from "@utils/misc";
 import { useEffect, useRef, useState } from "@webpack/common";
 
 import { ActionBar, Shortcut } from "./ActionBar";
@@ -499,10 +500,10 @@ export function Palette({ onClose, initialPage }: PaletteProps) {
                 }}
             />
             <div
-                className={cl("root", {
+                className={classes(cl("root", {
                     "root-compact": !expanded,
                     "root-form": pageType === "form"
-                })}
+                }), ENDCORD_THEME)}
                 onMouseDown={e => e.stopPropagation()}
                 onClick={e => e.stopPropagation()}
             >

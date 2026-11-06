@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { parseAllowedUrl } from "@main/utils/http";
 import { ENDCORD_USER_AGENT } from "@shared/endcordUserAgent";
 import { execFile } from "child_process";
 import { promisify } from "util";
@@ -11,6 +12,9 @@ import { promisify } from "util";
 import type { TrackData } from ".";
 
 const exec = promisify(execFile);
+
+// The artist page address comes back from Apple's API, so it only gets fetched if it really is one of Apple's
+const APPLE_HOSTS = ["music.apple.com", "itunes.apple.com"];
 
 async function applescript(cmds: string[]) {
     const { stdout } = await exec("/usr/bin/osascript", cmds.map(c => ["-e", c]).flat());
@@ -47,7 +51,8 @@ async function fetchRemoteData({ id, name, artist, album }: { id: string, name: 
             .then(r => r.json())
             .then(data => data.results.find(song => song.collectionName === album) || data.results[0]);
 
-        const artistArtworkURL = await fetch(songData.artistViewUrl)
+        const artistArtworkURL = await Promise.resolve()
+            .then(() => fetch(parseAllowedUrl(songData.artistViewUrl, APPLE_HOSTS)))
             .then(r => r.text())
             .then(data => {
                 const match = data.match(/<meta property="og:image" content="(.+?)">/);

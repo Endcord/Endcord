@@ -67,7 +67,7 @@ export default definePlugin({
         {
             name: "remindme",
             description: "Set a reminder",
-            inputType: ApplicationCommandInputType.BOT,
+            inputType: ApplicationCommandInputType.BUILT_IN,
             options: [
                 { name: "amount", description: "How many units from now", type: ApplicationCommandOptionType.INTEGER, required: true },
                 {

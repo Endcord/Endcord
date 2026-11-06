@@ -267,7 +267,7 @@ function FakeConnectionsPanel() {
                         const t = name.trim();
                         if (!t) return;
                         update([...pending, {
-                            uid: `fc-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+                            uid: `fc-${crypto.randomUUID()}`,
                             type: selType,
                             name: t,
                             url: url.trim(),

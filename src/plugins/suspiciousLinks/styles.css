@@ -1,0 +1,27 @@
+.ec-suslinks {
+    display: grid;
+    gap: 2px;
+    width: fit-content;
+    max-width: 100%;
+    margin-top: 4px;
+    padding: 6px 10px;
+    border-inline-start: 3px solid var(--status-danger);
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--status-danger) 10%, transparent);
+    color: var(--text-default);
+    font-size: 14px;
+    line-height: 18px;
+}
+
+.ec-suslinks-line {
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+    overflow-wrap: anywhere;
+}
+
+.ec-suslinks-line > svg {
+    flex-shrink: 0;
+    margin-top: 1px;
+    color: var(--status-danger);
+}

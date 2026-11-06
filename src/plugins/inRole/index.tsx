@@ -7,6 +7,7 @@
 import "./style.css";
 
 import { ApplicationCommandInputType, ApplicationCommandOptionType, sendBotMessage } from "@api/Commands";
+import { migrateRemovedPlugin } from "@api/Settings";
 import { getUserSettingLazy } from "@api/UserSettings";
 import { InfoIcon } from "@components/Icons";
 import { Paragraph } from "@components/Paragraph";
@@ -31,6 +32,8 @@ function getMembersInRole(roleId: string, guildId: string) {
     });
     return membersInRole;
 }
+
+migrateRemovedPlugin("InRole", "ClickableRoles");
 
 export default definePlugin({
     name: "InRole",

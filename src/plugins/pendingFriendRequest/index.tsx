@@ -5,6 +5,7 @@
  */
 
 import type { NavContextMenuPatchCallback } from "@api/ContextMenu";
+import { migrateRemovedPlugin } from "@api/Settings";
 import { RelationshipType } from "@endcord/discord-types/enums";
 import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
@@ -34,6 +35,8 @@ const userContextPatch: NavContextMenuPatchCallback = (children, { user }) => {
         />
     );
 };
+
+migrateRemovedPlugin("CancelFriendRequest", "CancelFriendRequestNC");
 
 export default definePlugin({
     name: "CancelFriendRequest",

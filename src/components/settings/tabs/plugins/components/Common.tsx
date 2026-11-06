@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { enableScreenStyles } from "@api/Styles";
 import { classNameFactory } from "@utils/css";
 import { t, useI18n } from "@utils/i18n";
 import { classes } from "@utils/misc";
@@ -45,6 +46,8 @@ interface SettingsSectionProps extends PropsWithChildren {
 }
 
 export function SettingsSection({ tag: Tag = "div", name, id, description, error, inlineSetting, children }: SettingsSectionProps) {
+    // Plugins draw these in panels of their own too
+    enableScreenStyles();
     const { t } = useI18n();
     return (
         <Tag className={cl("section")}>

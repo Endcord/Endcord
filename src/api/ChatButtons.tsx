@@ -6,6 +6,7 @@
 
 import "./ChatButton.css";
 
+import { EndcordOnly } from "@api/EndcordVisibility";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Channel } from "@endcord/discord-types";
 import { t } from "@utils/i18n";
@@ -115,7 +116,7 @@ function EndcordChatBarButtons(props: ChatBarProps) {
 export function _injectButtons(buttons: ReactNode[], props: ChatBarProps) {
     if (props.disabled || buttons.length === 0) return;
 
-    buttons.unshift(<EndcordChatBarButtons key="endcord-chat-buttons" {...props} />);
+    buttons.unshift(<EndcordOnly key="endcord-chat-buttons"><EndcordChatBarButtons {...props} /></EndcordOnly>);
 }
 
 /**

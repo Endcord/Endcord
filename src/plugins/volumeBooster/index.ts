@@ -1,6 +1,6 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -47,7 +47,8 @@ export default definePlugin({
         {
             find: "#{intl::USER_VOLUME}",
             replacement: {
-                match: /(?<=maxValue:)\i\.isPlatformEmbedded\?(\i\.\i):\i\.\i(?=,)/,
+                // Canary writes the two limits as plain numbers
+                match: /(?<=maxValue:)\i\.isPlatformEmbedded\?(\i\.\i|\d+):(?:\i\.\i|\d+)(?=,)/,
                 replace: (_, higherMaxVolume) => `${higherMaxVolume}*$self.settings.store.multiplier`
             }
         },

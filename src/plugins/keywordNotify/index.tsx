@@ -172,7 +172,8 @@ export default definePlugin({
             group: true,
             replacement: [
                 {
-                    match: /#{intl::Fn6Odn::raw}\)\}\)\}\):null/,
+                    // After the Scheduled tab, the last one. Newer Discord always shows it, so ":null" is gone
+                    match: /#{intl::Fn6Odn::raw}\)\}\)\}\)(?::null)?/,
                     replace: "$&,$self.keywordTabBar()"
                 },
                 {

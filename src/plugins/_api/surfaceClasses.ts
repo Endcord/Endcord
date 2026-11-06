@@ -14,7 +14,9 @@ export default definePlugin({
 
     patches: [
         {
-            find: "AnnouncementsSpoilerIcon:",
+            // The app's layout. Only this module has it, on Stable and on Canary, where the icon list it shared a
+            // module with moved out
+            find: '"data-collapsed":',
             replacement: [
                 {
                     // Inserted after data-fullscreen, not before: BetterFolders matches `className:…,"data-fullscreen"`

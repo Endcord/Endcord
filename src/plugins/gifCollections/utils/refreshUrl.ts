@@ -4,17 +4,16 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { hostOf } from "@shared/hosts";
 import { RestAPI } from "@webpack/common";
 
 import { logger } from "./misc";
 
+// Discord's signed CDN addresses, the only ones that expire
+const CDN_HOSTS = new Set(["cdn.discordapp.com", "media.discordapp.net", "images-ext-1.discordapp.net", "images-ext-2.discordapp.net"]);
+
 export function isCdnUrlExpired(url: string): boolean {
-    if (
-        !url?.startsWith("https://cdn.discordapp.com")
-        && !url?.startsWith("https://media.discordapp.net")
-        && !url?.startsWith("https://images-ext-1.discordapp.net")
-        && !url?.startsWith("https://images-ext-2.discordapp.net")
-    ) return false;
+    if (!url?.startsWith("https://") || !CDN_HOSTS.has(hostOf(url))) return false;
     try {
         const ex = new URL(url).searchParams.get("ex");
         if (!ex) return false;

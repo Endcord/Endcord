@@ -6,24 +6,23 @@
 
 import "./styles.css";
 
-import { BadgePosition, BadgeUserArgs } from "@api/Badges";
+import { BadgePosition, BadgeRarity, BadgeUserArgs, ProfileBadge } from "@api/Badges";
 import { Badges } from "@api/index";
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { Flex } from "@components/Flex";
-import { Paragraph } from "@components/Paragraph";
-import { RenderModalProps } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
-import { Forms, Modal, openModal, RelationshipStore, Tooltip, useStateFromStores } from "@webpack/common";
+import { RelationshipStore, Tooltip, useStateFromStores } from "@webpack/common";
 
 interface rankInfo {
     title: string;
     description: string;
     requirement: number;
     iconSrc: string;
+    /** The longer a friendship has to last for it, the fewer people have it */
+    rarity: BadgeRarity;
 }
 
 const cl = classNameFactory("vc-friendship-ranks-");
@@ -53,72 +52,56 @@ const ranks: rankInfo[] =
             title: "Sprout",
             description: "Your friendship is just starting",
             requirement: 0,
-            iconSrc: "https://equicord.org/assets/plugins/friendshipRanks/sprout.png"
+            iconSrc: "https://equicord.org/assets/plugins/friendshipRanks/sprout.png",
+            rarity: BadgeRarity.COMMON
         },
         {
             title: "Blooming",
             description: "Your friendship is getting there! (1 Month)",
             requirement: 30,
-            iconSrc: "https://equicord.org/assets/plugins/friendshipRanks/blooming.png"
+            iconSrc: "https://equicord.org/assets/plugins/friendshipRanks/blooming.png",
+            rarity: BadgeRarity.COMMON
         },
         {
             title: "Burning",
             description: "Your friendship has reached terminal velocity (3 Months)",
             requirement: 90,
-            iconSrc: "https://equicord.org/assets/plugins/friendshipRanks/burning.png"
+            iconSrc: "https://equicord.org/assets/plugins/friendshipRanks/burning.png",
+            rarity: BadgeRarity.RARE
         },
         {
             title: "Fighter",
             description: "Your friendship is strong (6 Months)",
             requirement: 182.5,
-            iconSrc: "https://equicord.org/assets/plugins/friendshipRanks/fighter.png"
+            iconSrc: "https://equicord.org/assets/plugins/friendshipRanks/fighter.png",
+            rarity: BadgeRarity.RARE
         },
         {
             title: "Star",
             description: "Your friendship has been going on for a WHILE (1 Year)",
             requirement: 365,
-            iconSrc: "https://equicord.org/assets/plugins/friendshipRanks/star.png"
+            iconSrc: "https://equicord.org/assets/plugins/friendshipRanks/star.png",
+            rarity: BadgeRarity.EPIC
         },
         {
             title: "Royal",
             description: "Your friendship has gone through thick and thin- a whole 2 years!",
             requirement: 730,
-            iconSrc: "https://equicord.org/assets/plugins/friendshipRanks/royal.png"
+            iconSrc: "https://equicord.org/assets/plugins/friendshipRanks/royal.png",
+            rarity: BadgeRarity.EPIC
         },
         {
             title: "Besties",
             description: "How do you even manage this??? (5 Years)",
             requirement: 1826.25,
-            iconSrc: "https://equicord.org/assets/plugins/friendshipRanks/besties.png"
+            iconSrc: "https://equicord.org/assets/plugins/friendshipRanks/besties.png",
+            rarity: BadgeRarity.MYTHIC
         }
     ];
 
-function openRankModal(rank: rankInfo) {
-    openModal((props: RenderModalProps) => (
-        <ErrorBoundary>
-            <Modal
-                {...props}
-                size="sm"
-                title={
-                    <Flex className={cl("flex")}>
-                        <Forms.FormTitle
-                            className={cl("img")}
-                            tag="h2"
-                        >
-                            <img src={rank.iconSrc} alt="rank icon" />
-                            {rank.title}
-                        </Forms.FormTitle>
-                    </Flex>
-                }
-            >
-                <div className={cl("text")}>
-                    <Paragraph>
-                        {rank.description}
-                    </Paragraph>
-                </div>
-            </Modal>
-        </ErrorBoundary >
-    ));
+function friendsSince(userId: string) {
+    const since = new Date(RelationshipStore.getSince(userId));
+    return Number.isNaN(since.getTime()) ? undefined : since.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
 }
 
 function shouldShowBadge(userId: string, requirement: number, index: number) {
@@ -131,24 +114,40 @@ function shouldShowBadge(userId: string, requirement: number, index: number) {
     return (days > requirement && days < ranks[index + 1].requirement);
 }
 
-function getBadgesToApply() {
-    return ranks.map((rank, index) => {
-        return ({
+// One entry for every rank, made once so stop() removes the very badge start() added
+const FriendshipBadge: ProfileBadge = {
+    id: "friendship_ranks",
+    position: BadgePosition.END,
+    getBadges({ userId }: BadgeUserArgs) {
+        const index = ranks.findIndex((rank, i) => shouldShowBadge(userId, rank.requirement, i));
+        if (index === -1) return [];
+
+        const rank = ranks[index];
+        const since = friendsSince(userId);
+        const friendsSinceText = since && t("Friends since {date}", { date: since });
+
+        return [{
             id: `friendship_ranks_badge_${index}`,
             description: rank.title,
             iconSrc: rank.iconSrc,
-            position: BadgePosition.END,
-            onClick: () => openRankModal(rank),
-            shouldShow: (info: BadgeUserArgs) => shouldShowBadge(info.userId, rank.requirement, index),
+            rarity: rank.rarity,
+            body: friendsSinceText || t("Friendship Rank"),
+            details: {
+                flavor: friendsSinceText,
+                era: t("Friendship Rank"),
+                label: t("Friendship Rank"),
+                text: rank.description,
+                notice: t("Only you see this badge, on the profiles of your friends.")
+            },
             props: {
                 style: {
                     borderRadius: "50%",
                     transform: "scale(0.9)"
                 }
-            },
-        });
-    });
-}
+            }
+        }];
+    }
+};
 
 const FriendDecoration = ErrorBoundary.wrap(({ userId }: { userId: string; }) => {
     const isFriend = useStateFromStores([RelationshipStore], () => RelationshipStore.isFriend(userId), [userId]);
@@ -179,10 +178,9 @@ export default definePlugin({
         return <FriendDecoration userId={message.author.id} />;
     },
     start() {
-        getBadgesToApply().forEach(b => Badges.addProfileBadge(b));
-
+        Badges.addProfileBadge(FriendshipBadge);
     },
     stop() {
-        getBadgesToApply().forEach(b => Badges.removeProfileBadge(b));
+        Badges.removeProfileBadge(FriendshipBadge);
     },
 });

@@ -18,6 +18,7 @@ export default definePlugin({
     description: "A library of themes for Endcord.",
     tags: ["Appearance", "Customisation"],
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
+    enabledByDefault: true,
     settings,
     toolboxActions: {
         "Open Theme Library": () => {
@@ -35,6 +36,6 @@ export default definePlugin({
     },
 
     stop() {
-        removeFromArray(SettingsPlugin.customEntries, e => e.key === "endcord_theme_library" || e.key === "equicord_theme_library");
+        removeFromArray(SettingsPlugin.customEntries, e => e.key === "endcord_theme_library");
     },
 });

@@ -41,6 +41,7 @@ namespace EndcordInstaller.Tests
             Check("3. Migration Engine: Preview, compatible/incompatible filtering, backup & restore", TestMigrationAndBackups);
             Check("4. Smart Installation: Conflict replacement, in-place update, cleanup & uninstall", TestInstallUpdateUninstall);
             Check("5. Resilience: Cancellation rollback, locked file retry & damaged install handling", TestResilienceAndErrors);
+            Check("6. Payload integrity: a file planted next to the installer is refused, the embedded one passes", TestPayloadIntegrity);
 
             string summary = string.Format("SUMMARY: {0} passed, {1} failed", passed, failed);
             logs.Add(summary);
@@ -85,6 +86,29 @@ namespace EndcordInstaller.Tests
             File.WriteAllText(Path.Combine(dir, "preload.js"), "// endcord preload\n");
             File.WriteAllText(Path.Combine(dir, "renderer.js"), "definePlugin({ name: \"AlwaysAnimate\" });\n");
             File.WriteAllText(Path.Combine(dir, "renderer.css"), "/* endcord css */\n");
+        }
+
+        static void TestPayloadIntegrity()
+        {
+            string tmp = Path.Combine(Path.GetTempPath(), "endcord-payload-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(tmp);
+            try
+            {
+                Assert(InstallationEngine.EmbeddedPayloadHash("patcher.js") != null, "This build should carry the payload hash list");
+
+                string planted = Path.Combine(tmp, "patcher.js");
+                File.WriteAllText(planted, "require('child_process').exec('calc');\n");
+                Assert(!InstallationEngine.PayloadMatchesEmbeddedHash("patcher.js", planted), "A file that isn't the embedded payload must be refused");
+
+                InstallationEngine.CustomPayloadDirectory = null;
+                string extracted = Path.Combine(tmp, "extracted.js");
+                InstallationEngine.ExtractPayloadAsset("patcher.js", extracted, CancellationToken.None);
+                Assert(InstallationEngine.PayloadMatchesEmbeddedHash("patcher.js", extracted), "The embedded payload must match its own hash");
+            }
+            finally
+            {
+                try { Directory.Delete(tmp, true); } catch { }
+            }
         }
 
         static void TestLocalization()
@@ -252,7 +276,13 @@ namespace EndcordInstaller.Tests
                 File.WriteAllText(Path.Combine(venDist, "patcher.js"), "// vencord");
                 File.WriteAllText(Path.Combine(venSettings, "settings.json"), "{\"useQuickCss\":true}");
 
+                // Discord halfway through downloading its own update: a folder with no app.asar yet, which isn't a version
+                string updating = Path.Combine(paths.Local, "Discord", ".app-1.0.9031.installing");
+                Directory.CreateDirectory(Path.Combine(updating, "resources"));
+
                 var det = ClientDetector.Detect(paths, null);
+                Assert(det.Installs.Count == 1 && det.Installs[0].AppDirs.Count == 1 && !det.Installs[0].IsDamaged,
+                    "Discord's unfinished update folder must not count as a version, found " + (det.Installs.Count == 1 ? det.Installs[0].AppDirs.Count : -1));
                 var conflicts = InstallationEngine.FindConflicts(det.Installs);
                 Assert(conflicts.Count == 1 && conflicts[0].ForeignMods[0].Id == "vencord", "Should detect Vencord conflict");
 
@@ -260,6 +290,7 @@ namespace EndcordInstaller.Tests
                 Loc.SetLanguage("tr");
                 var installOut = InstallationEngine.RunInstall(paths, det.Installs, false, false, null, CancellationToken.None);
                 Assert(installOut.Success && !installOut.WasUpdate, "First install should succeed");
+                Assert(Directory.GetFileSystemEntries(Path.Combine(updating, "resources")).Length == 0, "Discord's unfinished update must be left alone");
                 Assert(installOut.AffectedInstalls[0].HasEndcord, "Endcord should be active after install");
                 var clientSettings = Json.ParseObject(FileOps.ReadText(paths.SettingsFile));
                 Assert(clientSettings != null && Convert.ToString(clientSettings["language"]) == "tr", "Client settings.json should inherit installer language 'tr'");

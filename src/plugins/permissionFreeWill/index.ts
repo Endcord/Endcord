@@ -47,9 +47,12 @@ export default definePlugin({
             find: "#{intl::ONBOARDING_CHANNEL_THRESHOLD_WARNING}",
             replacement: [
                 {
-                    // replace export getters with functions that always resolve to true
-                    match: /{(?:\i:\(\)=>\i,?){2}}/,
-                    replace: m => m.replaceAll(canonicalizeMatch(/\(\)=>\i/g), "()=>()=>Promise.resolve(true)")
+                    // replace export getters with functions that always resolve to true. On Canary the two
+                    // functions are plain values; getters for the same names win over values
+                    match: /{(?:\i:\(\)=>\i,?){2}}|(?<=\.d\(\i,)\{\}(?=,\{(\i):async function.+?\},(\i):async function)/,
+                    replace: (m, first, second) => first
+                        ? `{${first}:()=>()=>Promise.resolve(true),${second}:()=>()=>Promise.resolve(true)}`
+                        : m.replaceAll(canonicalizeMatch(/\(\)=>\i/g), "()=>()=>Promise.resolve(true)")
                 }
             ],
             predicate: () => settings.store.onboarding

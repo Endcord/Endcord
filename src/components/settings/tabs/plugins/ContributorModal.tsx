@@ -4,20 +4,23 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import "./ContributorModal.css";
+import "./ContributorModal.css?screen";
 
 import { useSettings } from "@api/Settings";
+import { EndcordModal } from "@components/EndcordModal";
 import { Link } from "@components/Link";
 import { RenderModalProps, User } from "@endcord/discord-types";
+import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import { fetchUserProfile } from "@utils/discord";
 import { useI18n } from "@utils/i18n";
 import { classes, pluralise } from "@utils/misc";
-import { Forms, Modal, openModal, showToast, useEffect, useMemo, UserProfileStore, useStateFromStores } from "@webpack/common";
+import { Forms, openModal, showToast, useEffect, useMemo, UserProfileStore, useStateFromStores } from "@webpack/common";
 
-import Plugins from "~plugins";
+import Plugins, { getPluginListInfo } from "~plugins";
 
 import { GithubButton, WebsiteButton } from "./LinkIconButton";
+import { listItem } from "./listItems";
 import { PluginCard } from "./PluginCard";
 
 const cl = classNameFactory("vc-author-modal-");
@@ -41,20 +44,19 @@ function ContributorModal({ user, modalProps }: { user: User; modalProps: Render
     const website = profile?.connectedAccounts?.find(a => a.type === "domain")?.name;
 
     const plugins = useMemo(() => {
-        const allPlugins = Object.values(Plugins);
-        return allPlugins
-            .filter(p => !p.name.endsWith("API"))
-            .filter(p => {
-                if (!p.authors) return false;
-                return p.authors.some(a => String(a.id) === String(user.id) || a.name?.toLowerCase() === user.username?.toLowerCase());
-            })
+        // Authors come from what the build read where it could, so the code of every plugin isn't loaded to list them
+        const authorsOf = (name: string) => getPluginListInfo(name)?.w?.map(key => Devs[key]) ?? Plugins[name].authors;
+        return Object.keys(Plugins)
+            .filter(name => !name.endsWith("API"))
+            .filter(name => authorsOf(name)?.some(a => String(a.id) === String(user.id) || a.name?.toLowerCase() === user.username?.toLowerCase()))
+            .map(listItem)
             .sort((a, b) => Number(a.required ?? false) - Number(b.required ?? false));
     }, [user.id, user.username]);
 
     const ContributedHyperLink = <Link href="https://endcord.com/source">{t("contributed")}</Link>;
 
     return (
-        <Modal
+        <EndcordModal
             {...modalProps}
             title={
                 <div className="vc-plugin-modal-header">
@@ -107,7 +109,7 @@ function ContributorModal({ user, modalProps }: { user: User; modalProps: Render
                     )}
                 </div>
             )}
-        </Modal>
+        </EndcordModal>
     );
 }
 

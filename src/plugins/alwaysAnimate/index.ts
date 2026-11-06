@@ -1,6 +1,6 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2023 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -64,7 +64,8 @@ export default definePlugin({
             // Nameplates
             find: ".MINI_PREVIEW,[",
             replacement: {
-                match: /animate:\i,loop:/,
+                // Not where the props are taken apart (let{animate:a,loop:u}=e): changing that breaks the code
+                match: /animate:\i,loop:(?!\i\}=)/,
                 replace: "animate:true,loop:true,_loop:"
             }
         }

@@ -6,6 +6,7 @@
 
 import { definePluginSettings } from "@api/Settings";
 import { BaseText } from "@components/BaseText";
+import { DEVELOPER_ICON } from "@plugins/_api/badges/badgeArt";
 import { t } from "@utils/i18n";
 import { OptionType } from "@utils/types";
 import { useEffect, UserStore, useState } from "@webpack/common";
@@ -94,8 +95,8 @@ export default settings;
 
 const BadgeSettings = () => {
     const [images, setImages] = useState([
-        { src: "https://badge.equicord.org/donor.webp", shown: settings.store.showEndcordDonor, title: "Endcord donor badges", key: "EndcordDonor", position: settings.store.EndcordDonorPosition },
-        { src: "https://iili.io/C3jZGrg.th.png", shown: settings.store.showEndcordContributor, title: "Endcord contributor badge", key: "EndcordContributer", position: settings.store.EndcordContributorPosition },
+        { src: "https://cdn.discordapp.com/emojis/1026533070955872337.png", shown: settings.store.showEndcordDonor, title: "Endcord donor badges", key: "EndcordDonor", position: settings.store.EndcordDonorPosition },
+        { src: DEVELOPER_ICON, shown: settings.store.showEndcordContributor, title: "Endcord developer and contributor badges", key: "EndcordContributer", position: settings.store.EndcordContributorPosition },
         { src: "https://cdn.discordapp.com/emojis/1026533070955872337.png", shown: settings.store.showVencordDonor, title: "Endcord donor badges", key: "VencordDonor", position: settings.store.VencordDonorPosition },
         { src: "https://cdn.discordapp.com/emojis/1092089799109775453.png", shown: settings.store.showVencordContributor, title: "Endcord contributor badge", key: "VencordContributer", position: settings.store.VencordContributorPosition },
         { src: "https://cdn.discordapp.com/badge-icons/bf01d1073931f921909045f3a39fd264.png", shown: settings.store.showDiscordProfile, title: "Discord profile badges (HypeSquad, Discord Staff, Early Supporter, etc.)", key: "DiscordProfile", position: settings.store.DiscordProfilePosition },

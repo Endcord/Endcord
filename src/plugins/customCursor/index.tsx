@@ -176,6 +176,7 @@ const settings = definePluginSettings({
         onChange: applyCursor,
     },
     customUrl: {
+        sensitive: true,
         type: OptionType.STRING,
         description: "Custom cursor image URL. Overrides the preset when set. Use a PNG/GIF/CUR (GitHub or Discord CDN works best).",
         default: "",

@@ -1,18 +1,20 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import "./PluginModal.css";
+import "./PluginModal.css?screen";
 
 import { generateId } from "@api/Commands";
 import { hasAnyVisibleSettings, isSettingHidden } from "@api/PluginManager";
 import { useSettings } from "@api/Settings";
 import { BaseText } from "@components/BaseText";
+import { EndcordModal } from "@components/EndcordModal";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { RenderModalProps, User } from "@endcord/discord-types";
 import { debounce } from "@shared/debounce";
+import { BAN_RISK, BAN_RISK_LEAD } from "@utils/banRisk";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import { useI18n } from "@utils/i18n";
@@ -21,7 +23,7 @@ import { Margins } from "@utils/margins";
 import { classes } from "@utils/misc";
 import { OptionType, Plugin, PluginTag } from "@utils/types";
 import { findCssClassesLazy } from "@webpack";
-import { Clickable, FluxDispatcher, Forms, Modal, openModal, React, Text, Tooltip, useEffect, useMemo, UserStore, UserSummaryItem, UserUtils, useState } from "@webpack/common";
+import { Clickable, FluxDispatcher, Forms, openModal, React, Text, Tooltip, useEffect, useMemo, UserStore, UserSummaryItem, UserUtils, useState } from "@webpack/common";
 import { Constructor } from "type-fest";
 
 import { PluginMeta } from "~plugins";
@@ -29,6 +31,7 @@ import { PluginMeta } from "~plugins";
 import { OptionComponentMap } from "./components";
 import { openContributorModal } from "./ContributorModal";
 import { WebsiteButton } from "./LinkIconButton";
+import { PluginPreview } from "./PluginPreview";
 
 const cl = classNameFactory("vc-plugin-modal-");
 
@@ -38,6 +41,8 @@ const UserRecord: Constructor<Partial<User>> = proxyLazy(() => UserStore.getCurr
 interface PluginModalProps extends RenderModalProps {
     plugin: Plugin;
     onRestartNeeded(key: string): void;
+    /** A setting to scroll to and point out, when someone searched for it */
+    focusSetting?: string;
 }
 
 function makeDummyUser(user: { username: string; id?: string; avatar?: string; }) {
@@ -68,7 +73,7 @@ function PluginTags({ tags }: { tags: PluginTag[]; }) {
     );
 }
 
-export default function PluginModal({ plugin, onRestartNeeded, onClose, transitionState }: PluginModalProps) {
+export default function PluginModal({ plugin, onRestartNeeded, onClose, transitionState, focusSetting }: PluginModalProps) {
     const { t, tPluginDesc } = useI18n();
     const pluginSettings = useSettings([`plugins.${plugin.name}.*`]).plugins[plugin.name];
     const hasSettings = hasAnyVisibleSettings(plugin);
@@ -108,6 +113,15 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
         return () => { active = false; };
     }, [customAuthors]);
 
+    useEffect(() => {
+        if (!focusSetting) return;
+        // After the dialog's opening animation has laid it out
+        const timer = setTimeout(() => {
+            document.querySelector(`[data-ec-setting="${CSS.escape(focusSetting)}"]`)?.scrollIntoView({ block: "center", behavior: "smooth" });
+        }, 200);
+        return () => clearTimeout(timer);
+    }, [focusSetting]);
+
     function renderSettings() {
         const { settings } = plugin;
         if (!hasSettings || !settings)
@@ -129,16 +143,18 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
 
             const Component = OptionComponentMap[setting.type];
             return (
-                <ErrorBoundary noop key={key}>
-                    <Component
-                        id={key}
-                        setting={setting}
-                        onChange={debounce(onChange)}
-                        pluginSettings={pluginSettings}
-                        definedSettings={settings}
-                        closePluginSettings={onClose}
-                    />
-                </ErrorBoundary>
+                <div key={key} data-ec-setting={key} className={key === focusSetting ? "ec-setting-found" : undefined}>
+                    <ErrorBoundary noop>
+                        <Component
+                            id={key}
+                            setting={setting}
+                            onChange={debounce(onChange)}
+                            pluginSettings={pluginSettings}
+                            definedSettings={settings}
+                            closePluginSettings={onClose}
+                        />
+                    </ErrorBoundary>
+                </div>
             );
         });
 
@@ -172,7 +188,7 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
     const pluginMeta = PluginMeta[plugin.name];
 
     return (
-        <Modal
+        <EndcordModal
             transitionState={transitionState}
             onClose={onClose}
             size="lg"
@@ -194,11 +210,23 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
                     <div>
                         <Forms.FormText>{tPluginDesc(plugin.name, plugin.description)}</Forms.FormText>
                         {!!plugin.tags?.length && <PluginTags tags={plugin.tags} />}
+                        {BAN_RISK[plugin.name] && (
+                            <div className={cl("ban-risk")} role="note">
+                                <BaseText size="sm" weight="semibold">{t("Ban risk")}</BaseText>
+                                <BaseText size="sm">{t(BAN_RISK_LEAD)} {t(BAN_RISK[plugin.name])} {t("Use it on an account you can afford to lose.")}</BaseText>
+                            </div>
+                        )}
                     </div>
                 </div>
             }
         >
             <div className={"vc-settings-modal-content"}>
+                {!pluginMeta.userPlugin && (
+                    <ErrorBoundary noop>
+                        <PluginPreview name={plugin.name} />
+                    </ErrorBoundary>
+                )}
+
                 <section>
                     <Text variant="heading-lg/semibold" className={classes(Margins.top8, Margins.bottom8)}>{t("Authors")}</Text>
                     <div style={{ width: "fit-content" }}>
@@ -243,15 +271,16 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
                     {renderSettings()}
                 </section>
             </div>
-        </Modal>
+        </EndcordModal>
     );
 }
 
-export function openPluginModal(plugin: Plugin, onRestartNeeded?: (pluginName: string, key: string) => void) {
+export function openPluginModal(plugin: Plugin, onRestartNeeded?: (pluginName: string, key: string) => void, focusSetting?: string) {
     openModal(modalProps => (
         <PluginModal
             {...modalProps}
             plugin={plugin}
+            focusSetting={focusSetting}
             onRestartNeeded={(key: string) => onRestartNeeded?.(plugin.name, key)}
         />
     ));

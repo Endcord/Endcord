@@ -8,8 +8,10 @@ import "./styles.css";
 
 import { addHeaderBarButton, HeaderBarButton, removeHeaderBarButton } from "@api/HeaderBar";
 import { DataStore } from "@api/index";
+import { definePluginSettings } from "@api/Settings";
 import BadgeAPIPlugin from "@plugins/_api/badges";
 import { Devs } from "@utils/constants";
+import { openInviteModal } from "@utils/discord";
 import { t, useI18n } from "@utils/i18n";
 import {
     ModalCloseButton as ModalCloseButton_,
@@ -20,11 +22,99 @@ import {
     openModal
 } from "@utils/modal";
 import { safeRecordMerge } from "@utils/safeRecordMerge";
-import definePlugin from "@utils/types";
-import { findByCodeLazy, findStoreLazy } from "@webpack";
-import { AuthenticationStore, Button, FluxDispatcher, IconUtils, React, Select, showToast, SnowflakeUtils, Toasts, UserProfileStore, UserStore, useStateFromStores } from "@webpack/common";
+import definePlugin, { OptionType } from "@utils/types";
+import { Alerts, AuthenticationStore, Button, FluxDispatcher, IconUtils, React, Select, showToast, SnowflakeUtils, Toasts, UserProfileStore, UserStore } from "@webpack/common";
 
-import { profileBadgeId, reloadBadgeLayout, setManagedBadges, startBadgeManagement, stopBadgeManagement } from "./badgeManagement";
+import { BADGES, BOOST_ICONS, BOOST_LABELS, BOOST_LABELS_RAW, BOOST_LEVELS, FLAG, GIFT_IDS, GIFT_LEVELS, GIFT_TIER_NAMES, NITRO_LEVEL_MONTHS, NITRO_LEVELS, OLD_NAME_BADGE_ICON, SPECIAL_BADGES, TIERED_BADGES } from "./badgeData";
+import { reloadBadgeLayout, setManagedBadges, startBadgeManagement, stopBadgeManagement } from "./badgeManagement";
+import {
+    AVATAR_DECORATIONS, CloseIcon, CollectibleType, DisplayNameEffects, DisplayNameFonts, DisplayNameStylePicker, enumEntries,
+    FramePreview, getDecorationUrl, ShopImage, useShopCollectibles
+} from "./collectibles";
+import { type CustomProfileData, hasAnyCustomData, hasCustomBadgesConfigured, type SavedPreset } from "./data";
+import { boostBadgeRef, flagBadgeRef, makeBadge, nitroBadgeRef, specialBadgeRef, tieredBadgeRef } from "./discordBadgeRefs";
+import { getSharedProfile, hasSharedProfiles, PROFILES_GUILD_ID, PROFILES_INVITE, publishProfile, sharingRetryAt, startSharing, stopSharing } from "./sharing";
+
+const settings = definePluginSettings({
+    showOthers: {
+        type: OptionType.BOOLEAN,
+        description: t("Show the profiles other Endcord users made with CustomProfile"),
+        default: true,
+        onChange: () => {
+            // Reading the channel starts or stops with it
+            if (_hooksPlugin) {
+                stopSharing();
+                startSharing(onSharedProfilesChanged, { read: settings.store.showOthers, mine: currentSharable }).catch(() => { });
+            }
+            bumpDataVersion();
+            refreshUsers();
+        }
+    }
+});
+
+/** Shared profiles, when they're wanted; this account's own and its other accounts' always come first */
+const getOthersProfile = (userId: string) => settings.store.showOthers ? getSharedProfile(userId) : null;
+
+/** Makes Discord draw users again, after their shared profiles changed */
+let _refreshQueued = false;
+function refreshUsers() {
+    if (_refreshQueued) return;
+    _refreshQueued = true;
+    requestAnimationFrame(() => {
+        _refreshQueued = false;
+        try { UserStore.emitChange(); } catch { }
+        try { UserProfileStore.emitChange(); } catch { }
+    });
+}
+
+function onSharedProfilesChanged(userIds: string[]) {
+    const myId = AuthenticationStore?.getId?.();
+    for (const id of userIds) {
+        _fakeUserCache.delete(id);
+        // This account's badges, and its other accounts', come from their own data, not from what they shared
+        if (id === myId || allAccountsEnabled[id]) continue;
+        const shared = getOthersProfile(id);
+        if (shared) rememberProfile(id, buildUserBadgesArray(shared, true));
+        else forgetProfile(id);
+    }
+    bumpDataVersion();
+    refreshUsers();
+}
+
+/** The signed-in account and the profile it has on, for sharing */
+function currentSharable() {
+    const id = AuthenticationStore?.getId?.();
+    if (!id) return null;
+    const data = allAccountsEnabled[id] && hasAnyCustomData(allAccountsData[id]) ? allAccountsData[id] : null;
+    return { id, data };
+}
+
+const NOT_MEMBER_WARNED = "customProfile_notMemberWarned";
+
+/** Shares the saved profile with other Endcord users, and says so when it couldn't be */
+async function shareMyProfile(myId: string, data: CustomProfileData | null) {
+    const result = await publishProfile(myId, data);
+    if (result === "not-member" && data) {
+        // Once: someone who chose not to join isn't asked again on every save
+        if (await DataStore.get(NOT_MEMBER_WARNED)) return;
+        DataStore.set(NOT_MEMBER_WARNED, true).catch(() => { });
+        Alerts.show({
+            title: t("Only you can see this profile for now"),
+            body: t("Endcord users see each other's profiles through the Endcord Discord server. Join it and save your profile again, and everyone using Endcord sees it too."),
+            confirmText: t("Join the server"),
+            cancelText: t("Not now"),
+            onConfirm: () => openInviteModal(PROFILES_INVITE, PROFILES_GUILD_ID).catch(() => { })
+        });
+    } else if (result === "too-long") {
+        showToast(t("Your profile is too long to share. Shorten it a little and save again."), Toasts.Type.FAILURE);
+    } else if (result === "later") {
+        // The profiles channel takes one message per person every few minutes; this save goes out when it may
+        const minutes = Math.max(1, Math.ceil((sharingRetryAt() - Date.now()) / 60_000));
+        showToast(t("Saved. Other Endcord users see this change in {minutes} min.", { minutes }), Toasts.Type.MESSAGE);
+    } else if (result === "failed") {
+        showToast(t("Couldn't share your profile with other Endcord users. It's saved, and it's shared the next time you save."), Toasts.Type.FAILURE);
+    }
+}
 
 const ModalRoot = ModalRoot_;
 const ModalHeader = ModalHeader_;
@@ -34,275 +124,6 @@ const ModalCloseButton = ModalCloseButton_;
 
 const DS_KEY = "customProfile_data";
 const DS_ENABLED = "customProfile_enabled";
-
-const FLAG = {
-    STAFF: 1,
-    PARTNER: 2,
-    HYPESQUAD: 4,
-    BUG_HUNTER_1: 8,
-    BRAVERY: 64,
-    BRILLIANCE: 128,
-    BALANCE: 256,
-    EARLY_SUPPORTER: 512,
-    BUG_HUNTER_2: 16384,
-    DEV_VERIFIED: 131072,
-    MOD_ALUMNI: 262144,
-    ACTIVE_DEVELOPER: 4194304,
-};
-
-const OLD_NAME_BADGE_ICON = "https://cdn.discordapp.com/badge-icons/6de6d34650760ba5551a79732e98ed60.png";
-
-const BADGES = [
-    { label: t("Discord Staff"), flag: FLAG.STAFF, icon: "https://cdn.discordapp.com/badge-icons/5e74e9b61934fc1f67c65515d1f7e60d.png" },
-    { label: t("Partnered Server Owner"), flag: FLAG.PARTNER, icon: "https://cdn.discordapp.com/badge-icons/3f9748e53446a137a052f3454e2de41e.png" },
-    { label: t("Moderator Programs Alumni"), flag: FLAG.MOD_ALUMNI, icon: "https://cdn.discordapp.com/badge-icons/fee1624003e2fee35cb398e125dc479b.png" },
-    { label: t("HypeSquad Events"), flag: FLAG.HYPESQUAD, icon: "https://cdn.discordapp.com/badge-icons/bf01d1073931f921909045f3a39fd264.png" },
-    { label: t("HypeSquad Bravery"), flag: FLAG.BRAVERY, icon: "https://cdn.discordapp.com/badge-icons/8a88d63823d8a71cd5e390baa45efa02.png" },
-    { label: t("HypeSquad Brilliance"), flag: FLAG.BRILLIANCE, icon: "https://cdn.discordapp.com/badge-icons/011940fd013da3f7fb926e4a1cd2e618.png" },
-    { label: t("HypeSquad Balance"), flag: FLAG.BALANCE, icon: "https://cdn.discordapp.com/badge-icons/3aa41de486fa12454c3761e8e223442e.png" },
-    { label: t("Early Supporter"), flag: FLAG.EARLY_SUPPORTER, icon: "https://cdn.discordapp.com/badge-icons/7060786766c9c840eb3019e725d2b358.png" },
-    { label: t("Bug Hunter Level 2"), flag: FLAG.BUG_HUNTER_2, icon: "https://cdn.discordapp.com/badge-icons/848f79194d4be5ff5f81505cbd0ce1e6.png" },
-    { label: t("Bug Hunter Level 1"), flag: FLAG.BUG_HUNTER_1, icon: "https://cdn.discordapp.com/badge-icons/2717692c7dca7289b35297368a940dd0.png" },
-    { label: t("Early Verified Bot Developer"), flag: FLAG.DEV_VERIFIED, icon: "https://cdn.discordapp.com/badge-icons/6df5892e0f35b051f8b61eace34f4967.png" },
-    { label: t("Active Developer"), flag: FLAG.ACTIVE_DEVELOPER, icon: "https://cdn.discordapp.com/badge-icons/6bdc42827a38498929a4920da12695d9.png" },
-];
-
-const SPECIAL_BADGES: Record<string, { label: string; icon: string }> = {
-    oldname: { label: t("Old username"), icon: OLD_NAME_BADGE_ICON },
-    quest: { label: t("Completed a quest"), icon: "https://cdn.discordapp.com/badge-icons/7d9ae358c8c5e118768335dbe68b4fb8.png" },
-    meadow: { label: t("Last Meadow Online"), icon: "https://cdn.discordapp.com/badge-icons/ca105ad9cfc8580c765101d17bbb2323.png" },
-    orbs: { label: t("Orbs — Apprentice"), icon: "https://cdn.discordapp.com/badge-icons/83d8a1eb09a8d64e59233eec5d4d5c2d.png" },
-    gift_patron: { label: t("Gifting — Patron"), icon: "https://cdn.discordapp.com/assets/content/5a2c578f82445956549c6454a2d65f8ba35b53f59120a4aa55855098ce5a653d.png" },
-    gift_champion: { label: t("Gifting — Champion"), icon: "https://cdn.discordapp.com/assets/content/ac865fd339fbaa75d77278cd695936f168cd9b88dbbd72fdaeb76174bc0039d3.png" },
-    gift_luminary: { label: t("Gifting — Luminary"), icon: "https://cdn.discordapp.com/assets/content/35885be90179a2b4cc4e29aaf1285fe561c837f037aa805df40e921fd8db4867.png" },
-    gift_icon: { label: t("Gifting — Icon"), icon: "https://cdn.discordapp.com/assets/content/70b46c1ea400bc57e2d5ac937c70b7ef25599feb1c62d7817c257f19051f1460.png" },
-    gift_hero: { label: t("Gifting — Hero"), icon: "https://cdn.discordapp.com/assets/content/779d517e251fd2f6c4d64b4bf5839ea20cc5e061a2f971c7811ab2486ccf4553.png" },
-    gift_legendary: { label: t("Gifting — Legendary"), icon: "https://cdn.discordapp.com/assets/content/eb5ce89c01c7884a614b5be0ebadb0d86215b61b55c04a01d27cffb131b4a070.png" },
-};
-
-const GIFT_IDS = ["gift_patron", "gift_champion", "gift_luminary", "gift_icon", "gift_hero", "gift_legendary"];
-const GIFT_TIER_NAMES = ["Patron", "Champion", "Luminary", "Icon", "Hero", "Legend"];
-
-const NITRO_LEVELS = [
-    { label: t("Nitro (0 months)"), icon: "https://cdn.discordapp.com/badge-icons/2ba85e8026a8614b640c2837bcdfe21b.png" },
-    { label: t("Bronze (1 month)"), icon: "https://cdn.discordapp.com/badge-icons/4f33c4a9c64ce221936bd256c356f91f.png" },
-    { label: t("Silver (3 months)"), icon: "https://cdn.discordapp.com/badge-icons/4514fab914bdbfb4ad2fa23df76121a6.png" },
-    { label: t("Gold (6 months)"), icon: "https://cdn.discordapp.com/badge-icons/2895086c18d5531d499862e41d1155a6.png" },
-    { label: t("Platinum (12 months)"), icon: "https://cdn.discordapp.com/badge-icons/0334688279c8359120922938dcb1d6f8.png" },
-    { label: t("Diamond (24 months)"), icon: "https://cdn.discordapp.com/badge-icons/0d61871f72bb9a33a7ae568c1fb4f20a.png" },
-    { label: t("Emerald (36 months)"), icon: "https://cdn.discordapp.com/badge-icons/11e2d339068b55d3a506cff34d3780f3.png" },
-    { label: t("Ruby (60 months)"), icon: "https://cdn.discordapp.com/badge-icons/cd5e2cfd9d7f27a8cdcd3e8a8d5dc9f4.png" },
-    { label: t("Opal (72 months)"), icon: "https://cdn.discordapp.com/badge-icons/5b154df19c53dce2af92c9b61e6be5e2.png" },
-];
-const NITRO_LEVEL_MONTHS = [0, 1, 3, 6, 12, 24, 36, 60, 72];
-
-const BOOST_LABELS_RAW = [
-    "1 Month", "2 Months", "3 Months", "6 Months",
-    "9 Months", "12 Months", "15 Months", "18 Months", "24 Months"
-];
-const BOOST_LABELS = BOOST_LABELS_RAW.map(l => t(l));
-const BOOST_ICONS = [
-    "https://cdn.discordapp.com/badge-icons/51040c70d4f20a921ad6674ff86fc95c.png",
-    "https://cdn.discordapp.com/badge-icons/0e4080d1d333bc7ad29ef6528b6f2fb7.png",
-    "https://cdn.discordapp.com/badge-icons/72bed924410c304dbe3d00a6e593ff59.png",
-    "https://cdn.discordapp.com/badge-icons/df199d2050d3ed4ebf84d64ae83989f8.png",
-    "https://cdn.discordapp.com/badge-icons/996b3e870e8a22ce519b3a50e6bdd52f.png",
-    "https://cdn.discordapp.com/badge-icons/991c9f39ee33d7537d9f408c3e53141e.png",
-    "https://cdn.discordapp.com/badge-icons/cb3ae83c15e970e8f3d410bc62cb8b99.png",
-    "https://cdn.discordapp.com/badge-icons/7142225d31238f6387d9f09efaa02759.png",
-    "https://cdn.discordapp.com/badge-icons/ec92202290b48d0879b7413d2dde3bab.png",
-];
-
-// Discord's tiered badges (2026). Icons and tier names come from Discord's badge catalog.
-interface BadgeTier { label: string; icon: string; }
-const TIERED_BADGES: Array<{ key: string; label: string; tiers: BadgeTier[]; }> = [
-    {
-        key: "account_age",
-        label: "Account Age",
-        tiers: [
-            { label: "Seed", icon: "https://cdn.discordapp.com/assets/content/8da9339b9d405f0194947e607c839b1bd43436211e5bf07fe7f4ce005578e9e4.png" },
-            { label: "Sprout", icon: "https://cdn.discordapp.com/assets/content/f12847ebadd9022c3d67e5b31b5f3608e1ff48a222528fb6059e0fd310fc71b7.png" },
-            { label: "Sapling", icon: "https://cdn.discordapp.com/assets/content/dccc28b53d39406e65e76541d6b940b23a9d31ef418100d77d6eb30c4adb9098.png" },
-            { label: "Bud", icon: "https://cdn.discordapp.com/assets/content/7c0a10981060861722c0216fd6c01a9fd8b10accbd3d6a04dcde275896e82e8b.png" },
-            { label: "Blossom", icon: "https://cdn.discordapp.com/assets/content/52c374af536a4621a65503b4350f7459e3d00f3ed4e3b941c3902c0d9af45f4a.png" },
-            { label: "Redwood", icon: "https://cdn.discordapp.com/assets/content/8041acaf604df1ace1ad2a12fd020513e50dfdd09899dc2e455e622d41c91000.png" },
-            { label: "Sequoia", icon: "https://cdn.discordapp.com/assets/content/7c5a1b1ce27181145c7e37bf6ad323353c14e8db201cfa3cb336292ad9a5d03d.png" },
-            { label: "Bristlecone", icon: "https://cdn.discordapp.com/assets/content/53b3a2b4307df9dfc05a4c9da977baa4a6fd822f5a3d24843f949d1c93398322.png" },
-            { label: "Stromatolite", icon: "https://cdn.discordapp.com/assets/content/d30993594816cc6035041941291dc7a5862e55676ce85eef91f89fd0c59f2931.png" },
-            { label: "Primordial", icon: "https://cdn.discordapp.com/assets/content/1930d04a8a1d0aba6f97b19b7e7b87158ab154ebffd5468d6ada66671285968b.png" },
-        ]
-    },
-    {
-        key: "streaming",
-        label: "Streaming",
-        tiers: [
-            { label: "Newcomer", icon: "https://cdn.discordapp.com/assets/content/571a6f607289dfc034d5735ea020bb53f29e9d53dcc54ee852f9f070538ff73a.png" },
-            { label: "Fledgling", icon: "https://cdn.discordapp.com/assets/content/3e1ec0a72ca812e53ecd53d55c18c2d9765cc89eee08b1e74f7e0bdbfe2e96a2.png" },
-            { label: "Breakout", icon: "https://cdn.discordapp.com/assets/content/443707ffced738635bb0ee5c054544c67ec9dfab63b03e661bc1295d5399cac7.png" },
-            { label: "Standout", icon: "https://cdn.discordapp.com/assets/content/522de4edcb75e0544633b9ccb55c58d672c4a2fa70a81231bd42bb56cd6555bd.png" },
-            { label: "Trendsetter", icon: "https://cdn.discordapp.com/assets/content/9482ad3a1104986a4cce2979291c733eca0707f6218ddfb6ff36e32e3fd709e9.png" },
-            { label: "Headliner", icon: "https://cdn.discordapp.com/assets/content/2cf2a4ab39800a963efdb900b823dc8ccb23464434f3e11d329851ae566cac22.png" },
-            { label: "Star", icon: "https://cdn.discordapp.com/assets/content/20e0b4ff7fc63681efe95082a69f9bfe7259f1485fa6fa6cebaf709336f42b90.png" },
-            { label: "Sensation", icon: "https://cdn.discordapp.com/assets/content/7ceb7fc55dba1fd4c4c5a9acd8345e3b74bca789bf8503445f3bf89109ae47a4.png" },
-            { label: "Visionary", icon: "https://cdn.discordapp.com/assets/content/5fbabf24366e08c5f7a56219d7d39f29c41034b5bd091573600f07a904af0035.png" },
-            { label: "Phenomenon", icon: "https://cdn.discordapp.com/assets/content/dd20ac476f0bb7ea9a553abc699c0d6b9854a3f802187e3bf9bf2e45c37a766a.png" },
-        ]
-    },
-    {
-        key: "game_time",
-        label: "Game Time",
-        tiers: [
-            { label: "Casual", icon: "https://cdn.discordapp.com/assets/content/c2844b37da74241525c1001c2ae5dd2719beb0095af8f88dcb35a37ceb0e1892.png" },
-            { label: "Recreational", icon: "https://cdn.discordapp.com/assets/content/157b789531c602542070e680c410d74275e796b6c45cd717292f6d2a59593972.png" },
-            { label: "Dedicated", icon: "https://cdn.discordapp.com/assets/content/d6ab0696aae97fca8e6b2b88d4117f09f9ea895d4f0cebee770564369ff06873.png" },
-            { label: "Committed", icon: "https://cdn.discordapp.com/assets/content/cc1edd8d955872cd9fbd9bafec80c973287817560d0895587686e3e1671a698e.png" },
-            { label: "Serious", icon: "https://cdn.discordapp.com/assets/content/4039caeef586467d50939f3154f87828645d6f1bd699b8f0c1da686b02cefe68.png" },
-            { label: "Devoted", icon: "https://cdn.discordapp.com/assets/content/3d39b6cef7f00fe9e2d51f229034650b900481823af05d09e6537e912de30301.png" },
-            { label: "Seasoned", icon: "https://cdn.discordapp.com/assets/content/46512ce94203c84d7919904acfbd07fc5a8316010a610b8fd6a1cc937e5ac75e.png" },
-            { label: "Ironclad", icon: "https://cdn.discordapp.com/assets/content/9bff716e6bae2ef42dc959bac05a0dfc480bf89484c111ed7fb4aa0332cb22d8.png" },
-            { label: "Unshakeable", icon: "https://cdn.discordapp.com/assets/content/1f51d59934543176d8b585c4e5a62d77ca3677c6e26ae4da74b1b639f9091b5e.png" },
-            { label: "Eternal", icon: "https://cdn.discordapp.com/assets/content/8a62ba720addf7584d3e7f82170104e6a2b35aea4aba5ffc7260cfd706f40c37.png" },
-        ]
-    },
-    {
-        key: "game_variety",
-        label: "Game Variety",
-        tiers: [
-            { label: "Sampler", icon: "https://cdn.discordapp.com/assets/content/cbd75cae9bca1c49b35eb0d9c189af4c8604b4f69a1de17ae550db9f03cbd371.png" },
-            { label: "Dabbler", icon: "https://cdn.discordapp.com/assets/content/c9fe2cefaf224c0fb73a5fe11476987930809fa307069deb8bbb2f0b99bac545.png" },
-            { label: "Enthusiast", icon: "https://cdn.discordapp.com/assets/content/e016406cec55df228f6e4e7ee9ec5ac10cf0ccd5037c5926da5c26c44e32d374.png" },
-            { label: "Ranger", icon: "https://cdn.discordapp.com/assets/content/7265bc6f9ff0a47962dafe01b6f9c8f75927392aaf48d48c3619d123d2b584f5.png" },
-            { label: "Explorer", icon: "https://cdn.discordapp.com/assets/content/ffd4938d41c57d27fec0f253a54756c40add56f761c5b1471b531d838e8669db.png" },
-            { label: "Adventurer", icon: "https://cdn.discordapp.com/assets/content/dcfdce8dfc254b6e8fa9cfba5dcd918f027e27554c3aa2403fe01eb319cf2194.png" },
-            { label: "Voyager", icon: "https://cdn.discordapp.com/assets/content/183d6521c3696b0b42f73dd9c319307490982a5dffdc34a923b760d82b20916a.png" },
-            { label: "Maverick", icon: "https://cdn.discordapp.com/assets/content/84d4695cdcbb350ad5385c06e87caf06835872135625a8bff6bac300af858412.png" },
-            { label: "Polymath", icon: "https://cdn.discordapp.com/assets/content/1d8d9e3254727d1a1c01b194f2d01ade4525dc8b85c39b877af09768eaf031be.png" },
-            { label: "Universalist", icon: "https://cdn.discordapp.com/assets/content/4731855cd51c1d45fd14dc088b80815ea0562a353b48db369092019fbcb44ec7.png" },
-        ]
-    },
-];
-
-const AVATAR_DECORATIONS = [
-    { id: "1144307957425778779", label: "Hearts" },
-    { id: "1144308196723408958", label: "Hearts Animated" },
-    { id: "1212569433839636530", label: "Lofi Cafe" },
-    { id: "1481387347642810480", label: "Winter" },
-    { id: "1343751617362661526", label: "Magic Orb" },
-    { id: "1373015260465987705", label: "Dragon" },
-    { id: "1333866045303423026", label: "Ghost" },
-    { id: "1144308439720394944", label: "Sakura Drift" },
-    { id: "1432550258126229565", label: "Neon" },
-    { id: "1462116613632426014", label: "Cyber City" },
-    { id: "1462116613682757888", label: "Retro" },
-    { id: "1144307629225672846", label: "Fire" },
-    { id: "1341506443718688768", label: "Void" },
-    { id: "1447654090640330763", label: "Celestial" },
-    { id: "1483857762890022923", label: "Snowy" },
-    { id: "1479561706672885811", label: "Ice" },
-    { id: "1212569856189407352", label: "Cozy" },
-    { id: "1485784028710830242", label: "New Year" },
-    { id: "1341506444150702080", label: "Abyss" },
-    { id: "1232071712695386162", label: "Spring" },
-    { id: "1220514048068812901", label: "Summer" },
-    { id: "1427463138634109026", label: "Autumn" },
-    { id: "1341506443865489408", label: "Darkness" },
-    { id: "1144003752978829455", label: "Flaming Sword" },
-    { id: "1144006094134456352", label: "Magical Potion" },
-    { id: "1144046002110738634", label: "Fairy Sprites" },
-    { id: "1144048390594908212", label: "Wizard's Staff" },
-    { id: "1144048977138946230", label: "Glowing Runes" },
-    { id: "1144049316009353338", label: "Defensive Shield" },
-    { id: "1144049603109470370", label: "Skull Medallion" },
-    { id: "1144049924397334651", label: "Treasure and Key" },
-    { id: "1207047014769234001", label: "Fire Element" },
-    { id: "1207047597294886923", label: "Water" },
-    { id: "1207047808838799410", label: "Air" },
-    { id: "1207048049571139584", label: "Earth" },
-    { id: "1207048289610899526", label: "Lightning" },
-    { id: "1207048656289534022", label: "Balance" },
-    { id: "1232070870093008937", label: "Stardust" },
-    { id: "1232071157746765906", label: "Black Hole" },
-    { id: "1232071712695386162", label: "Constellations" },
-    { id: "1232072121950146560", label: "Solar Orbit" },
-    { id: "1232072520249643028", label: "UFO" },
-    { id: "1232072859485208687", label: "Astronaut Helmet" },
-    { id: "1197344326133502032", label: "Glitch" },
-    { id: "1197344396983664670", label: "Cybernetic" },
-    { id: "1197344575832981605", label: "Digital Sunrise" },
-    { id: "1197344636558114986", label: "Implant" },
-];
-
-function getDecorationUrl(assetId: string, animated = false): string {
-    return `https://cdn.discordapp.com/media/v1/collectibles-shop/${assetId}/${animated ? "animated" : "static"}`;
-}
-
-// Discord draws a profile effect only when profileEffect.skuId is a shop product it can look up, so the
-// choices come from its own shop catalog: always current, in the user's language, with previews
-const CollectiblesCategoryStore = findStoreLazy("CollectiblesCategoryStore");
-const fetchCollectiblesCategories = findByCodeLazy('type:"COLLECTIBLES_CATEGORIES_FETCH"');
-const COLLECTIBLE_PROFILE_EFFECT = 1;
-
-interface ShopProfileEffect {
-    skuId: string;
-    name: string;
-    thumbnail?: string;
-}
-
-function useShopProfileEffects() {
-    const fetchedAt = useStateFromStores([CollectiblesCategoryStore], () => CollectiblesCategoryStore.lastSuccessfulFetch);
-    const [failed, setFailed] = React.useState(false);
-
-    React.useEffect(() => {
-        if (CollectiblesCategoryStore.products?.size) return;
-        Promise.resolve()
-            .then(() => fetchCollectiblesCategories({}))
-            .catch(() => setFailed(true));
-    }, []);
-
-    const effects = React.useMemo(() => {
-        const seen = new Set<string>();
-        const list: ShopProfileEffect[] = [];
-        for (const product of CollectiblesCategoryStore.products?.values() ?? []) {
-            const item = product.items?.length === 1 ? product.items[0] : null;
-            if (item?.type !== COLLECTIBLE_PROFILE_EFFECT || seen.has(product.skuId)) continue;
-            seen.add(product.skuId);
-            list.push({ skuId: product.skuId, name: product.name, thumbnail: item.thumbnailPreviewSrc });
-        }
-        return list;
-    }, [fetchedAt]);
-
-    return { effects, loading: !failed && !effects.length, failed: failed && !effects.length };
-}
-
-interface CustomProfileData {
-    username?: string;
-    globalName?: string;
-    avatar?: string;
-    banner?: string;
-    bio?: string;
-    accentColor?: number;
-    accentColor2?: number;
-    pronouns?: string;
-    badgeFlags?: number;
-    createdAt?: string;
-    nitro?: boolean;
-    nitroLevel?: number;
-    boostMonths?: number;
-    email?: string;
-    phone?: string;
-    customBadgeIds?: string[];
-    /** Tier index per tiered badge type, see TIERED_BADGES */
-    tieredBadges?: Record<string, number>;
-    oldName?: string;
-    decorationAsset?: string;
-    profileEffectId?: string;
-    copiedUserId?: string;
-}
-
-interface SavedPreset {
-    name: string;
-    data: CustomProfileData;
-}
 
 const DS_PRESETS = "customProfile_presets";
 
@@ -315,7 +136,7 @@ const LS_ALL_ENABLED = "EndcordCP_allEnabled";
 
 let storedData: CustomProfileData = {};
 let isEnabled = false;
-let domObserver: MutationObserver | null = null;
+let domObserver: MutationObserver | null = null, _textRewritten = false; // only walk the page to restore text when some was rewritten
 let _origGetCurrentUser: (() => any) | null = null;
 const _fakeUserCache = new Map<string, { v: number; src: any; fake: any }>();
 const _fakeUserBuilding = new WeakSet<object>();
@@ -325,6 +146,7 @@ function wantsNitroLook(pd: CustomProfileData | null | undefined): boolean {
     if (pd.nitro) return true;
     if (pd.banner) return true;
     if (pd.profileEffectId) return true;
+    if (pd.profileFrameId) return true;
     if (pd.accentColor != null) return true;
     if (pd.nitroLevel != null && pd.nitroLevel >= 0) return true;
     if (pd.boostMonths != null && pd.boostMonths >= 0) return true;
@@ -332,45 +154,34 @@ function wantsNitroLook(pd: CustomProfileData | null | undefined): boolean {
 }
 let _trueOriginalUser: any = null;
 let _dataVersion: number = 0;
+/** The plugin while it's running, which installs the hooks once there's a custom profile to show */
+let _hooksPlugin: { installHooks(): void; } | null = null;
+let _hooksInstalled = false;
+
+/** Whether any account has a custom profile turned on, which is what the hooks would show */
+function needsHooks() {
+    if (isEnabled && hasAnyCustomData(storedData)) return true;
+    for (const id in allAccountsData) if (allAccountsEnabled[id] && hasAnyCustomData(allAccountsData[id])) return true;
+    return settings.store.showOthers && hasSharedProfiles();
+}
+
+function ensureHooks() {
+    if (_hooksInstalled || !_hooksPlugin || !needsHooks()) return;
+    _hooksInstalled = true;
+    _hooksPlugin.installHooks();
+}
+
+/** Every change to a profile goes through here, so the first one puts the hooks in */
+function bumpDataVersion() {
+    _dataVersion++;
+    ensureHooks();
+}
 let allAccountsData: Record<string, CustomProfileData> = {};
 let allAccountsEnabled: Record<string, boolean> = {};
 // presets: keyed by accountId → array of saved presets
 let allPresetsData: Record<string, SavedPreset[]> = {};
 
 const LS_PRESETS = "EndcordCP_presets";
-
-function hasAnyCustomData(pd: CustomProfileData | null | undefined): boolean {
-    if (!pd) return false;
-    if (pd.username) return true;
-    if (pd.globalName) return true;
-    if (pd.avatar) return true;
-    if (pd.banner) return true;
-    if (pd.bio) return true;
-    if (pd.pronouns) return true;
-    if (pd.accentColor != null) return true;
-    if (pd.accentColor2 != null) return true;
-    if (pd.profileEffectId) return true;
-    if (pd.decorationAsset) return true;
-    if (pd.badgeFlags != null && pd.badgeFlags > 0) return true;
-    if (pd.customBadgeIds && pd.customBadgeIds.length > 0) return true;
-    if (pd.tieredBadges && Object.keys(pd.tieredBadges).length > 0) return true;
-    if (pd.nitroLevel != null && pd.nitroLevel >= 0) return true;
-    if (pd.boostMonths != null && pd.boostMonths >= 0) return true;
-    if (pd.nitro) return true;
-    if (pd.oldName) return true;
-    if (pd.createdAt) return true;
-    return false;
-}
-
-function hasCustomBadgesConfigured(pd: CustomProfileData | null | undefined): boolean {
-    if (!pd) return false;
-    if (pd.badgeFlags != null && pd.badgeFlags > 0) return true;
-    if (pd.customBadgeIds && pd.customBadgeIds.length > 0) return true;
-    if (pd.tieredBadges && Object.keys(pd.tieredBadges).length > 0) return true;
-    if (pd.nitroLevel != null && pd.nitroLevel >= 0) return true;
-    if (pd.boostMonths != null && pd.boostMonths >= 0) return true;
-    return false;
-}
 
 function rememberProfile(userId: string, badges?: any[]) {
     if (!userId) return;
@@ -403,19 +214,27 @@ function getProfileDataFor(userId: string | null | undefined): CustomProfileData
         const d = allAccountsData[userId];
         return hasAnyCustomData(d) ? d : null;
     }
-    return null;
-}
-
-// Every badge carries a stable key, so Discord's badge panel can reorder and hide it (see badgeManagement.ts)
-function makeBadge(key: string, icon: string, label: string) {
-    return { id: profileBadgeId(key), key, badge: icon, tooltip: label, icon, description: label };
+    if (myId && userId === myId) return null;
+    return getOthersProfile(userId);
 }
 
 function pushBadge(arr: any[], flag: number, badgeFlag: number): void {
     const b = BADGES.find(x => x.flag === flag);
     if (b && (badgeFlag & flag)) {
-        arr.push(makeBadge(`flag_${flag}`, b.icon, b.label));
+        arr.push(makeBadge(`flag_${flag}`, b.icon, b.label, flagBadgeRef(flag)));
     }
+}
+
+/** When the Nitro badge says they subscribed: the date they picked, or as long ago as their level takes */
+function nitroSinceDate(pd: CustomProfileData | null | undefined) {
+    if (pd?.nitroSince && /^\d{4}-\d{2}-\d{2}$/.test(pd.nitroSince)) {
+        // Noon, so the day stays the same in every time zone
+        const picked = new Date(`${pd.nitroSince}T12:00:00`);
+        if (!Number.isNaN(picked.getTime())) return picked;
+    }
+    const since = new Date();
+    since.setMonth(since.getMonth() - (NITRO_LEVEL_MONTHS[pd?.nitroLevel ?? 0] ?? 0));
+    return since;
 }
 
 function buildUserBadgesArray(data: CustomProfileData, enabled: boolean): any[] {
@@ -430,7 +249,7 @@ function buildUserBadgesArray(data: CustomProfileData, enabled: boolean): any[] 
     // 2. Nitro Subscriber
     if (data.nitroLevel !== undefined && data.nitroLevel >= 0 && NITRO_LEVELS[data.nitroLevel]) {
         const nl = NITRO_LEVELS[data.nitroLevel];
-        userBadges.push(makeBadge("nitro", nl.icon, nl.label));
+        userBadges.push(makeBadge("nitro", nl.icon, nl.label, nitroBadgeRef(NITRO_LEVEL_MONTHS[data.nitroLevel])));
     }
 
     // 3. Partner
@@ -452,7 +271,7 @@ function buildUserBadgesArray(data: CustomProfileData, enabled: boolean): any[] 
 
     // 8. Server Booster
     if (data.boostMonths !== undefined && data.boostMonths >= 0 && BOOST_ICONS[data.boostMonths]) {
-        userBadges.push(makeBadge("boost", BOOST_ICONS[data.boostMonths], `Server Boost - ${BOOST_LABELS[data.boostMonths]}`));
+        userBadges.push(makeBadge("boost", BOOST_ICONS[data.boostMonths], `Server Boost - ${BOOST_LABELS[data.boostMonths]}`, boostBadgeRef(data.boostMonths, BOOST_LABELS[data.boostMonths], BOOST_LEVELS)));
     }
 
     // 9. Bug Hunter Gold (Level 2)
@@ -487,13 +306,13 @@ function buildUserBadgesArray(data: CustomProfileData, enabled: boolean): any[] 
             const sb = SPECIAL_BADGES[cbId];
             if (sb) {
                 const tooltip = (cbId === "oldname" && data.oldName)
-                    ? `Old username: ${data.oldName}`
+                    ? t("Originally known as {name}", { name: data.oldName })
                     : sb.label;
-                userBadges.push(makeBadge(`sp_${cbId}`, sb.icon, tooltip));
+                userBadges.push(makeBadge(`sp_${cbId}`, sb.icon, tooltip, specialBadgeRef(cbId, GIFT_IDS, GIFT_LEVELS)));
             } else {
                 const found = BADGES.find(b => String(b.flag) === cbId);
                 if (found) {
-                    userBadges.push(makeBadge(`flag_${found.flag}`, found.icon, found.label));
+                    userBadges.push(makeBadge(`flag_${found.flag}`, found.icon, found.label, flagBadgeRef(found.flag)));
                 }
             }
         }
@@ -504,7 +323,7 @@ function buildUserBadgesArray(data: CustomProfileData, enabled: boolean): any[] 
         const tier = data.tieredBadges?.[type.key];
         if (tier != null && type.tiers[tier]) {
             const tr = type.tiers[tier];
-            userBadges.push(makeBadge(`tier_${type.key}`, tr.icon, `${type.label} - ${tr.label}`));
+            userBadges.push(makeBadge(`tier_${type.key}`, tr.icon, `${type.label} - ${tr.label}`, tieredBadgeRef(type.key, tier, tr.label, type.tiers)));
         }
     }
     return userBadges;
@@ -632,7 +451,7 @@ function onAccountSwitch() {
     updateCachedRealData();
     syncCurrentUserData();
     _trueOriginalUser = null;
-    _dataVersion++;
+    bumpDataVersion();
     _realUsername = "";
     _realGlobalName = "";
     if (isEnabled) startDomObserver();
@@ -790,24 +609,43 @@ function escapeRegExp(s: string) {
     return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+let _nameRegex: { from: string; regex: RegExp; } | null = null;
+
 function replaceWholeName(text: string, from: string, to: string): string {
     if (!from || !to || from.length < 3 || from === to) return text;
     if (to.toLowerCase().includes(from.toLowerCase())) return text;
-    return text.replace(new RegExp(`(?<![\\w@.-])${escapeRegExp(from)}(?![\\w@.-])`, "g"), to);
+    // Built once per name, not once per text node
+    if (_nameRegex?.from !== from) _nameRegex = { from, regex: new RegExp(`(?<![\\w@.-])${escapeRegExp(from)}(?![\\w@.-])`, "g") };
+    return text.replace(_nameRegex.regex, to);
+}
+
+// What a text node has to contain before it's worth a closer look, lower case
+function textNeedles(): string[] {
+    const needles: string[] = [];
+    if (_realUsername && storedData.username) needles.push(_realUsername.toLowerCase());
+    if (storedData.createdAt) for (const date of getRealDateVariants()) needles.push(date.toLowerCase());
+    return needles;
 }
 
 function scanTextNode(node: Text) {
-    if (!isEnabled || !node.nodeValue || shouldSkipText(node)) return;
-    const val = (node as any).__cp_orig || node.nodeValue;
-    let result = val;
+    if (!isEnabled) return;
+    const val: string = (node as any).__cp_orig || node.nodeValue;
+    if (!val || val.length < 3) return;
     try { if (_trueOriginalUser) { _realUsername = _trueOriginalUser.username || _realUsername; _realGlobalName = _trueOriginalUser.globalName || _realGlobalName; } } catch { }
+
+    // Nearly every text node on the page holds neither the name nor the date, so that is checked first: the editable
+    // area check below walks every ancestor of the node with attribute selectors, on each node Discord adds
+    const lower = val.toLowerCase();
+    if (!textNeedles().some(needle => lower.includes(needle))) return;
+    if (shouldSkipText(node)) return;
+
+    let result = val;
     let replaced = false;
     if (storedData.createdAt) {
         const realDates = getRealDateVariants(); const fakeDates = getFakeDateVariants(storedData.createdAt);
         if (realDates.length > 0 && fakeDates.length > 0) {
-            for (let i = 0; i < realDates.length; i++) {
-                const realDate = realDates[i];
-                if (realDate.length >= 8 && (val.includes(realDate) || val.toLowerCase().includes(realDate.toLowerCase()))) {
+            for (const realDate of realDates) {
+                if (realDate.length >= 8 && lower.includes(realDate.toLowerCase())) {
                     result = result.split(realDate).join(fakeDates[0]); replaced = true;
                 }
             }
@@ -817,7 +655,7 @@ function scanTextNode(node: Text) {
         const next = replaceWholeName(result, _realUsername, storedData.username);
         if (next !== result) { result = next; replaced = true; }
     }
-    if (replaced && result !== node.nodeValue) { if ((node as any).__cp_orig === undefined) (node as any).__cp_orig = val; node.nodeValue = result; }
+    if (replaced && result !== node.nodeValue) { if ((node as any).__cp_orig === undefined) (node as any).__cp_orig = val; node.nodeValue = result; _textRewritten = true; }
 }
 
 function scanNode(node: Node) {
@@ -864,7 +702,7 @@ function startDomObserver() {
 }
 
 function stopDomObserver() {
-    domObserver?.disconnect(); domObserver = null;
+    domObserver?.disconnect(); domObserver = null; if (!_textRewritten) return; _textRewritten = false;
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
     let n: Node | null;
     while ((n = walker.nextNode())) { if ((n as any).__cp_orig !== undefined) { n.nodeValue = (n as any).__cp_orig; delete (n as any).__cp_orig; } }
@@ -882,9 +720,6 @@ function EditIcon({ size = 18 }: { size?: number; }) {
 }
 function FolderIcon() {
     return <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2Z" /></svg>;
-}
-function CloseIcon() {
-    return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>;
 }
 function TrashIcon() {
     return <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2h4a1 1 0 1 1 0 2h-1.1l-.9 12.1A3 3 0 0 1 17 23H7a3 3 0 0 1-3-2.9L3.1 8H2a1 1 0 0 1 0-2h4V4Zm2 0v2h6V4H9ZM5.1 8l.9 11.9a1 1 0 0 0 1 .1h6a1 1 0 0 0 1-.1L14.9 8H5.1Z" /></svg>;
@@ -1170,7 +1005,7 @@ function BadgePicker({ selected, onChange, nitroType, onNitroType, boostLevel, o
 
 function forceAccountPanelRerender() {
     try {
-        _dataVersion++;
+        bumpDataVersion();
         _fakeUserCache.clear();
         try { (UserStore as any)?.emitChange?.(); } catch { }
         try { (UserProfileStore as any)?.emitChange?.(); } catch { }
@@ -1185,7 +1020,15 @@ function forceAccountPanelRerender() {
 
 function CustomProfileModal({ rootProps }: { rootProps: any; }) {
     const { t } = useI18n();
-    const shopEffects = useShopProfileEffects();
+    const shop = useShopCollectibles();
+    const nameFonts = React.useMemo(() => enumEntries(() => DisplayNameFonts), []);
+    const nameEffects = React.useMemo(() => enumEntries(() => DisplayNameEffects), []);
+    // The shop's decorations, then the ones it no longer sells that Endcord still knows
+    const decorations = React.useMemo(() => {
+        const seen = new Set<string>();
+        return [...shop.byType[CollectibleType.AVATAR_DECORATION].map(dec => ({ id: dec.skuId, label: dec.name })), ...AVATAR_DECORATIONS]
+            .filter(dec => !seen.has(dec.id) && !!seen.add(dec.id));
+    }, [shop.byType]);
     const myId = AuthenticationStore?.getId?.() || "";
     const [selectedAccountId, setSelectedAccountId] = React.useState(myId);
     const [data, setData] = React.useState<CustomProfileData>(() => ({ ...(allAccountsData[myId] || storedData || {}) }));
@@ -1239,7 +1082,7 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
 
             storedData = savedData;
             isEnabled = true;
-            _dataVersion++;
+            bumpDataVersion();
 
             if (effectiveId) applyLocalProfileCache(effectiveId, savedData, true);
 
@@ -1250,6 +1093,8 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
 
             updateCachedRealData();
             forceAccountPanelRerender();
+            // Only the signed-in account can post its own profile; the others share theirs when they're signed in
+            if (effectiveId && effectiveId === AuthenticationStore?.getId?.()) shareMyProfile(effectiveId, savedData);
 
             showToast(t("Profile Saved"), Toasts.Type.SUCCESS, {
                 component: React.createElement("span", { style: { color: "var(--text-normal, #ffffff)", fontWeight: "600", fontSize: "14px" } }, t("Profile Saved"))
@@ -1273,7 +1118,7 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
                 storedData = {};
                 isEnabled = false;
                 _trueOriginalUser = null;
-                _dataVersion++;
+                bumpDataVersion();
             }
 
             // Immediately revert all modified text nodes in DOM and stop observer
@@ -1288,6 +1133,7 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
             } catch {}
 
             saveDataSync(selectedAccountId, {}, false);
+            if (selectedAccountId && selectedAccountId === AuthenticationStore?.getId?.()) shareMyProfile(selectedAccountId, null);
 
             saveAllDataSync();
             DataStore.set(DS_ALL_DATA, allAccountsData).catch(() => { });
@@ -1314,7 +1160,7 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
     function repair() {
         try {
             _trueOriginalUser = null;
-            _dataVersion++;
+            bumpDataVersion();
             // Reload from localStorage to ensure consistency
             loadDataSync();
             forceAccountPanelRerender();
@@ -1416,17 +1262,20 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
                     tiered={data.tieredBadges ?? {}} onTiered={v => set("tieredBadges", v)}
                     oldName={oldName} onOldName={v => set("oldName", v)}
                 />
+                {nitroLevel >= 0 && (
+                    <Field label={t("Nitro date")} value={data.nitroSince ?? ""} type="date" onChange={v => set("nitroSince", v || undefined)} />
+                )}
                 <div className="cp-divider" />
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <SectionLabel>{t("Avatar decoration")}</SectionLabel>
                 </div>
 
-                <div className="cp-badges" style={{ flexWrap: "wrap", gap: 6 }}>
+                <div className="cp-badges cp-effects" style={{ flexWrap: "wrap", gap: 6 }}>
                     <button onClick={() => set("decorationAsset", undefined)}
                         className={`cp-badge ${!data.decorationAsset ? "cp-badge--on" : ""}`} style={{ minWidth: 60 }}>
                         {t("None")}
                     </button>
-                    {AVATAR_DECORATIONS.map(dec => (
+                    {decorations.map(dec => (
                         <button key={dec.id}
                             onClick={() => set("decorationAsset", data.decorationAsset === dec.id ? undefined : dec.id)}
                             className={`cp-badge ${data.decorationAsset === dec.id ? "cp-badge--on" : ""}`}
@@ -1446,19 +1295,65 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
                         className={`cp-badge ${!data.profileEffectId ? "cp-badge--on" : ""}`} style={{ minWidth: 60 }}>
                         {t("None")}
                     </button>
-                    {shopEffects.effects.map(eff => (
+                    {shop.byType[CollectibleType.PROFILE_EFFECT].map(eff => (
                         <button key={eff.skuId}
                             onClick={() => set("profileEffectId", data.profileEffectId === eff.skuId ? undefined : eff.skuId)}
                             className={`cp-badge cp-effect ${data.profileEffectId === eff.skuId ? "cp-badge--on" : ""}`}
                             title={eff.name}>
-                            {eff.thumbnail
-                                ? <img src={eff.thumbnail} alt={eff.name} loading="lazy" />
+                            {eff.item.thumbnailPreviewSrc
+                                ? <img src={eff.item.thumbnailPreviewSrc} alt={eff.name} loading="lazy" />
                                 : <span>{eff.name}</span>}
                         </button>
                     ))}
                 </div>
-                {shopEffects.loading && <div className="cp-hint">{t("Loading effects from the Discord shop…")}</div>}
-                {shopEffects.failed && <div className="cp-hint">{t("Couldn't load effects from the Discord shop. Close this window and try again.")}</div>}
+                <div className="cp-divider" />
+                <SectionLabel>{t("Profile frame")}</SectionLabel>
+                <div className="cp-badges cp-effects">
+                    <button onClick={() => set("profileFrameId", undefined)}
+                        className={`cp-badge ${!data.profileFrameId ? "cp-badge--on" : ""}`} style={{ minWidth: 60 }}>
+                        {t("None")}
+                    </button>
+                    {shop.byType[CollectibleType.PROFILE_FRAME].map(frame => (
+                        <button key={frame.skuId}
+                            onClick={() => set("profileFrameId", data.profileFrameId === frame.skuId ? undefined : frame.skuId)}
+                            className={`cp-badge cp-effect ${data.profileFrameId === frame.skuId ? "cp-badge--on" : ""}`}
+                            title={frame.name}>
+                            <FramePreview frame={frame} />
+                        </button>
+                    ))}
+                </div>
+                <div className="cp-divider" />
+                <SectionLabel>{t("Nameplate")}</SectionLabel>
+                <div className="cp-badges cp-effects">
+                    <button onClick={() => set("nameplate", undefined)}
+                        className={`cp-badge ${!data.nameplate ? "cp-badge--on" : ""}`} style={{ minWidth: 60 }}>
+                        {t("None")}
+                    </button>
+                    {shop.byType[CollectibleType.NAMEPLATE].map(plate => (
+                        <button key={plate.skuId}
+                            onClick={() => set("nameplate", data.nameplate?.skuId === plate.skuId ? undefined : {
+                                skuId: plate.skuId,
+                                asset: plate.item.asset,
+                                label: plate.item.label,
+                                palette: plate.item.palette
+                            })}
+                            className={`cp-badge cp-nameplate ${data.nameplate?.skuId === plate.skuId ? "cp-badge--on" : ""}`}
+                            title={plate.name}>
+                            <ShopImage skuId={plate.skuId} name={plate.name} />
+                        </button>
+                    ))}
+                </div>
+                {shop.loading && <div className="cp-hint">{t("Loading the Discord shop…")}</div>}
+                {shop.failed && <div className="cp-hint">{t("Couldn't load the Discord shop. Close this window and try again.")}</div>}
+                <div className="cp-divider" />
+                <SectionLabel>{t("Display name style")}</SectionLabel>
+                <DisplayNameStylePicker
+                    value={data.displayNameStyles}
+                    previewName={data.globalName || UserStore.getCurrentUser()?.globalName || UserStore.getCurrentUser()?.username || "Endcord"}
+                    fonts={nameFonts}
+                    effects={nameEffects}
+                    onChange={v => set("displayNameStyles", v)}
+                />
                 <div className="cp-hint">{t("Visual and local modifications only — persistent between restarts.")}</div>
             </ModalContent>
             <ModalFooter className="cp-footer">
@@ -1488,9 +1383,10 @@ function CustomProfileButton() {
 export default definePlugin({
     name: "CustomProfile",
     enabledByDefault: true,
-    description: t("Visually customize your Discord profile (username, PFP, banner, badges, bio...) — persistent, only visible to you."),
+    description: t("Visually customize your Discord profile (username, PFP, banner, badges, bio...). Other Endcord users see it too."),
     authors: [Devs.ewlle],
     dependencies: ["HeaderBarAPI", "ContextMenuAPI"],
+    settings,
 
     patches: [
         {
@@ -1595,15 +1491,17 @@ export default definePlugin({
                 setProp("avatarDecorationData", decoData);
             }
 
+            // Discord draws these straight from the user: the nameplate in the member and DM lists, the name style
+            // wherever the display name shows
+            if (pd?.nameplate) setProp("collectibles", { ...realUser.collectibles, nameplate: { ...pd.nameplate, expiresAt: null } });
+            if (pd?.displayNameStyles) setProp("displayNameStyles", pd.displayNameStyles);
+
             setProp("publicFlags", (pd?.badgeFlags != null && pd.badgeFlags > 0) ? pd.badgeFlags : realUser.publicFlags);
             setProp("flags", (pd?.badgeFlags != null && pd.badgeFlags > 0) ? pd.badgeFlags : realUser.flags);
 
             const spoofNitro = wantsNitroLook(pd);
             if (spoofNitro) {
-                const since = new Date();
-                const nl = pd?.nitroLevel ?? 0;
-                since.setMonth(since.getMonth() - (NITRO_LEVEL_MONTHS[nl] ?? 0));
-                setProp("premiumSince", since);
+                setProp("premiumSince", nitroSinceDate(pd));
 
                 const bm = pd?.boostMonths ?? -1;
                 if (bm >= 0) {
@@ -1672,6 +1570,12 @@ export default definePlugin({
                 if (!merged.premiumType) merged.premiumType = 2;
             }
 
+            // Discord looks the frame up in its shop by this skuId
+            if (pd?.profileFrameId) {
+                merged.profileFrame = { expiresAt: null, skuId: pd.profileFrameId };
+                if (!merged.premiumType) merged.premiumType = 2;
+            }
+
             const spoofNitro = wantsNitroLook(pd);
             if (spoofNitro) {
                 merged.premiumType = 2;
@@ -1680,10 +1584,7 @@ export default definePlugin({
                     const c2 = pd.accentColor2 ?? pd.accentColor;
                     merged.themeColors = [pd.accentColor, c2];
                 }
-                const nl = pd.nitroLevel ?? 0;
-                const since = new Date();
-                since.setMonth(since.getMonth() - (NITRO_LEVEL_MONTHS[nl] ?? 0));
-                merged.premiumSince = since;
+                merged.premiumSince = nitroSinceDate(pd);
 
                 const bm = pd.boostMonths ?? -1;
                 if (bm >= 0) {
@@ -1794,10 +1695,29 @@ export default definePlugin({
         }
 
         startBadgeManagement();
-        applyAvatarPatchEarly();
         addHeaderBarButton("custom-profile-btn", () => <CustomProfileButton />, 10);
 
         FluxDispatcher.subscribe("CONNECTION_OPEN", onAccountSwitch);
+        startSharing(onSharedProfilesChanged, { read: settings.store.showOthers, mine: currentSharable }).catch(() => { });
+
+        // What follows runs on every user, name and avatar Discord draws. Without a custom profile it would only
+        // pass them through, so it's put in once there is one (see ensureHooks)
+        _hooksPlugin = this;
+        ensureHooks();
+
+        loadData().then(() => {
+            updateCachedRealData();
+            ensureHooks();
+            if (isEnabled) {
+                forceAccountPanelRerender();
+            }
+            removeHideStyle();
+        });
+    },
+
+    /** Called once, by ensureHooks, when there's a custom profile to show */
+    installHooks() {
+        applyAvatarPatchEarly();
 
         try {
             // Same object as findByProps("getCurrentUser", "getUser"), without scanning every module at startup
@@ -2010,15 +1930,6 @@ export default definePlugin({
             }
         } catch { }
 
-        loadData().then(() => {
-            updateCachedRealData();
-            applyAvatarPatchEarly();
-            if (isEnabled) {
-                forceAccountPanelRerender();
-            }
-            removeHideStyle();
-        });
-
         try {
             const decoMod = (Endcord as any).Webpack?.findByProps?.("getAvatarDecorationURL");
             if (decoMod?.getAvatarDecorationURL && !decoMod._cp_deco_hook) {
@@ -2055,9 +1966,11 @@ export default definePlugin({
     },
 
     stop() {
+        _hooksPlugin = null;
         stopBadgeManagement();
         removeHeaderBarButton("custom-profile-btn");
         FluxDispatcher.unsubscribe("CONNECTION_OPEN", onAccountSwitch);
+        stopSharing();
         stopDomObserver();
         removeHideStyle();
         if (this._origExtractTimestamp && SnowflakeUtils) {

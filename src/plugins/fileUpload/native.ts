@@ -5,11 +5,25 @@
  */
 
 import { fetchPublicUrl, readBody } from "@main/utils/http";
+import { isUrlOn } from "@shared/hosts";
 import { IpcMainInvokeEvent } from "electron";
 
 import { NativeUploadResult, NestUploadResponse } from "./types";
 
 const MAX_REUPLOAD_BYTES = 512 * 1024 * 1024;
+const MAX_RESPONSE_BYTES = 50 * 1024 * 1024;
+
+/**
+ * An upload to a service the page can't talk to itself, such as a ShareX or Zipline server without CORS headers.
+ * The address comes from the settings, so it gets the same address checks as every other native fetch
+ */
+export async function sendRequest(_: IpcMainInvokeEvent, url: string, method: string, headers: Record<string, string>, body: Uint8Array | null) {
+    const response = await fetchPublicUrl(url, { method, headers: { ...headers }, body: body ?? undefined });
+    const data = await readBody(response, MAX_RESPONSE_BYTES);
+    if (!data) throw new Error("Response is too large");
+
+    return { status: response.status, statusText: response.statusText, headers: [...response.headers], body: data };
+}
 
 export async function uploadToNest(
     _: IpcMainInvokeEvent,
@@ -115,22 +129,15 @@ export async function uploadTo0x0(
     }
 }
 
-export async function uploadToS3(
-    _: IpcMainInvokeEvent,
-    fileBuffer: ArrayBuffer,
-    uploadUrl: string,
-    headers: Record<string, string>
-): Promise<NativeUploadResult> {
+// The address and headers come from the renderer, so the upload gets the same address checks as every other native
+// fetch: a PUT into this PC or the local network must fail like a GET does
+async function putPublic(fileBuffer: ArrayBuffer, uploadUrl: string, headers: Record<string, string>): Promise<NativeUploadResult> {
     if (!isValidHttpsUrl(uploadUrl)) {
         return { success: false, error: "Invalid or non-HTTPS upload URL" };
     }
 
     try {
-        const response = await fetch(uploadUrl, {
-            method: "PUT",
-            headers,
-            body: new Blob([fileBuffer])
-        });
+        const response = await fetchPublicUrl(uploadUrl, { method: "PUT", headers: { ...headers }, body: new Uint8Array(fileBuffer) });
 
         if (!response.ok) {
             const errorText = await response.text();
@@ -141,6 +148,15 @@ export async function uploadToS3(
     } catch (e) {
         return { success: false, error: e instanceof Error ? e.message : "Unknown error" };
     }
+}
+
+export function uploadToS3(
+    _: IpcMainInvokeEvent,
+    fileBuffer: ArrayBuffer,
+    uploadUrl: string,
+    headers: Record<string, string>
+): Promise<NativeUploadResult> {
+    return putPublic(fileBuffer, uploadUrl, headers);
 }
 
 export async function uploadToCatbox(
@@ -280,7 +296,7 @@ export async function uploadToTmpfiles(
             return { success: false, error: "No URL returned from upload" };
         }
 
-        const url = rawUrl.includes("tmpfiles.org/") && !rawUrl.includes("/dl/")
+        const url = isUrlOn(rawUrl, "tmpfiles.org") && !new URL(rawUrl).pathname.startsWith("/dl/")
             ? rawUrl.replace(/tmpfiles\.org\/(\d+)/, "tmpfiles.org/dl/$1")
             : rawUrl;
 
@@ -474,32 +490,13 @@ function isValidHttpsUrl(url: string): boolean {
     }
 }
 
-export async function uploadToWebdav(
+export function uploadToWebdav(
     _: IpcMainInvokeEvent,
     fileBuffer: ArrayBuffer,
     uploadUrl: string,
     headers: Record<string, string>
 ): Promise<NativeUploadResult> {
-    if (!isValidHttpsUrl(uploadUrl)) {
-        return { success: false, error: "Invalid or non-HTTPS upload URL" };
-    }
-
-    try {
-        const response = await fetch(uploadUrl, {
-            method: "PUT",
-            headers,
-            body: new Blob([fileBuffer])
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            return { success: false, error: `Upload failed: ${response.status} ${errorText}` };
-        }
-
-        return { success: true, url: uploadUrl };
-    } catch (e) {
-        return { success: false, error: e instanceof Error ? e.message : "Unknown error" };
-    }
+    return putPublic(fileBuffer, uploadUrl, headers);
 }
 
 export async function fetchFile(

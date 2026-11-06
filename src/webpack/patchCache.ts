@@ -34,14 +34,19 @@ let enabled = !IS_REPORTER;
 let initialised = false;
 let cacheKey = "";
 const patchIndex = new WeakMap<Patch, number>();
+/** The patch list as it was when the cache loaded, so a recorded index still finds its patch after others are used up */
+let patchByIndex: Patch[] = [];
+const NO_PATCHES: Patch[] = [];
 
 /**
  * Patch indices that matched each module, for every module that was scanned. Skipping only ever reads `previous`,
  * what earlier starts recorded: reading this start's own records would skip the rest of a module's patches as soon
  * as its first patch matched.
  */
-let previous = new Map<string, Set<number>>();
-const current = new Map<string, Set<number>>();
+/** What modules that matched no patch hold, instead of an empty set each: they are most of Discord's tens of thousands */
+const NONE: ReadonlySet<number> = new Set();
+let previous = new Map<string, ReadonlySet<number>>();
+const current = new Map<string, ReadonlySet<number>>();
 let dirty = false;
 let saveTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -68,6 +73,7 @@ export function ensurePatchCache(patches: Patch[]) {
             return;
         }
 
+        patchByIndex = [...patches];
         const signature = patches.map((p, i) => {
             patchIndex.set(p, i);
             return `${p.plugin}\u0001${String(p.find)}\u0001${p.all ? 1 : 0}`;
@@ -78,7 +84,7 @@ export function ensurePatchCache(patches: Patch[]) {
         const stored: StoredCache | null = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "null");
         if (stored?.key !== cacheKey) return;
 
-        for (const id of stored.scanned) previous.set(id, new Set());
+        for (const id of stored.scanned) previous.set(id, NONE);
         for (const id in stored.matches) previous.set(id, new Set(stored.matches[id]));
     } catch (err) {
         logger.error("Couldn't load the patch cache, scanning everything instead", err);
@@ -88,15 +94,17 @@ export function ensurePatchCache(patches: Patch[]) {
 }
 
 /**
- * Whether `patch` can be skipped for `moduleId` because the module was scanned before and the patch didn't match it.
- * Call once per patch while patching a module.
+ * The patches that matched `moduleId` on earlier starts, in their original order, or undefined if the module was
+ * never scanned and has to be checked against every patch. Most modules match none, so they skip patching entirely.
  */
-export function canSkipPatch(moduleId: PropertyKey, patch: Patch) {
-    if (!enabled) return false;
+export function cachedPatchesFor(moduleId: PropertyKey): Patch[] | undefined {
+    if (!enabled) return undefined;
 
     const matched = previous.get(String(moduleId));
-    const index = patchIndex.get(patch);
-    return matched != null && index != null && !matched.has(index);
+    if (matched == null) return undefined;
+    if (!matched.size) return NO_PATCHES;
+
+    return [...matched].sort((a, b) => a - b).map(index => patchByIndex[index]).filter(Boolean);
 }
 
 /** Records that `patch` matched `moduleId`. */
@@ -108,8 +116,8 @@ export function recordMatch(moduleId: PropertyKey, patch: Patch) {
 
     const id = String(moduleId);
     const matched = current.get(id);
-    if (matched == null) current.set(id, new Set([index]));
-    else if (!matched.has(index)) matched.add(index);
+    if (matched == null || matched === NONE) current.set(id, new Set([index]));
+    else if (!matched.has(index)) (matched as Set<number>).add(index);
     else return;
 
     scheduleSave();
@@ -122,17 +130,18 @@ export function recordScanned(moduleId: PropertyKey) {
     const id = String(moduleId);
     if (current.has(id)) return;
 
-    current.set(id, new Set());
+    current.set(id, NONE);
     scheduleSave();
 }
 
+// Thousands of modules record themselves at startup, so this sets one timer instead of resetting it for each
 function scheduleSave() {
     dirty = true;
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(save, SAVE_DELAY);
+    saveTimer ??= setTimeout(save, SAVE_DELAY);
 }
 
 function save() {
+    saveTimer = undefined;
     if (!dirty || !enabled) return;
     dirty = false;
 

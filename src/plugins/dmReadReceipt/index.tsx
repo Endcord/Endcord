@@ -45,7 +45,8 @@ export default definePlugin({
 
     renderMessageDecoration: props => {
         const me = UserStore.getCurrentUser()?.id;
-        if (!me || props.message.author.id !== me || !props.channel.isDM()) return null;
+        // Message previews, such as the one in a plugin's settings, come without a channel
+        if (!me || props.message?.author?.id !== me || !props.channel?.isDM?.()) return null;
         return <SeenIndicator {...props} />;
     },
 });

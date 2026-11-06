@@ -66,6 +66,7 @@ const settings = definePluginSettings({
         }))
     },
     customEngineURL: {
+        sensitive: true,
         description: "The URL of the Engine you wish to use",
         type: OptionType.STRING,
         placeholder: ""

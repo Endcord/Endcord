@@ -109,8 +109,8 @@ const settings = definePluginSettings({
     }
 });
 export default definePlugin({
-    settings,
     name: "CtrlEnterSave",
+    settings,
     description: "Adds a keybind to save settings. YOU HAVE TO SET THE KEYBIND IN SETTINGS.",
     tags: ["Chat", "Shortcuts"],
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],

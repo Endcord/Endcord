@@ -6,10 +6,11 @@
 
 import { isPluginEnabled } from "@api/PluginManager";
 import { Settings, useSettings } from "@api/Settings";
-import { Card } from "@components/Card";
+import { CodeIcon, FolderPixelIcon, RestartPixelIcon } from "@components/EndcordIcons";
 import { Flex } from "@components/Flex";
-import { FolderIcon, PaintbrushIcon, PencilIcon, PlusIcon, RestartIcon } from "@components/Icons";
+import { PencilIcon, PlusIcon } from "@components/Icons";
 import { Link } from "@components/Link";
+import { Paragraph } from "@components/Paragraph";
 import { QuickAction, QuickActionCard } from "@components/settings/QuickAction";
 import { openPluginModal } from "@components/settings/tabs/plugins/PluginModal";
 import type { UserThemeHeader } from "@main/themes";
@@ -86,26 +87,8 @@ export function LocalThemesTab() {
     }
 
     return (
-        <Flex flexDirection="column" gap="1em">
-            <Card>
-                <Forms.FormTitle tag="h5">{t("Find Themes:")}</Forms.FormTitle>
-                <div style={{ marginBottom: ".5em", display: "flex", flexDirection: "column" }}>
-                    <Link style={{ marginRight: ".5em" }} href="https://betterdiscord.app/themes">
-                        {t("BetterDiscord Themes")}
-                    </Link>
-                    <Link href="https://github.com/search?q=discord+theme">GitHub</Link>
-                </div>
-                <Forms.FormText>{t("If using the BD site, click on \"Download\" and place the downloaded .theme.css file into your themes folder.")}</Forms.FormText>
-            </Card>
-
-            <Card>
-                <Forms.FormTitle tag="h5">{t("External Resources")}</Forms.FormTitle>
-                <Forms.FormText>{t("For security reasons, loading resources (styles, fonts, images, ...) from most sites is blocked.")}</Forms.FormText>
-                <Forms.FormText>{t("Make sure all your assets are hosted on GitHub, GitLab, Codeberg, Imgur, Discord or Google Fonts.")}</Forms.FormText>
-            </Card>
-
+        <Flex flexDirection="column" gap="1.5em">
             <section>
-                <Forms.FormTitle tag="h5">{t("Local Themes")}</Forms.FormTitle>
                 <QuickActionCard>
                     <>
                         {IS_WEB ?
@@ -131,18 +114,18 @@ export function LocalThemesTab() {
                                 <QuickAction
                                     text={t("Open Themes Folder")}
                                     action={() => EndcordNative.themes.openFolder()}
-                                    Icon={FolderIcon}
+                                    Icon={FolderPixelIcon}
                                 />
                             )}
                         <QuickAction
                             text={t("Load missing Themes")}
                             action={refreshLocalThemes}
-                            Icon={RestartIcon}
+                            Icon={RestartPixelIcon}
                         />
                         <QuickAction
                             text={t("Edit QuickCSS")}
                             action={() => EndcordNative.quickCss.openEditor()}
-                            Icon={PaintbrushIcon}
+                            Icon={CodeIcon}
                         />
 
                         {isPluginEnabled("ClientTheme") && (
@@ -154,6 +137,10 @@ export function LocalThemesTab() {
                         )}
                     </>
                 </QuickActionCard>
+
+                {userThemes?.length === 0 && (
+                    <Paragraph className="ec-themes-empty">{t("No themes yet. Add a .css file and it shows up here.")}</Paragraph>
+                )}
 
                 <div className={cl("grid")}>
                     {userThemes?.map(theme => (
@@ -170,6 +157,21 @@ export function LocalThemesTab() {
                         />
                     ))}
                 </div>
+            </section>
+
+            <section>
+                <Forms.FormTitle tag="h5">{t("Find Themes:")}</Forms.FormTitle>
+                <div className="ec-themes-sources">
+                    <Link href="https://betterdiscord.app/themes">{t("BetterDiscord Themes")}</Link>
+                    <Link href="https://github.com/search?q=discord+theme">GitHub</Link>
+                </div>
+                <Forms.FormText>{t("If using the BD site, click on \"Download\" and place the downloaded .theme.css file into your themes folder.")}</Forms.FormText>
+            </section>
+
+            <section>
+                <Forms.FormTitle tag="h5">{t("External Resources")}</Forms.FormTitle>
+                <Forms.FormText>{t("For security reasons, loading resources (styles, fonts, images, ...) from most sites is blocked.")}</Forms.FormText>
+                <Forms.FormText>{t("Make sure all your assets are hosted on GitHub, GitLab, Codeberg, Imgur, Discord or Google Fonts.")}</Forms.FormText>
             </section>
         </Flex>
     );

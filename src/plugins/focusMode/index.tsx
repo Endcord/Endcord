@@ -291,7 +291,7 @@ export default definePlugin({
     name: "FocusMode",
     description: "One switch for Do Not Disturb, quiet notifications, muted servers and hidden badges, on a schedule if you like, and back to your previous settings when it ends.",
     tags: ["Utility", "Notifications"],
-    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
+    authors: [Devs.rootpoi],
     searchTerms: ["dnd", "do not disturb", "privacy", "quiet", "focus", "odak"],
     dependencies: ["UserSettingsAPI", "HeaderBarAPI"],
     settings,

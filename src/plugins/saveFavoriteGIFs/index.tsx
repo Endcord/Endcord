@@ -8,7 +8,7 @@ import { ApplicationCommandInputType } from "@api/Commands";
 import { showNotification } from "@api/Notifications";
 import { isPluginEnabled } from "@api/PluginManager";
 import { definePluginSettings } from "@api/Settings";
-import equicordToolbox from "@plugins/endcordToolbox";
+import endcordToolbox from "@plugins/endcordToolbox";
 import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
@@ -108,7 +108,7 @@ const settings = definePluginSettings({
         default: true,
         restartNeeded: true,
         get hidden() {
-            return !isPluginEnabled(equicordToolbox.name);
+            return !isPluginEnabled(endcordToolbox.name);
         }
     }
 });

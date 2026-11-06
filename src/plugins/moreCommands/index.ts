@@ -294,7 +294,7 @@ export default definePlugin({
             name: "wordcount",
             description: "Counts the number of words in a message",
             options: [RequiredMessageOption],
-            inputType: ApplicationCommandInputType.BOT,
+            inputType: ApplicationCommandInputType.BUILT_IN,
             execute: (opts, ctx) => {
                 const message = findOption(opts, "message", "");
                 const wordCount = message.trim().split(/\s+/).length;
@@ -314,7 +314,7 @@ export default definePlugin({
                     required: true
                 }
             ],
-            inputType: ApplicationCommandInputType.BOT,
+            inputType: ApplicationCommandInputType.BUILT_IN,
             execute: async (opts, ctx) => {
                 const number = Math.min(parseInt(findOption(opts, "number", "5")), 10);
                 if (isNaN(number) || number < 1) {
@@ -363,7 +363,7 @@ export default definePlugin({
             name: "ping",
             description: "Pings the bot to check if it's responding",
             options: [],
-            inputType: ApplicationCommandInputType.BOT,
+            inputType: ApplicationCommandInputType.BUILT_IN,
             execute: (opts, ctx) => {
                 sendBotMessage(ctx.channel.id, {
                     content: "Pong!"
@@ -374,7 +374,7 @@ export default definePlugin({
             name: "echo",
             description: "Sends a message as Clyde (locally)",
             options: [OptionalMessageOption],
-            inputType: ApplicationCommandInputType.BOT,
+            inputType: ApplicationCommandInputType.BUILT_IN,
             execute: (opts, ctx) => {
                 const content = findOption(opts, "message", "");
                 sendBotMessage(ctx.channel.id, { content });

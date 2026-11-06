@@ -16,7 +16,7 @@ export function MacOSVibrancySettings() {
     const { t } = useI18n();
     const settings = useSettings(["macosVibrancyStyle"]);
 
-    if (!IS_MAC || IS_WEB) return null;
+    if (!IS_MAC || !IS_DISCORD_DESKTOP) return null;
 
     return (
         <ErrorBoundary noop>

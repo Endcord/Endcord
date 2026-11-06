@@ -1,9 +1,10 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2025 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { EndcordOnly } from "@api/EndcordVisibility";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Logger } from "@utils/Logger";
 import { ReactNode } from "react";
@@ -36,5 +37,5 @@ export function removeNicknameIcon(id: string) {
 export function _renderIcons(props: NicknameIconProps) {
     return Array.from(nicknameIcons)
         .sort((a, b) => b[1].priority - a[1].priority)
-        .map(([id, { factory: NicknameIcon }]) => <NicknameIcon key={id} {...props} />);
+        .map(([id, { factory: NicknameIcon }]) => <EndcordOnly key={id}><NicknameIcon {...props} /></EndcordOnly>);
 }

@@ -1,9 +1,10 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { EndcordOnly } from "@api/EndcordVisibility";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Channel, User } from "@endcord/discord-types";
 import { JSX } from "react";
@@ -48,8 +49,10 @@ export function __getDecorators(props: DecoratorProps, type: "guild" | "dm"): JS
     );
 
     return (
-        <div className="vc-member-list-decorators-wrapper">
-            {decorators}
-        </div>
+        <EndcordOnly>
+            <div className="vc-member-list-decorators-wrapper">
+                {decorators}
+            </div>
+        </EndcordOnly>
     );
 }

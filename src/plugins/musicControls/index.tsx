@@ -18,6 +18,7 @@
 
 import "./styles.css";
 
+import { migrateRemovedPlugin } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
@@ -31,6 +32,8 @@ import { TidalLyrics } from "./tidal/lyrics/components/lyrics";
 import { stopTidalLrcStore } from "./tidal/lyrics/providers/store";
 import { TidalPlayer } from "./tidal/TidalPlayer";
 import { stopTidalStore } from "./tidal/TidalStore";
+
+migrateRemovedPlugin("MusicControls", "SpotifyControls", { settings: { showSpotifyControls: true } });
 
 export default definePlugin({
     name: "MusicControls",
@@ -55,8 +58,8 @@ export default definePlugin({
             replacement: {
                 // react.jsx)(AccountPanel, { ..., showTaglessAccountPanel: blah })
                 match: /(?<=\i\.jsxs?\)\()(\i),{(?=[^}]*?userTag:\i,occluded:)/,
-                // react.jsx(WrapperComponent, { VencordOriginal: AccountPanel, ...
-                replace: "$self.PanelWrapper,{VencordOriginal:$1,"
+                // react.jsx(WrapperComponent, { EndcordOriginal: AccountPanel, ...
+                replace: "$self.PanelWrapper,{EndcordOriginal:$1,"
             },
         },
         {
@@ -89,7 +92,7 @@ export default definePlugin({
         },
     ],
 
-    PanelWrapper({ VencordOriginal, ...props }) {
+    PanelWrapper({ EndcordOriginal, ...props }) {
         const { showTidalControls, showTidalLyrics, showSpotifyLyrics, showSpotifyControls, lyricsPosition } = settings.store;
         return (
             <>
@@ -109,7 +112,7 @@ export default definePlugin({
                     {showSpotifyLyrics && lyricsPosition === "below" && <SpotifyLyrics />}
                 </ErrorBoundary>
 
-                <VencordOriginal {...props} />
+                <EndcordOriginal {...props} />
             </>
         );
     },

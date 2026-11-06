@@ -1,16 +1,18 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 import "./updater";
 import "./ipcPlugins";
 import "./settings";
+import "./bootGuard";
 
 import { debounce } from "@shared/debounce";
 import { isSafeExternalUrl } from "@shared/externalLinks";
 import { IpcEvents } from "@shared/IpcEvents";
+import { RENDERER_FILE } from "@shared/pluginChunks";
 import { BrowserWindow, ipcMain, nativeTheme, shell, systemPreferences } from "electron";
 import monacoHtml from "file://monacoWin.html?minify&base64";
 import { FSWatcher, mkdirSync, readFileSync, watch, writeFileSync } from "fs";
@@ -19,6 +21,7 @@ import { release } from "os";
 import { join } from "path";
 
 import { registerCspIpcHandlers } from "./csp/manager";
+import { getMemoryStats, trimAndMeasure } from "./memoryTrim";
 import { getThemeInfo, stripBOM, UserThemeHeader } from "./themes";
 import { QUICK_CSS_PATH, SETTINGS_DIR, THEMES_DIR } from "./utils/constants";
 import { ensureSafePath } from "./utils/ensureSafePath";
@@ -60,6 +63,12 @@ function getThemeData(fileName: string) {
 }
 
 handleIpc(IpcEvents.OPEN_QUICKCSS, () => shell.openPath(QUICK_CSS_PATH));
+
+handleIpc(IpcEvents.GET_MEMORY_STATS, () => getMemoryStats());
+handleIpc(IpcEvents.TRIM_MEMORY, ({ sender }) => {
+    const win = BrowserWindow.fromWebContents(sender);
+    return win ? trimAndMeasure(win) : 0;
+});
 
 handleIpc(IpcEvents.OPEN_EXTERNAL, (_, url) => {
     if (!isSafeExternalUrl(url)) throw "Disallowed URL.";
@@ -154,11 +163,9 @@ handleIpc(IpcEvents.OPEN_MONACO_EDITOR, async () => {
 handleIpc(IpcEvents.GET_RENDERER_CSS, () => readFile(RENDERER_CSS_PATH, "utf-8"));
 
 
-if (IS_DISCORD_DESKTOP) {
-    ipcMain.on(IpcEvents.PRELOAD_GET_RENDERER_JS, e => {
-        e.returnValue = readFileSync(join(__dirname, "renderer.js"), "utf-8");
-    });
-}
+ipcMain.on(IpcEvents.PRELOAD_GET_RENDERER_JS, e => {
+    e.returnValue = readFileSync(join(__dirname, RENDERER_FILE), "utf-8");
+});
 
 ipcMain.on(IpcEvents.SUPPORTS_WINDOWS_MATERIAL, e => {
     e.returnValue = process.platform === "win32" && Number(release().split(".")[2]) >= 22621;

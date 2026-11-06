@@ -1,3 +1,46 @@
+.vc-settings-tab {
+    position: relative;
+    isolation: isolate;
+    box-sizing: border-box;
+    padding: 24px;
+    border-radius: var(--ec-radius-lg);
+    background: var(--ec-line);
+    clip-path: var(--ec-pc4);
+
+    /* A quick fade with a slight lift. Scaling the whole page blurred its text while it moved */
+    animation: ec-tab-in calc(var(--ec-motion-base) * 0.75) var(--ec-ease-out);
+}
+
+@keyframes ec-tab-in {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+}
+
+.vc-settings-tab::before {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    z-index: -1;
+    border-radius: max(0px, var(--ec-radius-lg) - 1px);
+    background: var(--ec-night);
+    clip-path: var(--ec-pc4);
+}
+
+/* The installer's dot grid, only behind the top of the page, in pixel style */
+[data-ec-pixel] .vc-settings-tab::after {
+    content: "";
+    position: absolute;
+    inset: 1px 1px auto;
+    z-index: -1;
+    height: 420px;
+    background-image: var(--ec-dots);
+    background-size: 24px 24px;
+    mask-image: radial-gradient(ellipse 75% 70% at 50% 0%, #000 25%, transparent 80%);
+    pointer-events: none;
+}
+
 .vc-settings-tab-bar {
     margin-top: 20px;
     margin-bottom: 10px;
@@ -13,30 +56,6 @@
 .vc-settings-donate {
     display: flex;
     flex-direction: row;
-}
-
-.vc-settings-theme-links {
-    /* Needed to fix bad themes that hide certain textarea elements for whatever eldritch reason */
-    display: inline-block !important;
-    color: var(--text-default) !important;
-    padding: 0.5em 1em;
-    border: 1px solid var(--input-border-default);
-    max-height: unset;
-    background-color: transparent;
-    box-sizing: border-box;
-    resize: none;
-    width: 100%;
-    font-size: 1em;
-    line-height: 2em;
-    white-space: nowrap;
-}
-
-.vc-settings-theme-links::placeholder {
-    color: var(--text-muted) !important;
-}
-
-.vc-settings-theme-links:focus {
-    background-color: var(--background-base-lowest);
 }
 
 .vc-cloud-settings-sync-grid {

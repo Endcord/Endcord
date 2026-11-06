@@ -6,7 +6,7 @@
 
 import "./styles.css";
 
-import { definePluginSettings } from "@api/Settings";
+import { definePluginSettings, migrateRemovedPlugin } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
@@ -396,7 +396,7 @@ function MessageContextMenu(children: React.ReactNode[], props: ZipMessageContex
                             const message = native?.fetchAttachment
                                 ? "Failed to fetch attachment. Please try again."
                                 : (IS_DISCORD_DESKTOP
-                                ? "ZIP+ native helper missing. Please rebuild Equicord."
+                                ? "ZIP+ native helper missing. Please reinstall Endcord."
                                 : "Unable to fetch attachment: CORS restrictions on web. Desktop app required for zip preview.");
                             showToast(message);
                             return;
@@ -478,7 +478,7 @@ function ZipAttachmentPreviewInner({ attachment }: { attachment: ZipAttachmentLi
                         setError(native?.fetchAttachment
                             ? "Failed to fetch archive. Please try again."
                             : (IS_DISCORD_DESKTOP
-                                ? "ZIP+ native helper missing. Please rebuild Equicord."
+                                ? "ZIP+ native helper missing. Please reinstall Endcord."
                                 : "Unable to fetch: CORS restrictions on web. Desktop app required."));
                     }
                     return;
@@ -534,6 +534,10 @@ function ZipAttachmentPreview(props: { attachment: ZipAttachmentLike; }) {
     if (!props?.attachment) return null;
     return <ZipAttachmentPreviewSafe {...props} />;
 }
+
+// AutoZipper and ZipPreview were each half of this plugin
+migrateRemovedPlugin("ZIP+", "AutoZipper", { keepSettings: true, settings: { enableAutoZipper: true } });
+migrateRemovedPlugin("ZIP+", "ZipPreview", { settings: { enableAutoZipper: false } });
 
 export default definePlugin({
     name: "ZIP+",

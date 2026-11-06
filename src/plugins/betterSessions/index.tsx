@@ -1,6 +1,6 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2023 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -12,14 +12,13 @@ import ErrorBoundary from "@components/ErrorBoundary";
 import { Paragraph } from "@components/Paragraph";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
-import { findComponentByCodeLazy, findCssClassesLazy, findStoreLazy } from "@webpack";
+import { findComponentByCodeLazy, findCssClassesLazy, findStore } from "@webpack";
 import { Constants, React, RestAPI, SettingsRouter, Tooltip } from "@webpack/common";
 
 import { NewButton, RenameButton } from "./components/RenameButton";
 import { Session, SessionInfo } from "./types";
 import { cl, fetchNamesFromDataStore, getDefaultName, GetOsColor, GetPlatformIcon, savedSessionsCache, saveSessionsToDataStore } from "./utils";
 
-const AuthSessionsStore = findStoreLazy("AuthSessionsStore");
 const TimestampClasses = findCssClassesLazy("timestamp", "blockquoteContainer");
 const BlobMask = findComponentByCodeLazy("!1,lowerBadgeSize:");
 
@@ -141,12 +140,18 @@ export default definePlugin({
     async checkNewSessions() {
         const data = await RestAPI.get({
             url: Constants.Endpoints.AUTH_SESSIONS
-        });
+        }).catch(() => null);
+        const sessions = data?.body?.user_sessions;
+        if (!Array.isArray(sessions)) return;
 
-        for (const session of data.body.user_sessions) {
+        // The first check knows no sessions yet: the ones there are now are the baseline, not news
+        const firstCheck = savedSessionsCache.size === 0;
+
+        for (const session of sessions) {
             if (savedSessionsCache.has(session.id_hash)) continue;
 
-            savedSessionsCache.set(session.id_hash, { name: "", isNew: true });
+            savedSessionsCache.set(session.id_hash, { name: "", isNew: !firstCheck });
+            if (firstCheck) continue;
             showNotification({
                 title: "BetterSessions",
                 body: `New session:\n${session.client_info.os} · ${session.client_info.platform} · ${session.client_info.location}`,
@@ -160,6 +165,10 @@ export default definePlugin({
 
     flux: {
         USER_SETTINGS_ACCOUNT_RESET_AND_CLOSE_FORM() {
+            // Discord keeps this store in the code of its settings, which loads only when they're opened, so it's looked
+            // up now that they're closing rather than when Endcord starts
+            const AuthSessionsStore = findStore("AuthSessionsStore");
+            if (!AuthSessionsStore) return;
             const lastFetchedHashes: string[] = AuthSessionsStore.getSessions().map((session: SessionInfo["session"]) => session.id_hash);
 
             // Add new sessions to cache

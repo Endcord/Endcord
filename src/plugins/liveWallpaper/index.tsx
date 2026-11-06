@@ -6,6 +6,7 @@
 
 import { DataStore } from "@api/index";
 import { definePluginSettings } from "@api/Settings";
+import { isSafeMediaUrl } from "@shared/hosts";
 import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
@@ -223,7 +224,7 @@ async function applyWallpaper() {
 
     const url = await getWallpaperUrl();
     if (!active || generation !== wallpaperGeneration) return;
-    if (!url) return;
+    if (!url || !isSafeMediaUrl(url)) return;
 
     const opacity = settings.store.opacity ?? 0.15;
     const blur = settings.store.blur ?? 0;

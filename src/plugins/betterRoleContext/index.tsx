@@ -219,8 +219,7 @@ export default definePlugin({
                 replace: "$self.RoleMembers=$1;$&"
             }
         },
-        // Conflicts with RoleColorEverywhere which changes the code at the end of our match. (and also uses same find & similar match)
-        // However, BetterRoleContext applies first (alphabetic order), so it's not an issue
+        // RoleColorEverywhere changes the same header, only its text, so the two work together
         {
             find: 'tutorialId:"whos-online',
             replacement: {

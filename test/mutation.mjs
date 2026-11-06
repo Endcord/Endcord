@@ -18,6 +18,9 @@ const MUTATIONS = [
     ["Origin check loses its end anchor", "src/shared/trustedOrigins.ts", String.raw`discord\.com)$/`, String.raw`discord\.com)/`],
     ["Origin check accepts plain http", "src/shared/trustedOrigins.ts", "^https:", "^https?:"],
     ["Preload trusts every page", "src/preload.ts", "isDiscordOrigin(window.origin)", "true"],
+    ["A second install replaces the kept version", "src/main/updater/http.ts", "if (await installedFilesMatch(PendingUpdates)) {", "if (false) {"],
+    ["Files count as matching without a check", "src/main/updater/http.ts", 'await installedFilesMatch(manifest.assets) ? "match" : "changed"', '"match"'],
+    ["An unsigned manifest counts as checked", "src/main/updater/http.ts", "trust.signed = isSignedManifest(manifest);", "trust.signed = true;"],
     ["Link check allows every protocol", "src/shared/externalLinks.ts", "return LINK_PROTOCOLS.includes(new URL(href ?? \"\", \"https://discord.com/\").protocol);", "return true;"],
     ["External links allow every protocol", "src/shared/externalLinks.ts", "if (!ALLOWED_PROTOCOLS.includes(protocol)) return false;", ""],
     ["Steam links lose their check", "src/shared/externalLinks.ts", "if (protocol === \"steam:\" && !SAFE_STEAM_URL.test(url)) return false;", ""],
@@ -49,7 +52,12 @@ const MUTATIONS = [
     ["Message logger takes any extension", "src/plugins/messageLoggerEnhanced/native/index.ts", "!SAFE_EXTENSION.test(cleanExt) || ", ""],
     ["Message logger takes any id", "src/plugins/messageLoggerEnhanced/native/index.ts", "if (!SAFE_ATTACHMENT_ID.test(attachment.id)) {", "if (false) {"],
     ["PDF limit can be switched off", "src/plugins/pdf-viewer/native.ts", "Math.min(Number(maxBytes) || 0, MAX_PDF_BYTES)", "maxBytes"],
-    ["Quest id can hold a host", "src/plugins/questify/native.ts", "if (!/^\\d+$/.test(appId)) {", "if (false) {"]
+    ["Quest id can hold a host", "src/plugins/questify/native.ts", "if (!/^\\d+$/.test(appId)) {", "if (false) {"],
+    ["Rollback puts back a kept copy that changed", "src/main/updater/rollback.ts", "sha256(join(PREVIOUS_DIR, name)) !== state.previous![name]", "false"],
+    ["A rejection never expires", "src/main/updater/rollback.ts", "Date.now() - (rejection.at ?? 0) < REJECTION_TTL", "true"],
+    ["S3 uploads reach the local network", "src/plugins/fileUpload/native.ts", "const response = await fetchPublicUrl(uploadUrl, { method: \"PUT\", headers: { ...headers }, body: new Uint8Array(fileBuffer) });", "const response = await fetch(uploadUrl, { method: \"PUT\", headers, body: new Blob([fileBuffer]) });"],
+    ["Theme downloads have no size limit", "src/plugins/themeLibrary/native.ts", "const content = await readBody(download, MAX_THEME_BYTES);", "const content = await readBody(download, Infinity);"],
+    ["Custom uploads skip the address check", "src/plugins/fileUpload/native.ts", "const response = await fetchPublicUrl(url, { method, headers: { ...headers }, body: body ?? undefined });", "const response = await fetch(url, { method, headers, body });"]
 ];
 
 const only = process.argv[2]?.toLowerCase();

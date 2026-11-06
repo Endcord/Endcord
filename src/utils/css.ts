@@ -11,6 +11,9 @@ export function createAndAppendStyle(id: string, target: HTMLElement) {
     return style;
 }
 
+/** Puts an element and everything inside it, Discord's own components included, in Endcord's colors. See endcordTheme.css */
+export const ENDCORD_THEME = "ec-theme theme-dark";
+
 export const classNameToSelector = (name: string, prefix = "") => name.split(" ").map(n => `.${prefix}${n}`).join("");
 
 export type ClassNameFactoryArg = string | string[] | Record<string, unknown> | false | null | undefined | 0 | "";

@@ -1,9 +1,10 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { EndcordOnly } from "@api/EndcordVisibility";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Channel, Message } from "@endcord/discord-types";
 import { Logger } from "@utils/Logger";
@@ -83,5 +84,5 @@ export function _buildPopoverElements(
     Component: React.ComponentType<MessagePopoverButtonItem>,
     message: Message
 ) {
-    return <EndcordPopoverButtons Component={Component} message={message} />;
+    return <EndcordOnly><EndcordPopoverButtons Component={Component} message={message} /></EndcordOnly>;
 }

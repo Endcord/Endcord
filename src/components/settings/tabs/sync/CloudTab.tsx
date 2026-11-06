@@ -1,6 +1,6 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2023 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -14,7 +14,6 @@ import { CheckedTextInput } from "@components/CheckedTextInput";
 import { Divider } from "@components/Divider";
 import { Flex } from "@components/Flex";
 import { FormSwitch } from "@components/FormSwitch";
-import { Grid } from "@components/Grid";
 import { Heading } from "@components/Heading";
 import { CloudDownloadIcon, CloudUploadIcon, DeleteIcon, RestartIcon } from "@components/Icons";
 import { Link } from "@components/Link";
@@ -86,9 +85,9 @@ function CloudSetupSection() {
                 validate={validateUrl}
             />
 
-            <Grid columns={1} gap="1em" className={Margins.top8}>
+            <Flex gap="0.5em" className={Margins.top8}>
                 <ButtonWithIcon
-                    variant="primary"
+                    variant="secondary"
                     disabled={!cloud.authenticated}
                     onClick={async () => {
                         await deauthorizeCloud();
@@ -99,7 +98,7 @@ function CloudSetupSection() {
                 >
                     {t("Reauthorise")}
                 </ButtonWithIcon>
-            </Grid>
+            </Flex>
         </section>
     );
 }
@@ -160,9 +159,9 @@ function SettingsSyncSection() {
                     />
                 </div>
 
-                <Grid columns={2} gap="1em" className={Margins.top20}>
+                <Flex gap="0.5em">
                     <ButtonWithIcon
-                        variant="positive"
+                        variant="secondary"
                         disabled={!sectionEnabled}
                         onClick={() => putCloudSettings(true)}
                         Icon={CloudUploadIcon}
@@ -172,7 +171,7 @@ function SettingsSyncSection() {
                     <Tooltip text={t("This will replace your current settings with the ones saved in the cloud. Be careful!")}>
                         {({ onMouseLeave, onMouseEnter }) => (
                             <ButtonWithIcon
-                                variant="dangerPrimary"
+                                variant="dangerSecondary"
                                 onMouseLeave={onMouseLeave}
                                 onMouseEnter={onMouseEnter}
                                 disabled={!sectionEnabled}
@@ -183,7 +182,7 @@ function SettingsSyncSection() {
                             </ButtonWithIcon>
                         )}
                     </Tooltip>
-                </Grid>
+                </Flex>
             </Flex>
         </section>
     );
@@ -196,9 +195,9 @@ function ResetSection() {
         <section>
             <SectionHeading text={t("Reset Cloud Data")} />
 
-            <Grid columns={2} gap="1em">
+            <Flex gap="0.5em">
                 <ButtonWithIcon
-                    variant="dangerPrimary"
+                    variant="dangerSecondary"
                     disabled={!authenticated || !settingsSync}
                     onClick={() => deleteCloudSettings()}
                     Icon={DeleteIcon}
@@ -222,7 +221,7 @@ function ResetSection() {
                 >
                     {t("Delete your Cloud Account")}
                 </ButtonWithIcon>
-            </Grid>
+            </Flex>
         </section>
     );
 }

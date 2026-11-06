@@ -5,7 +5,7 @@
  */
 
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
-import { definePluginSettings, useSettings } from "@api/Settings";
+import { definePluginSettings, migrateRemovedPlugin, useSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import type { Channel, User } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
@@ -272,6 +272,8 @@ const UserContext: NavContextMenuPatchCallback = (children, { user }: UserContex
         </Menu.MenuGroup>
     ));
 };
+
+migrateRemovedPlugin("FollowUser", "FollowVoiceUser");
 
 export default definePlugin({
     name: "FollowUser",

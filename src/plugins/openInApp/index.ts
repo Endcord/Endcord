@@ -1,6 +1,6 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2023 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -92,7 +92,8 @@ export default definePlugin({
                     replace: "true"
                 },
                 {
-                    match: /\(0,\i\.isDesktop\)\(\)/,
+                    // The desktop check before the blank window opens; Canary mangles its name
+                    match: /\(0,\i\.\i\)\(\)(?=\|\|\(\i=window\.open\("","_blank"\))/,
                     replace: "true"
                 }
             ]

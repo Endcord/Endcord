@@ -198,7 +198,8 @@ const settings = definePluginSettings({
 });
 
 function unload() {
-    document.getElementById("oneko")?.remove();
+    // The oneko plugin's cat shares the id, and is marked so it stays
+    document.querySelector("#oneko:not([data-ec-oneko])")?.remove();
     document.getElementById("fathorse")?.remove();
 }
 
@@ -232,7 +233,8 @@ function load() {
     }
 }
 
-migratePluginSettings("CursorBuddy", "Oneko", "oneko");
+// Not "oneko": that's Endcord's own pet plugin, still here, and taking its settings turned it off for anyone who had it on
+migratePluginSettings("CursorBuddy", "Oneko");
 export default definePlugin({
     name: "CursorBuddy",
     description: "Adds a sprite that follows your cursor.",

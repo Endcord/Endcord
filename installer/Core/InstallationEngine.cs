@@ -749,94 +749,156 @@ namespace EndcordInstaller.Core
             FileOps.Retry(() => FileOps.WriteAllTextAtomic(indexJs, "module.exports = require('./core.asar');\r\n"), indexJs, ct);
         }
 
-        static void ExtractPayloadAsset(string name, string dest, CancellationToken ct)
+        // SHA-256 of each payload file, written by scripts/buildInstaller.ps1 into the embedded payload.sha256.
+        // The installer usually runs from Downloads, where a drive-by download can sit next to it under a payload's
+        // name, so wherever a payload file is read from, it has to match the hash this build was made with
+        static Dictionary<string, string> embeddedHashes;
+        static bool embeddedHashesLoaded;
+
+        /// <summary>The hash this build was made with for a payload file, or null in a build without a hash list.</summary>
+        public static string EmbeddedPayloadHash(string name)
         {
-            // 1. Check CustomPayloadDirectory or local dist folder if available
-            string[] candidates =
+            if (!embeddedHashesLoaded)
             {
-                !string.IsNullOrEmpty(CustomPayloadDirectory) ? Path.Combine(CustomPayloadDirectory, name) : null,
-                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "dist", name),
-                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, name)
-            };
-
-            foreach (var c in candidates)
-            {
-                if (!string.IsNullOrEmpty(c) && File.Exists(c) && FileOps.SizeOf(c) > 0)
+                embeddedHashesLoaded = true;
+                try
                 {
-                    FileOps.Retry(() => File.Copy(c, dest, true), dest, ct);
-                    return;
-                }
-            }
-
-            // 1b. Check local dist_compressed/*.gz if available
-            string[] gzCandidates =
-            {
-                !string.IsNullOrEmpty(CustomPayloadDirectory) ? Path.Combine(CustomPayloadDirectory, name + ".gz") : null,
-                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "dist_compressed", name + ".gz")
-            };
-
-            foreach (var gz in gzCandidates)
-            {
-                if (!string.IsNullOrEmpty(gz) && File.Exists(gz) && FileOps.SizeOf(gz) > 0)
-                {
-                    FileOps.Retry(() =>
+                    bool isGz;
+                    using (var s = OpenEmbeddedResource("payload.sha256", out isGz))
                     {
-                        using (var fs = File.OpenRead(gz))
-                        using (var gzs = new System.IO.Compression.GZipStream(fs, System.IO.Compression.CompressionMode.Decompress))
-                        using (var outFs = new FileStream(dest, FileMode.Create, FileAccess.Write, FileShare.None))
+                        if (s != null)
                         {
-                            gzs.CopyTo(outFs);
+                            var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                            using (var reader = new StreamReader(s, FileOps.Utf8))
+                            {
+                                string line;
+                                while ((line = reader.ReadLine()) != null)
+                                {
+                                    var parts = line.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                                    if (parts.Length == 2 && parts[0].Length == 64) map[parts[1]] = parts[0].ToLowerInvariant();
+                                }
+                            }
+                            embeddedHashes = map;
                         }
-                    }, dest, ct);
-                    return;
+                    }
                 }
+                catch { embeddedHashes = null; }
             }
 
-            // 2. Embedded resource in EndcordInstaller.exe (supports raw or .gz)
+            string hash;
+            return embeddedHashes != null && embeddedHashes.TryGetValue(name, out hash) ? hash : null;
+        }
+
+        /// <summary>True when the file is byte for byte the payload this installer was built with. A build without a hash list accepts anything.</summary>
+        public static bool PayloadMatchesEmbeddedHash(string name, string path)
+        {
+            string expected = EmbeddedPayloadHash(name);
+            if (expected == null) return true;
+            try { return string.Equals(FileOps.Sha256(path), expected, StringComparison.OrdinalIgnoreCase); }
+            catch { return false; }
+        }
+
+        static Stream OpenEmbeddedResource(string name, out bool isGz)
+        {
             var asm = Assembly.GetExecutingAssembly();
-            string match = null;
-            bool isGz = false;
             foreach (var resName in asm.GetManifestResourceNames())
             {
                 if (string.Equals(resName, name, StringComparison.OrdinalIgnoreCase) ||
                     resName.EndsWith("." + name, StringComparison.OrdinalIgnoreCase) ||
                     resName.EndsWith(name, StringComparison.OrdinalIgnoreCase))
                 {
-                    match = resName;
                     isGz = false;
-                    break;
+                    return asm.GetManifestResourceStream(resName);
                 }
                 if (string.Equals(resName, name + ".gz", StringComparison.OrdinalIgnoreCase) ||
                     resName.EndsWith("." + name + ".gz", StringComparison.OrdinalIgnoreCase) ||
                     resName.EndsWith(name + ".gz", StringComparison.OrdinalIgnoreCase))
                 {
-                    match = resName;
                     isGz = true;
-                    break;
+                    return asm.GetManifestResourceStream(resName);
                 }
             }
 
-            if (match == null)
-                throw new InstallerException(FailureKind.PayloadMissing, "Embedded resource not found: " + name, name);
+            isGz = false;
+            return null;
+        }
 
+        // The source is opened again on every attempt, because a retry would find a stream that was already read
+        static void WritePayload(Func<Stream> open, string dest, bool isGz, CancellationToken ct)
+        {
             FileOps.Retry(() =>
             {
-                using (var s = asm.GetManifestResourceStream(match))
+                using (var source = open())
                 using (var f = new FileStream(dest, FileMode.Create, FileAccess.Write, FileShare.None))
                 {
                     if (isGz)
                     {
-                        using (var gzs = new System.IO.Compression.GZipStream(s, System.IO.Compression.CompressionMode.Decompress))
-                        {
+                        using (var gzs = new System.IO.Compression.GZipStream(source, System.IO.Compression.CompressionMode.Decompress))
                             gzs.CopyTo(f);
-                        }
                     }
                     else
                     {
-                        s.CopyTo(f);
+                        source.CopyTo(f);
                     }
                 }
             }, dest, ct);
+        }
+
+        static void VerifyPayload(string name, string path)
+        {
+            if (PayloadMatchesEmbeddedHash(name, path)) return;
+
+            try { File.Delete(path); } catch { }
+            throw new InstallerException(FailureKind.PayloadMissing,
+                name + " does not match the hash this installer was built with. Download the installer again from https://endcord.com/download", name);
+        }
+
+        public static void ExtractPayloadAsset(string name, string dest, CancellationToken ct)
+        {
+            // A folder the self-tests or a developer pointed at is used as it is
+            if (!string.IsNullOrEmpty(CustomPayloadDirectory))
+            {
+                foreach (var c in new[] { Path.Combine(CustomPayloadDirectory, name), Path.Combine(CustomPayloadDirectory, name + ".gz") })
+                {
+                    if (!File.Exists(c) || FileOps.SizeOf(c) <= 0) continue;
+                    string file = c;
+                    WritePayload(() => File.OpenRead(file), dest, file.EndsWith(".gz", StringComparison.OrdinalIgnoreCase), ct);
+                    return;
+                }
+                throw new InstallerException(FailureKind.PayloadMissing, "Payload not found in " + CustomPayloadDirectory + ": " + name, name);
+            }
+
+            // The copy this installer was built with comes first. Files next to the exe only serve a build without
+            // embedded resources, and either way the result has to match the hash embedded at build time
+            bool embeddedIsGz;
+            Stream probe = OpenEmbeddedResource(name, out embeddedIsGz);
+            if (probe != null)
+            {
+                probe.Dispose();
+                bool gz = embeddedIsGz;
+                WritePayload(() => { bool g; return OpenEmbeddedResource(name, out g); }, dest, gz, ct);
+                VerifyPayload(name, dest);
+                return;
+            }
+
+            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            string[] candidates =
+            {
+                Path.Combine(baseDir, "dist", name),
+                Path.Combine(baseDir, name),
+                Path.Combine(baseDir, "dist_compressed", name + ".gz")
+            };
+
+            foreach (var c in candidates)
+            {
+                if (!File.Exists(c) || FileOps.SizeOf(c) <= 0) continue;
+                string file = c;
+                WritePayload(() => File.OpenRead(file), dest, file.EndsWith(".gz", StringComparison.OrdinalIgnoreCase), ct);
+                VerifyPayload(name, dest);
+                return;
+            }
+
+            throw new InstallerException(FailureKind.PayloadMissing, "Embedded resource not found: " + name, name);
         }
 
         static void Report(

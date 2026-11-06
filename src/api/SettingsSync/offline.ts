@@ -11,7 +11,7 @@ import { Plugin, PluginSettingDefCommon } from "@utils/types";
 import { chooseFile, saveFile } from "@utils/web";
 import { moment, Toasts } from "@webpack/common";
 
-import Plugins from "~plugins";
+import Plugins, { getPluginListInfo } from "~plugins";
 
 const toast = (type: string, message: string) =>
     Toasts.show({
@@ -49,11 +49,24 @@ function getSensitiveKeys(plugin: Plugin) {
         .map(([key]) => key);
 }
 
-// Whoever controls an import must not get to redirect this device's keys, choose who can act for the user, or stop
-// its updates. A backup file may fill in a plugin that has nothing configured here; the cloud never touches these
+/**
+ * A plugin's sensitive settings. For a lazy plugin whose code isn't loaded they come from what the build read from
+ * its source, so a backup doesn't load the code of every plugin there is (that took a third of a second)
+ */
+function sensitiveKeysOf(name: string) {
+    const known = getPluginListInfo(name);
+    if (known && !known.k?.includes("*")) return known.k ?? [];
+    return getSensitiveKeys(Plugins[name]);
+}
+
+// Whoever controls an import must not get to redirect this device's keys, choose who can act for the user, stop
+// its updates or load a browser extension into Discord. A backup file may fill in a plugin that has nothing
+// configured here; the cloud never touches these
 function keepLocalSettings(imported: any, source: "file" | "cloud") {
-    for (const [pluginName, plugin] of Object.entries(Plugins)) {
-        const keys = getSensitiveKeys(plugin);
+    for (const pluginName of Object.keys(Plugins)) {
+        const keys = sensitiveKeysOf(pluginName);
+        if (!keys.length) continue;
+        const plugin = Plugins[pluginName];
         const local = PlainSettings.plugins[pluginName] ?? {};
         const isConfigured = keys.some(key => local[key] && local[key] !== (plugin.settings!.def[key] as { default?: unknown; }).default);
         if (source === "file" && !isConfigured) continue;
@@ -64,7 +77,7 @@ function keepLocalSettings(imported: any, source: "file" | "cloud") {
         }
     }
 
-    for (const key of ["cloud", "autoUpdate", "autoUpdateNotification"]) imported[key] = PlainSettings[key];
+    for (const key of ["cloud", "autoUpdate", "autoUpdateNotification", "enableReactDevtools"]) imported[key] = PlainSettings[key];
 }
 
 export async function importSettings(data: string, source: "file" | "cloud" = "file") {
@@ -89,8 +102,8 @@ export async function importSettings(data: string, source: "file" | "cloud" = "f
 export async function exportSettings({ minify }: { minify?: boolean; } = {}) {
     const settings = structuredClone(EndcordNative.settings.get());
     // Backups get shared for support and cloud sync leaves the device
-    for (const [pluginName, plugin] of Object.entries(Plugins)) {
-        for (const key of getSensitiveKeys(plugin)) delete settings.plugins[pluginName]?.[key];
+    for (const pluginName of Object.keys(Plugins)) {
+        for (const key of sensitiveKeysOf(pluginName)) delete settings.plugins[pluginName]?.[key];
     }
 
     const quickCss = await EndcordNative.quickCss.get();

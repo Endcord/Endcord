@@ -1,6 +1,6 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -17,7 +17,7 @@ export default definePlugin({
             find: '"NoticeStore"',
             replacement: [
                 {
-                    match: /(?<=!1;)\i=null;(?=.{0,80}getPremiumSubscription\(\))/g,
+                    match: /(?<=!1[;}])\i=null;(?=.{0,120}getPremiumSubscription\(\))/g,
                     replace: "if(Endcord.Api.Notices.currentNotice)return false;$&"
                 },
                 {

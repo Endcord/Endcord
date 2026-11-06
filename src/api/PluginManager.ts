@@ -1,6 +1,6 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -18,6 +18,7 @@ import { addMessagePopoverButton, removeMessagePopoverButton } from "@api/Messag
 import { addNicknameIcon, removeNicknameIcon } from "@api/NicknameIcons";
 import { addProfileCollection, removeProfileCollection } from "@api/ProfileCollections";
 import { addProfileSection, removeProfileSection } from "@api/ProfileSections";
+import { IS_SAFE_MODE } from "@api/SafeMode";
 import { Settings, SettingsStore } from "@api/Settings";
 import { disableStyle, enableStyle } from "@api/Styles";
 import { addUserAreaButton, removeUserAreaButton } from "@api/UserArea";
@@ -29,7 +30,9 @@ import { DefinedSettings, Patch, Plugin, PluginDef, PluginSettingDef, ReporterTe
 import { FluxDispatcher } from "@webpack/common";
 import { patches } from "@webpack/patcher";
 
-import Plugins, { getPluginFlag, isPluginLoaded, PluginMeta, setPluginLoadHook } from "~plugins";
+import Plugins, { getPluginFlag, isPluginLoaded, PluginMeta, preloadPluginCode, setPluginLoadHook } from "~plugins";
+
+import { applyNewPluginDefaults } from "./pluginDefaults";
 export { Plugins as plugins };
 const logger = new Logger("PluginManager", "#a6d189");
 
@@ -45,13 +48,17 @@ export const PMLogger = logger;
 let enabledPluginsSubscribedFlux = false;
 const subscribedFluxEventsPlugins = new Set<string>();
 
+/** The plugins people see in the list, which leaves out hidden ones and APIs with nothing to set */
+export const isListedPlugin = (plugin: Plugin) => !plugin.hidden && (!!plugin.settings || !plugin.name.endsWith("API"));
+
 export function isPluginEnabled(p: string) {
     // Must not load lazy plugins: this runs for every plugin at startup.
     // A plugin can only be a dependency once something loaded it.
     return (
         getPluginFlag(p, "required") ||
         (isPluginLoaded(p) && Plugins[p]?.isDependency) ||
-        Settings.plugins[p]?.enabled
+        // In safe mode only what Endcord itself needs runs. The choices stay saved for the next normal start
+        (!IS_SAFE_MODE && Settings.plugins[p]?.enabled)
     ) ?? false;
 }
 
@@ -201,6 +208,16 @@ export function subscribeAllPluginsFluxEvents(fluxDispatcher: typeof FluxDispatc
     }
 }
 
+/** Milliseconds each plugin's start() took this session, for the Diagnostics page */
+export const pluginStartTimes = new Map<string, number>();
+
+/** For plugins with no patches, which can start and stop without a restart */
+export function setPluginEnabled(name: string, enabled: boolean) {
+    Settings.plugins[name].enabled = enabled;
+
+    return enabled ? startPlugin(Plugins[name]) : stopPlugin(Plugins[name]);
+}
+
 export const startPlugin = traceFunction("startPlugin", function startPlugin(p: Plugin) {
     const {
         name, commands, contextMenus, managedStyle, userProfileBadge,
@@ -217,7 +234,9 @@ export const startPlugin = traceFunction("startPlugin", function startPlugin(p: 
             return false;
         }
         try {
+            const startedAt = performance.now();
             p.start();
+            pluginStartTimes.set(name, performance.now() - startedAt);
         } catch (e) {
             logger.error(`Failed to start ${name}\n`, e);
             return false;
@@ -394,6 +413,8 @@ function onPluginLoaded(p: Plugin) {
 }
 
 export const initPluginManager = onlyOnce(function init() {
+    applyNewPluginDefaults(Settings);
+
     const settings = Settings.plugins;
 
     // Lazy plugins only get evaluated when something reads them, so bind their settings at that moment.
@@ -406,6 +427,9 @@ export const initPluginManager = onlyOnce(function init() {
     for (const name in PluginMeta) {
         if (PluginMeta[name].migratesFrom?.some(old => old in storedPlugins)) void Plugins[name];
     }
+
+    // The preload already ran the code of the plugins that are on. Get any it didn't know about in one go
+    preloadPluginCode(Object.keys(PluginMeta).filter(name => !isPluginLoaded(name) && isPluginEnabled(name)));
 
     const pluginKeysToBind: Array<keyof PluginDef & `${"on" | "render"}${string}`> = [
         "onBeforeMessageEdit", "onBeforeMessageSend", "onMessageClick",

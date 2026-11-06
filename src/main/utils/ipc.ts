@@ -22,7 +22,6 @@ function getOrigin(url: string, origin?: string) {
 }
 
 export function isTrustedSender({ senderFrame }: IpcMainEvent | IpcMainInvokeEvent, channel: string) {
-    if (IS_VESKTOP) return true;
     if (!senderFrame) return false;
     if (senderFrame.url.startsWith("data:")) return EDITOR_CHANNELS.has(channel);
 

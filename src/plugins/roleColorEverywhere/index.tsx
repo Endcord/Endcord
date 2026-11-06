@@ -1,6 +1,6 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -95,8 +95,9 @@ export default definePlugin({
             find: 'tutorialId:"whos-online',
             replacement: [
                 {
-                    match: /(#{intl::CHANNEL_MEMBERS_A11Y_LABEL}.+}\):null,).{0,100}?(?:\u2014|\\u2014) ",\i\]\}\)\]/,
-                    replace: "$1$self.RoleGroupColor(arguments[0])]"
+                    // Only the header's text, so what BetterRoleContext adds to the header stays
+                    match: /(?<=#{intl::CHANNEL_MEMBERS_A11Y_LABEL}.{0,400}?)children:\[\i," (?:\u2014|\\u2014) ",\i\]/,
+                    replace: "children:[$self.RoleGroupColor(arguments[0])]"
                 },
             ],
             predicate: () => settings.store.memberList
@@ -126,7 +127,7 @@ export default definePlugin({
         {
             find: "MessageReactions.render:",
             replacement: {
-                match: /tag:"strong",variant:"text-md\/medium"(?<=onContextMenu:.{0,15}\((\i),(\i),\i\).+?)/,
+                match: /tag:"strong",variant:"(?:text|body)-md\/medium"(?<=onContextMenu:.{0,15}\((\i),(\i),\i\).+?)/,
                 replace: "$&,style:$self.getColorStyle($2?.id,$1?.channel?.id)"
             },
             predicate: () => settings.store.reactorsList,
@@ -135,7 +136,7 @@ export default definePlugin({
         {
             find: ",reactionVoteCounts",
             replacement: {
-                match: /\.SIZE_32.+?variant:"text-md\/normal",className:\i\.\i,(?="aria-label":)/,
+                match: /\.SIZE_32.+?variant:"(?:text|body)-md\/normal",className:\i\.\i,(?="aria-label":)/,
                 replace: "$&style:$self.getColorStyle(arguments[0]?.user?.id,arguments[0]?.channel?.id),"
             },
             predicate: () => settings.store.pollResults

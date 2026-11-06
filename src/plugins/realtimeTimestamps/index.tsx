@@ -190,11 +190,11 @@ export default definePlugin({
 
         // ─── Timestamp markdown <t:unix:t> — hover tooltip ────────────────────
         {
-            find: ".MINUTE],[45*",
+            find: ".full,ariaHidden:!0",
             predicate: () => !isPluginEnabled("CustomTimestamps"),
             replacement: [
                 {
-                    match: /(?<=function \i\(\i\)\{)(?=let\{node:\i)/,
+                    match: /(?<=function(?: \i)?\(\i\)\{)(?=let\{node:\i)/,
                     replace: "$self.useGlobalTick();",
                 },
                 {

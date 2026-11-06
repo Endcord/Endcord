@@ -1,16 +1,23 @@
-/* the profile popout badge container(s) */
-[class*="profile"] [class*="tags"] [class*="container"] {
+/*
+ * This file is always on, so every selector here is checked against every matching element whenever Discord
+ * restyles a part of the page. The right-hand part of each selector has to rule most elements out on its own:
+ * "[class*=badge] img" made every image in the chat search all of its ancestors.
+ */
+
+/* The profile badge row, the only role="group" container among them */
+[class*="profile"] [class*="tags"] [role="group"][class*="container"] {
     /* Discord has gap set to 2px instead of 1px, which causes the 12th badge to wrap to a new line. */
     gap: 1px;
 }
 
 /* Ensure custom profile badges and gift icons have zero dark background */
-[class*="badge"] img,
+img[class*="badge"],
+[class*="badge"] > img,
+[class*="badge"] > * > img,
 [class*="profile"] img[src*="imgur"],
 [class*="profile"] img[src*="githubusercontent"],
 [class*="profile"] img[src*="badge-icons"],
-[class*="profile"] a[class*="badge"],
-div[class*="badgeList"] img {
+[class*="profile"] a[class*="badge"] {
     background: transparent !important;
     box-shadow: none !important;
 }

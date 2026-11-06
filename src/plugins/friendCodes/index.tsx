@@ -4,10 +4,13 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { migrateRemovedPlugin } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 
 import FriendCodesPanel from "./FriendCodesPanel";
+
+migrateRemovedPlugin("FriendCodes", "FriendInvites");
 
 export default definePlugin({
     name: "FriendCodes",

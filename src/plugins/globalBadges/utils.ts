@@ -10,7 +10,16 @@ import { classNameFactory } from "@utils/css";
 
 import { settings } from "./settings";
 
-export let GlobalBadges = {};
+export interface GlobalBadge {
+    badge: string;
+    mod: string;
+    /** The badge's own name */
+    key: string;
+    /** The name with the mod added in front or behind, as the settings ask */
+    tooltip: string;
+}
+
+export let GlobalBadges: Record<string, GlobalBadge[]> = {};
 export const INVITE_LINK = "kwHCJPxp8t";
 export const cl = classNameFactory("vc-global-badges-");
 export const serviceMap: Record<string, string> = {

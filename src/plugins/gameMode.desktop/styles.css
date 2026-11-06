@@ -1,0 +1,6 @@
+/* Paused rather than removed, so nothing jumps when Discord comes back */
+[data-ec-game-mode] *,
+[data-ec-game-mode] *::before,
+[data-ec-game-mode] *::after {
+    animation-play-state: paused !important;
+}

@@ -1,16 +1,20 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import "./styles.css";
+import "./styles.css?screen";
 
 import * as DataStore from "@api/DataStore";
-import { isPluginEnabled } from "@api/PluginManager";
+import { isListedPlugin, isPluginEnabled } from "@api/PluginManager";
+import { POPULAR_PLUGIN_ORDER } from "@api/PluginProfiles";
+import { IS_SAFE_MODE } from "@api/SafeMode";
 import { useSettings } from "@api/Settings";
 import { Card } from "@components/Card";
+import { EndOfListPanda, peek } from "@components/delight";
 import { Divider } from "@components/Divider";
+import { AppsIcon, EndcordMark, PowerIcon, SleepIcon, SparkleIcon } from "@components/EndcordIcons";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { HeadingTertiary } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
@@ -22,64 +26,57 @@ import { t, useI18n } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import { Margins } from "@utils/margins";
 import { classes } from "@utils/misc";
+import { relaunch } from "@utils/native";
 import { useAwaiter, useCleanupEffect } from "@utils/react";
-import { PluginTag, PluginTags } from "@utils/types";
-import { Button, ConfirmModal, lodash, openModal, Parser, React, SearchableSelect, Select, TextInput, Tooltip, useMemo, useRef, useState } from "@webpack/common";
-import { JSX } from "react";
+import { IconProps, PluginTag, PluginTags } from "@utils/types";
+import { Button, ConfirmModal, lodash, openModal, Parser, React, SearchableSelect, Select, TextInput, Tooltip, useCallback, useEffect, useMemo, useRef, useState } from "@webpack/common";
+import { ComponentType, JSX, PropsWithChildren } from "react";
 
 import Plugins, { ExcludedPlugins, PluginMeta } from "~plugins";
 
+import { listItem } from "./listItems";
 import { PluginCard } from "./PluginCard";
+import { ProfilesBar } from "./Profiles";
+import { searchSettings,SettingEntry } from "./settingsIndex";
 import { UIElementsButton } from "./UIElements";
 
 export const cl = classNameFactory("vc-plugins-");
 export const logger = new Logger("PluginSettings", "#a6d189");
 
-const POPULAR_PLUGIN_ORDER = [
-    "CustomProfile",
-    "MessageLogger",
-    "HideEndcord",
-    "FakeNitro",
-    "SmoothType",
-    "ViewIcons",
-    "ThemeLibrary",
-    "oneko",
-    "PlatformIndicators",
-    "RelationshipNotifier",
-    "SilentTyping",
-    "FakeMute",
-] as const;
 
 const POPULAR_PLUGINS = new Set<string>(POPULAR_PLUGIN_ORDER);
 
 function popularRank(name: string) {
-    const index = POPULAR_PLUGIN_ORDER.indexOf(name as typeof POPULAR_PLUGIN_ORDER[number]);
+    const index = POPULAR_PLUGIN_ORDER.indexOf(name);
     return index === -1 ? Number.POSITIVE_INFINITY : index;
 }
 
-function ReloadRequiredCard({ required }: { required: boolean; }) {
+function ReloadRequiredCard() {
     const { t } = useI18n();
     return (
-        <Card variant={required ? "warning" : "normal"} className={cl("info-card")}>
-            {required
-                ? (
-                    <>
-                        <HeadingTertiary>{t("Restart required")}</HeadingTertiary>
-                        <Paragraph className={cl("dep-text")}>
-                            {t("Restart now to apply new plugins and their settings")}
-                        </Paragraph>
-                        <Button onClick={() => location.reload()} className={cl("restart-button")}>
-                            {t("Restart")}
-                        </Button>
-                    </>
-                )
-                : (
-                    <>
-                        <HeadingTertiary>{t("Plugin Management")}</HeadingTertiary>
-                        <Paragraph>{t("Press the cog wheel or info icon to get more info on a plugin")}</Paragraph>
-                        <Paragraph>{t("Plugins with a cog wheel have settings you can change.")}</Paragraph>
-                    </>
-                )}
+        <Card variant="warning" className={cl("info-card")}>
+            <HeadingTertiary>{t("Restart required")}</HeadingTertiary>
+            <Paragraph className={cl("dep-text")}>
+                {t("Restart now to apply new plugins and their settings")}
+            </Paragraph>
+            <Button onClick={() => location.reload()} className={cl("restart-button")}>
+                {t("Restart")}
+            </Button>
+        </Card>
+    );
+}
+
+function SafeModeCard() {
+    const { t } = useI18n();
+    return (
+        <Card variant="warning" className={cl("info-card")}>
+            <HeadingTertiary>{t("Safe mode")}</HeadingTertiary>
+            <Paragraph className={cl("dep-text")}>
+                {t("No plugin is running right now. The switches show and change what's on after you restart normally.")}
+            </Paragraph>
+            <Button onClick={relaunch} className={cl("restart-button")}>
+                {t("Restart normally")}
+            </Button>
         </Card>
     );
 }
@@ -93,6 +90,50 @@ const enum SearchStatus {
     API_PLUGINS
 }
 
+interface StatTileProps {
+    Icon: ComponentType<IconProps>;
+    label: string;
+    value: number;
+    selected: boolean;
+    tone?: "on";
+    wide?: boolean;
+    onClick(): void;
+}
+
+function StatTile({ Icon, label, value, selected, tone, wide, onClick, children }: PropsWithChildren<StatTileProps>) {
+    return (
+        <button className={cl("stat", tone && `stat-${tone}`, { "stat-wide": wide, "stat-selected": selected })} aria-pressed={selected} onClick={onClick}>
+            <span className={cl("stat-head")}><Icon />{label}</span>
+            <span className={cl("stat-value")}>{value}</span>
+            {children}
+        </button>
+    );
+}
+
+interface PluginStatsProps {
+    enabled: number;
+    total: number;
+    fresh: number;
+    status: SearchStatus;
+    onSelect(status: SearchStatus): void;
+}
+
+/** The counts double as filters, so a number leads straight to the plugins it counts */
+function PluginStats({ enabled, total, fresh, status, onSelect }: PluginStatsProps) {
+    const { t } = useI18n();
+
+    return (
+        <div className={cl("stats")}>
+            <StatTile Icon={PowerIcon} label={t("Enabled")} value={enabled} tone="on" wide selected={status === SearchStatus.ENABLED} onClick={() => onSelect(SearchStatus.ENABLED)}>
+                <span className="ec-pixel-meter"><span style={{ width: `${enabled / total * 100}%` }} /></span>
+            </StatTile>
+            <StatTile Icon={SleepIcon} label={t("Disabled")} value={total - enabled} selected={status === SearchStatus.DISABLED} onClick={() => onSelect(SearchStatus.DISABLED)} />
+            {fresh > 0 && <StatTile Icon={SparkleIcon} label={t("New")} value={fresh} selected={status === SearchStatus.NEW} onClick={() => onSelect(SearchStatus.NEW)} />}
+            <StatTile Icon={AppsIcon} label={t("Total")} value={total} selected={false} onClick={() => onSelect(SearchStatus.ALL)} />
+        </div>
+    );
+}
+
 function ExcludedPluginsList({ search }: { search: string; }) {
     const { t } = useI18n();
     const matchingExcludedPlugins = search
@@ -101,10 +142,10 @@ function ExcludedPluginsList({ search }: { search: string; }) {
         : [];
 
     const ExcludedReasons: Record<"web" | "discordDesktop" | "vesktop" | "desktop" | "dev", string> = {
-        desktop: t("Discord Desktop app or Vesktop"),
+        desktop: t("Discord Desktop app or Endcord Desktop"),
         discordDesktop: t("Discord Desktop app"),
-        vesktop: t("Vesktop app"),
-        web: t("Vesktop app and the Web version of Discord"),
+        vesktop: t("Endcord Desktop app"),
+        web: t("Endcord Desktop app and the Web version of Discord"),
         dev: t("Developer version of Endcord")
     };
 
@@ -127,11 +168,16 @@ function ExcludedPluginsList({ search }: { search: string; }) {
     );
 }
 
+const FIRST_CARDS = 30;
+const CARDS_PER_FRAME = 50;
+
 function PluginSettings() {
     const { t, tPluginDesc } = useI18n();
     const settings = useSettings();
     const changeRef = useRef<ChangeList<string>>(null);
     const changes = changeRef.current ??= new ChangeList<string>();
+    // The same function every time, so the cards, which are memoised, aren't drawn again for a new one
+    const onRestartNeeded = useCallback((name: string, key: string) => changes.handleChange(`${name}.${key}`), []);
 
     useCleanupEffect(() => {
         if (changes.hasChanges)
@@ -157,27 +203,25 @@ function PluginSettings() {
             ));
     }, []);
 
-    const depMap = useMemo(() => {
-        const o = {} as Record<string, string[]>;
-        for (const plugin in Plugins) {
-            const deps = Plugins[plugin].dependencies;
-            if (deps) {
-                for (const dep of deps) {
-                    o[dep] ??= [];
-                    o[dep].push(plugin);
-                }
-            }
-        }
-        return o;
-    }, []);
-
+    // Plugins whose code isn't loaded are listed from what the build read of them (see ./listItems)
     const sortedPlugins = useMemo(() =>
-        Object.values(Plugins).sort((a, b) => {
+        Object.keys(Plugins).map(listItem).sort((a, b) => {
             const rank = popularRank(a.name) - popularRank(b.name);
             return rank !== 0 ? rank : a.name.localeCompare(b.name);
         }),
         []
     );
+
+    const depMap = useMemo(() => {
+        const o = {} as Record<string, string[]>;
+        for (const plugin of sortedPlugins) {
+            for (const dep of plugin.dependencies ?? []) {
+                o[dep] ??= [];
+                o[dep].push(plugin.name);
+            }
+        }
+        return o;
+    }, []);
 
     const enabledCount = useMemo(() => sortedPlugins.filter(p => isPluginEnabled(p.name)).length, [settings]);
 
@@ -186,7 +230,25 @@ function PluginSettings() {
     const [searchValue, setSearchValue] = useState({ value: "", tags: [] as PluginTag[], status: SearchStatus.ALL });
 
     const search = searchValue.value.toLowerCase();
-    const onSearch = (query: string) => setSearchValue(prev => ({ ...prev, value: query }));
+    const onSearch = (query: string) => {
+        setSearchValue(prev => ({ ...prev, value: query }));
+        if (query.trim().toLowerCase() === "panda") peek(t("that's me! 🐼 no plugin, just a panda"));
+    };
+    const onStatSelect = (status: SearchStatus) => setSearchValue(prev => ({ ...prev, status: prev.status === status ? SearchStatus.ALL : status }));
+    const isFiltering = search.length > 0 || searchValue.tags.length > 0 || searchValue.status !== SearchStatus.ALL;
+
+    // Settings match too, from three letters on, so "volume" finds the plugins with a volume setting
+    const settingHits = useMemo(() => {
+        const hits = new Map<string, SettingEntry[]>();
+        if (search.trim().length < 3) return hits;
+
+        for (const entry of searchSettings(search)) {
+            const list = hits.get(entry.plugin.name);
+            if (list) list.push(entry);
+            else hits.set(entry.plugin.name, [entry]);
+        }
+        return hits;
+    }, [search]);
 
     const pluginFilter = (plugin: typeof Plugins[keyof typeof Plugins]) => {
         const { status, tags } = searchValue;
@@ -218,7 +280,8 @@ function PluginSettings() {
             plugin.name.match(/[A-Z]/g)?.join("").toLowerCase().includes(search) || // acronyms like BF for BetterFolders
             plugin.description.toLowerCase().includes(search) ||
             tPluginDesc(plugin.name, plugin.description).toLowerCase().includes(search) ||
-            plugin.searchTerms?.some(t => t.toLowerCase().includes(search))
+            plugin.searchTerms?.some(t => t.toLowerCase().includes(search)) ||
+            settingHits.has(plugin.name)
         );
     };
 
@@ -244,7 +307,7 @@ function PluginSettings() {
 
     const showApi = searchValue.status === SearchStatus.API_PLUGINS;
     for (const p of sortedPlugins) {
-        if (p.hidden || (!p.settings && p.name.endsWith("API") && !showApi))
+        if (p.hidden || (!showApi && !isListedPlugin(p)))
             continue;
 
         if (!pluginFilter(p)) continue;
@@ -262,7 +325,7 @@ function PluginSettings() {
                         <PluginCard
                             onMouseLeave={onMouseLeave}
                             onMouseEnter={onMouseEnter}
-                            onRestartNeeded={(name, key) => changes.handleChange(`${name}.${key}`)}
+                            onRestartNeeded={onRestartNeeded}
                             disabled={true}
                             plugin={p}
                             key={p.name}
@@ -273,46 +336,54 @@ function PluginSettings() {
         } else {
             plugins.push(
                 <PluginCard
-                    onRestartNeeded={(name, key) => changes.handleChange(`${name}.${key}`)}
+                    onRestartNeeded={onRestartNeeded}
                     disabled={false}
                     plugin={p}
                     isNew={newPlugins?.includes(p.name)}
                     isPopular={POPULAR_PLUGINS.has(p.name)}
+                    matchedSettings={settingHits.get(p.name)}
                     key={p.name}
                 />
             );
         }
     }
 
+    // The tab opens with the first cards and draws the rest over the next frames, instead of all five hundred before
+    // anything shows
+    const [drawn, setDrawn] = useState(FIRST_CARDS);
+    useEffect(() => {
+        if (drawn >= plugins.length) return;
+        const frame = requestAnimationFrame(() => setDrawn(n => n + CARDS_PER_FRAME));
+        return () => cancelAnimationFrame(frame);
+    }, [drawn, plugins.length]);
+
     return (
         <SettingsTab>
-            <ReloadRequiredCard required={changes.hasChanges} />
+            {IS_SAFE_MODE && <SafeModeCard />}
+            {changes.hasChanges && <ReloadRequiredCard />}
+
+            <PluginStats
+                enabled={enabledCount}
+                total={sortedPlugins.length}
+                fresh={newPlugins?.length ?? 0}
+                status={searchValue.status}
+                onSelect={onStatSelect}
+            />
+
+            <ProfilesBar onRestartNeeded={() => changes.handleChange(`${t("Profile")}.plugins`)} />
 
             <UIElementsButton />
 
-            <div className={cl("stats-bar")}>
-                <div className={cl("stat-badge")}>
-                    <span className={cl("stat-label")}>{t("Total Plugins:")}</span>
-                    <span className={cl("stat-val")}>{sortedPlugins.length}</span>
-                </div>
-                <div className={cl("stat-badge")}>
-                    <span className={cl("stat-label")}>{t("Enabled Plugins:")}</span>
-                    <span className={classes(cl("stat-val"), cl("stat-val-enabled"))}>{enabledCount}</span>
-                </div>
-            </div>
-
-            <HeadingTertiary className={classes(Margins.top20, Margins.bottom8)}>
-                {t("Filters")}
-            </HeadingTertiary>
-
             <ErrorBoundary noop>
-                <TextInput
-                    inputClassName={cl("filter-control")}
-                    placeholder={t("Search for a plugin...")}
-                    value={searchValue.value}
-                    onChange={onSearch}
-                    autoFocus
-                />
+                <div className={Margins.top16}>
+                    <TextInput
+                        inputClassName={cl("filter-control")}
+                        placeholder={t("Search plugins and their settings...")}
+                        value={searchValue.value}
+                        onChange={onSearch}
+                        autoFocus
+                    />
+                </div>
             </ErrorBoundary>
 
             <ErrorBoundary noop>
@@ -343,19 +414,29 @@ function PluginSettings() {
                 </div>
             </ErrorBoundary>
 
-            <HeadingTertiary className={Margins.top20}>{t("Plugins")}</HeadingTertiary>
+            <div className={classes(Margins.top20, cl("list-heading"))}>
+                <HeadingTertiary>{t("Plugins")}</HeadingTertiary>
+                {isFiltering && <span className={cl("count")}>{t("{count} shown", { count: plugins.length + requiredPlugins.length })}</span>}
+            </div>
 
             {plugins.length || requiredPlugins.length
                 ? (
                     <div className={cl("grid")}>
                         {plugins.length
-                            ? plugins
+                            ? plugins.slice(0, drawn)
                             : <Paragraph>{t("No plugins meet the search criteria.")}</Paragraph>
                         }
                     </div>
                 )
-                : <ExcludedPluginsList search={search} />
+                : (
+                    <div className={cl("empty")}>
+                        <EndcordMark width={51} asleep />
+                        <ExcludedPluginsList search={search} />
+                    </div>
+                )
             }
+
+            {!isFiltering && drawn >= plugins.length && <EndOfListPanda />}
 
 
             <Divider className={Margins.top20} />

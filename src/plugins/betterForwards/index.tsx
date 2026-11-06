@@ -95,6 +95,8 @@ export default definePlugin({
     tags: ["Chat", "Utility"],
     searchTerms: ["selfForward", "betterForwardMeta"],
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
+    // Its attachment and embed icons come from there
+    dependencies: ["ConcatenatedModules"],
     settings,
     managedStyle,
     patches: [
@@ -145,7 +147,8 @@ export default definePlugin({
         {
             find: ".FORWARD_BREADCRUMB_CLICKED,{",
             replacement: {
-                match: /(disableComponentInteractivity:\i\}\),!\i&&\(0,\i\.jsx\)\()\i/,
+                // Newer Discord passes more props after this one, like allowFullScreen
+                match: /(disableComponentInteractivity:\i(?:,\w+:\i){0,3}\}\),!\i&&\(0,\i\.jsx\)\()\i/,
                 replace: "$1$self.ForwardFooter"
             }
         },

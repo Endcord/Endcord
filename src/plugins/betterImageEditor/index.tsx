@@ -577,8 +577,12 @@ export default definePlugin({
             find: '"SET_IMAGE_ZOOM_RATIO"',
             replacement: [
                 {
-                    match: /\{default:\(\)=>(\i)\}/,
-                    replace: "{default:()=>$self.wrapEditor($1)}"
+                    // The editor is the module's default export: a getter, or on Canary a plain value. There it
+                    // moves to another key, and a getter for default, which wins over values, wraps it
+                    match: /\{default:\(\)=>(\i)\}|\.d\((\i),\{\},\{default:(?=function)/,
+                    replace: (_, editor, exports) => editor
+                        ? `{default:()=>$self.wrapEditor(${editor})}`
+                        : `.d(${exports},{default:()=>$self.wrapEditor(${exports}.__bieEditor)},{__bieEditor:`
                 },
                 {
                     match: /(?<=#{intl::AVATAR_UPLOAD_EDIT_MEDIA}\),)size:"md",actionBarInput:/,

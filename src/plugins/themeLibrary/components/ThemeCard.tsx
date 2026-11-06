@@ -100,7 +100,7 @@ export const ThemeCard: React.FC<ThemeCardProps> = ({ theme, themeLinks, likedTh
 
     const handleViewSource = () => {
         const content = window.atob(theme.content);
-        const metadata = content.match(/\/\*\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+\//g)?.[0] || "";
+        const metadata = content.match(/\/\*\*[\s\S]*?\*\//g)?.[0] || "";
         const source = metadata.match(/@source\s+(.+)/)?.[1] || "";
 
         if (source) {

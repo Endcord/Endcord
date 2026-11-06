@@ -1,0 +1,1922 @@
+{
+    "MessageLogger": {
+        "file": "MessageLogger.webm",
+        "alt": "A deleted message stays in the chat in red, and an edited one keeps its old text above the new one"
+    },
+    "FakeServer": {
+        "file": "FakeServer.webm",
+        "alt": "Right-clicking a server makes it look verified with a quarter of a million members, only on your screen"
+    },
+    "SilentTyping": {
+        "file": "SilentTyping.webm",
+        "alt": "You type a message while the other person's screen shows nobody typing"
+    },
+    "PlatformIndicators": {
+        "file": "PlatformIndicators.webm",
+        "alt": "Small icons next to each name show whether that person is on desktop, phone or the web"
+    },
+    "ClearURLs": {
+        "file": "ClearURLs.webm",
+        "alt": "A link full of tracking parameters is sent as a short, clean link"
+    },
+    "TextReplace": {
+        "file": "TextReplace.webm",
+        "alt": "Typing brb sends be right back, using the user's own replacement rules"
+    },
+    "Translate": {
+        "file": "Translate.webm",
+        "alt": "A message in Spanish gets an English translation underneath with one click"
+    },
+    "ShowMeYourName": {
+        "file": "ShowMeYourName.webm",
+        "alt": "Each server nickname is followed by the person's real username"
+    },
+    "WhoReacted": {
+        "file": "WhoReacted.webm",
+        "alt": "Reactions show the faces of the people who reacted"
+    },
+    "SendTimestamps": {
+        "file": "SendTimestamps.webm",
+        "alt": "A time typed in a message is sent as a timestamp that shows in everyone's own time zone"
+    },
+    "ShowHiddenChannels": {
+        "file": "ShowHiddenChannels.webm",
+        "alt": "Channels you can't open appear in the list with a lock"
+    },
+    "ReadAllNotificationsButton": {
+        "file": "ReadAllNotificationsButton.webm",
+        "alt": "One button above the server list marks every server as read"
+    },
+    "ShikiCodeblocks": {
+        "file": "ShikiCodeblocks.webm",
+        "alt": "A plain code block turns into a highlighted one, like in a code editor"
+    },
+    "MoreUserTags": {
+        "file": "MoreUserTags.webm",
+        "alt": "Names get tags that say who owns the server and who are admins and moderators"
+    },
+    "ReplyTimestamp": {
+        "file": "ReplyTimestamp.webm",
+        "alt": "The preview of a replied-to message shows when that message was sent"
+    },
+    "MessageClickActions": {
+        "file": "MessageClickActions.webm",
+        "alt": "Double-clicking your own message opens it for editing"
+    },
+    "RelationshipNotifier": {
+        "file": "RelationshipNotifier.webm",
+        "alt": "A notification says that someone removed you as a friend"
+    },
+    "ViewIcons": {
+        "file": "ViewIcons.webm",
+        "alt": "Clicking an avatar in a profile opens it full size"
+    },
+    "SmoothType": {
+        "file": "SmoothType.webm",
+        "alt": "The text cursor glides smoothly as you type instead of jumping"
+    },
+    "HideEndcord": {
+        "file": "HideEndcord.webm",
+        "alt": "Pressing F8 hides every Endcord button and badge, and pressing it again brings them back"
+    },
+    "FakeMessage": {
+        "file": "FakeMessage.webm",
+        "alt": "The /fakemsg command shows a made-up message from any user, and /fakegift shows a Nitro gift, only on your screen"
+    },
+    "FakeRequestCount": {
+        "file": "FakeRequestCount.webm",
+        "alt": "The friend request badge counts up to 99, only on your screen"
+    },
+    "SpotifyLyricsStatus": {
+        "file": "SpotifyLyricsStatus.webm",
+        "alt": "Your custom status shows the line of the Spotify song you're playing, changing in time with the music"
+    },
+    "oneko": {
+        "file": "oneko.webm",
+        "alt": "A pixel cat chases the mouse pointer around the window, followed by a puppy and the Endcord panda"
+    },
+    "StreamerShield": {
+        "file": "StreamerShield.webm",
+        "alt": "When Streamer Mode turns on, the list of DMs is blurred so viewers can't read it"
+    },
+    "ChannelNotes": {
+        "file": "ChannelNotes.webm",
+        "alt": "A notes button in the channel header opens private notes about the channel"
+    },
+    "FocusMode": {
+        "file": "FocusMode.webm",
+        "alt": "One switch turns on Do Not Disturb, silences notifications and hides unread badges until the time you choose"
+    },
+    "MessageVault": {
+        "file": "MessageVault.webm",
+        "alt": "Searching everything you've read for a word finds old messages from any channel, kept on your device"
+    },
+    "ImageZoom": {
+        "file": "ImageZoom.webm",
+        "alt": "Holding the mouse over an image shows a round magnifying lens"
+    },
+    "FakeNitro": {
+        "file": "FakeNitro.webm",
+        "alt": "Custom emoji from other servers can be sent without Nitro; they arrive as emoji pictures"
+    },
+    "1FA": {
+        "file": "1FA.webm",
+        "alt": "The banner asking moderators to turn on two-factor authentication disappears from the top of the chat"
+    },
+    "AccountPanelServerProfile": {
+        "file": "AccountPanelServerProfile.webm",
+        "alt": "Right-clicking your account panel opens your profile as it looks in the current server"
+    },
+    "AddAttachments": {
+        "file": "AddAttachments.webm",
+        "alt": "While editing a message, an Add Attachments button attaches a new picture to it"
+    },
+    "AdvancedPermissions": {
+        "file": "AdvancedPermissions.webm",
+        "alt": "Channel permission settings open straight on the advanced view with every permission listed"
+    },
+    "AllConnectionsEnabled": {
+        "file": "AllConnectionsEnabled.webm",
+        "alt": "The Connections page lists every service you can link, including ones Discord normally hides"
+    },
+    "AltKrispSwitch": {
+        "file": "AltKrispSwitch.webm",
+        "alt": "The noise suppression switch in a call goes between off and Krisp, skipping Standard"
+    },
+    "AlwaysAnimate": {
+        "file": "AlwaysAnimate.webm",
+        "alt": "Animated avatars, emoji and server icons keep moving without being hovered"
+    },
+    "AlwaysExpandProfiles": {
+        "file": "AlwaysExpandProfiles.webm",
+        "alt": "Clicking a name opens the full profile window right away instead of the small popout"
+    },
+    "AlwaysExpandRoles": {
+        "file": "AlwaysExpandRoles.webm",
+        "alt": "Every role shows in the profile popout, without a button to see more"
+    },
+    "AlwaysTrust": {
+        "file": "AlwaysTrust.webm",
+        "alt": "Clicking a link opens it straight away, without the Leaving Discord warning"
+    },
+    "Animalese": {
+        "file": "Animalese.webm",
+        "alt": "New messages are read out in Animal Crossing style babble"
+    },
+    "AnonymiseFileNames": {
+        "file": "AnonymiseFileNames.webm",
+        "alt": "A picture named after the camera and date uploads with a random file name instead"
+    },
+    "AntiDeleteMessage": {
+        "file": "AntiDeleteMessage.webm",
+        "alt": "When a moderator deletes your message, it is sent again by itself"
+    },
+    "AntiMoveDeco": {
+        "file": "AntiMoveDeco.webm",
+        "alt": "With the shield on, being moved or disconnected from voice puts you straight back in your channel"
+    },
+    "AntiNickname": {
+        "file": "AntiNickname.webm",
+        "alt": "A nickname someone forces on you is changed back to your own name"
+    },
+    "AntiSnitch": {
+        "file": "AntiSnitch.webm",
+        "alt": "When a chosen person starts typing in your channel, a sound plays and a notice appears"
+    },
+    "AppleMusicRichPresence": {
+        "file": "AppleMusicRichPresence.webm",
+        "alt": "Your profile shows the song you're playing in Apple Music, with artwork and time"
+    },
+    "AtSomeone": {
+        "file": "AtSomeone.webm",
+        "alt": "Typing @someone in a message mentions a random member of the channel"
+    },
+    "AutoDisconnectAndAutoMute": {
+        "file": "AutoDisconnectAndAutoMute.webm",
+        "alt": "A chosen user is muted as soon as they join your voice channel"
+    },
+    "AutoDNDWhilePlaying": {
+        "file": "AutoDNDWhilePlaying.webm",
+        "alt": "Starting a game switches your status to Do Not Disturb by itself"
+    },
+    "AutoJumpToMessage": {
+        "file": "AutoJumpToMessage.webm",
+        "alt": "A new message in another channel opens that channel automatically"
+    },
+    "AutoReact": {
+        "file": "AutoReact.webm",
+        "alt": "Messages containing a chosen keyword get your reaction added automatically"
+    },
+    "AutoVaporwave": {
+        "file": "AutoVaporwave.webm",
+        "alt": "Every message you send turns into wide vaporwave text"
+    },
+    "AvatarGrabber": {
+        "file": "AvatarGrabber.webm",
+        "alt": "The /avatar command shows anyone's avatar at full resolution"
+    },
+    "BannersEverywhere": {
+        "file": "BannersEverywhere.webm",
+        "alt": "Each person in the member list gets their profile banner behind their name"
+    },
+    "BetterActivities": {
+        "file": "BetterActivities.webm",
+        "alt": "Small game and music icons appear next to each person in the member list"
+    },
+    "BetterAudioPlayer": {
+        "file": "BetterAudioPlayer.webm",
+        "alt": "Audio attachments get a moving spectrum and waveform visualizer while they play"
+    },
+    "BetterBanReasons": {
+        "file": "BetterBanReasons.webm",
+        "alt": "The ban window offers your own ready-made reasons to pick from"
+    },
+    "BetterBlockedUsers": {
+        "file": "BetterBlockedUsers.webm",
+        "alt": "The blocked users list in settings gets a search box that filters it as you type"
+    },
+    "BetterCommands": {
+        "file": "BetterCommands.webm",
+        "alt": "Picking a command fills in all of its options, not only the required ones"
+    },
+    "BetterFolders": {
+        "file": "BetterFolders.webm",
+        "alt": "Opening a server folder shows its servers in a second sidebar next to the server list"
+    },
+    "BetterForwards": {
+        "file": "BetterForwards.webm",
+        "alt": "The forward window lets you choose to forward the text, the attachments or both"
+    },
+    "BetterGifAltText": {
+        "file": "BetterGifAltText.webm",
+        "alt": "A GIF's description says what it shows instead of just GIF"
+    },
+    "BetterGifLoad": {
+        "file": "BetterGifLoad.webm",
+        "alt": "The GIF picker loads lighter previews that appear quickly"
+    },
+    "BetterGifPicker": {
+        "file": "BetterGifPicker.webm",
+        "alt": "The GIF picker opens on your favourite GIFs"
+    },
+    "BetterImageEditor": {
+        "file": "BetterImageEditor.webm",
+        "alt": "The avatar editor keeps a shelf of your recent pictures and remembers how each was cropped"
+    },
+    "BetterInvites": {
+        "file": "BetterInvites.webm",
+        "alt": "Invite embeds show when the invite expires and who sent it"
+    },
+    "BetterPlusReacts": {
+        "file": "BetterPlusReacts.webm",
+        "alt": "Typing +:fire: adds that reaction to the last message instead of sending text"
+    },
+    "BetterRoleContext": {
+        "file": "BetterRoleContext.webm",
+        "alt": "Right-clicking a role in a profile offers to copy its colour, edit it or view its members"
+    },
+    "BetterRoleDot": {
+        "file": "BetterRoleDot.webm",
+        "alt": "Clicking a role dot copies the role's colour, and names keep their colour next to the dot"
+    },
+    "BetterScreenShare": {
+        "file": "BetterScreenShare.webm",
+        "alt": "The screen share window offers higher resolutions, frame rates and bitrates without Nitro"
+    },
+    "BetterSessions": {
+        "file": "BetterSessions.webm",
+        "alt": "The devices page shows exact login times and lets you name each device"
+    },
+    "BetterSettings": {
+        "file": "BetterSettings.webm",
+        "alt": "Right-clicking the settings cog opens a menu of every settings page, sorted into categories"
+    },
+    "BetterUploadButton": {
+        "file": "BetterUploadButton.webm",
+        "alt": "Clicking the plus button opens the file picker at once; right-clicking it shows the menu"
+    },
+    "BiggerStreamPreview": {
+        "file": "BiggerStreamPreview.webm",
+        "alt": "Right-clicking someone who is streaming offers View Stream Preview, which opens the preview large"
+    },
+    "BlockKeywords": {
+        "file": "BlockKeywords.webm",
+        "alt": "Messages with a blocked word are hidden like messages from a blocked user"
+    },
+    "BlockKrisp": {
+        "file": "BlockKrisp.webm",
+        "alt": "Krisp noise suppression is never loaded, so the option shows as unavailable in voice settings"
+    },
+    "BlurNSFW": {
+        "file": "BlurNSFW.webm",
+        "alt": "Pictures in age-restricted channels are blurred until you hover over them"
+    },
+    "BoldText": {
+        "file": "BoldText.webm",
+        "alt": "The /bold command sends your message in bold Unicode letters that work anywhere"
+    },
+    "Bookmarks": {
+        "file": "Bookmarks.webm",
+        "alt": "A bookmark button on a message saves it, and the bookmarks list lets you jump back to it"
+    },
+    "BypassPinPrompt": {
+        "file": "BypassPinPrompt.webm",
+        "alt": "Pinning a message happens at once, without the confirmation window"
+    },
+    "BypassStatus": {
+        "file": "BypassStatus.webm",
+        "alt": "On Do Not Disturb, messages from a chosen friend still notify you"
+    },
+    "Calculator": {
+        "file": "Calculator.webm",
+        "alt": "The /calc command works out a sum and shows the answer in the chat"
+    },
+    "CallTimer": {
+        "file": "CallTimer.webm",
+        "alt": "A timer in the voice panel counts how long you've been in the call"
+    },
+    "CancelFriendRequest": {
+        "file": "CancelFriendRequest.webm",
+        "alt": "A profile with a pending friend request gets a button to cancel it"
+    },
+    "ChannelBadges": {
+        "file": "ChannelBadges.webm",
+        "alt": "Small labels next to channel names show their type, like announcement, rules or NSFW"
+    },
+    "ChannelTabs": {
+        "file": "ChannelTabs.webm",
+        "alt": "A row of tabs above the chat keeps your favourite channels one click away, like a browser"
+    },
+    "ChannelWallpaper": {
+        "file": "ChannelWallpaper.webm",
+        "alt": "The chat of one channel gets its own background picture"
+    },
+    "CharacterCounter": {
+        "file": "CharacterCounter.webm",
+        "alt": "A counter in the message box shows how many characters you've typed out of the limit"
+    },
+    "ChatGPT": {
+        "file": "ChatGPT.webm",
+        "alt": "The /chatgpt command asks ChatGPT a question and shows the answer in the chat"
+    },
+    "ChatGPTWriting": {
+        "file": "ChatGPTWriting.webm",
+        "alt": "A button in the chat bar fixes the grammar of your message and adds a matching emoji and kaomoji"
+    },
+    "ClanSwitcher": {
+        "file": "ClanSwitcher.webm",
+        "alt": "Your server tag next to your name keeps switching between the servers you chose"
+    },
+    "ClapText": {
+        "file": "ClapText.webm",
+        "alt": "The /clap command puts a clapping emoji between every word of your message"
+    },
+    "CleanChannelName": {
+        "file": "CleanChannelName.webm",
+        "alt": "Emoji and decorations are removed from channel names, leaving plain names"
+    },
+    "CleanerChannelGroups": {
+        "file": "CleanerChannelGroups.webm",
+        "alt": "A collapsed category hides all of its channels, even ones with unread messages"
+    },
+    "CleanerDiscord": {
+        "file": "CleanerDiscord.webm",
+        "alt": "Nitro, Shop, gift and sticker buttons fade away, leaving only the navigation and messages"
+    },
+    "ClearMyMessages": {
+        "file": "ClearMyMessages.webm",
+        "alt": "A Clear all button in a user's menu deletes every message you sent in that chat"
+    },
+    "ClickSparkles": {
+        "file": "ClickSparkles.webm",
+        "alt": "Every click sends a burst of small neon sparkles"
+    },
+    "ClientSideBlock": {
+        "file": "ClientSideBlock.webm",
+        "alt": "Everything from a chosen user disappears from your screen: messages and their place in the member list"
+    },
+    "ClientTheme": {
+        "file": "ClientTheme.webm",
+        "alt": "The whole Discord window takes on a colour of your choice"
+    },
+    "ClipsEnhancements": {
+        "file": "ClipsEnhancements.webm",
+        "alt": "The clips settings offer more frame rates and longer clip lengths, including a custom length"
+    },
+    "ClipUpload": {
+        "file": "ClipUpload.webm",
+        "alt": "A button uploads a video from your computer as a Discord clip"
+    },
+    "CollapsibleUI": {
+        "file": "CollapsibleUI.webm",
+        "alt": "The channel list and member list fold away to give the chat the whole window"
+    },
+    "ColorSighted": {
+        "file": "ColorSighted.webm",
+        "alt": "Status icons go back to plain coloured dots without the shapes for colour blindness"
+    },
+    "CommandPalette": {
+        "file": "CommandPalette.webm",
+        "alt": "Ctrl+Shift+P opens a search box that runs Discord actions by name"
+    },
+    "CompactCompose": {
+        "file": "CompactCompose.webm",
+        "alt": "The message box becomes slimmer and hides its extra buttons until you click into it"
+    },
+    "ConsoleJanitor": {
+        "file": "ConsoleJanitor.webm",
+        "alt": "The developer console is cleared of Discord's constant warnings and noise"
+    },
+    "ConsoleShortcuts": {
+        "file": "ConsoleShortcuts.webm",
+        "alt": "Short names in the developer console reach Discord's internals quickly, listed by shortcutList"
+    },
+    "ContentWarning": {
+        "file": "ContentWarning.webm",
+        "alt": "Words you choose are blurred in messages until you hover over them"
+    },
+    "CopyEmojiMarkdown": {
+        "file": "CopyEmojiMarkdown.webm",
+        "alt": "Right-clicking a custom emoji offers Copy Emoji Markdown, which copies its code"
+    },
+    "CopyFileContents": {
+        "file": "CopyFileContents.webm",
+        "alt": "A button on a text file attachment copies the whole file to your clipboard"
+    },
+    "CopyMediaLink": {
+        "file": "CopyMediaLink.webm",
+        "alt": "Right-clicking a picture offers Copy Media Link, which copies a working link to it"
+    },
+    "CopyProfileColors": {
+        "file": "CopyProfileColors.webm",
+        "alt": "A button on a profile copies its two gradient colours"
+    },
+    "CopyStatusUrls": {
+        "file": "CopyStatusUrls.webm",
+        "alt": "Right-clicking someone's status with a link offers to copy that link"
+    },
+    "CopyStickerLinks": {
+        "file": "CopyStickerLinks.webm",
+        "alt": "Right-clicking a sticker offers to copy or open its link"
+    },
+    "CopyUserMention": {
+        "file": "CopyUserMention.webm",
+        "alt": "Right-clicking a user offers Copy User Mention, which copies their mention code"
+    },
+    "CopyUserURLs": {
+        "file": "CopyUserURLs.webm",
+        "alt": "Right-clicking a user offers Copy User URL, which copies a link to their profile"
+    },
+    "CrashHandler": {
+        "file": "CrashHandler.webm",
+        "alt": "When Discord crashes, Endcord shows a short notice and brings it back without a restart"
+    },
+    "CtrlEnterSave": {
+        "file": "CtrlEnterSave.webm",
+        "alt": "A keyboard shortcut saves changed settings without clicking the Save button"
+    },
+    "CursorBuddy": {
+        "file": "CursorBuddy.webm",
+        "alt": "A little sprite follows the mouse pointer around Discord"
+    },
+    "CustomAppIcons": {
+        "file": "CustomAppIcons.webm",
+        "alt": "The app icon settings include icons you upload yourself"
+    },
+    "CustomCommands": {
+        "file": "CustomCommands.webm",
+        "alt": "Your own saved tags work like slash commands and send the text you saved"
+    },
+    "CustomCursor": {
+        "file": "CustomCursor.webm",
+        "alt": "Discord's mouse pointer is replaced with a custom one"
+    },
+    "CustomFolderIcons": {
+        "file": "CustomFolderIcons.webm",
+        "alt": "A server folder shows a custom picture instead of the small server icons"
+    },
+    "CustomIdle": {
+        "file": "CustomIdle.webm",
+        "alt": "A setting picks how many minutes pass before Discord marks you as idle, or turns idle off"
+    },
+    "CustomProfile": {
+        "file": "CustomProfile.webm",
+        "alt": "Your own profile gets a new name, picture, banner, badges and bio that only you see"
+    },
+    "CustomReactionButtons": {
+        "file": "CustomReactionButtons.webm",
+        "alt": "Extra buttons in a message's hover toolbar add your favourite reactions in one click"
+    },
+    "CustomRPC": {
+        "file": "CustomRPC.webm",
+        "alt": "Your profile shows a rich presence you made yourself, with your own name, text, picture and buttons"
+    },
+    "CustomSounds": {
+        "file": "CustomSounds.webm",
+        "alt": "Each Discord sound can be replaced with your own file and previewed"
+    },
+    "CustomStatusTimeouts": {
+        "file": "CustomStatusTimeouts.webm",
+        "alt": "The status menu offers extra durations like 5 minutes or 2 days"
+    },
+    "CustomStreamPreview": {
+        "file": "CustomStreamPreview.webm",
+        "alt": "The preview others see of your stream is a picture you chose"
+    },
+    "CustomTimestamps": {
+        "file": "CustomTimestamps.webm",
+        "alt": "Message times switch to a format you choose, like the full date with seconds"
+    },
+    "CustomUserColors": {
+        "file": "CustomUserColors.webm",
+        "alt": "Right-clicking a user lets you give their name a colour that shows everywhere"
+    },
+    "Dearrow": {
+        "file": "Dearrow.webm",
+        "alt": "A YouTube embed's shouty title and thumbnail are replaced with a plain, accurate one"
+    },
+    "Declutter": {
+        "file": "Declutter.webm",
+        "alt": "Profile effects, the shop and boost prompts disappear, leaving a cleaner Discord"
+    },
+    "DecodeBase64": {
+        "file": "DecodeBase64.webm",
+        "alt": "Right-clicking a message of Base64 text decodes it and shows the readable text"
+    },
+    "Decor": {
+        "file": "Decor.webm",
+        "alt": "A custom avatar decoration made by the community appears around your avatar"
+    },
+    "DefaultStatusForever": {
+        "file": "DefaultStatusForever.webm",
+        "alt": "Setting a custom status chooses Don't clear as the duration by default"
+    },
+    "DevCompanion": {
+        "file": "DevCompanion.webm",
+        "alt": "A code editor linked to Discord jumps to and tests plugin patches against the running client"
+    },
+    "DirectFileDownload": {
+        "file": "DirectFileDownload.webm",
+        "alt": "Clicking the download button saves the file straight away instead of opening a browser"
+    },
+    "DisableCallIdle": {
+        "file": "DisableCallIdle.webm",
+        "alt": "Sitting alone in a call no longer gets you disconnected after a few minutes"
+    },
+    "DisableCameras": {
+        "file": "DisableCameras.webm",
+        "alt": "Joining a call keeps other people's cameras switched off until you choose to watch"
+    },
+    "DisableDeepLinks": {
+        "file": "DisableDeepLinks.webm",
+        "alt": "Opening a Discord link in the browser no longer tries to force the desktop app to open"
+    },
+    "DiscordDevBanner": {
+        "file": "DiscordDevBanner.webm",
+        "alt": "A thin developer banner across the top of Discord shows the build number"
+    },
+    "DmReadReceipt": {
+        "file": "DmReadReceipt.webm",
+        "alt": "A small Seen label appears under your last message once the other person has read it"
+    },
+    "DontRoundMyTimestamps": {
+        "file": "DontRoundMyTimestamps.webm",
+        "alt": "A relative time of 7.6 years shows as 7 years instead of being rounded up to 8"
+    },
+    "DoubleEmoji": {
+        "file": "DoubleEmoji.webm",
+        "alt": "The emoji picker stays open while you pick several emoji, and each chosen one gets a blue border"
+    },
+    "DownloadAllAttachments": {
+        "file": "DownloadAllAttachments.webm",
+        "alt": "A button on a message with several attachments downloads all of them at once"
+    },
+    "DragFavoriteEmotes": {
+        "file": "DragFavoriteEmotes.webm",
+        "alt": "Favourite emoji in the picker can be dragged into the order you want"
+    },
+    "Dragify": {
+        "file": "Dragify.webm",
+        "alt": "Dragging a person from the member list into the chat box inserts a mention of them"
+    },
+    "EmbeddedURLs": {
+        "file": "EmbeddedURLs.webm",
+        "alt": "A plain social media link is sent in a form that shows the full post right in Discord"
+    },
+    "EncryptedMessage": {
+        "file": "EncryptedMessage.webm",
+        "alt": "A message is sent scrambled, and people with the key can decrypt it from its menu"
+    },
+    "EndcordToolbox": {
+        "file": "EndcordToolbox.webm",
+        "alt": "Clicking the panda in the title bar opens the Endcord Control Center with quick actions"
+    },
+    "EventLogs": {
+        "file": "EventLogs.webm",
+        "alt": "A log window lists deleted and edited messages, voice joins, friend changes and server events"
+    },
+    "ExitSounds": {
+        "file": "ExitSounds.webm",
+        "alt": "Leaving a voice channel plays a soundboard sound for everyone"
+    },
+    "Experiments": {
+        "file": "Experiments.webm",
+        "alt": "An Experiments page in settings lets you turn on Discord's hidden test features"
+    },
+    "ExportDM": {
+        "file": "ExportDM.webm",
+        "alt": "A whole DM conversation, with pictures and reactions, is exported to a file"
+    },
+    "ExportMessages": {
+        "file": "ExportMessages.webm",
+        "alt": "Right-clicking a message offers Export Message, which saves it to a file"
+    },
+    "ExpressionCloner": {
+        "file": "ExpressionCloner.webm",
+        "alt": "Right-clicking an emoji from another server offers Clone, which adds it to your own server"
+    },
+    "F8Break": {
+        "file": "F8Break.webm",
+        "alt": "With the developer tools open, pressing F8 freezes Discord in the debugger"
+    },
+    "FakeConnections": {
+        "file": "FakeConnections.webm",
+        "alt": "Your own profile shows extra connected accounts that only you can see"
+    },
+    "FakeDeafen": {
+        "file": "FakeDeafen.webm",
+        "alt": "Other people see you as deafened, while you can still hear everyone"
+    },
+    "FakeDM": {
+        "file": "FakeDM.webm",
+        "alt": "A button in the message bar adds a made-up message to a DM, only on your screen"
+    },
+    "FakeFriends": {
+        "file": "FakeFriends.webm",
+        "alt": "Made-up friends and friend requests appear in your Friends list, only on your screen"
+    },
+    "FakeLag": {
+        "file": "FakeLag.webm",
+        "alt": "Pressing F7 shows Discord's connecting screen, and pressing it again hides it"
+    },
+    "FakeMute": {
+        "file": "FakeMute.webm",
+        "alt": "Other people see your microphone as muted while it keeps working"
+    },
+    "FakeNitroAge": {
+        "file": "FakeNitroAge.webm",
+        "alt": "Your profile's Nitro badge shows how long you've had Nitro, set to any length you pick"
+    },
+    "FakeProfileThemes": {
+        "file": "FakeProfileThemes.webm",
+        "alt": "A profile shows theme colours hidden invisibly in the bio, so others with the plugin see them too"
+    },
+    "FakeTag": {
+        "file": "FakeTag.webm",
+        "alt": "A made-up server tag and badge appear next to your name, only on your screen"
+    },
+    "FastDeleteChannels": {
+        "file": "FastDeleteChannels.webm",
+        "alt": "Holding a key shows trash icons next to channels, so one click deletes a channel"
+    },
+    "FastGifPicker": {
+        "file": "FastGifPicker.webm",
+        "alt": "GIF previews in the picker load quickly and a few at a time, with failed ones retried"
+    },
+    "FavoriteAnything": {
+        "file": "FavoriteAnything.webm",
+        "alt": "A star on any attachment saves it to a favourites tab for later"
+    },
+    "FavoriteEmojiFirst": {
+        "file": "FavoriteEmojiFirst.webm",
+        "alt": "When typing an emoji name, your favourite emoji are listed first"
+    },
+    "FileSplitter": {
+        "file": "FileSplitter.webm",
+        "alt": "A file too big for Discord is split into parts that upload separately"
+    },
+    "FileUpload": {
+        "file": "FileUpload.webm",
+        "alt": "A file is uploaded to your own hosting service and its link is sent in the chat"
+    },
+    "FileViewer": {
+        "file": "FileViewer.webm",
+        "alt": "PDF and Office files get a preview right in the chat"
+    },
+    "FindReply": {
+        "file": "FindReply.webm",
+        "alt": "A button on a message jumps to the first reply to it"
+    },
+    "FixCodeblockGap": {
+        "file": "FixCodeblockGap.webm",
+        "alt": "The extra empty space under a code block in a message is removed"
+    },
+    "FixFileExtensions": {
+        "file": "FixFileExtensions.webm",
+        "alt": "A file with an unusual extension is renamed to a format Discord can preview"
+    },
+    "FixImagesQuality": {
+        "file": "FixImagesQuality.webm",
+        "alt": "A blurry, compressed picture in the chat is loaded at its full original quality"
+    },
+    "FixScreenshare": {
+        "file": "FixScreenshare.webm",
+        "alt": "A screen share keeps running after a media error, instead of Discord crashing and reloading"
+    },
+    "FixSpotifyEmbeds": {
+        "file": "FixSpotifyEmbeds.webm",
+        "alt": "A Spotify embed plays at a volume you set instead of very loud"
+    },
+    "FixYoutubeEmbeds": {
+        "file": "FixYoutubeEmbeds.webm",
+        "alt": "A YouTube video blocked from playing in Discord plays normally"
+    },
+    "FollowUser": {
+        "file": "FollowUser.webm",
+        "alt": "After choosing Follow on someone, you join whatever voice channel they move to"
+    },
+    "FontLoader": {
+        "file": "FontLoader.webm",
+        "alt": "Discord's text switches to a Google Font you picked"
+    },
+    "ForceOwnerCrown": {
+        "file": "ForceOwnerCrown.webm",
+        "alt": "A crown shows next to the server owner's name, even in large servers"
+    },
+    "FrequentQuickSwitcher": {
+        "file": "FrequentQuickSwitcher.webm",
+        "alt": "The quick switcher shows the channels you visit most before you type anything"
+    },
+    "FriendCodes": {
+        "file": "FriendCodes.webm",
+        "alt": "A friend code you create can be shared so others can add you as a friend"
+    },
+    "FriendshipRanks": {
+        "file": "FriendshipRanks.webm",
+        "alt": "A badge on a friend's profile shows how long you have been friends"
+    },
+    "FriendTags": {
+        "file": "FriendTags.webm",
+        "alt": "Typing & and a tag in the quick switcher lists only the friends you gave that tag"
+    },
+    "FullSearchContext": {
+        "file": "FullSearchContext.webm",
+        "alt": "Right-clicking a message in search results shows the full message menu"
+    },
+    "FullUserInChatbox": {
+        "file": "FullUserInChatbox.webm",
+        "alt": "A mention in the message box can be clicked to open that person's profile"
+    },
+    "FullVCPFP": {
+        "file": "FullVCPFP.webm",
+        "alt": "In a voice call, each person's avatar fills their whole tile"
+    },
+    "GameActivityToggle": {
+        "file": "GameActivityToggle.webm",
+        "alt": "A button next to mute and deafen turns showing your current game on or off"
+    },
+    "GameMode": {
+        "file": "GameMode.webm",
+        "alt": "When a game starts, Discord limits how often it redraws, pauses its animations and frees memory"
+    },
+    "Ghosted": {
+        "file": "Ghosted.webm",
+        "alt": "A small ghost appears for DMs you haven't answered, with a counter above the server list"
+    },
+    "GifCollections": {
+        "file": "GifCollections.webm",
+        "alt": "Favourite GIFs can be sorted into your own named collections"
+    },
+    "GifMaker": {
+        "file": "GifMaker.webm",
+        "alt": "A video in the chat is turned into a captioned GIF"
+    },
+    "GifPaste": {
+        "file": "GifPaste.webm",
+        "alt": "Picking a GIF puts its link in the message box so you can add text before sending"
+    },
+    "GifProviderSwitcher": {
+        "file": "GifProviderSwitcher.webm",
+        "alt": "The GIF picker searches Tenor or Giphy instead of Discord's default provider"
+    },
+    "GitHubRepos": {
+        "file": "GitHubRepos.webm",
+        "alt": "A profile shows the person's public GitHub repositories with stars"
+    },
+    "GlobalBadges": {
+        "file": "GlobalBadges.webm",
+        "alt": "Badges from other client mods show on people's profiles"
+    },
+    "GoogleThat": {
+        "file": "GoogleThat.webm",
+        "alt": "The /google command sends a search link for your question"
+    },
+    "GpuBinder": {
+        "file": "GpuBinder.webm",
+        "alt": "A setting keeps Discord on the graphics card you choose, even after updates"
+    },
+    "GreetStickerPicker": {
+        "file": "GreetStickerPicker.webm",
+        "alt": "Right-clicking Wave to say hi lets you choose which greeting sticker to send"
+    },
+    "GuildPickerDumper": {
+        "file": "GuildPickerDumper.webm",
+        "alt": "Right-clicking a server offers to download all of its emoji and stickers as a zip"
+    },
+    "HideChatButtons": {
+        "file": "HideChatButtons.webm",
+        "alt": "A button folds away the gift, sticker and emoji buttons next to the message box"
+    },
+    "HideMedia": {
+        "file": "HideMedia.webm",
+        "alt": "A hover button hides the attachments and embeds of one message"
+    },
+    "HideMessages": {
+        "file": "HideMessages.webm",
+        "alt": "A Hide button removes a message from your view until Discord restarts"
+    },
+    "HideServers": {
+        "file": "HideServers.webm",
+        "alt": "Right-clicking a server and choosing Hide Server removes it from the server list"
+    },
+    "HideSuggestedChannels": {
+        "file": "HideSuggestedChannels.webm",
+        "alt": "The Suggested channels section at the top of the channel list goes away"
+    },
+    "HomeTyping": {
+        "file": "HomeTyping.webm",
+        "alt": "The home button turns into a typing indicator while someone in your DMs is typing"
+    },
+    "HopOn": {
+        "file": "HopOn.webm",
+        "alt": "A message matching your pattern, like 'hop on', opens the link you set, such as a game"
+    },
+    "Husk": {
+        "file": "Husk.webm",
+        "alt": "A Husk button on messages reacts with the husk emoji in one click"
+    },
+    "HypeSquadSwitcher": {
+        "file": "HypeSquadSwitcher.webm",
+        "alt": "A command switches your HypeSquad house badge or removes it"
+    },
+    "IconViewer": {
+        "file": "IconViewer.webm",
+        "alt": "A settings tab shows every icon in Discord with its name, for theme and plugin makers"
+    },
+    "ID Translater": {
+        "file": "ID-Translater.webm",
+        "alt": "Raw Discord ID numbers in a message become clickable user and channel mentions"
+    },
+    "IdleAutoRestart": {
+        "file": "IdleAutoRestart.webm",
+        "alt": "After you've been away for a while and aren't in voice, Discord restarts by itself to stay fresh"
+    },
+    "IgnoreActivities": {
+        "file": "IgnoreActivities.webm",
+        "alt": "Chosen games stop showing as your activity, while others still show"
+    },
+    "IgnoreCalls": {
+        "file": "IgnoreCalls.webm",
+        "alt": "Calls from a chosen person are ignored instead of ringing"
+    },
+    "ImageFilename": {
+        "file": "ImageFilename.webm",
+        "alt": "Hovering over a picture shows its file name"
+    },
+    "ImageLink": {
+        "file": "ImageLink.webm",
+        "alt": "A message that is only an image link keeps showing the link above the picture"
+    },
+    "ImplicitRelationships": {
+        "file": "ImplicitRelationships.webm",
+        "alt": "The Friends page gets a tab listing people you talk to a lot but haven't added"
+    },
+    "InRole": {
+        "file": "InRole.webm",
+        "alt": "The /inrole command lists everyone who has a role"
+    },
+    "InstantScreenshare": {
+        "file": "InstantScreenshare.webm",
+        "alt": "Joining a voice channel starts sharing your screen straight away"
+    },
+    "InvisibleChat": {
+        "file": "InvisibleChat.webm",
+        "alt": "A normal-looking message carries a hidden one that people with the password can reveal"
+    },
+    "InviteDefaults": {
+        "file": "InviteDefaults.webm",
+        "alt": "The invite window opens with your own default expiry and use limit"
+    },
+    "IrcColors": {
+        "file": "IrcColors.webm",
+        "alt": "Every person's name in the chat gets its own colour, like in IRC clients"
+    },
+    "IRememberYou": {
+        "file": "IRememberYou.webm",
+        "alt": "A list remembers everyone you've talked with and every server you've been in, in case you lose them"
+    },
+    "iLoveSpam": {
+        "file": "iLoveSpam.webm",
+        "alt": "Messages from people Discord marks as likely spammers are shown instead of hidden"
+    },
+    "Jumpscare": {
+        "file": "Jumpscare.webm",
+        "alt": "Opening a channel sometimes shows a sudden scary picture, at a chance you set"
+    },
+    "JumpTo": {
+        "file": "JumpTo.webm",
+        "alt": "Right-clicking a channel offers to jump to its first or latest message"
+    },
+    "KeepCurrentChannel": {
+        "file": "KeepCurrentChannel.webm",
+        "alt": "After Discord reloads, you're back in the channel you were reading"
+    },
+    "KeyboardNavigation": {
+        "file": "KeyboardNavigation.webm",
+        "alt": "A highlight moves through channels and messages as you press the arrow keys"
+    },
+    "KeyboardSounds": {
+        "file": "KeyboardSounds.webm",
+        "alt": "Each key you press while typing plays a clicky sound effect"
+    },
+    "KeywordNotify": {
+        "file": "KeywordNotify.webm",
+        "alt": "A message containing a word you're watching for sends you a notification"
+    },
+    "LastActive": {
+        "file": "LastActive.webm",
+        "alt": "Right-clicking someone offers to jump to their last message in the channel"
+    },
+    "LastOnline": {
+        "file": "LastOnline.webm",
+        "alt": "People in the DM list who are offline show when they were last online"
+    },
+    "LeetText": {
+        "file": "LeetText.webm",
+        "alt": "The /leet command rewrites your message in 1337 speak"
+    },
+    "LimitlessScreenshare": {
+        "file": "LimitlessScreenshare.webm",
+        "alt": "Sliders in the screen share window set any resolution and frame rate"
+    },
+    "LiveWallpaper": {
+        "file": "LiveWallpaper.webm",
+        "alt": "A moving wallpaper plays behind the whole Discord window"
+    },
+    "LoadingQuotes": {
+        "file": "LoadingQuotes.webm",
+        "alt": "The loading screen shows different quotes, including your own"
+    },
+    "LoginWithQR": {
+        "file": "LoginWithQR.webm",
+        "alt": "Scanning another device's login QR code from Discord logs that device into your account"
+    },
+    "MarkdownTables": {
+        "file": "MarkdownTables.webm",
+        "alt": "A table written in markdown shows as a real table in the message"
+    },
+    "MediaPlaybackSpeed": {
+        "file": "MediaPlaybackSpeed.webm",
+        "alt": "Videos and audio in the chat get a playback speed control"
+    },
+    "MemberCount": {
+        "file": "MemberCount.webm",
+        "alt": "The member list header shows how many people are online, in total and in voice"
+    },
+    "MentionAvatars": {
+        "file": "MentionAvatars.webm",
+        "alt": "Mentions in messages show the person's avatar next to their name"
+    },
+    "MentionColors": {
+        "file": "MentionColors.webm",
+        "alt": "Personal mentions show a green badge while @everyone pings stay red"
+    },
+    "MessageBurst": {
+        "file": "MessageBurst.webm",
+        "alt": "Messages you send in quick succession are joined into your previous message"
+    },
+    "MessageColors": {
+        "file": "MessageColors.webm",
+        "alt": "Colour codes like #FF0042 in messages show a small swatch of the colour"
+    },
+    "MessageFetchTimer": {
+        "file": "MessageFetchTimer.webm",
+        "alt": "Opening a channel shows how long its messages took to load"
+    },
+    "MessageLatency": {
+        "file": "MessageLatency.webm",
+        "alt": "Messages that took several seconds to send get a small clock showing the delay"
+    },
+    "MessageLinkEmbeds": {
+        "file": "MessageLinkEmbeds.webm",
+        "alt": "A link to another message shows a preview of that message"
+    },
+    "MessageLinkTooltip": {
+        "file": "MessageLinkTooltip.webm",
+        "alt": "Hovering a message link or a reply shows a preview of the message it points to"
+    },
+    "MessageLoggerEnhanced": {
+        "file": "MessageLoggerEnhanced.webm",
+        "alt": "A log keeps every edit of a message and catches ghost pings from deleted mentions"
+    },
+    "MessageNotifier": {
+        "file": "MessageNotifier.webm",
+        "alt": "When a chosen person sends a message anywhere, a notification pops up"
+    },
+    "MessagePeek": {
+        "file": "MessagePeek.webm",
+        "alt": "The DM list shows each conversation's last message and when it was sent"
+    },
+    "MessageReminders": {
+        "file": "MessageReminders.webm",
+        "alt": "Right-click a message to be reminded about it later; a notification brings you back to it"
+    },
+    "MessageTags": {
+        "file": "MessageTags.webm",
+        "alt": "Messages get your own labels like TODO and Important, shown as chips and listed in the toolbox"
+    },
+    "MessageTranslate": {
+        "file": "MessageTranslate.webm",
+        "alt": "Messages in other languages are translated into yours automatically"
+    },
+    "MicLoopbackTester": {
+        "file": "MicLoopbackTester.webm",
+        "alt": "A button in the user panel lets you hear your own microphone to test it"
+    },
+    "MiddleClickTweaks": {
+        "file": "MiddleClickTweaks.webm",
+        "alt": "Middle-clicking no longer pastes into the chat box by accident"
+    },
+    "MoreCommands": {
+        "file": "MoreCommands.webm",
+        "alt": "Lots of fun commands like rolling a dice, flipping a coin and lenny faces"
+    },
+    "MoreJumboEmoji": {
+        "file": "MoreJumboEmoji.webm",
+        "alt": "A message made only of many emoji shows every one of them big"
+    },
+    "MoreQuickReactions": {
+        "file": "MoreQuickReactions.webm",
+        "alt": "The hover menu on messages offers more quick reactions than the usual three"
+    },
+    "MoreStickers": {
+        "file": "MoreStickers.webm",
+        "alt": "The sticker picker gains sticker packs from other apps like LINE"
+    },
+    "MotionBlur": {
+        "file": "MotionBlur.webm",
+        "alt": "Scrolling and switching channels get a soft motion blur"
+    },
+    "Moyai": {
+        "file": "Moyai.webm",
+        "alt": "Whenever someone sends or reacts with the moai emoji, a booming sound plays"
+    },
+    "MusicControls": {
+        "file": "MusicControls.webm",
+        "alt": "A music player above your account panel controls Spotify and shows the song's lyrics"
+    },
+    "MusicRichPresence": {
+        "file": "MusicRichPresence.webm",
+        "alt": "Your profile shows the song you're scrobbling to Last.fm or ListenBrainz"
+    },
+    "MutualGroupDMs": {
+        "file": "MutualGroupDMs.webm",
+        "alt": "A profile lists the group chats you share with that person"
+    },
+    "MutualServerMembers": {
+        "file": "MutualServerMembers.webm",
+        "alt": "Comparing two servers lists the members who are in both"
+    },
+    "NeonGlow": {
+        "file": "NeonGlow.webm",
+        "alt": "Avatars, links and buttons glow with a neon light when you hover them"
+    },
+    "NeverPausePreviews": {
+        "file": "NeverPausePreviews.webm",
+        "alt": "Stream previews keep playing even when Discord isn't the active window"
+    },
+    "NewGuildSettings": {
+        "file": "NewGuildSettings.webm",
+        "alt": "Joining a new server mutes it and turns off @everyone pings automatically"
+    },
+    "NewPluginsManager": {
+        "file": "NewPluginsManager.webm",
+        "alt": "After an update, a window lists the plugins that were just added to Endcord"
+    },
+    "NoBlockedMessages": {
+        "file": "NoBlockedMessages.webm",
+        "alt": "Messages from blocked people disappear completely, without the '1 blocked message' line"
+    },
+    "NoDevtoolsWarning": {
+        "file": "NoDevtoolsWarning.webm",
+        "alt": "The big 'Hold Up' warning in the developer console is gone"
+    },
+    "NoDMWhileStreaming": {
+        "file": "NoDMWhileStreaming.webm",
+        "alt": "While you stream, DM notifications and the DM list are hidden from view"
+    },
+    "NoDraftLengthLimit": {
+        "file": "NoDraftLengthLimit.webm",
+        "alt": "Long unsent drafts are kept in full instead of being cut at 4,500 characters"
+    },
+    "NoF1": {
+        "file": "NoF1.webm",
+        "alt": "Pressing F1 no longer opens Discord's help page"
+    },
+    "NoMaskedUrlPaste": {
+        "file": "NoMaskedUrlPaste.webm",
+        "alt": "Pasting a link over selected text pastes the plain link instead of turning the text into a masked link"
+    },
+    "NoMiddleClickPaste": {
+        "file": "NoMiddleClickPaste.webm",
+        "alt": "On Linux, middle-clicking no longer pastes text into the chat box or scrambles spellcheck"
+    },
+    "NoMosaic": {
+        "file": "NoMosaic.webm",
+        "alt": "Several pictures in one message show full size one after another instead of as a cropped grid"
+    },
+    "NoNitroUpsell": {
+        "file": "NoNitroUpsell.webm",
+        "alt": "Get Nitro buttons and prompts across Discord disappear"
+    },
+    "NoOnboardingDelay": {
+        "file": "NoOnboardingDelay.webm",
+        "alt": "A server's onboarding steps continue at once instead of making you wait"
+    },
+    "NoPendingCount": {
+        "file": "NoPendingCount.webm",
+        "alt": "The red count for friend requests, message requests and Nitro offers disappears"
+    },
+    "NoProfileThemes": {
+        "file": "NoProfileThemes.webm",
+        "alt": "Other people's coloured Nitro profile themes go back to the plain look"
+    },
+    "NoPushToTalk": {
+        "file": "NoPushToTalk.webm",
+        "alt": "You can use voice activity in channels that require push to talk"
+    },
+    "NoReplyMention": {
+        "file": "NoReplyMention.webm",
+        "alt": "Replying to a message has the mention ping switched off by default"
+    },
+    "NormalizeMessageLinks": {
+        "file": "NormalizeMessageLinks.webm",
+        "alt": "A message link copied from Discord Canary or PTB is sent as a normal discord.com link"
+    },
+    "NoRoleHeaders": {
+        "file": "NoRoleHeaders.webm",
+        "alt": "The member list drops its role headings and lists everyone together"
+    },
+    "NoRPC": {
+        "file": "NoRPC.webm",
+        "alt": "Discord's local rich presence server is turned off, so other apps can't talk to it"
+    },
+    "NoServerEmojis": {
+        "file": "NoServerEmojis.webm",
+        "alt": "Typing an emoji name suggests only standard emoji, not the server's custom ones"
+    },
+    "NoSystemBadge": {
+        "file": "NoSystemBadge.webm",
+        "alt": "The red unread count on Discord's taskbar icon goes away"
+    },
+    "NoSystemHelper": {
+        "file": "NoSystemHelper.webm",
+        "alt": "Discord stops asking for administrator permission to install its System Helper"
+    },
+    "NotificationTitle": {
+        "file": "NotificationTitle.webm",
+        "alt": "Desktop notifications say which server and channel a message came from"
+    },
+    "NotificationVolume": {
+        "file": "NotificationVolume.webm",
+        "alt": "A separate slider sets how loud notification sounds are, apart from voice"
+    },
+    "NoTypingAnimation": {
+        "file": "NoTypingAnimation.webm",
+        "alt": "The bouncing dots of the typing indicator stop moving to save processing power"
+    },
+    "NoUnblockToJump": {
+        "file": "NoUnblockToJump.webm",
+        "alt": "Jumping to a reply from a blocked user works without unblocking them first"
+    },
+    "OnePingPerDM": {
+        "file": "OnePingPerDM.webm",
+        "alt": "Several messages in a row from one person play the notification sound only once"
+    },
+    "OpenInApp": {
+        "file": "OpenInApp.webm",
+        "alt": "Spotify and Steam links open in their own apps instead of the browser"
+    },
+    "OverrideForumDefaults": {
+        "file": "OverrideForumDefaults.webm",
+        "alt": "Forum channels open in the layout and sort order you prefer"
+    },
+    "PartyMode": {
+        "file": "PartyMode.webm",
+        "alt": "Party mode fills Discord with confetti and makes it shake with every keystroke"
+    },
+    "PauseInvitesForever": {
+        "file": "PauseInvitesForever.webm",
+        "alt": "The server invite settings get back the option to pause invites with no end date"
+    },
+    "PdfViewer": {
+        "file": "PdfViewer.webm",
+        "alt": "A PDF attachment can be previewed inside the chat without downloading it"
+    },
+    "PermissionFreeWill": {
+        "file": "PermissionFreeWill.webm",
+        "alt": "Channel permission switches that Discord greys out on your screen can be changed"
+    },
+    "PermissionsViewer": {
+        "file": "PermissionsViewer.webm",
+        "alt": "A profile lists every permission the person has in the server and which role gives it"
+    },
+    "petpet": {
+        "file": "petpet.webm",
+        "alt": "The /petpet command makes a GIF of a hand patting someone's avatar"
+    },
+    "PictureInPicture": {
+        "file": "PictureInPicture.webm",
+        "alt": "A button next to download pops a video out into a small floating window"
+    },
+    "PinDMs": {
+        "file": "PinDMs.webm",
+        "alt": "Right-clicking a DM offers Pin DM, which keeps it in a pinned group at the top of the list"
+    },
+    "PingNotifications": {
+        "file": "PingNotifications.webm",
+        "alt": "Mentions pop up as clear notifications showing who pinged you, where and the full message"
+    },
+    "PinIcon": {
+        "file": "PinIcon.webm",
+        "alt": "Pinned messages show a small pin icon next to their time"
+    },
+    "PlainFolderIcon": {
+        "file": "PlainFolderIcon.webm",
+        "alt": "Server folders show a plain folder icon instead of tiny server pictures"
+    },
+    "PlatformSpoofer": {
+        "file": "PlatformSpoofer.webm",
+        "alt": "Other people see you as being on a phone or the web, whatever device you really use"
+    },
+    "PolishWording": {
+        "file": "PolishWording.webm",
+        "alt": "A message is sent with capital letters, apostrophes and punctuation fixed"
+    },
+    "PreviewMessage": {
+        "file": "PreviewMessage.webm",
+        "alt": "A button shows how your message will look before you send it"
+    },
+    "ProfileSets": {
+        "file": "ProfileSets.webm",
+        "alt": "Saved profile presets let you switch your whole profile look in one click"
+    },
+    "PullUserIntoVoice": {
+        "file": "PullUserIntoVoice.webm",
+        "alt": "Someone who leaves your voice channel is pulled back into it again and again"
+    },
+    "Questify": {
+        "file": "Questify.webm",
+        "alt": "The Quests page and quest popups are tidied up, with the option to hide Quests altogether"
+    },
+    "QuickDelete": {
+        "file": "QuickDelete.webm",
+        "alt": "A keyboard shortcut deletes your last message in the channel"
+    },
+    "QuickMention": {
+        "file": "QuickMention.webm",
+        "alt": "A button in a message's hover menu puts a mention of its author in the message box"
+    },
+    "QuickReply": {
+        "file": "QuickReply.webm",
+        "alt": "Ctrl and the arrow keys pick a message to reply to without using the mouse"
+    },
+    "QuickThemeSwitcher": {
+        "file": "QuickThemeSwitcher.webm",
+        "alt": "A keyboard shortcut cycles through your themes"
+    },
+    "Quoter": {
+        "file": "Quoter.webm",
+        "alt": "Right-clicking a message turns it into an inspirational quote picture with the author's avatar"
+    },
+    "RandomVoice": {
+        "file": "RandomVoice.webm",
+        "alt": "A button next to mute joins a random voice channel"
+    },
+    "ReactErrorDecoder": {
+        "file": "ReactErrorDecoder.webm",
+        "alt": "A 'Minified React error' in the console is replaced with the full readable error message"
+    },
+    "ReactionTimestamps": {
+        "file": "ReactionTimestamps.webm",
+        "alt": "The list of who reacted shows when each person added their reaction"
+    },
+    "ReadableSpoilers": {
+        "file": "ReadableSpoilers.webm",
+        "alt": "Hidden spoilers get a soft neon outline so they're easy to spot"
+    },
+    "RealtimeTimestamps": {
+        "file": "RealtimeTimestamps.webm",
+        "alt": "Message times show seconds and keep ticking live"
+    },
+    "RecentChannelSwitcher": {
+        "file": "RecentChannelSwitcher.webm",
+        "alt": "Ctrl+Tab shows previews of recently opened channels and DMs to switch between"
+    },
+    "RecordUrMic": {
+        "file": "RecordUrMic.webm",
+        "alt": "Your own microphone is recorded while you're in voice and saved as a file"
+    },
+    "RemindMe": {
+        "file": "RemindMe.webm",
+        "alt": "The /remindme command sets a reminder that arrives later as a desktop notification"
+    },
+    "RemixRevived": {
+        "file": "RemixRevived.webm",
+        "alt": "Right-clicking a picture offers Remix, which opens an editor to draw and add stickers on it"
+    },
+    "ReorderAttachments": {
+        "file": "ReorderAttachments.webm",
+        "alt": "Attachments waiting to be sent can be dragged into a different order"
+    },
+    "RepeatMessages": {
+        "file": "RepeatMessages.webm",
+        "alt": "Right-clicking a message offers Repeat, which sends the same message again"
+    },
+    "ReplaceGoogleSearch": {
+        "file": "ReplaceGoogleSearch.webm",
+        "alt": "Selecting text and right-clicking offers to search it with the search engines you choose"
+    },
+    "ReplyPingControl": {
+        "file": "ReplyPingControl.webm",
+        "alt": "Settings choose whether replies always or never ping, with lists of exceptions"
+    },
+    "RevealAllSpoilers": {
+        "file": "RevealAllSpoilers.webm",
+        "alt": "Ctrl-clicking one spoiler reveals every spoiler in the message"
+    },
+    "ReverseImageSearch": {
+        "file": "ReverseImageSearch.webm",
+        "alt": "Right-clicking a picture offers to look it up on reverse image search engines"
+    },
+    "ReverseText": {
+        "file": "ReverseText.webm",
+        "alt": "The /reverse command sends your message backwards"
+    },
+    "ReviewDB": {
+        "file": "ReviewDB.webm",
+        "alt": "A profile shows reviews other people wrote about that user, with a box to add your own"
+    },
+    "RichMagnetLinks": {
+        "file": "RichMagnetLinks.webm",
+        "alt": "A magnet link shows as a tidy card with the file name and size instead of a long string"
+    },
+    "RichPresence": {
+        "file": "RichPresence.webm",
+        "alt": "Your profile shows what you're doing in apps like osu!, Jellyfin or AudioBookShelf"
+    },
+    "RoleColorEverywhere": {
+        "file": "RoleColorEverywhere.webm",
+        "alt": "Role colours show on mentions, the typing indicator and the voice list too"
+    },
+    "RPCEditor": {
+        "file": "RPCEditor.webm",
+        "alt": "Any rich presence can be edited, for example turning 'Playing' into 'Listening to' with your own text"
+    },
+    "SaveFavoriteGIFs": {
+        "file": "SaveFavoriteGIFs.webm",
+        "alt": "A command saves the links of all your favourite GIFs to a text file"
+    },
+    "ScheduledMessages": {
+        "file": "ScheduledMessages.webm",
+        "alt": "A message you schedule waits as a faded preview and is sent automatically at the set time"
+    },
+    "SearchFix": {
+        "file": "SearchFix.webm",
+        "alt": "Search shows results again instead of the 'We dropped the magnifying glass' error"
+    },
+    "SecretRingToneEnabler": {
+        "file": "SecretRingToneEnabler.webm",
+        "alt": "Incoming calls always play Discord's rare secret ringtone"
+    },
+    "SedEnhanced": {
+        "file": "SedEnhanced.webm",
+        "alt": "Sending s/old/new edits your last message, with support for full patterns"
+    },
+    "SekaiStickers": {
+        "file": "SekaiStickers.webm",
+        "alt": "A sticker maker creates character stickers with your own text, curve and size"
+    },
+    "SelfDestruct": {
+        "file": "SelfDestruct.webm",
+        "alt": "Messages you send with self-destruct on show a red timer and are deleted when it runs out"
+    },
+    "ServerBackup": {
+        "file": "ServerBackup.webm",
+        "alt": "A server's channels, roles and permissions are saved to a file that can be restored to another server"
+    },
+    "ServerInfo": {
+        "file": "ServerInfo.webm",
+        "alt": "Right-clicking a server shows a window with its details, like owner, creation date and member counts"
+    },
+    "ServerListIndicators": {
+        "file": "ServerListIndicators.webm",
+        "alt": "The top of the server list shows how many friends are online and how many servers you're in"
+    },
+    "ServerPinner": {
+        "file": "ServerPinner.webm",
+        "alt": "Right-clicking a server offers Pin Server, which moves it to the top of the server list"
+    },
+    "ServerSearch": {
+        "file": "ServerSearch.webm",
+        "alt": "A search button at the top of the server list finds a server by name"
+    },
+    "SharePerms": {
+        "file": "SharePerms.webm",
+        "alt": "A window shares chosen permissions with other people for a limited time or number of uses"
+    },
+    "ShipCalc": {
+        "file": "ShipCalc.webm",
+        "alt": "The /ship command gives a love score for two people"
+    },
+    "ShowAllMessageButtons": {
+        "file": "ShowAllMessageButtons.webm",
+        "alt": "Hovering a message shows every action button, without holding Shift"
+    },
+    "ShowBadgesInChat": {
+        "file": "ShowBadgesInChat.webm",
+        "alt": "Each message shows its author's profile badges next to their name"
+    },
+    "ShowConnections": {
+        "file": "ShowConnections.webm",
+        "alt": "A profile popout lists the person's connected accounts like Steam and Spotify"
+    },
+    "ShowHiddenThings": {
+        "file": "ShowHiddenThings.webm",
+        "alt": "Things normally only moderators see, like timeout icons next to members, become visible"
+    },
+    "ShowMessageEmbeds": {
+        "file": "ShowMessageEmbeds.webm",
+        "alt": "Right-clicking a link without a preview offers Show Embeds, which adds the preview"
+    },
+    "ShowResourceChannels": {
+        "file": "ShowResourceChannels.webm",
+        "alt": "Channels hidden behind the server's Resources page appear in the channel list"
+    },
+    "ShowRolesInChat": {
+        "file": "ShowRolesInChat.webm",
+        "alt": "Each message shows its author's highest role next to their name"
+    },
+    "ShowSongName": {
+        "file": "ShowSongName.webm",
+        "alt": "Someone's Spotify activity in the member list shows the song title instead of the artist"
+    },
+    "ShowTimeoutDuration": {
+        "file": "ShowTimeoutDuration.webm",
+        "alt": "A timed-out member shows how much longer their timeout lasts"
+    },
+    "ShowTypingUsers": {
+        "file": "ShowTypingUsers.webm",
+        "alt": "The channel header shows a badge listing everyone who is typing"
+    },
+    "SidebarChat": {
+        "file": "SidebarChat.webm",
+        "alt": "Another channel or DM opens in a sidebar next to the current chat"
+    },
+    "Signature": {
+        "file": "Signature.webm",
+        "alt": "Every message you send ends with your signature line"
+    },
+    "SilenceUsers": {
+        "file": "SilenceUsers.webm",
+        "alt": "Mentions from a chosen person stop pinging you and stop adding to server badges"
+    },
+    "SilentDelete": {
+        "file": "SilentDelete.webm",
+        "alt": "A message is swapped for placeholder text and then deleted, so message loggers only keep the placeholder"
+    },
+    "SilentEdit": {
+        "file": "SilentEdit.webm",
+        "alt": "Your edited messages show without the (edited) label on your screen"
+    },
+    "SilentMessageToggle": {
+        "file": "SilentMessageToggle.webm",
+        "alt": "A button in the chat bar sends your next message silently, without notifications"
+    },
+    "SmoothUI": {
+        "file": "SmoothUI.webm",
+        "alt": "Menus, messages and panels open with soft animations"
+    },
+    "Snowfall": {
+        "file": "Snowfall.webm",
+        "alt": "Snow gently falls across the Discord window"
+    },
+    "SongLink": {
+        "file": "SongLink.webm",
+        "alt": "A song link gets buttons to open the same song on other music services"
+    },
+    "SongSpotlight": {
+        "file": "SongSpotlight.webm",
+        "alt": "A profile shows a list of favourite songs that can be previewed"
+    },
+    "SortFriendRequests": {
+        "file": "SortFriendRequests.webm",
+        "alt": "Pending friend requests are listed newest first, with the date each arrived"
+    },
+    "SortReactions": {
+        "file": "SortReactions.webm",
+        "alt": "Reactions under a message are reordered from most to fewest"
+    },
+    "SpaceOut": {
+        "file": "SpaceOut.webm",
+        "alt": "The /spaceout command puts spaces between every letter of your message"
+    },
+    "SplitLargeMessages": {
+        "file": "SplitLargeMessages.webm",
+        "alt": "A message longer than Discord allows is split and sent as several messages in a row"
+    },
+    "SpotifyActivityToggle": {
+        "file": "SpotifyActivityToggle.webm",
+        "alt": "A button turns showing your Spotify listening on your profile on or off"
+    },
+    "SpotifyCrack": {
+        "file": "SpotifyCrack.webm",
+        "alt": "Spotify keeps playing while you talk in voice, and Listen Along works without Premium"
+    },
+    "SpotifyShareCommands": {
+        "file": "SpotifyShareCommands.webm",
+        "alt": "The /track command shares the Spotify song you're listening to"
+    },
+    "Starify": {
+        "file": "Starify.webm",
+        "alt": "The /starify command wraps your message in sparkles"
+    },
+    "StartupTimings": {
+        "file": "StartupTimings.webm",
+        "alt": "A settings page breaks down how long each part of Discord's startup took"
+    },
+    "StatusPresets": {
+        "file": "StatusPresets.webm",
+        "alt": "Saved custom statuses can be picked again from a list in one click"
+    },
+    "StatusWhileActive": {
+        "file": "StatusWhileActive.webm",
+        "alt": "Joining a voice channel switches your status automatically, and leaving switches it back"
+    },
+    "SteamStatusSync": {
+        "file": "SteamStatusSync.webm",
+        "alt": "Changing your Discord status changes your Steam status to match"
+    },
+    "StereoScreenshareAudio": {
+        "file": "StereoScreenshareAudio.webm",
+        "alt": "Watching a stream plays its audio in stereo instead of mono"
+    },
+    "StickerBlocker": {
+        "file": "StickerBlocker.webm",
+        "alt": "Stickers you've blocked no longer show in the chat"
+    },
+    "StickerPaste": {
+        "file": "StickerPaste.webm",
+        "alt": "Picking a sticker puts it in the message box so you can add text before sending"
+    },
+    "StopAutoUnread": {
+        "file": "StopAutoUnread.webm",
+        "alt": "A channel's notification setting stays as you chose instead of switching to All Messages by itself"
+    },
+    "Streaks": {
+        "file": "Streaks.webm",
+        "alt": "Friends you've messaged on several days in a row get a streak counter next to their name"
+    },
+    "StreamingCodecDisabler": {
+        "file": "StreamingCodecDisabler.webm",
+        "alt": "Settings switch off chosen video codecs, like AV1, for streams and cameras"
+    },
+    "StreamProof": {
+        "file": "StreamProof.webm",
+        "alt": "A chat bar button hides messages, images and DMs so they can't be seen on stream"
+    },
+    "Summaries": {
+        "file": "Summaries.webm",
+        "alt": "AI-written summaries of recent conversations appear in every server"
+    },
+    "SuperReactionTweaks": {
+        "file": "SuperReactionTweaks.webm",
+        "alt": "The reaction picker defaults to super reactions, and you choose how many play at once"
+    },
+    "SurfaceTranslate": {
+        "file": "SurfaceTranslate.webm",
+        "alt": "Channel names and topics in another language are translated into yours"
+    },
+    "TextScreenshot": {
+        "file": "TextScreenshot.webm",
+        "alt": "A command sends your text as a picture that looks like a Discord message from you"
+    },
+    "ThemeAttributes": {
+        "file": "ThemeAttributes.webm",
+        "alt": "Discord's elements get extra data attributes that themes can use to style them"
+    },
+    "ThemeLibrary": {
+        "file": "ThemeLibrary.webm",
+        "alt": "A library of community themes can be browsed and applied with one click"
+    },
+    "ThemeStudio": {
+        "file": "ThemeStudio.webm",
+        "alt": "Pick an accent colour, corner roundness and glassy menus, and Discord changes as you go"
+    },
+    "TidalEmbeds": {
+        "file": "TidalEmbeds.webm",
+        "alt": "A TIDAL link gets a player that plays the song inside Discord"
+    },
+    "Timezones": {
+        "file": "Timezones.webm",
+        "alt": "Messages and profiles show each person's local time"
+    },
+    "Title": {
+        "file": "Title.webm",
+        "alt": "The window title shows your own text instead of Discord"
+    },
+    "ToastNotifications": {
+        "file": "ToastNotifications.webm",
+        "alt": "Messages pop up as small notifications inside Discord, for the kinds of chats you pick"
+    },
+    "ToggleVideoBind": {
+        "file": "ToggleVideoBind.webm",
+        "alt": "A keyboard shortcut turns your camera on and off in a call"
+    },
+    "ToneIndicators": {
+        "file": "ToneIndicators.webm",
+        "alt": "Hovering a tone indicator like /srs shows what it means"
+    },
+    "TriviaAI": {
+        "file": "TriviaAI.webm",
+        "alt": "During a trivia game, an AI suggests the answer to the question"
+    },
+    "TypingIndicator": {
+        "file": "TypingIndicator.webm",
+        "alt": "Channels in the list show typing dots when someone is typing in them"
+    },
+    "Unindent": {
+        "file": "Unindent.webm",
+        "alt": "Extra indentation at the start of every line in a code block is removed"
+    },
+    "UnitConverter": {
+        "file": "UnitConverter.webm",
+        "alt": "Right-clicking a message with measurements offers Convert Units, which shows them in your units"
+    },
+    "UniversalMention": {
+        "file": "UniversalMention.webm",
+        "alt": "The mention list offers anyone, even people who can't see the channel"
+    },
+    "UniversalVolume": {
+        "file": "UniversalVolume.webm",
+        "alt": "Everyone in your voice channel is set to the same volume, including people who join later"
+    },
+    "UnlimitedAccounts": {
+        "file": "UnlimitedAccounts.webm",
+        "alt": "The account switcher holds more than the usual five accounts"
+    },
+    "UnlimitedFavoriteGIFs": {
+        "file": "UnlimitedFavoriteGIFs.webm",
+        "alt": "Favourite GIFs keep saving past Discord's size limit"
+    },
+    "UnlockedAvatarZoom": {
+        "file": "UnlockedAvatarZoom.webm",
+        "alt": "The avatar crop tool lets you zoom in much further than usual"
+    },
+    "UnreadCountBadge": {
+        "file": "UnreadCountBadge.webm",
+        "alt": "Channels in the list show how many unread messages they have"
+    },
+    "UnsuppressEmbeds": {
+        "file": "UnsuppressEmbeds.webm",
+        "alt": "Right-clicking a message whose link preview was removed offers to bring the preview back"
+    },
+    "UrlHighlighter": {
+        "file": "UrlHighlighter.webm",
+        "alt": "Links that match your patterns are highlighted in messages"
+    },
+    "UserMessagesPronouns": {
+        "file": "UserMessagesPronouns.webm",
+        "alt": "Each message shows its author's pronouns next to their name"
+    },
+    "UserPFP": {
+        "file": "UserPFP.webm",
+        "alt": "An animated avatar from the UserPFP database shows on profiles and messages without Nitro"
+    },
+    "UserpluginInstaller": {
+        "file": "UserpluginInstaller.webm",
+        "alt": "A button installs a user-made plugin straight from its link"
+    },
+    "UserVoiceShow": {
+        "file": "UserVoiceShow.webm",
+        "alt": "A profile shows which voice channel the person is in"
+    },
+    "USRBG": {
+        "file": "USRBG.webm",
+        "alt": "A profile without Nitro shows a banner picture from the USRBG database"
+    },
+    "ValidReply": {
+        "file": "ValidReply.webm",
+        "alt": "A reply that showed 'Message could not be loaded' shows the original message"
+    },
+    "ValidUser": {
+        "file": "ValidUser.webm",
+        "alt": "Hovering an @unknown-user mention loads the real person behind it"
+    },
+    "VcNarrator": {
+        "file": "VcNarrator.webm",
+        "alt": "A narrator voice announces when people join, leave or move voice channels"
+    },
+    "VCPanelSettings": {
+        "file": "VCPanelSettings.webm",
+        "alt": "Voice settings like input volume and noise suppression sit right in the voice panel"
+    },
+    "VibeCheck": {
+        "file": "VibeCheck.webm",
+        "alt": "The /vibe command posts a random vaporwave mood"
+    },
+    "ViewRaw": {
+        "file": "ViewRaw.webm",
+        "alt": "Right-clicking a message offers View Raw, which shows its raw text and data"
+    },
+    "VoiceButtons": {
+        "file": "VoiceButtons.webm",
+        "alt": "Each person in the voice list gets buttons to message, mute or deafen them"
+    },
+    "VoiceChannelLog": {
+        "file": "VoiceChannelLog.webm",
+        "alt": "A log lists who joined, left, muted, turned on a camera or shared their screen in a voice channel"
+    },
+    "VoiceChatDoubleClick": {
+        "file": "VoiceChatDoubleClick.webm",
+        "alt": "Voice channels are joined with a double click, so a stray single click doesn't pull you in"
+    },
+    "VoiceChatUtilities": {
+        "file": "VoiceChatUtilities.webm",
+        "alt": "Right-clicking a voice channel offers to move, mute or disconnect everyone in it at once"
+    },
+    "VoiceCount": {
+        "file": "VoiceCount.webm",
+        "alt": "Voice channels in the list show how many people are inside"
+    },
+    "VoiceDownload": {
+        "file": "VoiceDownload.webm",
+        "alt": "Voice messages get a download button"
+    },
+    "VoiceFakeDetector": {
+        "file": "VoiceFakeDetector.webm",
+        "alt": "People who appear muted or deafened but are still sending audio are flagged in the voice list"
+    },
+    "VoiceJoinMessages": {
+        "file": "VoiceJoinMessages.webm",
+        "alt": "When a friend joins a voice channel, a short message only you can see appears in your DMs with them"
+    },
+    "VoiceMessages": {
+        "file": "VoiceMessages.webm",
+        "alt": "Right-clicking the upload button records and sends a voice message, like on mobile"
+    },
+    "VoiceMessagesInBackground": {
+        "file": "VoiceMessagesInBackground.webm",
+        "alt": "A voice message keeps playing in a mini player while you move to another chat"
+    },
+    "VoiceMessageTranscriber": {
+        "file": "VoiceMessageTranscriber.webm",
+        "alt": "Voice messages get a written transcript made on your own computer"
+    },
+    "VoiceRejoin": {
+        "file": "VoiceRejoin.webm",
+        "alt": "After Discord restarts, you're put back in the call you were in"
+    },
+    "VoiceServerInfo": {
+        "file": "VoiceServerInfo.webm",
+        "alt": "A command shows the voice server you're connected to, with its location and ping"
+    },
+    "VoiceSettings": {
+        "file": "VoiceSettings.webm",
+        "alt": "Detailed voice settings like bitrate, stereo and echo cancellation in one place"
+    },
+    "VoiceStats": {
+        "file": "VoiceStats.webm",
+        "alt": "A profile shows how much time you've spent in voice with that person"
+    },
+    "VoiceVUMeters": {
+        "file": "VoiceVUMeters.webm",
+        "alt": "Small left and right level meters move next to each person as they talk"
+    },
+    "VolumeBooster": {
+        "file": "VolumeBooster.webm",
+        "alt": "A person's volume slider goes past the usual 200 percent"
+    },
+    "WaitForSlot": {
+        "file": "WaitForSlot.webm",
+        "alt": "Clicking a full voice channel waits and joins you automatically as soon as a spot opens"
+    },
+    "WebcamStartNotifier": {
+        "file": "WebcamStartNotifier.webm",
+        "alt": "A sound plays when someone in your voice channel turns their camera on or off"
+    },
+    "WebContextMenus": {
+        "file": "WebContextMenus.webm",
+        "alt": "In Discord on the web, right-clicking links, images and the message box shows copy, paste and open options"
+    },
+    "WebKeybinds": {
+        "file": "WebKeybinds.webm",
+        "alt": "Desktop shortcuts like Ctrl+T, Ctrl+Tab and Ctrl+1 to 9 work in Discord's web and Vesktop versions"
+    },
+    "WebpackTarball": {
+        "file": "WebpackTarball.webm",
+        "alt": "A developer tool packs Discord's loaded code into a tarball file"
+    },
+    "WebRichPresence (arRPC)": {
+        "file": "WebRichPresence--arRPC-.webm",
+        "alt": "Games and apps on your computer show as your activity even in Discord on the web"
+    },
+    "WebRTCLeakPrevent": {
+        "file": "WebRTCLeakPrevent.webm",
+        "alt": "Voice calls are routed through Discord's relays so your real IP address isn't exposed"
+    },
+    "WebScreenShareFixes": {
+        "file": "WebScreenShareFixes.webm",
+        "alt": "Screen sharing from a browser or Vesktop is no longer capped at 2,500 kbps"
+    },
+    "Wellbeing": {
+        "file": "Wellbeing.webm",
+        "alt": "A private dashboard shows how long you've used Discord today, with gentle break reminders"
+    },
+    "WhitelistedEmojis": {
+        "file": "WhitelistedEmojis.webm",
+        "alt": "Emoji in messages are hidden except the ones you've allowed"
+    },
+    "WhosWatching": {
+        "file": "WhosWatching.webm",
+        "alt": "Hovering the stream icon while you share your screen shows who is watching"
+    },
+    "WigglyText": {
+        "file": "WigglyText.webm",
+        "alt": "Text written as ~text~ with arrows around it wiggles in the chat"
+    },
+    "WikiLookup": {
+        "file": "WikiLookup.webm",
+        "alt": "The /wiki command shows a short Wikipedia summary that only you can see"
+    },
+    "WordCount": {
+        "file": "WordCount.webm",
+        "alt": "Each message shows how many words it has underneath"
+    },
+    "WriteUpperCase": {
+        "file": "WriteUpperCase.webm",
+        "alt": "The first letter of each sentence you type is made uppercase as you go"
+    },
+    "XSOverlay": {
+        "file": "XSOverlay.webm",
+        "alt": "Discord notifications are forwarded into XSOverlay so they appear inside VR"
+    },
+    "YoutubeAdblock": {
+        "file": "YoutubeAdblock.webm",
+        "alt": "YouTube videos in Discord play without ads"
+    },
+    "ZeroWidthSanitizer": {
+        "file": "ZeroWidthSanitizer.webm",
+        "alt": "Invisible zero-width characters hidden in a message are found and removed"
+    },
+    "ZIP+": {
+        "file": "ZIP+.webm",
+        "alt": "A zip file attachment can be opened and browsed in the chat, and files can be zipped before upload"
+    },
+    "TypingTweaks": {
+        "file": "TypingTweaks.webm",
+        "alt": "The typing indicator shows each person's avatar and name in their role colour"
+    },
+    "ColorText": {
+        "file": "ColorText.webm",
+        "alt": "The /color command sends a message in colored, bold text inside a code block"
+    },
+    "DraftList": {
+        "file": "DraftList.webm",
+        "alt": "The Endcord menu lists every chat with an unsent message, and opening one goes back to it"
+    },
+    "LocalTimes": {
+        "file": "LocalTimes.webm",
+        "alt": "A time written with a time zone, like 8pm EST, gets a line under it with that time in your own time zone"
+    },
+    "PrivacyCurtain": {
+        "file": "PrivacyCurtain.webm",
+        "alt": "After a few minutes away Discord blurs itself with a sleeping panda, and moving the mouse brings it back"
+    },
+    "QuoteMessage": {
+        "file": "QuoteMessage.webm",
+        "alt": "Right-clicking a message and choosing Quote puts it in the message box as a quote, with who wrote it"
+    },
+    "ReplyChain": {
+        "file": "ReplyChain.webm",
+        "alt": "Right-clicking a reply opens the whole conversation it answers, from the first message down"
+    },
+    "SecretGuard": {
+        "file": "SecretGuard.webm",
+        "alt": "A message with a Discord token in it isn't sent; a warning says so, and pressing Enter again would send it"
+    },
+    "SuspiciousLinks": {
+        "file": "SuspiciousLinks.webm",
+        "alt": "A link that borrows Discord's name gets a red warning under the message saying it isn't Discord"
+    }
+}

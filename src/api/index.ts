@@ -1,6 +1,6 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -9,6 +9,7 @@ import * as $ChatButtons from "./ChatButtons";
 import * as $Commands from "./Commands";
 import * as $ContextMenu from "./ContextMenu";
 import * as $DataStore from "./DataStore";
+import * as $EndcordVisibility from "./EndcordVisibility";
 import * as $MemberListDecorators from "./MemberListDecorators";
 import * as $MessageAccessories from "./MessageAccessories";
 import * as $MessageDecorations from "./MessageDecorations";
@@ -127,6 +128,11 @@ export const Themes = $Themes;
 export const UserArea = $UserArea;
 
 export const HeaderBar = $HeaderBar;
+
+/**
+ * Hiding everything Endcord shows, as the HideEndcord plugin does with F8
+ */
+export const EndcordVisibility = $EndcordVisibility;
 
 export const NicknameIcons = $NicknameIcons;
 

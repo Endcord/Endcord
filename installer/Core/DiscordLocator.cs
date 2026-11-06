@@ -173,11 +173,24 @@ namespace EndcordInstaller.Core
             return null;
         }
 
+        /// <summary>
+        /// Discord's version folders. "app-*" also matches by the 8.3 short name Windows gives every folder, so Discord's
+        /// half-downloaded update ".app-1.0.9267.installing" (short name APP-10~1.INS) would pass for a broken version.
+        /// Only folders whose real name starts with "app-" count.
+        /// </summary>
+        public static string[] VersionDirs(string root)
+        {
+            var list = new List<string>();
+            foreach (var dir in Directory.GetDirectories(root, "app-*"))
+                if (System.IO.Path.GetFileName(dir).StartsWith("app-", StringComparison.OrdinalIgnoreCase)) list.Add(dir);
+            return list.ToArray();
+        }
+
         static string GuessExe(string root)
         {
             try
             {
-                var apps = Directory.GetDirectories(root, "app-*");
+                var apps = VersionDirs(root);
                 if (apps.Length == 0) return null;
                 foreach (var app in apps)
                     foreach (var exe in Directory.GetFiles(app, "Discord*.exe"))
@@ -196,7 +209,7 @@ namespace EndcordInstaller.Core
             {
                 if (!Directory.Exists(root)) return null;
                 var dirs = new List<AppDirInfo>();
-                foreach (var dir in Directory.GetDirectories(root, "app-*"))
+                foreach (var dir in VersionDirs(root))
                 {
                     var info = InspectAppDir(dir);
                     if (info != null) dirs.Add(info);

@@ -17,7 +17,7 @@ export default definePlugin({
         {
             name: "wiki",
             description: "Look up a Wikipedia summary",
-            inputType: ApplicationCommandInputType.BOT,
+            inputType: ApplicationCommandInputType.BUILT_IN,
             options: [RequiredMessageOption],
             execute: async (opts, ctx) => {
                 const query = findOption(opts, "message", "").trim();

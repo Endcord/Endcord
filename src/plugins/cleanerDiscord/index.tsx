@@ -8,7 +8,7 @@ import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 
-const STYLE_ID = "equicord-cleaner-discord";
+const STYLE_ID = "ec-cleaner-discord";
 
 const settings = definePluginSettings({
     hideNitroShop: {

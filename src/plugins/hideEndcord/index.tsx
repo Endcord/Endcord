@@ -10,7 +10,7 @@ import definePlugin from "@utils/types";
 
 export default definePlugin({
     name: "HideEndcord",
-    description: "Press F8 to toggle visibility of all Endcord-related settings entries. Plugins remain active.",
+    description: "Press F8 to hide or bring back everything Endcord shows: buttons, icons, menu entries, badges and settings. Plugins keep working.",
     authors: [Devs.ewlle],
     required: false,
 

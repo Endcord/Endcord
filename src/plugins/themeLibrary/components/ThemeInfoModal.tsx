@@ -37,7 +37,7 @@ export const ThemeInfoModal: React.FC<ThemeInfoModalProps> = ({ author, theme, .
     const { name, type, content, likes, guild, tags, last_updated, requiresThemeAttributes } = theme;
 
     const themeContent = window.atob(content);
-    const metadata = themeContent.match(/\/\*\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+\//g)?.[0] || "";
+    const metadata = themeContent.match(/\/\*\*[\s\S]*?\*\//g)?.[0] || "";
     const donate = metadata.match(/@donate\s+(.+)/)?.[1] || "";
     const version = metadata.match(/@version\s+(.+)/)?.[1] || "";
     const invite = metadata.match(/@invite\s+(.+)/)?.[1] || "";

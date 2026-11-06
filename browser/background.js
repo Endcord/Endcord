@@ -8,11 +8,21 @@ function removeFirst(arr, predicate) {
     if (idx !== -1) arr.splice(idx, 1);
 }
 
+/** discord.com or one of its subdomains, never a page that only mentions it */
+function isDiscordPage(url) {
+    try {
+        const { protocol, hostname } = new URL(url);
+        return protocol === "https:" && (hostname === "discord.com" || hostname.endsWith(".discord.com"));
+    } catch {
+        return false;
+    }
+}
+
 chrome.webRequest.onHeadersReceived.addListener(
     ({ responseHeaders, type, url }) => {
         if (!responseHeaders) return;
 
-        if (type === "main_frame" && url.includes("discord.com")) {
+        if (type === "main_frame" && isDiscordPage(url)) {
             // In main frame requests, the CSP needs to be removed to enable fetching of custom css
             // as desired by the user
             removeFirst(responseHeaders, h => h.name.toLowerCase() === "content-security-policy");

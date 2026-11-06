@@ -34,7 +34,8 @@ const stubs = {
     electron: `
         globalThis.__handlers = {}; globalThis.__rawHandlers = {}; globalThis.__opened = []; globalThis.__appListeners = {};
         export const ipcMain = { handle: (k, f) => { __rawHandlers[k] = f; __handlers[k] = (e, ...a) => f(e ?? __discordFrame, ...a); }, on() {} };
-        export const app = { getPath: () => ${JSON.stringify(OUT)}, on: (e, f) => { __appListeners[e] = f; } };
+        export const app = { getPath: () => ${JSON.stringify(OUT)}, on: (e, f) => { (__appListeners[e] ??= []).push(f); }, getLocale: () => "en" };
+        export class Notification { static isSupported() { return true; } constructor(o) { (globalThis.__notices ??= []).push(o); } on() {} show() {} }
         export const shell = { openExternal: u => __opened.push(u) };
         export const session = { defaultSession: { loadExtension() {} } };
         export const dialog = { showMessageBox: async options => { globalThis.__dialog = options; return { response: 0, checkboxChecked: false }; } };
@@ -51,11 +52,18 @@ const stubs = {
     "@utils/Logger": "export class Logger { error() {} info() {} }",
     "@utils/web": "export const chooseFile = () => {}; export const saveFile = () => {};",
     "@webpack/common": "export const moment = {}; export const Toasts = {};",
-    "~plugins": "export default { Secret: { settings: { def: { key: { sensitive: true, default: '' }, url: { sensitive: true, default: 'https://default.example' }, plain: {} } } }, NoSettings: {} };",
+    "~plugins": "export default { Secret: { settings: { def: { key: { sensitive: true, default: '' }, url: { sensitive: true, default: 'https://default.example' }, plain: {} } } }, NoSettings: {} }; export function getPluginListInfo() {}",
+    "~pluginNativeMethods": "export default {};",
     "@main/settings": "export const RendererSettings = { store: { plugins: { YoutubeAdblock: { enabled: true } } } }; export const NativeSettings = { store: { customCspRules: {} } };",
     https: `import { request as real } from "node:https";
         import { Readable } from "node:stream";
         export const request = (url, opts, cb) => {
+            if (String(url).includes("put.test")) {
+                globalThis.__put = { method: opts.method, headers: opts.headers, body: null };
+                const res = Readable.from([Buffer.from("ok")]);
+                Object.assign(res, { statusCode: 200, headers: {}, rawHeaders: [] });
+                return { on() {}, end(body) { globalThis.__put.body = body; cb(res); } };
+            }
             if (!String(url).includes("spotify.link")) return real(url, opts, cb);
             globalThis.__hops = (globalThis.__hops ?? 0) + 1;
             globalThis.__hopMethod = opts.method;
@@ -105,7 +113,7 @@ const stubPlugin = {
             return { contents: source.replace(mutation.from, () => mutation.to), loader: a.path.endsWith("x") ? "tsx" : "ts" };
         });
 
-        const filter = new RegExp(`^(${Object.keys(stubs).map(s => s.replace(/[/~@]/g, "\\$&")).join("|")})$`);
+        const filter = new RegExp(`^(${Object.keys(stubs).map(s => s.replace(/[.*+?^${}()|[\]\\/~@-]/g, "\\$&")).join("|")})$`);
         b.onResolve({ filter }, a => ({ path: a.path, namespace: "stub" }));
         b.onLoad({ filter: /.*/, namespace: "stub" }, a => ({ contents: stubs[a.path], loader: "js" }));
         b.onResolve({ filter: /^file:\/\// }, a => ({ path: a.path, namespace: "file-stub", pluginData: a.resolveDir }));
@@ -119,6 +127,7 @@ const stubPlugin = {
 const entry = `
 export * as offline from "./src/api/SettingsSync/offline";
 export { fetchPdf } from "./src/plugins/pdf-viewer/native";
+export { downloadTheme } from "./src/plugins/themeLibrary/native";
 export { fetchMedia as gifMakerFetch } from "./src/plugins/gifMaker/native";
 export { fetchAttachment as favoriteFetch } from "./src/plugins/favoriteAnything/native";
 export { isSafeExternalUrl, isSafeLink } from "./src/shared/externalLinks";
@@ -131,12 +140,10 @@ export * as gpu from "./src/plugins/gpuBinder/native";
 export * as questify from "./src/plugins/questify/native";
 export * as openInApp from "./src/plugins/openInApp/native";
 export * as zipPlusNative from "./src/plugins/ZIPplus/native";
-export * as gifNative from "./src/plugins/gifCaptioner/native";
 export * as audioNative from "./src/plugins/betterAudioPlayer/native";
 export * as transcriber from "./src/plugins/voiceMessageTranscriber.desktop/native";
 export * as mle from "./src/plugins/messageLoggerEnhanced/native";
 export { unzipBlob } from "./src/plugins/ZIPplus/unzip";
-export { getCachedZip } from "./src/plugins/zipPreview/utils";
 export { canSendCredentials } from "./src/plugins/richPresence/services/serverUrl";
 export { readBody } from "./src/main/utils/http";
 export { isSecureCloudUrl } from "./src/api/SettingsSync/cloudUrl";
@@ -162,8 +169,7 @@ await esbuild.build({
 globalThis.__plain = { plugins: { Secret: { key: "LOCAL-SECRET", plain: 1 } } };
 globalThis.EndcordNative = {
     settings: { get: () => ({ plugins: { Secret: { key: "LOCAL-SECRET", plain: 1 } } }), set: async s => { globalThis.__setSettings = s; } },
-    quickCss: { get: async () => "css", set: async () => {} },
-    pluginHelpers: { ZipPreview: { fetchDiscordAttachment: async () => ({ success: true, data: globalThis.__zip }) } }
+    quickCss: { get: async () => "css", set: async () => {} }
 };
 const m = require(join(OUT, "bundle.cjs"));
 
@@ -211,9 +217,11 @@ check("evil download host refused", await offers(evilHost) === false);
 check("plain http refused", await offers(manifest({ assets: good.assets.map(a => ({ ...a, url: a.url.replace("https:", "http:") })) })) === false);
 check("non-https endcord.com refused, https allowed", await offers(manifest({ assets: good.assets.map(a => ({ ...a, url: `https://endcord.com/dist/${a.name}` })) })) === true);
 await offers(manifest());
+writeFileSync(join(OUT, "renderer.js"), "older");
 bodies = { ...FILES, "renderer.js": "evil" };
 const badFile = await h[BUILD]();
-check("download not matching its hash aborts", !badFile.ok && readFileSync(join(OUT, "renderer.js"), "utf8") === "r", badFile);
+check("download not matching its hash aborts", !badFile.ok && readFileSync(join(OUT, "renderer.js"), "utf8") === "older", badFile);
+writeFileSync(join(OUT, "renderer.js"), "r");
 // ---- Updates that undo themselves -----------------------------------------------------------------------
 const inOut = name => join(OUT, name);
 const installBad = async hash => {
@@ -237,12 +245,94 @@ await installBad("working-release");
 m.rollback.confirmUpdate();
 check("a confirmed update stays", m.rollback.recordUnconfirmedLoad() === false && m.rollback.recordUnconfirmedLoad() === false && m.rollback.recordUnconfirmedLoad() === false && readFileSync(inOut("renderer.js"), "utf8") === "r");
 
+// Stable and Canary share one install: the second client must not replace the version kept for going back
+await installBad("shared-release");
+served = manifest({ hash: "shared-release" });
+await h[UPDATE]();
+const secondInstall = await h[BUILD]();
+check("a second client installing the same release keeps the version to go back to", secondInstall.ok && readFileSync(join(inOut("previous"), "renderer.js"), "utf8") === "good", secondInstall);
+check("the first start after an update is reported once", m.rollback.confirmUpdate() === true && m.rollback.confirmUpdate() === false);
+
+// A kept copy that someone changed on disk must not be put back, and an undone release is reported once
+await installBad("tampered-release");
+writeFileSync(join(inOut("previous"), "renderer.js"), "planted");
+for (let i = 0; i < 3; i++) m.rollback.recordUnconfirmedLoad();
+check("a kept copy that changed on disk isn't put back", readFileSync(inOut("renderer.js"), "utf8") === "r" && !existsSync(inOut("update-state.json")), readFileSync(inOut("renderer.js"), "utf8"));
+check("the undone release isn't offered again", await offers(manifest({ hash: "tampered-release" })) === false);
+check("the undone release is reported once", m.rollback.takeRollbackNotice()?.hash === "tampered-release" && m.rollback.takeRollbackNotice() === null);
+check("the security card names the undone release", (await h[m.IpcEvents.GET_UPDATE_TRUST]()).rejected === "tampered-release");
+writeFileSync(inOut("update-rejected.json"), JSON.stringify({ hash: "tampered-release", at: Date.now() - 25 * 60 * 60_000, notified: true }));
+check("a rejection expires after a day", await offers(manifest({ hash: "tampered-release" })) === true);
+m.rollback.keepPreviousVersion("next-release");
+m.rollback.finishSwap("next-release");
+m.rollback.confirmUpdate();
+check("a later release that starts clears the rejection", !existsSync(inOut("update-rejected.json")));
+
+// What the security card reports
+const { GET_UPDATE_TRUST } = m.IpcEvents;
+const trustOf = async (mf, renderer) => {
+    writeFileSync(inOut("renderer.js"), renderer);
+    await offers(mf);
+    return h[GET_UPDATE_TRUST]();
+};
+const running = manifest({ hash: "abc1234", updatedAt: 500 });
+let trust = await trustOf(running, "r");
+check("files matching the signed release are reported as matching", trust.signed && trust.installedFiles === "match" && trust.checkedAt > 0, trust);
+trust = await trustOf(running, "tampered");
+check("a changed file is reported", trust.signed && trust.installedFiles === "changed", trust);
+trust = await trustOf({ ...running, signature: "AAAA" }, "r");
+check("a bad signature is reported, and the files aren't compared with it", !trust.signed && trust.installedFiles === "unknown", trust);
+trust = await trustOf(manifest({ hash: "somethingnewer" }), "r");
+check("files aren't compared with a release that isn't running", trust.signed && trust.installedFiles === "unknown", trust);
+check("the kept version is reported", trust.hasPrevious === true && trust.pending === false, trust);
+
 writeFileSync(inOut("renderer.js"), "good");
 m.rollback.keepPreviousVersion("half-installed");
 writeFileSync(inOut("renderer.js"), "half");
 check("a crash in the middle of the swap is undone at the next start", m.rollback.recoverInterruptedUpdate() === true && readFileSync(inOut("renderer.js"), "utf8") === "good");
 check("a normal start finds nothing to recover", m.rollback.recoverInterruptedUpdate() === false);
 rmSync(inOut("update-rejected.json"), { force: true });
+writeFileSync(inOut("renderer.js"), "r");
+
+// ---- A Discord that never comes up updates itself -------------------------------------------------------
+// The update check runs in the page once Discord is up, so a release that leaves Discord stuck could never be replaced
+const realSetTimeout = globalThis.setTimeout;
+const stuckStart = async url => {
+    const handlers = {};
+    let reloads = 0;
+    const win = { isDestroyed: () => false, webContents: { on: (event, f) => { (handlers[event] ??= []).push(f); }, getURL: () => url, reload: () => { reloads++; } } };
+    for (const listener of globalThis.__appListeners["browser-window-created"]) listener(null, win);
+    const timers = [];
+    globalThis.setTimeout = (f, ms) => { timers.push([f, ms]); return 0; };
+    try {
+        for (const f of handlers["did-finish-load"] ?? []) f();
+    } finally {
+        globalThis.setTimeout = realSetTimeout;
+    }
+    const waits = timers.filter(([, ms]) => ms >= 60_000);
+    for (const [f] of waits) await f();
+    await new Promise(resolve => realSetTimeout(resolve, 50));
+    return { reloads, waits: waits.length };
+};
+let manifestFetches = 0;
+const countingFetch = globalThis.fetch;
+globalThis.fetch = async (url, ...rest) => {
+    if (String(url).includes("version.json")) manifestFetches++;
+    return countingFetch(url, ...rest);
+};
+bodies = FILES;
+writeFileSync(inOut("renderer.js"), "stuck");
+served = manifest({ hash: "healing-release" });
+globalThis.__notices = [];
+const signedOut = await stuckStart("https://discord.com/login");
+check("a signed-out Discord isn't treated as stuck", signedOut.reloads === 0 && manifestFetches === 0 && readFileSync(inOut("renderer.js"), "utf8") === "stuck", { signedOut, manifestFetches });
+const stuck = await stuckStart("https://discord.com/app");
+check("a Discord that doesn't come up installs the newest release and loads again", stuck.waits > 0 && stuck.reloads === 1 && readFileSync(inOut("renderer.js"), "utf8") === "r", stuck);
+check("and says so", __notices.some(n => n.title === "Endcord fixed itself"), __notices);
+const again = await stuckStart("https://discord.com/app");
+check("it only does that once a run", again.reloads === 0, again);
+globalThis.fetch = countingFetch;
+m.rollback.confirmUpdate();
 writeFileSync(inOut("renderer.js"), "r");
 
 globalThis.fetch = realFetch;
@@ -373,7 +463,7 @@ calls = scriptDns(["::ffff:127.0.0.1"]);
 const mapped = await m.uploader.fetchFile(null, `http://evil.test:${localPort}/`);
 check("IPv4-mapped IPv6 answer is blocked", mapped.error === "Disallowed URL" && localHits === 0, mapped);
 calls = scriptDns(["203.0.113.1", "127.0.0.1"]);
-const rebound = await m.gifNative.fetchMedia(null, `http://evil.test:${localPort}/`);
+const rebound = await m.zipPlusNative.fetchAttachment(null, `http://evil.test:${localPort}/`);
 check("rebinding: the checked answer is the one connected to", rebound === null && localHits === 0 && calls() === 1, { rebound, localHits, lookups: calls() });
 dns.lookup = (host, options, cb) => cb(null, []);
 const emptyAnswer = await m.uploader.fetchFile(null, `http://evil.test:${localPort}/`);
@@ -383,6 +473,17 @@ localServer.close();
 
 const s3 = await m.uploader.uploadToS3(null, new ArrayBuffer(1), "http://127.0.0.1:9000/b/o", {});
 check("S3 refuses plain http", s3.success === false, s3);
+for (const url of ["https://127.0.0.1:9000/b/o", "https://localhost:9000/b/o", "https://[::1]:9000/b/o", "https://192.168.1.1/dav/f"]) {
+    const s3Private = await m.uploader.uploadToS3(null, new ArrayBuffer(1), url, {});
+    check(`S3 upload refuses ${url}`, s3Private.success === false && s3Private.error === "Disallowed URL", s3Private);
+    const davPrivate = await m.uploader.uploadToWebdav(null, new ArrayBuffer(1), url, {});
+    check(`WebDAV upload refuses ${url}`, davPrivate.success === false && davPrivate.error === "Disallowed URL", davPrivate);
+}
+const put = await m.uploader.uploadToS3(null, new TextEncoder().encode("hello").buffer, "https://put.test/bucket/key", { "x-amz-acl": "private" });
+check("S3 upload goes out as a PUT with its headers and body", put.success === true && globalThis.__put?.method === "PUT" && globalThis.__put.headers["x-amz-acl"] === "private" && Buffer.from(globalThis.__put.body).toString() === "hello", { put, sent: globalThis.__put });
+const sent = await m.uploader.sendRequest(null, "https://put.test/upload", "POST", { "content-type": "multipart/form-data; boundary=x" }, new TextEncoder().encode("--x--"));
+check("custom uploads go out natively with their body and headers", sent.status === 200 && globalThis.__put.method === "POST" && globalThis.__put.headers["content-type"].startsWith("multipart/form-data") && Buffer.from(globalThis.__put.body).toString() === "--x--" && Buffer.from(sent.body).toString() === "ok", { sent, put: globalThis.__put });
+check("custom uploads can't reach this PC", await m.uploader.sendRequest(null, "https://127.0.0.1:8080/upload", "POST", {}, null).then(() => "SENT", e => e.message) === "Disallowed URL");
 
 // ---- CallRecorder -----------------------------------------------------------------------------------
 const buf = new ArrayBuffer(4);
@@ -467,7 +568,7 @@ const injected = [];
 const frameFor = (url, parent) => {
     let onReady, onFrame;
     const frame = { url, parent, once: (_, f) => { onReady = f; }, executeJavaScript: () => injected.push(url) };
-    globalThis.__appListeners["browser-window-created"](null, { webContents: { on: (_, f) => { onFrame = f; } } });
+    globalThis.__appListeners["browser-window-created"].at(-1)(null, { webContents: { on: (_, f) => { onFrame = f; } } });
     onFrame(null, { frame });
     onReady();
 };
@@ -491,7 +592,7 @@ const plain = globalThis.__plain;
 const resetLocal = plugin => Object.assign(plain, { plugins: { Secret: plugin }, cloud: { url: "https://endcord.com/" }, autoUpdate: true, autoUpdateNotification: true });
 const nativeSettings = { plugins: { Secret: { key: "LOCAL-SECRET", url: "https://mine.example", plain: 1 } } };
 globalThis.EndcordNative.settings.get = () => nativeSettings;
-const evil = { settings: { plugins: { Secret: { key: "EVIL-KEY", url: "https://evil.example", plain: 2, enabled: true } }, cloud: { url: "https://evil.example/" }, autoUpdate: false, autoUpdateNotification: false }, quickCss: "" };
+const evil = { settings: { plugins: { Secret: { key: "EVIL-KEY", url: "https://evil.example", plain: 2, enabled: true } }, cloud: { url: "https://evil.example/" }, autoUpdate: false, autoUpdateNotification: false, enableReactDevtools: true }, quickCss: "" };
 const imported = async source => { await m.offline.importSettings(JSON.stringify(evil), source); return globalThis.__setSettings; };
 
 const exported = JSON.parse(await m.offline.exportSettings());
@@ -526,7 +627,7 @@ check("a real backup restores onto a fresh device", got.plugins.Secret.key === "
 
 resetLocal({ key: "LOCAL-SECRET" });
 got = await imported("file");
-check("import can't move cloud sync or stop updates", got.cloud.url === "https://endcord.com/" && got.autoUpdate === true && got.autoUpdateNotification === true, got);
+check("import can't move cloud sync, stop updates or load a browser extension", got.cloud.url === "https://endcord.com/" && got.autoUpdate === true && got.autoUpdateNotification === true && got.enableReactDevtools !== true, got);
 await m.offline.importSettings(JSON.stringify({ settings: {}, quickCss: "" }), "cloud");
 check("import without a plugins block keeps the device's value", globalThis.__setSettings.plugins.Secret.key === "LOCAL-SECRET", globalThis.__setSettings);
 check("broken JSON doesn't get logged", await rejects(m.offline.importSettings("{oops LOCAL-SECRET")));
@@ -543,16 +644,11 @@ check("nothing reached Object.prototype", ({}).polluted === undefined);
 const CDN_FILE = "https://cdn.discordapp.com/embed/avatars/0.png";
 for (const url of ["http://127.0.0.1:9333/json", "http://localhost:9333/", "http://10.0.0.1/a", "http://169.254.169.254/latest/meta-data"]) {
     check(`ZIP+ blocks ${url}`, await m.zipPlusNative.fetchAttachment(null, url) === null);
-    check(`GifCaptioner blocks ${url}`, await m.gifNative.fetchMedia(null, url) === null);
     const logged = await m.mle.downloadAttachment(null, { url, oldUrl: url, id: "111", fileExtension: ".png" });
     check(`MessageLogger blocks ${url}`, logged.error === "Disallowed URL" && logged.path === null, logged);
 }
 const zipRead = await m.zipPlusNative.fetchAttachment(null, CDN_FILE);
 check("ZIP+ still reads the CDN", zipRead?.length > 100);
-const gifRead = await m.gifNative.fetchMedia(null, CDN_FILE);
-check("GifCaptioner still reads the CDN", gifRead?.data?.length > 100);
-const gifPublic = await m.gifNative.fetchMedia(null, "https://www.google.com/favicon.ico");
-check("GifCaptioner still reads a public site", gifPublic?.data?.length > 10);
 const mleRead = await m.mle.downloadAttachment(null, { url: CDN_FILE, oldUrl: CDN_FILE, id: "222", fileExtension: ".png" });
 check("MessageLogger still caches attachments", !mleRead.error && existsSync(mleRead.path), mleRead);
 check("MessageLogger write IPC is gone", m.mle.writeImageNative === undefined);
@@ -576,22 +672,21 @@ while (view.getUint32(directory, true) !== 0x02014b50) directory--;
 view.setUint32(directory + 24, 10, true);
 const scoped = async blob => { const { entries, readEntry } = await m.unzipBlob(blob); return readEntry(entries[0]); };
 check("ZIP+ refuses a declared bomb", await rejects(scoped(new Blob([honestBomb]))));
-const memBefore = process.memoryUsage().arrayBuffers;
 const liar = await scoped(new Blob([liarBomb])).then(() => "UNPACKED", e => e.message);
 check("ZIP+ stops a bomb that lies about its size", liar === "Entry is too large to preview", liar);
 const normal = zipBomb({ "hello.txt": strToU8("merhaba") }, { level: 6 });
 check("ZIP+ still reads a normal file", new TextDecoder().decode(await scoped(new Blob([normal]))) === "merhaba");
 
-const previewOf = async (name, bytes) => {
-    globalThis.__zip = bytes.buffer;
-    const state = m.getCachedZip(`https://cdn.discordapp.com/attachments/1/2/${name}.zip`);
-    return state.promise.then(r => r, e => e.message);
-};
-check("ZipPreview refuses a declared bomb", await previewOf("bomb", honestBomb) === "ZIP is too large to preview.");
-const liarPreview = await previewOf("liar", liarBomb);
-check("ZipPreview survives a lying header", typeof liarPreview === "string" || liarPreview.entries[0].size <= 10, typeof liarPreview);
-const fine = await previewOf("fine", normal);
-check("ZipPreview still opens a normal zip", fine.entries?.[0]?.name === "hello.txt", fine);
+// ---- Theme library downloads ----------------------------------------------------------------------------
+const themesDir = join(OUT, "data", "themes");
+mkdirSync(themesDir, { recursive: true });
+const themeFile = join(themesDir, "Secure.theme.css");
+globalThis.fetch = async () => new Response(new Uint8Array(6 * MB));
+check("theme library refuses an oversized theme", await m.downloadTheme(null, { id: "1", name: "Secure", content: "x" }).then(() => "WRITTEN", e => e.message) === "Theme is too large" && !existsSync(themeFile));
+globalThis.fetch = async () => new Response("body { color: red }");
+await m.downloadTheme(null, { id: "1", name: "Secure", content: "x" });
+check("theme library still saves a theme", readFileSync(themeFile, "utf8") === "body { color: red }");
+globalThis.fetch = realFetch;
 
 // ---- RichPresence login URLs ------------------------------------------------------------------------
 for (const url of ["https://jelly.example.com", "http://localhost:8096", "http://127.0.0.1:8096", "http://192.168.1.5:8096", "http://10.0.0.2", "http://172.20.1.1", "http://100.100.1.1:8096", "http://nas:8096", "http://nas.local:8096", "http://media.lan", "http://[::1]:8096"])
@@ -611,6 +706,32 @@ for (const url of ["https://endcord.com/", "https://my.server:8443/", "http://lo
     check(`cloud allows ${url}`, m.isSecureCloudUrl(url) === true);
 for (const url of ["http://endcord.com/", "http://192.168.1.5/", "http://localhost.evil.example/", "ftp://endcord.com/", "endcord.com", ""])
     check(`cloud refuses ${url || "(empty)"}`, m.isSecureCloudUrl(url) === false);
+
+// ---- Settings that steer where data goes stay on this device -----------------------------------------------
+{
+    const { readdirSync, statSync } = await import("fs");
+    const pluginsDir = join(ROOT, "src", "plugins");
+    const sources = [];
+    const walk = dir => { for (const name of readdirSync(dir)) { const path = join(dir, name); if (statSync(path).isDirectory()) walk(path); else if (/\.tsx?$/.test(name)) sources.push(path); } };
+    walk(pluginsDir);
+    // Shown, never sent to: a badge picture and the labels of an upload service
+    const DISPLAY_ONLY = new Set(["fakeTag:badgeUrl", "fileUpload:encryptingHostDomains", "fileUpload:encryptingHostTitle", "fileUpload:encryptingHostColor", "fileUpload:encryptingHostFakelink", "fileUpload:s3PublicUrl"]);
+    const WORDS = new Set(["url", "uri", "webhook", "endpoint", "host", "hostname", "token", "secret", "password", "cookie", "proxy", "api", "address", "vps"]);
+    const unprotected = [];
+    for (const file of sources) {
+        const plugin = file.slice(pluginsDir.length + 1).split(/[\\/]/)[0];
+        const text = readFileSync(file, "utf8");
+        const setting = /(\w+)\s*:\s*\{((?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*?)\}/g;
+        let found;
+        while ((found = setting.exec(text))) {
+            const [, name, body] = found;
+            if (!/type:\s*OptionType\.STRING/.test(body) || /sensitive\s*:\s*true/.test(body)) continue;
+            const words = name.replace(/([a-z0-9])([A-Z])/g, "$1 $2").toLowerCase().split(/[\s_]+/);
+            if (words.some(word => WORDS.has(word)) && !DISPLAY_ONLY.has(`${plugin}:${name}`)) unprotected.push(`${plugin}:${name}`);
+        }
+    }
+    check("every setting holding an address or a key is marked sensitive, so sync and backups can't repoint it", unprotected.length === 0, unprotected);
+}
 
 // ---- Extension metadata: another frame posting to this window ----------------------------------------
 await esbuild.build({
@@ -663,6 +784,17 @@ const refused = await new Promise(resolve => resolve(globalThis.__rawHandlers[UP
 globalThis.fetch = realFetch;
 check("a registered handler refuses a foreign page before it runs", refused === `Refused ${UPDATE}`, refused);
 
+// Endcord Desktop's build (IS_VESKTOP) once trusted every sender. Its window only shows Discord, but the check holds there too
+await esbuild.build({
+    stdin: { contents: 'export { isTrustedSender } from "./src/main/utils/ipc";', resolveDir: ROOT, loader: "ts" },
+    bundle: true, platform: "node", format: "cjs", outfile: join(OUT, "desktop-ipc.cjs"), tsconfig: join(ROOT, "tsconfig.json"), logLevel: "error",
+    plugins: [stubPlugin],
+    define: { IS_DISCORD_DESKTOP: "false", IS_VESKTOP: "true" }
+});
+const desktopIpc = require(join(OUT, "desktop-ipc.cjs"));
+check("Endcord Desktop's IPC accepts Discord", desktopIpc.isTrustedSender(frame("https://discord.com/app", "https://discord.com"), SET_SETTINGS) === true);
+check("Endcord Desktop's IPC refuses a foreign page", desktopIpc.isTrustedSender(frame("https://evil.example/x", "https://evil.example"), SET_SETTINGS) === false);
+
 await esbuild.build({
     stdin: { contents: 'import "./src/preload";', resolveDir: ROOT, loader: "ts" },
     bundle: true, platform: "node", format: "cjs", outfile: join(OUT, "preload.cjs"), tsconfig: join(ROOT, "tsconfig.json"), logLevel: "error",
@@ -693,6 +825,34 @@ const onForeignPage = loadPreload("https:", "https://evil.example");
 check("a foreign page gets no native API", onForeignPage.exposed.length === 0 && !onForeignPage.renderer, onForeignPage);
 const inEditor = loadPreload("data:", "null");
 check("the editor gets its three calls only", inEditor.exposed.join() === "setCss,getCurrentCss,getTheme" && !inEditor.renderer && inEditor.discord === 0, inEditor);
+
+// ---- Endcord Desktop's updates -------------------------------------------------------------------------
+// The same updater, built for Endcord Desktop: its own manifest, its own six files, and no files built on another
+// Electron. In a folder of its own, so its update state stays apart from the mod's above
+await esbuild.build({
+    stdin: { contents: 'import "./src/main/updater/http";', resolveDir: ROOT, loader: "ts" },
+    bundle: true, platform: "node", format: "cjs", outfile: join(OUT, "desktop", "updater.cjs"), tsconfig: join(ROOT, "tsconfig.json"), logLevel: "error",
+    plugins: [stubPlugin],
+    define: { IS_DISCORD_DESKTOP: "false", IS_VESKTOP: "true", IS_DEV: "false", IS_STANDALONE: "true", IS_WEB: "false", BUILD_TIMESTAMP: "1000", VERSION: '"0"' }
+});
+const DESKTOP_FILES = { "endcordDesktopMain.js": "m", "endcordDesktopPreload.js": "p", "endcordDesktopRenderer.js": "r", "endcordDesktopRenderer.css": "c", "main.js": "a", "preload.js": "b" };
+const desktopManifest = over => manifest({ assets: Object.entries(DESKTOP_FILES).map(([name, c]) => ({ name, url: `https://raw.githubusercontent.com/Endcord/Endcord/main/desktop/${name}`, sha256: hex(c) })), ...over });
+const requested = [];
+globalThis.fetch = async url => (requested.push(String(url)), String(url).includes("version.json") ? Response.json(served) : new Response(bodies[String(url).split("/").pop()]));
+require(join(OUT, "desktop", "updater.cjs"));
+// The stub starts a fresh handler table for each bundle
+const desktopOffers = async mf => { served = mf; return (await globalThis.__handlers[UPDATE]()).value; };
+const { electron } = process.versions;
+Object.defineProperty(process.versions, "electron", { value: "45.1.0", configurable: true });
+check("Endcord Desktop takes a signed release of its six files", await desktopOffers(desktopManifest({ version: "1.1.0+electron45.1.0" })) === true);
+check("from its own manifest", requested.some(url => url.startsWith("https://raw.githubusercontent.com/Endcord/Endcord/main/desktop/version.json")), requested);
+check("and never the mod's files", await desktopOffers(manifest()) === false);
+globalThis.__notices = [];
+check("a release built on another Electron isn't swapped in", await desktopOffers(desktopManifest({ hash: "new-electron", version: "2.0.0+electron46.0.0" })) === false);
+check("it's announced as a new download, once", __notices.length === 1 && (await desktopOffers(desktopManifest({ hash: "new-electron", version: "2.0.0+electron46.0.0" })), __notices.length === 1), __notices);
+check("an unsigned Electron change is refused like any edit", await desktopOffers({ ...desktopManifest({ version: "1.1.0+electron45.1.0" }), version: "1.1.0+electron46.0.0" }) === false);
+Object.defineProperty(process.versions, "electron", { value: electron, configurable: true });
+globalThis.fetch = realFetch;
 
 try {
     rmSync(OUT, { recursive: true, force: true });

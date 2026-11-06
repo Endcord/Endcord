@@ -4,13 +4,474 @@
 }
 
 .vc-toolbox-icon {
-    color: var(--interactive-icon-default);
-}
-
-.vc-toolbox-btn[class*="selected"] .vc-toolbox-icon {
-    color: var(--interactive-icon-active);
+    transition: transform var(--ec-motion-fast) var(--ec-ease-out);
 }
 
 .vc-toolbox-btn:hover .vc-toolbox-icon {
-    color: var(--interactive-icon-hover);
+    transform: translateY(-1px);
+}
+
+/*
+ * A quiet list in Endcord's night blue. Corners come from --ec-radius and --ec-pc, so pixel style turns the same
+ * panel into the installer's stepped one. The shadow sits on the root because pixel corners would cut it off
+ */
+.ec-control-root {
+    width: 320px;
+    filter: drop-shadow(0 12px 24px rgb(2 6 16 / 55%));
+    font-size: 14px;
+    animation: ec-rise var(--ec-motion-base) var(--ec-ease-out);
+    transform-origin: top right;
+}
+
+.ec-control-panel {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 64px);
+    border-radius: var(--ec-radius-lg);
+    background: var(--ec-line);
+    clip-path: var(--ec-pc4);
+}
+
+.ec-control-panel::before {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    z-index: -1;
+    border-radius: max(0px, var(--ec-radius-lg) - 1px);
+    background: var(--ec-night);
+    clip-path: var(--ec-pc4);
+}
+
+/* The installer's dot grid behind the logo, in pixel style */
+[data-ec-pixel] .ec-control-panel::after {
+    content: "";
+    position: absolute;
+    inset: 1px 1px auto;
+    z-index: -1;
+    height: 140px;
+    background-image: var(--ec-dots);
+    background-size: 24px 24px;
+    mask-image: radial-gradient(ellipse 75% 70% at 50% 0%, #000 25%, transparent 80%);
+}
+
+.ec-control-content {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 14px 12px 12px;
+    overflow-y: auto;
+    scrollbar-width: none;
+}
+
+.ec-control-root button {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.ec-control-root :is(button, label):focus-visible {
+    outline: 2px solid var(--ec-ice);
+    outline-offset: -2px;
+}
+
+/* ---- Header ---- */
+
+.ec-control-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 2px;
+}
+
+.ec-control-sparks {
+    position: absolute;
+    top: 4px;
+    right: 40px;
+    opacity: 0.5;
+    pointer-events: none;
+    mask-image: linear-gradient(to right, transparent, #000 60%);
+}
+
+.ec-control-root .ec-control-boop {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.ec-control-boop .ec-mark-tile svg {
+    transition: transform var(--ec-motion-fast) var(--ec-ease-out);
+}
+
+.ec-control-boop:hover .ec-mark-tile svg {
+    transform: rotate(-8deg) scale(1.06);
+}
+
+/* Two pixel z's drifting up from the sleeping panda, in pixel style */
+[data-ec-pixel] .ec-control-snore {
+    position: absolute;
+    top: -3px;
+    right: -5px;
+    width: 8px;
+    height: 8px;
+    background:
+        linear-gradient(var(--ec-ice), var(--ec-ice)) 0 0 / 6px 2px no-repeat,
+        linear-gradient(var(--ec-ice), var(--ec-ice)) 4px 2px / 2px 2px no-repeat,
+        linear-gradient(var(--ec-ice), var(--ec-ice)) 2px 4px / 2px 2px no-repeat,
+        linear-gradient(var(--ec-ice), var(--ec-ice)) 0 6px / 6px 2px no-repeat;
+    pointer-events: none;
+    animation: ec-control-snore 3.2s steps(8) infinite;
+}
+
+@keyframes ec-control-snore {
+    0% {
+        opacity: 0;
+        transform: translate(-4px, 6px) scale(0.5);
+    }
+
+    30%,
+    70% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(2px, -6px);
+    }
+}
+
+.ec-control-heading {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
+    min-width: 0;
+}
+
+.ec-control-root .ec-control-version {
+    color: var(--ec-mist);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.3;
+    transition: color var(--ec-motion-fast) ease;
+}
+
+.ec-control-root .ec-control-version:hover {
+    color: var(--ec-ice);
+}
+
+.ec-control-root .ec-control-icon-button {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--ec-radius);
+    color: var(--ec-mist);
+    clip-path: var(--ec-pc);
+    transition: var(--ec-motion-fast) ease;
+    transition-property: background-color, color;
+}
+
+.ec-control-root .ec-control-icon-button:hover {
+    background: var(--ec-panel-hi);
+    color: var(--ec-ice);
+}
+
+.ec-control-root .ec-control-update {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 9px 10px 9px 12px;
+    border-radius: var(--ec-radius);
+    background: var(--ec-cobalt);
+    color: var(--white);
+    font-size: 13px;
+    font-weight: 600;
+    clip-path: var(--ec-pc);
+    transition: background-color var(--ec-motion-fast) ease;
+}
+
+.ec-control-root .ec-control-update:hover {
+    background: var(--ec-cobalt-hi);
+}
+
+/* ---- Lists ---- */
+
+.ec-control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 4px;
+    border-radius: var(--ec-radius);
+    background: var(--ec-panel);
+    clip-path: var(--ec-pc);
+}
+
+.ec-control-switch-row,
+.ec-control-root .ec-control-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 40px;
+    box-sizing: border-box;
+    padding: 4px 8px 4px 6px;
+    border-radius: max(0px, var(--ec-radius) - 3px);
+    clip-path: var(--ec-pc);
+    cursor: pointer;
+    transition: background-color var(--ec-motion-fast) ease;
+}
+
+.ec-control-switch-row:hover,
+.ec-control-root .ec-control-row:hover {
+    background: rgb(156 203 255 / 6%);
+}
+
+.ec-control-row-tile {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: max(0px, var(--ec-radius) - 2px);
+    background: var(--ec-panel-hi);
+    color: var(--ec-mist);
+    clip-path: var(--ec-pc);
+    transition: var(--ec-motion-base) var(--ec-ease-out);
+    transition-property: background-color, color;
+}
+
+.ec-control-on .ec-control-row-tile {
+    background: color-mix(in srgb, var(--ec-cobalt) 30%, var(--ec-panel-hi));
+    color: var(--ec-ice);
+}
+
+.ec-control-tile-icon {
+    width: 18px;
+    height: 18px;
+}
+
+/* Discord's chevron points down, so it turns to point into the row */
+.ec-control-chevron {
+    transform: rotate(-90deg);
+}
+
+.ec-control-row-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    padding: 0 4px;
+    color: var(--ec-mist);
+}
+
+.ec-control-row-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--ec-paper);
+    font-size: 14px;
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ec-control-switch-row .vc-switch-container {
+    flex-shrink: 0;
+}
+
+.ec-control-row-detail {
+    flex-shrink: 0;
+    color: var(--ec-mist);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+}
+
+.ec-control-row-warning {
+    color: var(--ec-honey);
+}
+
+.ec-control-row-chevron {
+    flex-shrink: 0;
+    color: var(--ec-mist);
+    opacity: 0.7;
+    transition: var(--ec-motion-fast) var(--ec-ease-out);
+    transition-property: opacity, transform;
+}
+
+.ec-control-root .ec-control-row:hover .ec-control-row-chevron {
+    opacity: 1;
+    transform: translateX(2px) rotate(-90deg);
+}
+
+/* ---- Look ---- */
+
+.ec-control-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.ec-control-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-inline-start: 2px;
+}
+
+.ec-control-label {
+    color: var(--ec-mist);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.ec-control-looks {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+}
+
+.ec-control-root .ec-control-look {
+    display: block;
+    min-width: 0;
+    padding: 2px;
+    border-radius: var(--ec-radius);
+    background: var(--ec-line);
+    clip-path: var(--ec-pc);
+    transition: background-color var(--ec-motion-base) var(--ec-ease-out);
+}
+
+.ec-control-look .ec-look-window {
+    border-radius: max(0px, var(--ec-radius) - 2px);
+    clip-path: var(--ec-pc);
+}
+
+.ec-control-root .ec-control-look:hover {
+    background: var(--ec-line-strong);
+}
+
+.ec-control-root .ec-control-selected,
+.ec-control-root .ec-control-selected:hover {
+    background: var(--ec-ice);
+}
+
+/* ---- Profiles ---- */
+
+.ec-control-profiles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.ec-control-root .ec-control-profile {
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: var(--ec-panel-hi);
+    box-shadow: inset 0 0 0 1px var(--ec-line);
+    color: var(--ec-paper);
+    font-size: 13px;
+    font-weight: 600;
+    clip-path: var(--ec-pc);
+    transition: background-color var(--ec-motion-fast) ease, box-shadow var(--ec-motion-fast) ease;
+}
+
+[data-ec-pixel] .ec-control-root .ec-control-profile {
+    border-radius: 0;
+}
+
+.ec-control-root .ec-control-profile:hover {
+    box-shadow: inset 0 0 0 1px var(--ec-line-strong);
+}
+
+.ec-control-root .ec-control-profile-on,
+.ec-control-root .ec-control-profile-on:hover {
+    background: color-mix(in srgb, var(--ec-bamboo) 16%, var(--ec-panel));
+    box-shadow: inset 0 0 0 1px var(--ec-bamboo);
+}
+
+/* ---- Memory ---- */
+
+.ec-control-memory {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    box-sizing: border-box;
+    padding: 4px 4px 4px 12px;
+    border-radius: var(--ec-radius);
+    background: var(--ec-panel);
+    clip-path: var(--ec-pc);
+}
+
+.ec-control-memory-value {
+    color: var(--ec-paper);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}
+
+.ec-control-memory-result {
+    color: var(--ec-bamboo);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    animation: ec-rise var(--ec-motion-base) var(--ec-ease-out);
+}
+
+.ec-control-root .ec-control-text-button {
+    flex-shrink: 0;
+    padding: 6px 8px;
+    border-radius: max(0px, var(--ec-radius) - 2px);
+    color: var(--ec-ice);
+    font-size: 13px;
+    font-weight: 600;
+    clip-path: var(--ec-pc);
+    transition: background-color var(--ec-motion-fast) ease;
+}
+
+.ec-control-root .ec-control-footer .ec-control-text-button {
+    color: var(--ec-mist);
+    font-weight: 500;
+}
+
+.ec-control-root .ec-control-text-button:disabled {
+    color: var(--ec-mist);
+    cursor: default;
+}
+
+.ec-control-root .ec-control-text-button:hover:not(:disabled) {
+    background: rgb(156 203 255 / 10%);
+}
+
+/* ---- Footer ---- */
+
+.ec-control-footer {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 8px;
+    border-top: 1px solid var(--ec-line);
+}
+
+.ec-control-root .ec-control-footer .ec-control-text-button:hover {
+    color: var(--ec-paper);
+}
+
+.ec-control-night {
+    overflow: hidden;
+    color: var(--ec-mist);
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }

@@ -1,10 +1,12 @@
 {
-    "asAny": 242,
-    "typeSuppressions": 53,
+    "asAny": 236,
+    "typeSuppressions": 51,
     "lintSuppressions": 19,
     "consoleLog": 2,
     "todos": 37,
     "filesOverLimit": 7,
-    "longestFile": 2078,
-    "rendererKilobytes": 5724
+    "longestFile": 2041,
+    "rendererKilobytes": 397,
+    "pluginChunkKilobytes": 3233,
+    "mainProcessKilobytes": 94
 }

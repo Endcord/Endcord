@@ -1,12 +1,13 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2023 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 import "./SpecialCard.css";
 
 import { classNameFactory } from "@utils/css";
+import { classes } from "@utils/misc";
 import type { CSSProperties, PropsWithChildren, ReactNode } from "react";
 
 const cl = classNameFactory("ec-card-");
@@ -45,7 +46,7 @@ export function SpecialCard({ title, subtitle, description, art, accent = "ice",
  * Crisp pixel art drawn from rows of characters, matching the pixel style of the Endcord logo.
  * Every character maps to a colour in `palette`; "." is transparent.
  */
-export function PixelArt({ rows, palette, pixel = 5, style }: { rows: string[]; palette: Record<string, string>; pixel?: number; style?: CSSProperties; }) {
+export function PixelArt({ rows, palette, pixel = 5, className, style }: { rows: string[]; palette: Record<string, string>; pixel?: number; className?: string; style?: CSSProperties; }) {
     const width = Math.max(...rows.map(r => r.length));
     const rects: ReactNode[] = [];
     rows.forEach((row, y) => {
@@ -56,7 +57,8 @@ export function PixelArt({ rows, palette, pixel = 5, style }: { rows: string[]; 
     });
     return (
         <svg
-            className={cl("pixel-art")}
+            className={classes(cl("pixel-art"), className)}
+            aria-hidden="true"
             width={width * pixel}
             height={rows.length * pixel}
             viewBox={`0 0 ${width} ${rows.length}`}
@@ -68,7 +70,7 @@ export function PixelArt({ rows, palette, pixel = 5, style }: { rows: string[]; 
     );
 }
 
-// The sleeping panda from the Endcord logo
+// The panda from the Endcord logo
 export const PANDA_ROWS = [
     "..kkk.......kkk..",
     ".kKKKk.....kKKKk.",
@@ -89,6 +91,9 @@ export const PANDA_ROWS = [
 ];
 // The fur is a shade lighter than the card and the ears have a rim light, so the silhouette reads on dark blue
 export const PANDA_PALETTE = { K: "#232C40", k: "#4A5A80", W: "#F3F6FB", w: "#C9D3E4", E: "#FFFFFF", P: "#F4A6B8" };
+
+// On the logo it's asleep: no shine in the eyes, and a thin line for each lid
+export const SLEEPING_PANDA_ROWS = PANDA_ROWS.map((row, y) => y === 7 ? row.replaceAll("E", "K") : y === 8 ? "WWKEEEKWWWKEEEKWw" : row);
 
 export const HEART_ROWS = [
     ".HH...HH.",

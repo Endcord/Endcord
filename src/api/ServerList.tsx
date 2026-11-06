@@ -1,9 +1,10 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { EndcordOnly } from "@api/EndcordVisibility";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { ComponentType } from "react";
 
@@ -40,8 +41,10 @@ export const renderAll = (position: ServerListRenderPosition) => {
     return Array.from(getRenderMap(position).entries())
         .sort((a, b) => b[1] - a[1])
         .map(([Component], i) => (
-            <ErrorBoundary noop key={i}>
-                <Component />
-            </ErrorBoundary>
+            <EndcordOnly key={i}>
+                <ErrorBoundary noop>
+                    <Component />
+                </ErrorBoundary>
+            </EndcordOnly>
         ));
 };

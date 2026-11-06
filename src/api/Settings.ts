@@ -1,6 +1,6 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -14,6 +14,9 @@ import plugins, { getPluginFlag } from "~plugins";
 
 const logger = new Logger("Settings");
 
+/** numeric: the language's own order with slashes; discord: exactly as Discord writes it */
+export type BadgeDateFormat = "numeric" | "dmy" | "mdy" | "ymd" | "long" | "discord";
+
 export interface SettingsPluginUiElement {
     enabled: boolean;
     // TODO
@@ -24,6 +27,12 @@ export type SettingsPluginUiElements = {
     /** id will be whatever id the element was registered with. Usually, but not always, the plugin name */
     [id: string]: SettingsPluginUiElement;
 };
+
+export interface PluginProfile {
+    id: string;
+    name: string;
+    plugins: string[];
+}
 
 export interface Settings {
     language: "en" | "tr" | "ru" | "es" | "fr";
@@ -54,9 +63,21 @@ export interface Settings {
     windowsMaterial: "none" | "mica" | "tabbed" | "acrylic";
     disableMinSize: boolean;
     disableBackgroundMemoryTrim: boolean;
+    uiSounds: boolean;
+    /** Endcord's screens with the installer's pixel corners, icons and lettering instead of smooth ones */
+    pixelStyle: boolean;
+    /** Leaves the Endcord Contributor badge off profiles, on this PC */
+    hideContributorBadge: boolean;
+    /** How dates on badges are written, such as "Subscriber since" on Nitro */
+    badgeDateFormat: BadgeDateFormat;
+    pluginDefaultsVersion: number;
     /** GPU rasterization and out-of-process canvas: smoother on some GPUs, but more memory in the GPU process */
     gpuRasterization: boolean;
     winNativeTitleBar: boolean;
+    /** Named sets of plugins to switch between, see @api/PluginProfiles */
+    pluginProfiles: PluginProfile[];
+    /** Set on a fresh install until the welcome screen has been through */
+    welcomePending: boolean;
     plugins: {
         [plugin: string]: {
             enabled: boolean;
@@ -100,8 +121,15 @@ const DefaultSettings: Settings = {
     windowsMaterial: "none",
     disableMinSize: false,
     disableBackgroundMemoryTrim: false,
+    uiSounds: false,
+    pixelStyle: false,
+    hideContributorBadge: false,
+    badgeDateFormat: "numeric",
+    pluginDefaultsVersion: 0,
     gpuRasterization: false,
     winNativeTitleBar: false,
+    pluginProfiles: [],
+    welcomePending: false,
     plugins: {},
 
     uiElements: {
@@ -125,6 +153,11 @@ const DefaultSettings: Settings = {
 };
 
 const settings = !IS_REPORTER ? EndcordNative.settings.get() : {} as Settings;
+
+// Settings written by Endcord always list plugins. Without any, this is a fresh install, or one the installer only
+// gave a language to, and nothing someone set up is in the way of a welcome
+if (!IS_REPORTER && !Object.keys(settings.plugins ?? {}).length) settings.welcomePending = true;
+
 mergeDefaults(settings, DefaultSettings);
 
 export const SettingsStore = new SettingsStoreClass(settings, {
@@ -268,6 +301,26 @@ export function migratePluginToSettings(deleteOldSettings: boolean, newName: str
         if (deleteOldSettings) delete plugins[oldName];
         SettingsStore.markAsChanged();
     }
+}
+
+/**
+ * For a plugin that was removed because `newName` does the same job. If the old one was on and the new one off, the
+ * new one is turned on with `settings` applied; with `keepSettings` it takes the old plugin's settings, for a plugin
+ * whose settings already use the same keys. The old entry is dropped either way, so this only runs once.
+ */
+export function migrateRemovedPlugin(newName: string, oldName: string, options: { settings?: Record<string, unknown>; keepSettings?: boolean; } = {}) {
+    const { plugins } = SettingsStore.plain;
+    const oldPlugin = plugins[oldName];
+    if (!oldPlugin) return;
+
+    if (oldPlugin.enabled && !plugins[newName]?.enabled) {
+        logger.info(`${oldName} was removed, turning on ${newName}, which does the same job`);
+        const { enabled, ...oldSettings } = oldPlugin;
+        plugins[newName] = { ...(options.keepSettings ? oldSettings : plugins[newName]), ...options.settings, enabled: true };
+    }
+
+    delete plugins[oldName];
+    SettingsStore.markAsChanged();
 }
 
 export function migrateSettingToPlugin(newName: string, oldName: string, settingName: string) {

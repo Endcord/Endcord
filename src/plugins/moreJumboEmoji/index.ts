@@ -35,7 +35,8 @@ export default definePlugin({
     patches: [{
         find: ".jumboable=",
         replacement: {
-            match: /(\i)>\i\.MAX_EMOJI_TO_BE_JUMBO\|\|/g,
+            // The limit is a named constant, or on Canary the number itself
+            match: /(\i)>(?:\i\.MAX_EMOJI_TO_BE_JUMBO|\d+)\|\|(?=\i\.forEach\(\i=>\{\i\.jumboable=)/g,
             replace: "$self.calculate($1)||"
         }
     }],

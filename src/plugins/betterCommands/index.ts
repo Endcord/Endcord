@@ -80,7 +80,7 @@ export default definePlugin({
                     type: ApplicationCommandOptionType.USER,
                 }
             ],
-            inputType: ApplicationCommandInputType.BOT,
+            inputType: ApplicationCommandInputType.BUILT_IN,
             execute: async (opts, ctx) => {
                 try {
                     const channelId = ctx.channel.id;

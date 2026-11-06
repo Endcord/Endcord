@@ -82,9 +82,8 @@ async function pullUser() {
     await moveUserToChannel(userId, myVoice.channelId, myVoice.guildId);
 }
 
-// "Follow User" can come from FollowUser (id: follow-user, inside a MenuGroup)
-// or from FollowVoiceUser (id: fvu-follow-user, at root)
-const FOLLOW_ITEM_IDS = ["follow-user", "fvu-follow-user"];
+// The "Follow User" item from FollowUser, inside a MenuGroup
+const FOLLOW_ITEM_IDS = ["follow-user"];
 
 // Returns the container array and the index of the top level element that
 // contains a follow item, so we can insert right after the whole group

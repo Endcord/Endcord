@@ -1,9 +1,10 @@
 /*
  * Endcord, a Discord client mod
- * Copyright (c) 2026 Vendicated and contributors
+ * Copyright (c) 2022 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { EndcordOnly } from "@api/EndcordVisibility";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Channel, Message } from "@endcord/discord-types";
 import { JSX } from "react";
@@ -59,8 +60,10 @@ export function __addDecorationsToMessage(props: MessageDecorationProps): JSX.El
     );
 
     return (
-        <div className="vc-message-decorations-wrapper">
-            {decorations}
-        </div>
+        <EndcordOnly>
+            <div className="vc-message-decorations-wrapper">
+                {decorations}
+            </div>
+        </EndcordOnly>
     );
 }

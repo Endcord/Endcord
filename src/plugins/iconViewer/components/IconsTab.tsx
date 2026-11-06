@@ -9,7 +9,7 @@ import { Heading } from "@components/Heading";
 import { SettingsTab, wrapTab } from "@components/settings";
 import { TooltipContainer } from "@components/TooltipContainer";
 import { Icon } from "@endcord/discord-types";
-import { iconsModule } from "@plugins/_core/concatenatedModules";
+import { iconsModule, loadAllIcons } from "@plugins/_core/concatenatedModules";
 import { IconsDef } from "@plugins/iconViewer/types";
 import { debounce } from "@shared/debounce";
 import { t } from "@utils/i18n";
@@ -66,7 +66,17 @@ function IconsTab() {
     const [search, setSearch] = useState("");
     const [searchByFunction, setSearchByFunction] = useState(false);
 
-    const icons = useMemo(() => getIcons(), []);
+    // Discord loads many icons only when they're first shown, so the rest arrive a moment after the tab opens
+    const [loaded, setLoaded] = useState(0);
+    useEffect(() => {
+        let open = true;
+        loadAllIcons().then(() => {
+            cachedIcons = null;
+            if (open) setLoaded(n => n + 1);
+        });
+        return () => { open = false; };
+    }, []);
+    const icons = useMemo(() => getIcons(), [loaded]);
 
     const debouncedSetSearch = useMemo(
         () => debounce((query: string) => setSearch(query), 150),

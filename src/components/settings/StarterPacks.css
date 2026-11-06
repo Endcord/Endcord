@@ -1,0 +1,143 @@
+.ec-packs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 8px;
+}
+
+/* A plain row of text with a hairline edge; picking it lights the edge and tints the inside */
+.ec-packs-pack {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 14px 13px;
+    border-radius: var(--ec-radius-lg);
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--ec-line);
+    color: var(--ec-paper);
+    text-align: left;
+    cursor: pointer;
+    clip-path: var(--ec-pc);
+    transition: background-color var(--ec-motion-fast) ease, box-shadow var(--ec-motion-fast) ease, transform 220ms var(--ec-ease-out);
+}
+
+.ec-packs-pack:active {
+    transform: scale(0.985);
+    transition-duration: 80ms;
+}
+
+.ec-packs-pack:hover {
+    background: color-mix(in srgb, var(--ec-paper) 3%, transparent);
+    box-shadow: inset 0 0 0 1px var(--ec-line-strong);
+}
+
+.ec-packs-pack:focus-visible {
+    outline: 2px solid var(--ec-ice);
+    outline-offset: 2px;
+}
+
+.ec-packs-selected,
+.ec-packs-selected:hover {
+    background: color-mix(in srgb, var(--ec-cobalt) 12%, transparent);
+    box-shadow: inset 0 0 0 1px var(--ec-cobalt-hi);
+}
+
+/* The recommended pack takes the whole first row, so it reads as the place to start */
+.ec-packs-recommended {
+    grid-column: 1 / -1;
+}
+
+.ec-packs-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ec-packs-icon {
+    display: grid;
+    flex-shrink: 0;
+    color: var(--ec-ice);
+}
+
+.ec-packs-name {
+    min-width: 0;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.ec-packs-tag {
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--ec-ice) 14%, transparent);
+    color: var(--ec-ice);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+[data-ec-pixel] .ec-packs-tag {
+    border-radius: 0;
+}
+
+/* A round mark that fills in when the pack is picked, and its check draws itself */
+.ec-packs-check {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    margin-left: auto;
+    border: 1.5px solid var(--ec-line-strong);
+    border-radius: 50%;
+    transition: background-color var(--ec-motion-fast) ease, border-color var(--ec-motion-fast) ease;
+}
+
+.ec-packs-check svg {
+    width: 12px;
+    height: 12px;
+    fill: none;
+    stroke: white;
+    stroke-dasharray: 14;
+    stroke-dashoffset: 14;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2;
+    transition: stroke-dashoffset 120ms ease;
+}
+
+[data-ec-pixel] .ec-packs-check {
+    border-radius: 0;
+}
+
+.ec-packs-selected .ec-packs-check {
+    border-color: var(--ec-cobalt-hi);
+    background: var(--ec-cobalt-hi);
+    animation: ec-packs-check-pop calc(var(--ec-motion-slow) * 1.1) cubic-bezier(0.34, 1.5, 0.64, 1);
+}
+
+.ec-packs-selected .ec-packs-check svg {
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset var(--ec-motion-base) var(--ec-ease-out) 60ms;
+}
+
+@keyframes ec-packs-check-pop {
+    0% {
+        transform: scale(0.6);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.ec-packs-description {
+    color: var(--ec-mist);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.ec-packs-count {
+    margin-top: auto;
+    padding-top: 2px;
+    color: var(--ec-mist);
+    font-size: 12px;
+    opacity: 0.8;
+}

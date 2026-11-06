@@ -13,6 +13,10 @@ on:
 env:
     FORCE_COLOR: true
 
+# Read-only unless a job asks for more
+permissions:
+    contents: read
+
 jobs:
     Build:
         runs-on: ubuntu-latest
@@ -54,7 +58,7 @@ jobs:
             - name: Upload DevBuild as release
               if: github.repository == 'Endcord/Endcord'
               run: |
-                  gh release create devbuild --title "DevBuild" --notes "Automated build" || true
+                  gh release create devbuild --title "DevBuild" --notes "Automated build of the latest commit. Not a release: these files are unsigned and the updater never installs them. Install Endcord from https://endcord.com/download" || true
                   gh release upload devbuild --clobber dist/*
                   gh release edit devbuild --title "DevBuild $RELEASE_TAG"
               env:
@@ -68,7 +72,9 @@ jobs:
                   git config --global user.name "$USERNAME"
                   git config --global user.email actions@github.com
 
-                  git clone https://$USERNAME:$API_TOKEN@github.com/$GH_REPO.git upload
+                  # The token travels in a header git never prints, not in the remote address git echoes on errors
+                  auth="http.https://github.com/.extraheader=AUTHORIZATION: basic $(printf 'x-access-token:%s' "$API_TOKEN" | base64 -w0)"
+                  git -c "$auth" clone https://github.com/$GH_REPO.git upload
                   cd upload
 
                   GLOBIGNORE=.git:.gitignore:README.md:LICENSE
@@ -77,7 +83,7 @@ jobs:
 
                   git add -A
                   git commit -m "Builds for https://github.com/$GITHUB_REPOSITORY/commit/$GITHUB_SHA"
-                  git push --force https://$USERNAME:$API_TOKEN@github.com/$GH_REPO.git
+                  git -c "$auth" push --force origin HEAD
               env:
                   API_TOKEN: ${{ secrets.BUILDS_TOKEN }}
                   GH_REPO: rootpoii/builds
