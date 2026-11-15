@@ -5,6 +5,7 @@
  */
 
 import { BaseText } from "@components/BaseText";
+import { EndcordModal } from "@components/EndcordModal";
 import { Heading } from "@components/Heading";
 import { BookCheckIcon, OpenExternalIcon, PencilIcon, StarFilled, StarOutlined, TrashIcon, UnsendIcon, WindowTopOutlineIcon, XLargeBoldIcon } from "@components/Icons";
 import { Paragraph } from "@components/Paragraph";
@@ -15,7 +16,7 @@ import { Bookmark, BookmarkFolder, Bookmarks, ChannelTabsProps, UseBookmarkMetho
 import { getIntlMessage } from "@utils/discord";
 import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
-import { Button, ChannelStore, closeModal, ColorPicker, FluxDispatcher, Menu, Modal, openModal, ReadStateStore, ReadStateUtils, Select, TextInput, useEffect, useMemo, useState } from "@webpack/common";
+import { Button, ChannelStore, closeModal, ColorPicker, FluxDispatcher, Menu, openModal, ReadStateStore, ReadStateUtils, Select, TextInput, useEffect, useMemo, useState } from "@webpack/common";
 
 const legacyFolderColors: Record<string, string> = {
     "var(--channeltabs-red)": bookmarkFolderColors.Red,
@@ -143,7 +144,7 @@ function FolderIconPickerModal({ modalProps, modalKey, name, color, iconName, on
     }, [iconNames, search]);
 
     return (
-        <Modal
+        <EndcordModal
             {...modalProps}
             size="sm"
             title={<BaseText size="lg" weight="semibold">{t("Choose Folder Icon")}</BaseText>}
@@ -208,7 +209,7 @@ function FolderIconPickerModal({ modalProps, modalKey, name, color, iconName, on
                     </button>
                 ))}
             </div>
-        </Modal>
+        </EndcordModal>
     );
 }
 
@@ -283,7 +284,7 @@ export function EditModal({ modalProps, modalKey, bookmark, onSave }: {
     const placeholder = bookmarkPlaceholderName(bookmark);
 
     return (
-        <Modal
+        <EndcordModal
             {...modalProps}
             size="sm"
             title={<BaseText size="lg" weight="semibold">{t("Edit Bookmark")}</BaseText>}
@@ -318,7 +319,7 @@ export function EditModal({ modalProps, modalKey, bookmark, onSave }: {
                         onChange={setName}
                     />
                 </>}
-        </Modal>
+        </EndcordModal>
     );
 }
 
@@ -334,7 +335,7 @@ function AddToFolderModal({ modalProps, modalKey, bookmarks, onSave }: {
     const [iconName, setIconName] = useState<string | undefined>();
 
     return (
-        <Modal
+        <EndcordModal
             {...modalProps}
             size="sm"
             title={<BaseText size="lg" weight="semibold">{t("Add Bookmark to Folder")}</BaseText>}
@@ -376,7 +377,7 @@ function AddToFolderModal({ modalProps, modalKey, bookmarks, onSave }: {
                 iconName={iconName}
                 setIconName={setIconName}
             />}
-        </Modal>
+        </EndcordModal>
     );
 }
 
@@ -386,7 +387,7 @@ function DeleteFolderConfirmationModal({ modalProps, modalKey, onConfirm }: {
     onConfirm: () => void;
 }) {
     return (
-        <Modal
+        <EndcordModal
             {...modalProps}
             size="sm"
             title={<BaseText size="lg" weight="semibold">{t("Are you sure?")}</BaseText>}
@@ -405,7 +406,7 @@ function DeleteFolderConfirmationModal({ modalProps, modalKey, onConfirm }: {
         >
             <Paragraph className={Margins.top16}>
                 {t("Deleting a bookmark folder will also delete all bookmarks within it.")}</Paragraph>
-        </Modal>
+        </EndcordModal>
     );
 }
 

@@ -34,7 +34,7 @@ export class Logger {
     private _log(level: "log" | "error" | "warn" | "info" | "debug", levelColor: string, rawArgs: any[], customFmt = "") {
         const args = rawArgs.map(scrub);
 
-        if (IS_REPORTER && IS_WEB && !IS_VESKTOP) {
+        if (IS_REPORTER && IS_WEB && !IS_ENDCORD_DESKTOP) {
             console[level]("[Endcord]", `${this.name}:`, ...args);
             return;
         }

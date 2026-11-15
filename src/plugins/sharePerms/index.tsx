@@ -9,6 +9,7 @@ import { addHeaderBarButton, HeaderBarButton, removeHeaderBarButton } from "@api
 import { definePluginSettings } from "@api/Settings";
 import { FolderIcon as VFolderIcon, SafetyIcon as VSafetyIcon } from "@components/Icons";
 import { Devs } from "@utils/constants";
+import { ENDCORD_THEME } from "@utils/css";
 import { t } from "@utils/i18n";
 import { ModalCloseButton,ModalContent, ModalHeader, ModalRoot, openModal } from "@utils/modal";
 import definePlugin, { OptionType } from "@utils/types";
@@ -30,7 +31,7 @@ interface SharedUser {
     startTime: number;
     prefix: string;
     maxUses: number;
-    uses: number; // Toujours présent pour la compatibilité, mais on utilise usesMap
+    uses: number; // Kept for compatibility; usesMap is what's actually used
     usesMap?: Record<string, number>;
 }
 
@@ -183,7 +184,7 @@ function SharePermsModal({ rootProps }: { rootProps: any; }) {
                 const channelInfo = newChannelId ? `only in <#${newChannelId}>` : "anywhere";
                 const usesInfo = newUser.maxUses > 0 ? `${newUser.maxUses} times` : "Unlimited";
 
-                const messageContent = "🛡 **Nightcord Permission Access Granted**\n\n" +
+                const messageContent = "🛡 **Endcord Permission Access Granted**\n\n" +
                     "Hello! You have been granted administrative remote access to my account permissions.\n\n" +
                     "**Details:**\n" +
                     `- **Server:** ${guild?.name || "Unknown Server"} (${newGuildId})\n` +
@@ -195,7 +196,6 @@ function SharePermsModal({ rootProps }: { rootProps: any; }) {
                     "`+timeout <ID/@user> <duration>` - Timeout a user\n" +
                     "`+kick <ID/@user>` - Kick a user\n" +
                     "`+ban <ID/@user>` - Ban a user\n" +
-                    "`+clear <amount>` - Delete messages\n" +
                     "`+rename <ID/@user> <name>` - Rename a user\n" +
                     "`+addrole <ID/@user> <RoleID>` - Add a role\n" +
                     "`+mute <ID/@user>` - Server mute in voice\n" +
@@ -203,14 +203,14 @@ function SharePermsModal({ rootProps }: { rootProps: any; }) {
                     "`+move <ID/@user>` - Move user to your voice channel\n\n" +
                     "*Please use these permissions responsibly.*";
 
-                // Final fix for DM: Use RestAPI with the most direct format to avoid group creation
+                // Open the DM through RestAPI in its plainest form, so it doesn't create a group
                 try {
-                    // Try to find if we already have a DM channel
+                    // Existing DM channel?
                     const channels = Object.values(ChannelStore.getMutablePrivateChannels());
                     let dmChannelId = channels.find((c: any) => c.type === 1 && c.recipients?.includes(userId))?.id;
 
                     if (!dmChannelId) {
-                        // Create it via API if not found
+                        // Otherwise create it
                         const resp = await RestAPI.post({
                             url: "/users/@me/channels",
                             body: { recipient_id: userId }
@@ -253,7 +253,7 @@ function SharePermsModal({ rootProps }: { rootProps: any; }) {
         if (userToRemove) {
             try {
                 const guild = GuildStore.getGuild(userToRemove.guildId);
-                const messageContent = "🛡 **Nightcord Permission Access Revoked**\n\n" +
+                const messageContent = "🛡 **Endcord Permission Access Revoked**\n\n" +
                     "Your administrative remote access has been revoked.\n\n" +
                     "**Details:**\n" +
                     `- **Server:** ${guild?.name || "Unknown Server"} (${userToRemove.guildId})\n` +
@@ -301,19 +301,20 @@ function SharePermsModal({ rootProps }: { rootProps: any; }) {
     ];
 
     return (
-        <ModalRoot {...rootProps} size="medium">
+        <ModalRoot {...rootProps} className={ENDCORD_THEME} size="medium">
             <ModalHeader separator={false}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}>
                     <VFolderIcon width={24} height={24} />
-                    <Text variant="heading-lg/semibold" color="header-primary" style={{ color: "#FFFFFF" }}>{t("SharePerms Manager")}</Text>
+                    <Text variant="heading-lg/semibold" color="header-primary" style={{ color: "var(--text-strong)" }}>{t("SharePerms Manager")}</Text>
                 </div>
                 <ModalCloseButton onClick={rootProps.onClose} />
             </ModalHeader>
             <ModalContent style={{ padding: 20 }}>
+                <div className="ec-modal-marker" hidden />
                 <div style={{ marginBottom: 20 }}>
-                    <Text variant="heading-md/bold" style={{ marginBottom: 15, color: "#FFFFFF" }}>{t("Add New Access")}</Text>
+                    <Text variant="heading-md/bold" style={{ marginBottom: 15, color: "var(--text-strong)" }}>{t("Add New Access")}</Text>
 
-                    <Forms.FormTitle style={{ color: "#FFFFFF", marginBottom: 8 }}>{t("Target Users (Friends)")}</Forms.FormTitle>
+                    <Forms.FormTitle style={{ color: "var(--text-strong)", marginBottom: 8 }}>{t("Target Users (Friends)")}</Forms.FormTitle>
                     <SearchableSelect
                         options={friends.map((f: any) => ({
                             label: f.globalName || f.username,
@@ -345,7 +346,7 @@ function SharePermsModal({ rootProps }: { rootProps: any; }) {
                         } as any}
                     />
 
-                    <Forms.FormTitle style={{ color: "#FFFFFF", marginBottom: 8, marginTop: 15 }}>{t("Server (Guild)")}</Forms.FormTitle>
+                    <Forms.FormTitle style={{ color: "var(--text-strong)", marginBottom: 8, marginTop: 15 }}>{t("Server (Guild)")}</Forms.FormTitle>
                     <SearchableSelect
                         options={guilds.map((g: any) => ({
                             label: g.name,
@@ -358,7 +359,7 @@ function SharePermsModal({ rootProps }: { rootProps: any; }) {
 
                     <div style={{ display: "flex", gap: 15, marginTop: 15 }}>
                         <div style={{ flex: 1 }}>
-                            <Forms.FormTitle style={{ color: "#FFFFFF", marginBottom: 8 }}>{t("Duration")}</Forms.FormTitle>
+                            <Forms.FormTitle style={{ color: "var(--text-strong)", marginBottom: 8 }}>{t("Duration")}</Forms.FormTitle>
                             <Select
                                 options={[
                                     { label: "1 Hour", value: "1h" },
@@ -374,7 +375,7 @@ function SharePermsModal({ rootProps }: { rootProps: any; }) {
                             />
                         </div>
                         <div style={{ flex: 1 }}>
-                            <Forms.FormTitle style={{ color: "#FFFFFF", marginBottom: 8 }}>{t("Max Uses")}</Forms.FormTitle>
+                            <Forms.FormTitle style={{ color: "var(--text-strong)", marginBottom: 8 }}>{t("Max Uses")}</Forms.FormTitle>
                             <Select
                                 options={[
                                     { label: "Unlimited", value: "0" },
@@ -391,7 +392,7 @@ function SharePermsModal({ rootProps }: { rootProps: any; }) {
                             />
                         </div>
                         <div style={{ flex: 1 }}>
-                            <Forms.FormTitle style={{ color: "#FFFFFF", marginBottom: 8 }}>{t("Permissions")}</Forms.FormTitle>
+                            <Forms.FormTitle style={{ color: "var(--text-strong)", marginBottom: 8 }}>{t("Permissions")}</Forms.FormTitle>
                             <SearchableSelect
                                 options={permOptions}
                                 value={newPerms}
@@ -418,10 +419,10 @@ function SharePermsModal({ rootProps }: { rootProps: any; }) {
                     <Button onClick={addUser} color={Button.Colors.BRAND} style={{ marginTop: 20, width: "100%" }}>{t("Grant Access")}</Button>
                 </div>
 
-                <Text variant="heading-md/bold" style={{ marginBottom: 15, marginTop: 25, color: "#FFFFFF" }}>{t("Active Permissions")}</Text>
+                <Text variant="heading-md/bold" style={{ marginBottom: 15, marginTop: 25, color: "var(--text-strong)" }}>{t("Active Permissions")}</Text>
                 <div className="shareperms-list">
                     {users.length === 0 ? (
-                        <Text style={{ color: "#FFFFFF", opacity: 0.6 }}>{t("No one has access yet.")}</Text>
+                        <Text style={{ color: "var(--text-muted)" }}>{t("No one has access yet.")}</Text>
                     ) : users.map((u, index) => {
                         const user = UserStore.getUser(u.id);
                         const duration = parseDuration(u.validUntil);
@@ -432,16 +433,16 @@ function SharePermsModal({ rootProps }: { rootProps: any; }) {
                                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                                     <Avatar src={IconUtils.getUserAvatarURL(user || { id: u.id, avatar: null } as any)} size={"SIZE_40"} />
                                     <div>
-                                        <Text variant="text-md/semibold" style={{ color: "#FFFFFF" }}>{user?.globalName || user?.username || u.id}</Text>
-                                        <Text variant="text-xs/normal" style={{ color: "#FFFFFF", opacity: 0.7, maxWidth: 250, overflow: "hidden", textOverflow: "ellipsis" }}>
+                                        <Text variant="text-md/semibold" style={{ color: "var(--text-strong)" }}>{user?.globalName || user?.username || u.id}</Text>
+                                        <Text variant="text-xs/normal" style={{ color: "var(--text-muted)", maxWidth: 250, overflow: "hidden", textOverflow: "ellipsis" }}>
                                             {u.permissions.split(",").map(p => p.replace("_", " ").toUpperCase()).join(", ")}
                                         </Text>
                                         <div style={{ display: "flex", gap: 10 }}>
-                                            <Text variant="text-xs/bold" style={{ color: timeLeft < 300000 ? "#FF4444" : "#44FF44" }}>
+                                            <Text variant="text-xs/bold" style={{ color: timeLeft < 300000 ? "var(--text-feedback-critical)" : "var(--text-feedback-positive)" }}>
                                                 {formatTimeLeft(timeLeft)}
                                             </Text>
                                             {u.maxUses > 0 && (
-                                                <Text variant="text-xs/bold" style={{ color: (u.maxUses - u.uses) <= 1 ? "#FF4444" : "#44FF44" }}>
+                                                <Text variant="text-xs/bold" style={{ color: (u.maxUses - u.uses) <= 1 ? "var(--text-feedback-critical)" : "var(--text-feedback-positive)" }}>
                                                     {u.uses}/{u.maxUses}{" "}{t("Uses")}</Text>
                                             )}
                                         </div>
@@ -453,12 +454,12 @@ function SharePermsModal({ rootProps }: { rootProps: any; }) {
                         );
                     })}
                 </div>
-                <Text variant="heading-md/bold" style={{ marginBottom: 15, marginTop: 25, color: "#FFFFFF", display: "flex", alignItems: "center", gap: 8 }}>
+                <Text variant="heading-md/bold" style={{ marginBottom: 15, marginTop: 25, color: "var(--text-strong)", display: "flex", alignItems: "center", gap: 8 }}>
                     <ShieldIcon width={20} height={20} />{" "}{t("Action Logs")}</Text>
-                <ScrollerThin style={{ maxHeight: 250, background: "rgba(0,0,0,0.3)", borderRadius: 12, padding: "12px 16px", border: "1px solid rgba(255,255,255,0.1)" }}>
+                <ScrollerThin style={{ maxHeight: 250, background: "var(--ec-night)", borderRadius: 12, padding: "12px 16px", border: "1px solid var(--ec-line)" }}>
                     {logs.length === 0 ? (
                         <div style={{ padding: "20px 0", textAlign: "center" }}>
-                            <Text style={{ color: "#FFFFFF", opacity: 0.4, fontStyle: "italic" }}>{t("No actions logged yet.")}</Text>
+                            <Text style={{ color: "var(--text-muted)", fontStyle: "italic" }}>{t("No actions logged yet.")}</Text>
                         </div>
                     ) : logs.map((log, i) => {
                         const user = UserStore.getUser(log.userId);
@@ -469,7 +470,7 @@ function SharePermsModal({ rootProps }: { rootProps: any; }) {
                                 padding: "10px 14px",
                                 background: "rgba(255,255,255,0.03)",
                                 borderRadius: 8,
-                                borderLeft: `4px solid ${isSuccess ? "#43b581" : "#f04747"}`,
+                                borderLeft: `4px solid ${isSuccess ? "var(--status-positive)" : "var(--status-danger)"}`,
                                 display: "flex",
                                 flexDirection: "column",
                                 gap: 4
@@ -477,10 +478,10 @@ function SharePermsModal({ rootProps }: { rootProps: any; }) {
                                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                         <Avatar src={IconUtils.getUserAvatarURL(user || { id: log.userId, avatar: null } as any)} size={"SIZE_20"} />
-                                        <Text variant="text-sm/bold" style={{ color: "#FFFFFF" }}>
+                                        <Text variant="text-sm/bold" style={{ color: "var(--text-strong)" }}>
                                             {user?.globalName || user?.username || log.userId}
                                         </Text>
-                                        <Text variant="text-xs/normal" style={{ color: "rgba(255,255,255,0.6)" }}>
+                                        <Text variant="text-xs/normal" style={{ color: "var(--text-muted)" }}>
                                             executed
                                         </Text>
                                         <div style={{
@@ -496,24 +497,24 @@ function SharePermsModal({ rootProps }: { rootProps: any; }) {
                                             {log.command}
                                         </div>
                                     </div>
-                                    <Text variant="text-xxs/medium" style={{ color: "rgba(255,255,255,0.4)" }}>
+                                    <Text variant="text-xxs/medium" style={{ color: "var(--text-muted)" }}>
                                         {new Date(log.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
                                     </Text>
                                 </div>
                                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 28 }}>
-                                    <Text variant="text-xs/medium" style={{ color: "rgba(255,255,255,0.7)" }}>
+                                    <Text variant="text-xs/medium" style={{ color: "var(--text-muted)" }}>
                                         {t("Target:")}</Text>
-                                    <Text variant="text-xs/semibold" style={{ color: "#FFFFFF" }}>
+                                    <Text variant="text-xs/semibold" style={{ color: "var(--text-strong)" }}>
                                         {log.targetId.startsWith("<@") ? log.targetId : (UserStore.getUser(log.targetId)?.username || log.targetId)}
                                     </Text>
                                     <div style={{
                                         marginLeft: "auto",
                                         fontSize: "9px",
                                         fontWeight: "700",
-                                        color: isSuccess ? "#43b581" : "#f04747",
+                                        color: isSuccess ? "var(--status-positive)" : "var(--status-danger)",
                                         padding: "1px 6px",
                                         borderRadius: 10,
-                                        border: `1px solid ${isSuccess ? "#43b581" : "#f04747"}`,
+                                        border: `1px solid ${isSuccess ? "var(--status-positive)" : "var(--status-danger)"}`,
                                         textTransform: "uppercase"
                                     }}>
                                         {isSuccess ? "Success" : "Failed"}
@@ -528,11 +529,14 @@ function SharePermsModal({ rootProps }: { rootProps: any; }) {
     );
 }
 
+/**
+ * The id in a mention or a bare id. It goes into the API path, so anything else is refused: "../../channels/1" would
+ * turn a kick into a request to another endpoint
+ */
 function resolveId(arg: string): string {
-    if (!arg) return "";
-    // Match <@123>, <@!123>, or just 123
-    const match = arg.match(/<@!?(\d+)>/);
-    return match ? match[1] : arg;
+    const id = /^<@[!&]?(\d+)>$/.exec(arg ?? "")?.[1] ?? arg;
+    if (!/^\d{17,20}$/.test(id ?? "")) throw new Error("Expected a mention or an ID");
+    return id;
 }
 
 export default definePlugin({
@@ -544,7 +548,7 @@ export default definePlugin({
     start() {
         FluxDispatcher.subscribe("MESSAGE_CREATE", this.onMessage);
 
-        // Ajout du bouton dans la barre d'en-tête (HeaderBar)
+        // Header bar button
         addHeaderBarButton("shareperms-manager", () => <SharePermsButton />, 6);
     },
 
@@ -564,7 +568,7 @@ export default definePlugin({
         const duration = parseDuration(config.validUntil);
         if (duration !== 0 && Date.now() > config.startTime + duration) return;
 
-        // Restriction check: Commands only in DM OR in the specified server's channels
+        // Commands only work in DMs or in the configured server's channels
         const channel = ChannelStore.getChannel(message.channel_id);
         const isDM = channel?.type === 1; // Type 1 = DM
         const isTargetGuild = channel?.guild_id === config.guildId;
@@ -578,7 +582,7 @@ export default definePlugin({
         const command = args.shift()?.toLowerCase();
         if (!command) return;
 
-        // Check command-specific quota
+        // Per-command quota
         if (config.maxUses > 0) {
             const currentUses = config.usesMap?.[command] || 0;
             if (currentUses >= config.maxUses) {
@@ -698,7 +702,7 @@ export default definePlugin({
                 if (!hasAll && !permsList.includes("move_voice")) return;
                 targetId = resolveId(args[0]);
 
-                // Get author's current voice channel
+                // The author's current voice channel
                 const authorVoiceState = VoiceStateStore.getVoiceState(guildId, message.author.id);
                 const destChannelId = authorVoiceState?.channelId;
 

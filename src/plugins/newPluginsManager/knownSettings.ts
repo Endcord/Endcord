@@ -91,21 +91,3 @@ export async function writeKnownSettings() {
     await DataStore.set(KNOWN_SETTINGS_DATA_KEY, allSettings);
 }
 
-export async function debugWipeSomeData() {
-    const settings = await getKnownSettings();
-    settings.forEach((value, key) => {
-        if (Math.random() > 0.8) {
-            if (Math.random() > 0.5) return settings.set(key, new Set([...value].filter(() => Math.random() > 0.5)));
-            return settings.delete(key);
-        }
-    });
-    await DataStore.set(KNOWN_SETTINGS_DATA_KEY, settings);
-}
-
-export async function editRawData(patcher: (data: KnownPluginSettingsMap) => (Promise<any> | any)) {
-    if (!patcher) return;
-    const map = await DataStore.get(KNOWN_SETTINGS_DATA_KEY) as KnownPluginSettingsMap;
-    const newMap = new Map(map);
-    await patcher(newMap);
-    await DataStore.set(KNOWN_SETTINGS_DATA_KEY, newMap ?? map);
-}

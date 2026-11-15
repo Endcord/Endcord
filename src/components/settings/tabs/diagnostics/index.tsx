@@ -198,8 +198,8 @@ function GameModeSwitch() {
 function Diagnostics() {
     return (
         <SettingsTab>
-            {IS_DISCORD_DESKTOP && <MemorySection />}
-            {IS_DISCORD_DESKTOP && <GameModeSwitch />}
+            {(IS_DISCORD_DESKTOP || IS_ENDCORD_DESKTOP) && <MemorySection />}
+            {(IS_DISCORD_DESKTOP || IS_ENDCORD_DESKTOP) && <GameModeSwitch />}
             <PluginHealth />
             <PluginTimes />
             <SafeModeSection />

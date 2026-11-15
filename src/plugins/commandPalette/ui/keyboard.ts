@@ -90,10 +90,6 @@ export function setGlobalKeyHandler(handler: GlobalKeyHandler | null) {
     globalHandler = handler;
 }
 
-export function isPaletteCapturing() {
-    return paletteHandler !== null;
-}
-
 function handleKeyDown(e: KeyboardEvent) {
     if (paletteHandler) {
         if (paletteHandler(e)) {

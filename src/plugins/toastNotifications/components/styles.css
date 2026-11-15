@@ -16,22 +16,22 @@
     --vc-toast-notifications-title-font-weight: 600;
     --vc-toast-notifications-title-line-height: 1.25rem;
 
-    /* Close Button */
+    /* Close button */
     --vc-toast-notifications-close-button-color: var(--interactive-icon-default);
     --vc-toast-notifications-close-button-hover-color: var(--interactive-icon-hover);
     --vc-toast-notifications-close-button-opacity: 0.5;
     --vc-toast-notifications-close-button-hover-opacity: 1;
 
-    /* Message Author Image */
+    /* Author avatar */
     --vc-toast-notifications-image-height: 4rem;
     --vc-toast-notifications-image-width: var(--vc-toast-notifications-image-height);
     --vc-toast-notifications-image-border-radius: 6px;
 
-    /* Progress Bar */
+    /* Progress bar */
     --vc-toast-notifications-progressbar-height: 0.25rem;
     --vc-toast-notifications-progressbar-color: var(--brand-500);
 
-    /* Position Offset - Global inherited offset by all positions */
+    /* Position offset, shared by every position */
     --vc-toast-notifications-position-offset: 1rem;
 }
 

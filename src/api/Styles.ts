@@ -10,7 +10,7 @@ import { classNameFactory as _classNameFactory, classNameToSelector, createAndAp
 
 import { getScreenStyle } from "~plugins";
 
-// Backwards compat for Vesktop
+// Kept for plugins that still import it from here
 /** @deprecated Import this from `@utils/css` instead */
 export const classNameFactory = _classNameFactory;
 
@@ -44,7 +44,7 @@ export function initStyles() {
     const osValuesNode = createAndAppendStyle("endcord-os-theme-values", coreStyleRootNode);
     createAndAppendStyle("endcord-text", coreStyleRootNode).textContent = generateTextCss();
     const rendererCssNode = createAndAppendStyle("endcord-css-core", coreStyleRootNode);
-    const vesktopCssNode = IS_VESKTOP ? createAndAppendStyle("vesktop-css-core", coreStyleRootNode) : null;
+    const desktopCssNode = IS_ENDCORD_DESKTOP ? createAndAppendStyle("endcord-desktop-css-core", coreStyleRootNode) : null;
     createAndAppendStyle("endcord-margins", coreStyleRootNode).textContent = generateMarginCss();
 
     EndcordNative.native.getRendererCss().then(css => rendererCssNode.textContent = css);
@@ -54,10 +54,10 @@ export function initStyles() {
         });
     }
 
-    if (IS_VESKTOP && VesktopNative.app.getRendererCss) {
-        VesktopNative.app.getRendererCss().then(css => vesktopCssNode!.textContent = css);
-        VesktopNative.app.onRendererCssUpdate(newCss => {
-            vesktopCssNode!.textContent = newCss;
+    if (IS_ENDCORD_DESKTOP && EndcordDesktopNative.app.getRendererCss) {
+        EndcordDesktopNative.app.getRendererCss().then(css => desktopCssNode!.textContent = css);
+        EndcordDesktopNative.app.onRendererCssUpdate(newCss => {
+            desktopCssNode!.textContent = newCss;
         });
     }
 

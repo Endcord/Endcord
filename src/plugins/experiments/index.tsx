@@ -34,7 +34,7 @@ const settings = definePluginSettings({
 
 export default definePlugin({
     name: "Experiments",
-    description: "Enable Access to Experiments & other dev-only features in Discord!",
+    description: "Enables Discord's Experiments and other developer-only features.",
     tags: ["Developers", "Utility"],
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 

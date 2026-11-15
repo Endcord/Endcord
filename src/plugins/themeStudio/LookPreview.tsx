@@ -12,7 +12,7 @@ import { DISCORD_ACCENT, DISCORD_BACKGROUND, ThemeDesign } from "./design";
 
 const cl = classNameFactory("ec-look-");
 
-/** A tiny Discord window in a look's own colors, so people can see what they're picking before they pick it */
+/** Small mockup of a Discord window in a theme's colors, as a preview */
 export function LookPreview({ design }: { design: ThemeDesign; }) {
     const background = design.background || DISCORD_BACKGROUND;
     const accent = design.accent || DISCORD_ACCENT;

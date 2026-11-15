@@ -143,10 +143,8 @@ export const replacements = [
 ];
 
 export function selectRandomElement(arr) {
-    // generate a random index based on the length of the array
     const randomIndex = Math.floor(Math.random() * arr.length);
 
-    // return the element at the randomly generated index
     return arr[randomIndex];
 }
 export const isOneCharacterString = (str: string): boolean => {

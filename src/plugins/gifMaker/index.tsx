@@ -7,6 +7,7 @@
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { definePluginSettings, migratePluginSettings, migrateRemovedPlugin } from "@api/Settings";
 import { Button } from "@components/Button";
+import { EndcordModal } from "@components/EndcordModal";
 import { RemixIcon } from "@components/Icons";
 import type { RenderModalProps } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
@@ -17,7 +18,7 @@ import { Logger } from "@utils/Logger";
 import { Margins } from "@utils/margins";
 import definePlugin, { OptionType } from "@utils/types";
 import { saveFile } from "@utils/web";
-import { Menu, Modal, openModal, React, Select, Slider, TextInput, UploadHandler, useEffect, useRef, useState } from "@webpack/common";
+import { Menu, openModal, React, Select, Slider, TextInput, UploadHandler, useEffect, useRef, useState } from "@webpack/common";
 
 import { CAPTIONS } from "./captions";
 import { fetchAllGoogleFonts, getFontFamilyCss, loadGoogleFont } from "./fonts";
@@ -324,7 +325,7 @@ function GifMakerModal({ url, isVideo, sourceWidth, sourceHeight, ...props }: Re
     };
 
     return (
-        <Modal
+        <EndcordModal
             {...props}
             size="lg"
             title={t("Make GIF")}
@@ -463,7 +464,7 @@ function GifMakerModal({ url, isVideo, sourceWidth, sourceHeight, ...props }: Re
                     </div>
                 </div>
             </div>
-        </Modal>
+        </EndcordModal>
     );
 }
 

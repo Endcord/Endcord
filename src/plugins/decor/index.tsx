@@ -149,7 +149,8 @@ export default definePlugin({
     useUserDecorAvatarDecoration,
 
     async start() {
-        useUsersDecorationsStore.getState().fetch(UserStore.getCurrentUser().id, true);
+        const id = UserStore.getCurrentUser()?.id;
+        if (id) useUsersDecorationsStore.getState().fetch(id, true);
     },
 
     getDecorAvatarDecorationURL({ avatarDecoration, canAnimate }: { avatarDecoration: AvatarDecoration | null; canAnimate?: boolean; }) {

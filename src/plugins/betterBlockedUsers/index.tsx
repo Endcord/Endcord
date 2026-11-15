@@ -76,9 +76,6 @@ export default definePlugin({
             </div>
         );
     },
-    getSearchResults() {
-        return !!lastSearch;
-    },
     setUpdateFunc(e, setResults) {
         if (e.listType !== "blocked") return;
         updateFunc = setResults;

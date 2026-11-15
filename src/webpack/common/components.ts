@@ -25,9 +25,9 @@ export const Forms = {
     /** @deprecated use Paragraph from Endcord */
     FormText: Paragraph,
     /** @deprecated don't use this */
-    FormSection: "section" as never, // Backwards compat since Vesktop uses this
+    FormSection: "section" as never, // Kept for plugins written against the old name
     /** @deprecated use `@components/Divider` */
-    FormDivider: Divider as never, // Backwards compat since Vesktop uses this
+    FormDivider: Divider as never, // Kept for plugins written against the old name
 };
 
 // TODO: Stop using this and use Paragraph/Span directly

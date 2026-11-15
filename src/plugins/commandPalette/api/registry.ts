@@ -23,11 +23,6 @@ export function registerCommands(ownerId: string, commands: PaletteCommand[]) {
     notifyPaletteChange();
 }
 
-export function unregisterOwner(ownerId: string) {
-    owners.delete(ownerId);
-    notifyPaletteChange();
-}
-
 export function clearRegistry() {
     owners.clear();
     listeners.clear();

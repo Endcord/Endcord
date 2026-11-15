@@ -6,7 +6,8 @@
 
 import { getIsEndcordHidden } from "@api/EndcordVisibility";
 import { definePluginSettings } from "@api/Settings";
-import { BackupRestoreIcon, ClockIcon, MainSettingsIcon, PaintbrushIcon, PatchHelperIcon, PlaceholderIcon, PluginsIcon, UpdaterIcon, VesktopSettingsIcon } from "@components/Icons";
+import { BackupTabIcon, DiagnosticsTabIcon, EndcordLogoIcon, PatchHelperTabIcon, PluginsTabIcon, ThemesTabIcon, UpdaterTabIcon } from "@components/EndcordIcons";
+import { PlaceholderIcon } from "@components/Icons";
 import { BackupAndRestoreTab, DiagnosticsTab, EndcordTab, PatchHelperTab, PluginsTab, ThemesTab, UpdaterTab } from "@components/settings/tabs";
 import { Devs } from "@utils/constants";
 import { isTruthy } from "@utils/guards";
@@ -62,6 +63,49 @@ interface EntryOptions {
     Component: ComponentType<{}>,
     Icon: ComponentType<IconProps>;
 }
+const GLIDE_SHOWN = "ec-side-lit";
+
+/**
+ * One hover highlight shared by Endcord's sidebar entries, sliding to whichever is under the pointer (like the
+ * Control Center rows). Discord's own entries keep their hover. The highlight is a child of Discord's list, added
+ * once; React leaves nodes it didn't create alone
+ */
+function glide(list: HTMLElement) {
+    if (list.style.position) return;
+    // New stacking context, so the highlight can sit under the entries
+    list.style.cssText = "position:relative;isolation:isolate";
+
+    // An empty <i>: nothing for a screen reader to read out, unlike a list item
+    const light = list.insertBefore(document.createElement("i"), list.firstChild);
+    light.className = "ec-glide";
+
+    // Entries span the full width, so the highlight only moves vertically. Coming in from outside, it fades in at the
+    // pointer instead of sliding there
+    list.onpointerover = ({ target }) => {
+        const link = (target as Element).closest<HTMLElement>("[data-ec-side]>[role=link]");
+        if (!link) return;
+
+        const shown = light.classList.contains(GLIDE_SHOWN);
+        light.style.cssText = `transform:translateY(${link.offsetTop}px);height:${link.offsetHeight}px${shown ? "" : ";transition:none"}`;
+        if (!shown) {
+            void light.offsetHeight;
+            light.style.transition = "";
+            light.classList.add(GLIDE_SHOWN);
+        }
+    };
+    list.onpointerleave = () => light.classList.remove(GLIDE_SHOWN);
+}
+
+/** Tags an entry as Endcord's (going by the icon it renders) for the highlight */
+function markEntry(icon: HTMLElement | null) {
+    const item = icon?.closest<HTMLElement>("[data-settings-sidebar-item]");
+    if (!item?.parentElement) return;
+    item.dataset.ecSide = "";
+    glide(item.parentElement);
+}
+
+const SidebarIcon = ({ Icon }: { Icon: ComponentType<IconProps>; }) => <span ref={markEntry} className="ec-side-icon"><Icon width={20} height={20} /></span>;
+
 interface SettingsLayoutBuilder {
     key?: string;
     buildLayout(): SettingsLayoutNode[];
@@ -145,7 +189,7 @@ export default definePlugin({
             key,
             type: LayoutTypes.SIDEBAR_ITEM,
             useTitle: () => t(title),
-            icon: () => <Icon width={20} height={20} />,
+            icon: () => <SidebarIcon Icon={Icon} />,
             buildLayout: () => [panel]
         });
     },
@@ -166,45 +210,45 @@ export default definePlugin({
                 title: "Endcord",
                 panelTitle: "Endcord Settings",
                 Component: EndcordTab,
-                Icon: MainSettingsIcon
+                Icon: EndcordLogoIcon
             }),
             buildEntry({
                 key: "endcord_plugins",
                 title: "Plugins",
                 Component: PluginsTab,
-                Icon: PluginsIcon
+                Icon: PluginsTabIcon
             }),
             buildEntry({
                 key: "endcord_themes",
                 title: "Themes",
                 Component: ThemesTab,
-                Icon: PaintbrushIcon
+                Icon: ThemesTabIcon
             }),
             !IS_UPDATER_DISABLED && UpdaterTab && buildEntry({
                 key: "endcord_updater",
                 title: "Updater",
                 panelTitle: "Endcord Updater",
                 Component: UpdaterTab,
-                Icon: UpdaterIcon
+                Icon: UpdaterTabIcon
             }),
 
             buildEntry({
                 key: "endcord_backup_restore",
                 title: "Backup & Restore",
                 Component: BackupAndRestoreTab,
-                Icon: BackupRestoreIcon
+                Icon: BackupTabIcon
             }),
             buildEntry({
                 key: "endcord_diagnostics",
                 title: "Diagnostics",
                 Component: DiagnosticsTab,
-                Icon: ClockIcon
+                Icon: DiagnosticsTabIcon
             }),
             !IS_STANDALONE && PatchHelperTab && buildEntry({
                 key: "endcord_patch_helper",
                 title: "Patch Helper",
                 Component: PatchHelperTab,
-                Icon: PatchHelperIcon
+                Icon: PatchHelperTabIcon
             }),
             ...this.customEntries.map(buildEntry),
             // TODO: Remove deprecated customSections in a future update
@@ -216,7 +260,7 @@ export default definePlugin({
                     key: `endcord_deprecated_custom_${section}`,
                     title: label,
                     Component: element,
-                    Icon: section === "Vesktop" ? VesktopSettingsIcon : PlaceholderIcon
+                    Icon: PlaceholderIcon
                 });
             })
         ].filter(isTruthy);
@@ -258,7 +302,7 @@ export default definePlugin({
     customEntries: [] as EntryOptions[],
 
     get electronVersion() {
-        return EndcordNative.native.getVersions().electron || window.legcord?.electron || null;
+        return EndcordNative.native.getVersions().electron || null;
     },
 
     get chromiumVersion() {
@@ -275,7 +319,7 @@ export default definePlugin({
     get additionalInfo() {
         if (IS_DEV) return " (Dev)";
         if (IS_WEB) return " (Web)";
-        if (IS_VESKTOP) return ` (Endcord Desktop v${VesktopNative.app.getVersion()})`;
+        if (IS_ENDCORD_DESKTOP) return ` (Endcord Desktop v${EndcordDesktopNative.app.getVersion()})`;
         if (IS_STANDALONE) return " (Standalone)";
         return "";
     },

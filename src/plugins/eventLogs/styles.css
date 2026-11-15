@@ -1,7 +1,6 @@
 /* Community stylesheet: its class names (BEM "--modifier") and rule order are kept as written. */
 /* stylelint-disable selector-class-pattern, no-duplicate-selectors, no-descending-specificity */
 
-/* ── EventLogs ── */
 
 .el-content {
     padding: 10px 16px 16px;
@@ -10,7 +9,7 @@
     gap: 8px;
 }
 
-/* Toolbar filtres */
+/* Filter toolbar */
 .el-toolbar {
     display: flex;
     flex-direction: column;
@@ -31,7 +30,7 @@
     font-size: 12px;
     cursor: pointer;
     color: rgb(255 255 255 / 50%);
-    transition: all .1s;
+    transition: border-color var(--ec-motion-fast) ease, color var(--ec-motion-fast) ease, background-color var(--ec-motion-fast) ease;
     font-family: inherit;
 }
 
@@ -76,7 +75,7 @@
 }
 
 .el-guild-select option {
-    background: #2f3136;
+    background: var(--background-base-lower);
     color: #fff;
 }
 
@@ -118,7 +117,7 @@
     padding: 4px 10px;
     font-size: 12px;
     cursor: pointer;
-    color: #ed4245;
+    color: var(--status-danger);
     font-family: inherit;
     transition: background .1s;
 }
@@ -127,7 +126,7 @@
     background: rgb(237 66 69 / 18%);
 }
 
-/* Liste */
+/* List */
 .el-list {
     display: flex;
     flex-direction: column;
@@ -258,19 +257,19 @@
 
 .el-msg--deleted {
     background: rgb(237 66 69 / 8%);
-    border-left: 2px solid #ed4245;
+    border-left: 2px solid var(--status-danger);
     color: rgb(255 255 255 / 85%);
 }
 
 .el-msg--before {
     background: rgb(237 66 69 / 6%);
-    border-left: 2px solid #ed4245;
+    border-left: 2px solid var(--status-danger);
     color: rgb(255 255 255 / 85%);
 }
 
 .el-msg--after {
     background: rgb(59 165 92 / 6%);
-    border-left: 2px solid #3ba55c;
+    border-left: 2px solid var(--status-positive);
     color: rgb(255 255 255 / 85%);
 }
 

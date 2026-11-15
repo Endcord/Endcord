@@ -160,12 +160,18 @@ export function registerCommand<C extends EndcordCommand>(command: C, plugin: st
 }
 
 export function unregisterCommand(name: string) {
-    const idx = BUILT_IN.findIndex(c => c.name === name);
-    if (idx === -1)
-        return false;
+    // A command with sub-commands is registered as one command per sub-command ("tags create", "tags list"), so
+    // those go too. Before, they stayed in the list after their plugin stopped, and starting it again failed
+    // because they already existed
+    let removed = false;
+    for (let i = BUILT_IN.length - 1; i >= 0; i--) {
+        const cmd = BUILT_IN[i] as EndcordCommand & { rootCommand?: EndcordCommand; };
+        if (cmd.name !== name && cmd.rootCommand?.name !== name) continue;
 
-    BUILT_IN.splice(idx, 1);
-    delete commands[name];
+        BUILT_IN.splice(i, 1);
+        delete commands[cmd.name];
+        removed = true;
+    }
 
-    return true;
+    return removed;
 }

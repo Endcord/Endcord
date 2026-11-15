@@ -432,14 +432,6 @@ export default definePlugin({
             },
         },
         {
-            find: 'getConfig({location:"channel_mention"})',
-            replacement: {
-                // Show inside voice channel instead of trying to join them when clicking on a channel mention
-                match: /(?<=getChannel\(\i\);if\(null!=(\i)).{0,200}?return void (?=\i\.default\.selectVoiceChannel)/,
-                replace: (m, channel) => `${m}!$self.isHiddenChannel(${channel})&&`
-            }
-        },
-        {
             find: '"GuildChannelStore"',
             replacement: [
                 {

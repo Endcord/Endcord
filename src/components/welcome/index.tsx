@@ -35,27 +35,27 @@ const enum Step {
     Done
 }
 
-// The steps named in the header. Hello isn't a step anyone has to take
+// Steps shown in the header (the hello screen doesn't count as one)
 const STEPS = [
     { step: Step.Look, name: "Look" },
     { step: Step.Plugins, name: "Plugins" },
     { step: Step.Done, name: "Ready" }
 ];
 
-/** How long the card takes to grow or shrink to the next screen, matching --ec-ease-out */
+/** Card resize duration between screens, matches --ec-ease-out */
 const RESIZE_TIME = 440;
-/** Turning plugins on takes a moment people can see, even when the plugins themselves start at once */
+/** Minimum time the busy state shows, so it doesn't just flicker when the plugins start instantly */
 const MIN_BUSY_TIME = 900;
 const FADE_OUT_TIME = 300;
-/** The panda is asleep on the logo, as in the installer, and wakes up once the card has arrived */
+/** Panda starts asleep, as in the installer, and wakes up after the card's entrance */
 const WAKE_AFTER = 1150;
 
 const prefersLessMotion = () => document.documentElement.classList.contains("reduce-motion") || matchMedia("(prefers-reduced-motion: reduce)").matches;
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-/** Its place in the order things arrive in on a screen */
+/** Index in the screen's staggered entrance */
 const at = (index: number) => ({ "--ec-i": index }) as CSSProperties;
 
-/** A number that rolls to its new value instead of jumping there */
+/** Counter that animates to its new value */
 function useRollingNumber(target: number, from = target) {
     const [value, setValue] = useState(from);
     const shown = useRef(from);
@@ -85,7 +85,7 @@ function useRollingNumber(target: number, from = target) {
     return value;
 }
 
-/** Where you are, as the installer's tabs: the names, and a line under the current one that slides to the next */
+/** Step indicator styled like the installer's tabs, with a sliding underline */
 function Steps({ steps, current, onPick }: { steps: typeof STEPS; current: number; onPick?(step: Step): void; }) {
     const { t } = useI18n();
     const list = useRef<HTMLOListElement>(null);
@@ -94,7 +94,7 @@ function Steps({ steps, current, onPick }: { steps: typeof STEPS; current: numbe
     useLayoutEffect(() => {
         const place = () => {
             const item = list.current?.children[current] as HTMLElement | undefined;
-            // It appears under the first step, and only slides from there on
+            // No slide for the initial position
             if (item) setLine(was => ({ x: item.offsetLeft, width: item.offsetWidth, slide: !!was }));
         };
         place();
@@ -155,7 +155,7 @@ function Hello({ pluginCount }: { pluginCount: number; }) {
     );
 }
 
-// Theme Studio is a plugin, so this only gets its looks while it's on
+// The theme presets come from the Theme Studio plugin, so they're only there while it's enabled
 const getStudio = () => isPluginEnabled("ThemeStudio") ? Plugins.ThemeStudio as typeof ThemeStudio : undefined;
 
 function Look({ studio, onOpenStudio }: { studio: typeof ThemeStudio; onOpenStudio(): void; }) {
@@ -203,7 +203,7 @@ function Look({ studio, onOpenStudio }: { studio: typeof ThemeStudio; onOpenStud
     );
 }
 
-/** The packs as the installer lists Discords: a square check, the name, how many plugins and what they do */
+/** Starter pack list, styled like the installer's Discord list: checkbox, name, plugin count, description */
 function Packs({ packs, selected, locked, onToggle }: { packs: StarterPack[]; selected: ReadonlySet<string>; locked: boolean; onToggle(id: string): void; }) {
     const { t } = useI18n();
 
@@ -293,18 +293,18 @@ function Welcome({ onClosed }: { onClosed(): void; }) {
     const { t } = useI18n();
     const packs = useStarterPacks();
     const studio = useMemo(getStudio, []);
-    // Without Theme Studio there are no looks to pick, so that step is left out
+    // No Theme Studio, no theme step
     const afterHello = studio ? Step.Look : Step.Plugins;
     // The same total the Plugins tab shows
     const pluginCount = Object.keys(Plugins).length;
     const [step, setStep] = useState(Step.Hello);
     const [direction, setDirection] = useState<"forward" | "back">("forward");
-    // The recommended pack starts picked, the way most people want it
+    // Recommended pack is preselected
     const [selected, setSelected] = useState(() => new Set(packs.filter(pack => pack.recommended).map(pack => pack.id)));
     const [result, setResult] = useState<{ added: number; restartNeeded: boolean; }>();
     const [busy, setBusy] = useState<{ done: number; total: number; }>();
     const [leaving, setLeaving] = useState(false);
-    // Theme Studio opens as Discord's own dialog, under this one, so this steps aside until it's closed
+    // Theme Studio opens as a Discord modal underneath this one, so hide this one until it closes
     const [away, setAway] = useState(false);
     const awayRef = useRef(false);
     awayRef.current = away;
@@ -313,7 +313,7 @@ function Welcome({ onClosed }: { onClosed(): void; }) {
     const steps = studio ? STEPS : STEPS.filter(({ step }) => step !== Step.Look);
     const root = useRef<HTMLDivElement>(null);
     const card = useRef<HTMLDivElement>(null);
-    // The card's height before a step changes, so it can grow or shrink to the next one instead of jumping
+    // Remember the height before the step changes so the card can animate to the new height
     const heightBefore = useRef<number | undefined>(undefined);
 
     const additions = useMemo(() => getPackAdditions(packs.filter(pack => selected.has(pack.id))).length, [packs, selected]);
@@ -333,7 +333,7 @@ function Welcome({ onClosed }: { onClosed(): void; }) {
 
         const to = node.getBoundingClientRect().height;
         if (Math.abs(to - from) < 2) return;
-        // No scrollbar flashing up while the new screen is taller than the card on its way there
+        // Hide overflow during the resize so a scrollbar doesn't flash
         node.classList.add(cl("resizing"));
         const resize = node.animate([{ height: `${from}px` }, { height: `${to}px` }], { duration: RESIZE_TIME, easing: "cubic-bezier(0.16, 1, 0.3, 1)" });
         resize.onfinish = resize.oncancel = () => node.classList.remove(cl("resizing"));
@@ -344,7 +344,7 @@ function Welcome({ onClosed }: { onClosed(): void; }) {
         studio?.openStudio(() => setAway(false));
     };
 
-    // Inert while away, so the focus and the keyboard go to Theme Studio, and back here after it
+    // inert while hidden, so focus goes to Theme Studio and comes back afterwards
     useEffect(() => {
         const node = root.current;
         if (!node) return;
@@ -356,7 +356,7 @@ function Welcome({ onClosed }: { onClosed(): void; }) {
     const close = () => {
         Settings.welcomePending = false;
         setLeaving(true);
-        // After the fade, which takes no time at all when motion is reduced and then never says it ended
+        // Wait for the fade-out. With reduced motion there is none (and no transitionend), so close right away
         setTimeout(onClosed, prefersLessMotion() ? 0 : FADE_OUT_TIME);
     };
 
@@ -371,7 +371,7 @@ function Welcome({ onClosed }: { onClosed(): void; }) {
                 return;
             }
 
-            // The keyboard stays in here instead of wandering into Discord behind it, and from now on shows where it is
+            // Keep focus inside the dialog, and show focus rings from now on
             if (event.key === "Tab" && root.current) {
                 root.current.dataset.keys = "";
                 const focusable = [...root.current.querySelectorAll<HTMLElement>("button:not(:disabled), input:not(:disabled), [tabindex]:not([tabindex='-1'])")]
@@ -392,7 +392,7 @@ function Welcome({ onClosed }: { onClosed(): void; }) {
         return () => document.removeEventListener("keydown", onKey, true);
     }, []);
 
-    // Each screen starts at its top, and the way on has the focus, so Enter takes the next step
+    // Scroll each screen to the top and focus the primary button, so Enter continues
     useEffect(() => {
         root.current?.querySelector<HTMLElement>(".ec-welcome-body")?.scrollTo(0, 0);
         root.current?.querySelector<HTMLElement>(".ec-welcome-footer .ec-welcome-primary")?.focus({ preventScroll: true });
@@ -496,7 +496,7 @@ function Welcome({ onClosed }: { onClosed(): void; }) {
                         <Steps
                             steps={steps}
                             current={current}
-                            // Back to an earlier step, until the plugins are on
+                            // Going back is allowed until the plugins have been enabled
                             onPick={step !== Step.Done && !busy ? go : undefined}
                         />
                     )}
@@ -531,9 +531,9 @@ function Welcome({ onClosed }: { onClosed(): void; }) {
 }
 
 /**
- * Resolves once Discord has settled: a run of smooth frames in a row, or after a few seconds at most. Discord is
- * busiest right after it starts, and an entrance during that stutters. While the window is hidden no frames come, so
- * this also waits until someone can see it
+ * Resolves once Discord has settled (a run of smooth frames, or a few seconds at most). Discord is busiest right
+ * after startup and the entrance animation stutters then. A hidden window gets no frames, so this also waits until
+ * the window is visible
  */
 function whenCalm(frames = 12, limit = 5000) {
     return new Promise<void>(resolve => {
@@ -549,7 +549,7 @@ function whenCalm(frames = 12, limit = 5000) {
     });
 }
 
-/** On a fresh install, once Discord is up. Someone who already set Endcord up never sees it */
+/** Shown once on a fresh install, after Discord has loaded */
 export async function maybeShowWelcome() {
     if (!Settings.welcomePending || getIsEndcordHidden()) return;
     await whenCalm();

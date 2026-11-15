@@ -31,13 +31,11 @@ export type AsyncModuleBody = (
 export type EnsureChunkHandlers = {
     /**
      * Ensures the js file for this chunk is loaded, or starts to load if it's not.
-     * @param chunkId The chunk id
      * @param promises The promises array to add the loading promise to
      */
     j: (this: EnsureChunkHandlers, chunkId: PropertyKey, promises: Promise<void[]>) => void;
     /**
      * Ensures the css file for this chunk is loaded, or starts to load if it's not.
-     * @param chunkId The chunk id
      * @param promises The promises array to add the loading promise to. This array will likely contain the promise of the js file too
      */
     css: (this: EnsureChunkHandlers, chunkId: PropertyKey, promises: Promise<void[]>) => void;
@@ -47,17 +45,13 @@ export type EnsureChunkHandlers = {
      *
      * Note that this does not add an extra promise to the promises array, and instead only executes the prefetching after
      * calling Promise.all on the promises array.
-     * @param chunkId The chunk id
      * @param promises The promises array of ensuring the chunk is loaded
      */
     prefetch: (this: EnsureChunkHandlers, chunkId: PropertyKey, promises: Promise<void[]>) => void;
 };
 
 export type PrefetchChunkHandlers = {
-    /**
-     * Prefetches the js file for this chunk.
-     * @param chunkId The chunk id
-     */
+    /** Prefetches the js file for this chunk. */
     j: (this: PrefetchChunkHandlers, chunkId: PropertyKey) => void;
 };
 

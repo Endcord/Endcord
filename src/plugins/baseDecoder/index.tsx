@@ -18,13 +18,14 @@
 
 import { definePluginSettings } from "@api/Settings";
 import { CodeBlock } from "@components/CodeBlock";
+import { EndcordModal } from "@components/EndcordModal";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Heading } from "@components/Heading";
 import { Devs } from "@utils/constants";
 import { copyWithToast } from "@utils/discord";
 import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
-import { ChannelStore, Modal, openModal } from "@webpack/common";
+import { ChannelStore, openModal } from "@webpack/common";
 
 function DecodeIcon() {
     return (
@@ -64,7 +65,7 @@ function decodeBase64Strings(base64Strings) {
 function openDecodedBase64Modal(decodedContent) {
     openModal(props => (
         <ErrorBoundary>
-            <Modal
+            <EndcordModal
                 {...props}
                 size="lg"
                 title={t("Decoded Base64 Content")}
@@ -80,7 +81,7 @@ function openDecodedBase64Modal(decodedContent) {
                         <CodeBlock key={index} content={content} lang="" />
                     ))}
                 </div>
-            </Modal>
+            </EndcordModal>
         </ErrorBoundary>
     ));
 }

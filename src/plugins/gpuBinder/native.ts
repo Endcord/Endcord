@@ -18,9 +18,8 @@ const powershell = (script: string) =>
     execFile(POWERSHELL, ["-NoProfile", "-NonInteractive", "-Command", script], { windowsHide: true });
 
 /**
- * Manages Windows Graphics Settings (DirectX) for Discord.
- * Automatically binds the current Discord executable to the preferred GPU
- * and cleans up stale registry entries from previous versions.
+ * Sets Discord's GPU preference in Windows' graphics settings (DirectX), and removes the entries older Discord
+ * versions left behind
  */
 export async function applyGpuPreference(_event: IpcMainInvokeEvent, preference: number): Promise<boolean> {
     // Only Windows supports this registry-based GPU binding
@@ -42,22 +41,20 @@ export async function applyGpuPreference(_event: IpcMainInvokeEvent, preference:
     const regPathEsc = regPath.replace(/'/g, "''");
 
     try {
-        // 1. Check if the current executable already has the correct preference set
+        // Already set for this exe?
         const { stdout } = await powershell(`$p = '${regPathEsc}'; $n = '${nameEsc}'; if (Test-Path $p) { (Get-ItemProperty -Path $p -ErrorAction SilentlyContinue).$n } else { '' }`);
         const currentValue = (stdout || "").trim();
 
         let changed = false;
 
-        // 2. Apply or update settings if they don't match the desired preference
+        // Otherwise set it
         if (currentValue !== gpuValue) {
             await powershell(`$p = '${regPathEsc}'; if (-not (Test-Path $p)) { New-Item -Path $p -Force | Out-Null }; Set-ItemProperty -Path $p -Name '${nameEsc}' -Value '${valEsc}' -Type String -Force`);
             console.debug("[GpuBinder Native] Applied GPU preference to current Discord path.");
             changed = true;
         }
 
-        // 3. Stale Entries Cleanup
-        // This removes old registry properties containing 'Discord.exe' that point to
-        // non-existent previous version folders (e.g., app-1.0.9001), keeping the registry clean.
+        // Remove the Discord.exe entries of app-* folders that no longer exist (app-1.0.9001 and so on)
         await powershell(`$p = '${regPathEsc}'; if (Test-Path $p) { $props = Get-ItemProperty -Path $p; $props.PSObject.Properties | Where-Object { $_.Name -like '*Discord.exe*' -and $_.Name -ne '${nameEsc}' } | ForEach-Object { Remove-ItemProperty -Path $p -Name $_.Name -ErrorAction SilentlyContinue } }`);
 
         return changed;

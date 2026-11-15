@@ -70,6 +70,8 @@ export interface Settings {
     hideContributorBadge: boolean;
     /** How dates on badges are written, such as "Subscriber since" on Nitro */
     badgeDateFormat: BadgeDateFormat;
+    /** A panda flips along the bottom of Discord now and then (plugins/pandaVisits) */
+    pandaVisits: boolean;
     pluginDefaultsVersion: number;
     /** GPU rasterization and out-of-process canvas: smoother on some GPUs, but more memory in the GPU process */
     gpuRasterization: boolean;
@@ -125,6 +127,7 @@ const DefaultSettings: Settings = {
     pixelStyle: false,
     hideContributorBadge: false,
     badgeDateFormat: "numeric",
+    pandaVisits: true,
     pluginDefaultsVersion: 0,
     gpuRasterization: false,
     winNativeTitleBar: false,
@@ -154,8 +157,8 @@ const DefaultSettings: Settings = {
 
 const settings = !IS_REPORTER ? EndcordNative.settings.get() : {} as Settings;
 
-// Settings written by Endcord always list plugins. Without any, this is a fresh install, or one the installer only
-// gave a language to, and nothing someone set up is in the way of a welcome
+// Endcord always writes a plugins list. Without one this is a fresh install (or one the installer only set the
+// language on), so the welcome screen can show
 if (!IS_REPORTER && !Object.keys(settings.plugins ?? {}).length) settings.welcomePending = true;
 
 mergeDefaults(settings, DefaultSettings);

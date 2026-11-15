@@ -6,12 +6,13 @@
 
 import "./style.css";
 
+import { EndcordModal } from "@components/EndcordModal";
 import { RenderModalProps } from "@endcord/discord-types";
 import { actions } from "@plugins/keyboardNavigation/commands";
 import { classNameFactory } from "@utils/css";
 import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
-import { closeAllModals, Modal,openModal, React, TextInput, useEffect, useState } from "@webpack/common";
+import { closeAllModals, openModal, React, TextInput, useEffect, useState } from "@webpack/common";
 
 import { settings } from "..";
 
@@ -101,7 +102,7 @@ export function CommandPalette({ modalProps }: { modalProps: RenderModalProps; }
     }, [queryEh]);
 
     return (
-        <Modal {...modalProps} size="md" title={t("Command Palette")}>
+        <EndcordModal {...modalProps} size="md" title={t("Command Palette")}>
             <div className={cl("root")} onKeyDown={handleKeyDown} onWheel={handleWheel}>
                 <TextInput
                     value={queryEh}
@@ -124,7 +125,7 @@ export function CommandPalette({ modalProps }: { modalProps: RenderModalProps; }
                     ))}
                 </div>
             </div>
-        </Modal>
+        </EndcordModal>
     );
 }
 

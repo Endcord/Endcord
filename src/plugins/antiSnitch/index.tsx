@@ -121,7 +121,7 @@ function audio() {
     const audioElement = document.createElement("audio");
     audioElement.src = alarm;
 
-    // Get the volume from settings (0-100 scaled to 0-1)
+    // Setting is 0-100, the audio wants 0-1
     const volume = settings.store.volume / 100;
     audioElement.volume = volume;
 

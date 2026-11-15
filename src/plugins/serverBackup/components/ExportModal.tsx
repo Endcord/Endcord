@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { EndcordModal } from "@components/EndcordModal";
 import { Flex } from "@components/Flex";
 import { Heading } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
@@ -13,7 +14,7 @@ import { createBackup, saveBackupFile, serializeBackup } from "@plugins/serverBa
 import { ChannelTypes, GuildBackup } from "@plugins/serverBackup/types";
 import { copyWithToast } from "@utils/discord";
 import { t } from "@utils/i18n";
-import { Modal, openModal, showToast, useEffect, useState } from "@webpack/common";
+import { openModal, showToast, useEffect, useState } from "@webpack/common";
 
 export function openExportModal(guild: Guild) {
     openModal(props => <ExportModal props={props} guild={guild} />);
@@ -61,7 +62,7 @@ function ExportModal({ props, guild }: { props: RenderModalProps; guild: Guild; 
     };
 
     return (
-        <Modal
+        <EndcordModal
             {...props}
             size="sm"
             title={t("Export Server Backup")}
@@ -79,7 +80,7 @@ function ExportModal({ props, guild }: { props: RenderModalProps; guild: Guild; 
                         ? <BackupSummary backup={backup} />
                         : <Paragraph color="text-muted">{t("Reading the server data…")}</Paragraph>}
             </Flex>
-        </Modal>
+        </EndcordModal>
     );
 }
 

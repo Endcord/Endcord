@@ -43,17 +43,6 @@ export default tseslint.config(
             "unused-imports": unusedImports,
             "path-alias": pathAlias
         },
-        settings: {
-            "import/resolver": {
-                map: [
-                    ["@webpack", "./src/webpack"],
-                    ["@webpack/common", "./src/webpack/common"],
-                    ["@utils", "./src/utils"],
-                    ["@api", "./src/api"],
-                    ["@components", "./src/components"]
-                ]
-            }
-        },
         languageOptions: {
             parser: tseslint.parser,
             parserOptions: {
@@ -62,16 +51,12 @@ export default tseslint.config(
             }
         },
         rules: {
-            /*
-             * Since it's only been a month and Endcord has already been stolen
-             * by random skids who rebranded it to "AlphaCord" and erased all license
-             * information
-             */
+            // Every file keeps its license header, so a copy can't quietly drop it
             "simple-header/header": [
                 "error",
                 {
                     "files": ["scripts/header-new.txt", "scripts/header-old.txt"],
-                    "templates": { "author": [".*", "Vendicated and contributors"] }
+                    "templates": { "author": [".*", "rootpoi and contributors"] }
                 }
             ],
 

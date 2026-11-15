@@ -18,23 +18,6 @@
     margin-left: 4px;
 }
 
-.vc-timezone-modal-header {
-    place-content: center;
-    justify-content: space-between;
-}
-
-.vc-timezone-modal-header h1 {
-    margin: 0;
-}
-
-.vc-timezone-modal-content {
-    padding: 1em;
-}
-
-.vc-timezone-modal-footer {
-    gap: 16px;
-}
-
 .timezone-tooltip {
     max-width: none !important;
     white-space: nowrap

@@ -85,14 +85,15 @@ export default definePlugin({
         },
         // Unlock quality options for all users regardless of Nitro
         {
-            find: "canUseCustomStickersEverywhere:",
+            // Matched by the perk each check tests, as in FakeNitro: inline on Stable, separate functions on Canary
+            find: ".STREAM_HIGH_QUALITY,",
             replacement: [
                 {
-                    match: /(?<=canUseHighVideoUploadQuality:function\(\i\)\{)/,
+                    match: /(?<=\{)(?=return \i\(\i\.\i\.INCREASED_VIDEO_UPLOAD_QUALITY,\i\)\})/,
                     replace: "return true;",
                 },
                 {
-                    match: /(?<=canStreamQuality:function\(\i,\i\)\{)/,
+                    match: /(?<=\{)(?=return"high"===\i\?\i\(\i\.\i\.STREAM_HIGH_QUALITY,\i\))/,
                     replace: "return true;",
                 },
             ],

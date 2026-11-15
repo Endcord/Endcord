@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { ENDCORD_THEME } from "@utils/css";
 import { t } from "@utils/i18n";
 import { localStorage } from "@utils/localStorage";
 import { ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalProps, ModalRoot, ModalSize } from "@utils/modal";
@@ -60,12 +61,13 @@ function AppIconModal(props: ModalProps) {
         localStorage.setItem("vc_app_icons", JSON.stringify(appIcons));
     }
 
-    return <ModalRoot {...props} size={ModalSize.MEDIUM}>
+    return <ModalRoot {...props} className={ENDCORD_THEME} size={ModalSize.MEDIUM}>
         <ModalHeader>
             <Text color="header-primary" variant="heading-lg/semibold" tag="h1" style={{ flexGrow: 1 }}>{t("Add a custom app icon:")}</Text>
             <ModalCloseButton onClick={props.onClose}></ModalCloseButton>
         </ModalHeader>
         <ModalContent>
+            <div className="ec-modal-marker" hidden />
             <br />
             <div><Forms.FormTitle tag="h5">{t("Name")}</Forms.FormTitle>
                 <Forms.FormText>

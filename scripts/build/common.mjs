@@ -59,6 +59,7 @@ export const gitHash = process.env.ENDCORD_HASH || (() => {
 export const banner = {
     js: `
 // Endcord ${gitHash}
+// Version: ${VERSION}
 // Standalone: ${IS_STANDALONE}
 // Platform: ${IS_STANDALONE === false ? process.platform : "Universal"}
 // Updater Disabled: ${IS_UPDATER_DISABLED}
@@ -129,29 +130,17 @@ export async function exists(path) {
         .catch(() => false);
 }
 
-// https://github.com/evanw/esbuild/issues/619#issuecomment-751995294
-/**
- * @type {import("esbuild").Plugin}
- */
-export const makeAllPackagesExternalPlugin = {
-    name: "make-all-packages-external",
-    setup(build) {
-        const filter = /^[^./]|^\.[^./]|^\.\.[^/]/; // Must not start with "/" or "./" or "../"
-        build.onResolve({ filter }, args => ({ path: args.path, external: true }));
-    }
-};
-
 /**
  * Whether a plugin with this target suffix (myPlugin.dev, myPlugin.desktop...) stays out of a build of this kind
  * @param {string} target
- * @param {"web" | "discordDesktop" | "vesktop"} kind
+ * @param {"web" | "discordDesktop" | "endcordDesktop"} kind
  */
 export const isExcludedTarget = (target, kind) =>
     (target === "dev" && !IS_DEV) ||
     (target === "web" && kind === "discordDesktop") ||
     (target === "desktop" && kind === "web") ||
     (target === "discordDesktop" && kind !== "discordDesktop") ||
-    (target === "vesktop" && kind !== "vesktop");
+    (target === "endcordDesktop" && kind !== "endcordDesktop");
 
 /**
  * State shared by the passes of the chunked desktop renderer build (see ./pluginChunks.mjs). Without it, lazy plugins
@@ -194,7 +183,7 @@ function pluginChunkRuntime(chunks) {
 }
 
 /**
- * @type {(kind: "web" | "discordDesktop" | "vesktop", chunks?: PluginChunkState) => import("esbuild").Plugin}
+ * @type {(kind: "web" | "discordDesktop" | "endcordDesktop", chunks?: PluginChunkState) => import("esbuild").Plugin}
  */
 export const globPlugins = (kind, chunks) => ({
     name: "glob-plugins",
@@ -471,7 +460,8 @@ export const stylePlugin = {
             };
         });
         onLoad({ filter: /\.css$/, namespace: "managed-style" }, async ({ path }) => {
-            const css = await readFile(path, "utf-8");
+            let css = await readFile(path, "utf-8");
+            if (!watch) css = (await esbuild.transform(css, { loader: "css", minify: true, target: ["chrome120"] })).code;
             const name = relative(process.cwd(), path).replaceAll("\\", "/");
 
             return {

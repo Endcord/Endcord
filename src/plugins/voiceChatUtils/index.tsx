@@ -30,8 +30,8 @@ async function runSequential<T>(promises: Promise<T>[]): Promise<T[]> {
 }
 
 function sendPatch(channel: Channel, body: Record<string, any>, bypass = false) {
-    const usersVoice = VoiceStateStore.getVoiceStatesForChannel(channel.id); // Get voice states by channel id
-    const myId = UserStore.getCurrentUser().id; // Get my user id
+    const usersVoice = VoiceStateStore.getVoiceStatesForChannel(channel.id);
+    const myId = UserStore.getCurrentUser().id;
 
     const promises: Promise<any>[] = [];
     Object.keys(usersVoice).forEach((key, index) => {

@@ -1,5 +1,5 @@
 name: Bug/Crash Report
-description: Create a bug or crash report for Vencord.
+description: Create a bug or crash report for Endcord.
 labels: [bug]
 title: "[Bug] <title>"
 
@@ -7,16 +7,35 @@ body:
     - type: markdown
       attributes:
           value: |
-              GitHub Issues are for development, not support!
+              GitHub Issues are for bugs in Endcord itself. For help, go to the [Endcord Discord server](https://discord.gg/endcord).
 
-              Some plugins may sometimes break, but we have automatic tracking for that. So please **do not report broken plugins**, it is useless.
-              However, if a plugin works fine, but has a bug in its functionality, then you can report that here.
+              Plugins that a Discord update broke are found by a daily automatic test, so there's no need to report those.
+              If a plugin works but does something wrong, report it here.
 
-              If you are experiencing any of the following issues, go to our [Discord server](https://discord.gg/D9uwnFnqmd) for support:
-              - Vencord doesn't work or crashes
-              - A plugin doesn't work anymore
-              - You are having issues installing Vencord
-              - You want to ask a question about Vencord or one of its plugins
+              If Discord stays grey or won't start, first make sure you have the latest Endcord: download the installer again from https://endcord.com/download and click Update.
+
+    - type: input
+      id: endcord-version
+      attributes:
+          label: Endcord version
+          description: |
+              Settings → Endcord shows it at the bottom. If Discord won't open, it's the first line of `%appdata%\Endcord\dist\patcher.js` (for example `// Endcord 2ab4baf`).
+          placeholder: "4.1.0 (2ab4baf)"
+      validations:
+          required: true
+
+    - type: dropdown
+      id: discord-branch
+      attributes:
+          label: Discord
+          options:
+              - Stable
+              - PTB
+              - Canary
+              - Endcord Desktop
+              - Browser extension or userscript
+      validations:
+          required: true
 
     - type: textarea
       id: bug-description
@@ -32,7 +51,7 @@ body:
       attributes:
           label: What is the expected behaviour?
           description: Simply detail what the expected behaviour is.
-          placeholder: I expect Vencord/Discord to open the ... page instead of ..., it prevents me from doing ...
+          placeholder: I expect Endcord/Discord to open the ... page instead of ..., it prevents me from doing ...
       validations:
           required: true
 
@@ -40,11 +59,11 @@ body:
       id: steps-to-take
       attributes:
           label: How do you recreate this bug or crash?
-          description: Give us a list of steps in order to recreate the bug or crash.
+          description: Give us a list of steps in order to recreate the bug or crash. Say which plugins are involved.
           placeholder: |
-              1. Do ...
-              2. Then ...
-              3. Do this ..., ... and then ...
+              1. Turn on ...
+              2. Do ...
+              3. Then ...
               4. Observe "the bug" or "the crash"
       validations:
           required: true
@@ -53,7 +72,9 @@ body:
       id: crash-log
       attributes:
           label: Errors
-          description: Open the Developer Console with `Ctrl+Shift+i` / `Cmd+Option+i`. Then look for any red errors (Ignore network errors like Failed to load resource) and paste them between the "```".
+          description: |
+              Open the Developer Console with `Ctrl+Shift+I` / `Cmd+Option+I` and paste any red errors (ignore network errors like "Failed to load resource").
+              If Discord won't open, attach `%appdata%\discord\logs\renderer_js.log` instead, or its last 200 lines.
           value: |
               ```
               Replace this text with your crash-log.
@@ -68,7 +89,11 @@ body:
           description: We only accept reports for bugs that happen on Discord Stable. Canary and PTB are Development branches and may be unstable
           options:
               - label: I've searched existing issues and this hasn't been reported before
+                required: true
               - label: I am using Discord Stable or tried on Stable and this bug happens there as well
-              - label: I installed Vencord via an official method (download from vencord.dev or from source), not via something like AUR or Nix packages
+                required: true
+              - label: I installed Endcord from endcord.com or built it from this repository's source
+                required: true
               - label: This is not a support request
+                required: true
               - label: I am willing to submit a fix for this myself

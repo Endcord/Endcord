@@ -10,7 +10,7 @@
     gap: 1px;
 }
 
-/* Ensure custom profile badges and gift icons have zero dark background */
+/* No dark background behind custom profile badges and gift icons */
 img[class*="badge"],
 [class*="badge"] > img,
 [class*="badge"] > * > img,

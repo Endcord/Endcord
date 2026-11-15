@@ -7,6 +7,7 @@
 import "./styles.css";
 
 import { addMessagePreSendListener, removeMessagePreSendListener } from "@api/MessageEvents";
+import { filled, pixelIcon, SOFT } from "@components/EndcordIcons";
 import SettingsPlugin from "@plugins/_core/settings";
 import { Devs } from "@utils/constants";
 import { removeFromArray } from "@utils/misc";
@@ -15,11 +16,23 @@ import definePlugin from "@utils/types";
 import { Data } from "./components/data";
 import DataUI from "./components/ui";
 
-const EyeIcon = (props: any) => (
-    <svg {...props} width={props.width ?? 20} height={props.height ?? 20} viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
-    </svg>
-);
+const EyeTabIcon = pixelIcon([
+    "..........",
+    "..........",
+    "...++++...",
+    ".+++##+++.",
+    "+++####+++",
+    "+++####+++",
+    ".+++##+++.",
+    "...++++...",
+    "..........",
+    ".........."
+], filled(() => (
+    <>
+        <path opacity={SOFT} d="M12 5c5 0 8.6 4.2 9.7 6.2.3.5.3 1.1 0 1.6C20.6 14.8 17 19 12 19s-8.6-4.2-9.7-6.2a1.7 1.7 0 0 1 0-1.6C3.4 9.2 7 5 12 5Z" />
+        <circle cx="12" cy="12" r="3.6" />
+    </>
+)));
 
 export default definePlugin({
     name: "IRememberYou",
@@ -28,14 +41,13 @@ export default definePlugin({
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     dependencies: ["MessageEventsAPI"],
 
-    patches: [],
-
     async start() {
+        // The tab can open before the saved data has loaded, or after loading it failed: it shows an empty list then
         SettingsPlugin.customEntries.push({
             key: "endcord_i_remember_you",
             title: "I Remember You",
-            Component: () => <DataUI usersCollection={data.usersCollection} />,
-            Icon: EyeIcon
+            Component: () => <DataUI usersCollection={(this.dataManager as Data | undefined)?.usersCollection ?? {}} />,
+            Icon: EyeTabIcon
         });
 
         const data = (this.dataManager = await new Data().withStart());
@@ -52,7 +64,8 @@ export default definePlugin({
     stop() {
         removeFromArray(SettingsPlugin.customEntries, e => e.key === "endcord_i_remember_you");
 
-        const dataManager = this.dataManager as Data;
+        const dataManager = this.dataManager as Data | undefined;
+        if (!dataManager) return;
         removeMessagePreSendListener(dataManager._onMessagePreSend_preSend);
         clearInterval(dataManager._storageAutoSaveProtocol_interval);
     },

@@ -8,6 +8,7 @@ import "./styles.css";
 
 import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
 import { definePluginSettings } from "@api/Settings";
+import { EndcordModal } from "@components/EndcordModal";
 import { RenderModalProps } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
@@ -15,7 +16,7 @@ import { getTheme, insertTextIntoChatInputBox, Theme } from "@utils/discord";
 import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import definePlugin, { IconComponent, OptionType } from "@utils/types";
-import { Forms, Modal,openModal, Parser, Select, useMemo, useState } from "@webpack/common";
+import { Forms, openModal, Parser, Select, useMemo, useState } from "@webpack/common";
 
 const settings = definePluginSettings({
     replaceMessageContents: {
@@ -55,7 +56,7 @@ function PickerModal(props: RenderModalProps) {
     }, [time, format]);
 
     return (
-        <Modal
+        <EndcordModal
             {...props}
             title={t("Timestamp Picker")}
             actions={[{
@@ -102,7 +103,7 @@ function PickerModal(props: RenderModalProps) {
             <Forms.FormText className={cl("preview-text")}>
                 {rendered} ({formatted})
             </Forms.FormText>
-        </Modal>
+        </EndcordModal>
     );
 }
 
@@ -141,7 +142,7 @@ const SendTimestampButton: ChatBarButtonFactory = ({ isAnyChat }) => {
 
 export default definePlugin({
     name: "SendTimestamps",
-    description: "Send timestamps easily via chat box button & text shortcuts. Read the extended description!",
+    description: "Sends timestamps that show in everyone's own time zone, from a button in the chat box or by typing a shortcut.",
     tags: ["Chat", "Commands"],
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,

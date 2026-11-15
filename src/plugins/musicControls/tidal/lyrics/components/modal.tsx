@@ -5,10 +5,11 @@
  */
 
 import { BaseText } from "@components/BaseText";
+import { EndcordModal } from "@components/EndcordModal";
 import { RenderModalProps } from "@endcord/discord-types";
 import { TidalStore, Track } from "@plugins/musicControls/tidal/TidalStore";
 import { t } from "@utils/i18n";
-import { Modal,React } from "@webpack/common";
+import { React } from "@webpack/common";
 
 import { cl, NoteSvg, scrollClasses, useLyrics } from "./util";
 
@@ -43,7 +44,7 @@ export function LyricsModal({ rootProps }: { rootProps: RenderModalProps; }) {
     const currentLyrics = lyrics || null;
 
     return (
-        <Modal {...rootProps} size="md" title={getTitleNode(track)}>
+        <EndcordModal {...rootProps} size="md" title={getTitleNode(track)}>
             <div className={`${cl("lyrics-modal-container")} ${scrollClasses.auto}`}>
                 {currentLyrics ? (
                     currentLyrics.map((line, i) => (
@@ -65,6 +66,6 @@ export function LyricsModal({ rootProps }: { rootProps: RenderModalProps; }) {
                     <BaseText size="sm" className={cl("modal-no-lyrics")}>{t("No lyrics available :(")}</BaseText>
                 )}
             </div>
-        </Modal>
+        </EndcordModal>
     );
 }

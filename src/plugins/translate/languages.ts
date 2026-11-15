@@ -19,10 +19,6 @@ copy(Object.fromEntries(
 ))
 */
 
-export type GoogleLanguage = keyof typeof GoogleLanguages;
-export type DeeplLanguage = keyof typeof DeeplLanguages;
-export type KagiLanguage = keyof typeof KagiLanguages;
-
 export const GoogleLanguages = {
     "auto": "Detect language",
     "af": "Afrikaans",

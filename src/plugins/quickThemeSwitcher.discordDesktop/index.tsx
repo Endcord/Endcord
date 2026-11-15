@@ -215,7 +215,7 @@ async function watchForLocalThemeChanges() {
 const isCtrl = (e: KeyboardEvent) => (IS_MAC ? e.metaKey : e.ctrlKey);
 
 function handleKeyDown(e: KeyboardEvent) {
-    // using || because we want to exit if EITHER condition is false (need both ctrl AND shift)
+    // Needs both Ctrl and Shift
     if (!isCtrl(e) || !e.shiftKey) return;
 
     if (e.altKey) {

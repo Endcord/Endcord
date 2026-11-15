@@ -258,7 +258,7 @@ function discordDetail(view: DiscordBadgeView, flavor: string, isViewingOther: b
         nitro: view.nitro,
         segments,
         label: view.legacy ? discordString("/Gmn3f", "Legacy Badge") : undefined,
-        // Someone at a badge's last level is told so, in Discord's words
+        // At the last level, show Discord's own string for that
         text: !isViewingOther && view.maxed
             ? discordString("jY5xAL", t("You've maxed out this badge. Sit back, relax, and enjoy the view from the top."))
             : view.description,
@@ -428,7 +428,7 @@ function BadgeDirectoryModal({ badge, modalProps }: { badge: AddedBadge; modalPr
 }
 
 export function openBadgeDetails(badge: AddedBadge) {
-    // A real badge of Discord's reads better with the profile's own catalog
+    // For real Discord badges, prefer the data from the profile's own catalog
     if (!badge.discordBadge && !badge.isEndcordBadge) requestCatalog(badge.userId);
 
     enableScreenStyles();

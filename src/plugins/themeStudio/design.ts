@@ -109,7 +109,7 @@ function hslToHex(hue: number, saturation: number, lightness: number) {
     return `#${hex(f(0) * 255)}${hex(f(8) * 255)}${hex(f(4) * 255)}`;
 }
 
-/** A random look that still reads well: a lively accent on a dark background of a nearby hue */
+/** Random theme that stays readable: a saturated accent on a dark background of a similar hue */
 export function randomDesign(random = Math.random): ThemeDesign {
     const hue = random() * 360;
     const fonts = ["", ...Object.keys(FONTS)] as ThemeDesign["font"][];

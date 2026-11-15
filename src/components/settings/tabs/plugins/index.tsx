@@ -29,7 +29,7 @@ import { classes } from "@utils/misc";
 import { relaunch } from "@utils/native";
 import { useAwaiter, useCleanupEffect } from "@utils/react";
 import { IconProps, PluginTag, PluginTags } from "@utils/types";
-import { Button, ConfirmModal, lodash, openModal, Parser, React, SearchableSelect, Select, TextInput, Tooltip, useCallback, useEffect, useMemo, useRef, useState } from "@webpack/common";
+import { Button, ConfirmModal, lodash, openModal, Parser, React, SearchableSelect, Select, TextInput, Tooltip, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "@webpack/common";
 import { ComponentType, JSX, PropsWithChildren } from "react";
 
 import Plugins, { ExcludedPlugins, PluginMeta } from "~plugins";
@@ -118,7 +118,7 @@ interface PluginStatsProps {
     onSelect(status: SearchStatus): void;
 }
 
-/** The counts double as filters, so a number leads straight to the plugins it counts */
+/** Clicking a count filters the list down to those plugins */
 function PluginStats({ enabled, total, fresh, status, onSelect }: PluginStatsProps) {
     const { t } = useI18n();
 
@@ -134,6 +134,12 @@ function PluginStats({ enabled, total, fresh, status, onSelect }: PluginStatsPro
     );
 }
 
+// Wakes when clicked (plugins/pandaVisits)
+function EmptyPanda() {
+    const { SleepyPanda } = Plugins.PandaVisits as { SleepyPanda?: ComponentType<{ size: number; }>; };
+    return SleepyPanda ? <SleepyPanda size={51} /> : <EndcordMark width={51} asleep />;
+}
+
 function ExcludedPluginsList({ search }: { search: string; }) {
     const { t } = useI18n();
     const matchingExcludedPlugins = search
@@ -141,10 +147,10 @@ function ExcludedPluginsList({ search }: { search: string; }) {
             .filter(([name]) => name.toLowerCase().includes(search))
         : [];
 
-    const ExcludedReasons: Record<"web" | "discordDesktop" | "vesktop" | "desktop" | "dev", string> = {
+    const ExcludedReasons: Record<"web" | "discordDesktop" | "endcordDesktop" | "desktop" | "dev", string> = {
         desktop: t("Discord Desktop app or Endcord Desktop"),
         discordDesktop: t("Discord Desktop app"),
-        vesktop: t("Endcord Desktop app"),
+        endcordDesktop: t("Endcord Desktop app"),
         web: t("Endcord Desktop app and the Web version of Discord"),
         dev: t("Developer version of Endcord")
     };
@@ -171,12 +177,29 @@ function ExcludedPluginsList({ search }: { search: string; }) {
 const FIRST_CARDS = 30;
 const CARDS_PER_FRAME = 50;
 
+/** The card that was just switched and where it was on screen, until the list re-renders */
+let held: { card: Element; top: number; until: number; } | undefined;
+
+/**
+ * Keeps a card where it is through the re-render its switch causes. Turning a plugin on can add the restart card at
+ * the top or move a helper plugin down to Required Plugins, which pushed everything below, the card under the
+ * pointer included, by a card's height
+ */
+export function holdInPlace(card: Element | null) {
+    held = card ? { card, top: card.getBoundingClientRect().top, until: Date.now() + 1000 } : undefined;
+}
+
+function scrollerOf(el: Element) {
+    for (let node = el.parentElement; node; node = node.parentElement)
+        if (node.scrollHeight > node.clientHeight && /auto|scroll/.test(getComputedStyle(node).overflowY)) return node;
+}
+
 function PluginSettings() {
     const { t, tPluginDesc } = useI18n();
     const settings = useSettings();
     const changeRef = useRef<ChangeList<string>>(null);
     const changes = changeRef.current ??= new ChangeList<string>();
-    // The same function every time, so the cards, which are memoised, aren't drawn again for a new one
+    // Stable callback, so the memoised cards don't re-render
     const onRestartNeeded = useCallback((name: string, key: string) => changes.handleChange(`${name}.${key}`), []);
 
     useCleanupEffect(() => {
@@ -232,12 +255,14 @@ function PluginSettings() {
     const search = searchValue.value.toLowerCase();
     const onSearch = (query: string) => {
         setSearchValue(prev => ({ ...prev, value: query }));
-        if (query.trim().toLowerCase() === "panda") peek(t("that's me! 🐼 no plugin, just a panda"));
+        const word = query.trim().toLowerCase();
+        if (word === "panda") peek(t("that's me! 🐼 no plugin, just a panda"));
+        else if (word === "bamboo") peek(t("no bamboo plugin… yet 🎋"));
     };
     const onStatSelect = (status: SearchStatus) => setSearchValue(prev => ({ ...prev, status: prev.status === status ? SearchStatus.ALL : status }));
     const isFiltering = search.length > 0 || searchValue.tags.length > 0 || searchValue.status !== SearchStatus.ALL;
 
-    // Settings match too, from three letters on, so "volume" finds the plugins with a volume setting
+    // From 3 characters on, setting names match too ("volume" finds plugins with a volume setting)
     const settingHits = useMemo(() => {
         const hits = new Map<string, SettingEntry[]>();
         if (search.trim().length < 3) return hits;
@@ -348,8 +373,17 @@ function PluginSettings() {
         }
     }
 
-    // The tab opens with the first cards and draws the rest over the next frames, instead of all five hundred before
-    // anything shows
+    // Before paint, so the shift never shows. Where the browser's own scroll anchoring already kept it, this finds 0
+    useLayoutEffect(() => {
+        const hold = held;
+        if (!hold || Date.now() > hold.until) return;
+        held = undefined;
+        const shift = hold.card.isConnected ? hold.card.getBoundingClientRect().top - hold.top : 0;
+        const scroller = Math.abs(shift) >= 1 && scrollerOf(hold.card);
+        if (scroller) scroller.scrollTop += shift;
+    });
+
+    // Render the first cards right away and the rest over the next frames, instead of all ~500 before anything shows
     const [drawn, setDrawn] = useState(FIRST_CARDS);
     useEffect(() => {
         if (drawn >= plugins.length) return;
@@ -430,7 +464,7 @@ function PluginSettings() {
                 )
                 : (
                     <div className={cl("empty")}>
-                        <EndcordMark width={51} asleep />
+                        <EmptyPanda />
                         <ExcludedPluginsList search={search} />
                     </div>
                 )

@@ -1,7 +1,6 @@
 /* Community stylesheet: its class names (BEM "--modifier") and rule order are kept as written. */
 /* stylelint-disable selector-class-pattern, no-duplicate-selectors, no-descending-specificity */
 
-/* ── Custom Profile Plugin ── */
 
 .cp-account-selector-inline {
     width: 100%;
@@ -49,7 +48,7 @@
 
 .cp-account-header-item--selected {
     background: rgb(88 101 242 / 15%);
-    border-color: #5865f2;
+    border-color: var(--brand-500);
 }
 
 .cp-account-header-item--selected .cp-account-mini-name {
@@ -105,7 +104,7 @@
 
 .cp-account-header-item--selected {
     background: rgb(88 101 242 / 15%);
-    border-color: #5865f2;
+    border-color: var(--brand-500);
 }
 
 .cp-account-header-avatar {
@@ -138,7 +137,7 @@
     right: -1px;
     width: 14px;
     height: 14px;
-    background: #5865f2;
+    background: var(--brand-500);
     color: #fff;
     border-radius: 50%;
     display: flex;
@@ -156,7 +155,7 @@
     flex-direction: column;
     gap: 0;
 
-    /* Discord's thin scrollbar was hard to grab next to the fields: a wider one, with room around it */
+    /* Wider scrollbar with some room around it; Discord's thin one was hard to grab next to the fields */
     scrollbar-color: auto !important;
     scrollbar-width: auto !important;
 }
@@ -181,14 +180,14 @@
     background-color: rgb(255 255 255 / 38%) !important;
 }
 
-/* ── Divider ── */
+/* Divider */
 .cp-divider {
     height: 1px;
     background: rgb(255 255 255 / 6%);
     margin: 10px 0;
 }
 
-/* ── Champs ── */
+/* Fields */
 .cp-field {
     margin-bottom: 14px;
 }
@@ -224,12 +223,12 @@
     color: rgb(255 255 255 / 25%);
 }
 
-/* Date input — forcer couleur blanche sur le texte */
+/* Date input: white text on the dark field */
 .cp-input[type="date"] {
     color-scheme: dark;
 }
 
-/* ── Upload image ── */
+/* Image upload */
 .cp-image-row {
     display: flex;
     align-items: center;
@@ -282,7 +281,7 @@
     color: rgb(255 255 255 / 80%);
 }
 
-/* ── Toggle ── */
+/* Toggle */
 .cp-toggle-row {
     display: flex;
     align-items: center;
@@ -329,8 +328,9 @@
     transition: background 0.2s;
 }
 
+/* On is blue, like Endcord's own switches */
 .cp-toggle--on {
-    background: #3ba55c;
+    background: var(--brand-500);
 }
 
 .cp-toggle-thumb {
@@ -349,7 +349,7 @@
     transform: translateX(18px);
 }
 
-/* ── Couleur ── */
+/* Colors */
 .cp-color-row {
     display: flex;
     align-items: center;
@@ -372,7 +372,7 @@
     width: auto;
 }
 
-/* ── Badges ── */
+/* Badges */
 .cp-badges {
     display: flex;
     flex-wrap: wrap;
@@ -388,7 +388,11 @@
     border: 1.5px solid rgb(255 255 255 / 10%);
     background: rgb(255 255 255 / 5%);
     color: rgb(255 255 255 / 70%);
-    transition: all 0.1s;
+    transition:
+        background-color var(--ec-motion-fast) ease,
+        border-color var(--ec-motion-fast) ease,
+        color var(--ec-motion-fast) ease,
+        transform var(--ec-motion-slow) var(--ec-ease-spring);
 }
 
 .cp-badge:hover {
@@ -398,16 +402,16 @@
 
 .cp-badge--on {
     background: rgb(88 101 242 / 20%);
-    border-color: #5865f2;
+    border-color: var(--brand-500);
     color: #fff;
     font-weight: 700;
 }
 
-/* ── Profile effects (from the Discord shop) ── */
+/* Profile effects (from the Discord shop) */
 .cp-effects {
     flex-shrink: 0;
 
-    /* A scrolling grid keeps its layout and painting to itself */
+    /* contain keeps the scrolling grid's layout and paint to itself */
     contain: content;
     max-height: 300px;
     overflow-y: auto;
@@ -441,7 +445,7 @@
     text-align: center;
 }
 
-/* A profile frame, shown by its most telling layer */
+/* Profile frames are previewed by a single layer */
 .cp-frame-thumb {
     width: 100%;
     height: 100%;
@@ -489,7 +493,7 @@
     text-align: center;
 }
 
-/* ── Hint ── */
+/* Hint */
 .cp-hint {
     font-size: 11px;
     color: rgb(255 255 255 / 30%);
@@ -498,7 +502,7 @@
     line-height: 1.4;
 }
 
-/* ── Footer ── */
+/* Footer */
 .cp-footer {
     display: flex !important;
     gap: 8px !important;
@@ -535,7 +539,7 @@
 
 .cp-btn-danger {
     background: rgb(237 66 69 / 15%);
-    color: #ed4245;
+    color: var(--status-danger);
     border: 1.5px solid rgb(237 66 69 / 30%);
 }
 
@@ -544,14 +548,14 @@
 }
 
 .cp-btn-primary {
-    background: #5865f2;
+    background: var(--brand-500);
 }
 
 .cp-btn-primary:hover:not(:disabled) {
-    background: #4752c4;
+    background: var(--brand-560);
 }
 
-/* ── Presets ── */
+/* Presets */
 .cp-presets-wrapper {
     padding: 0 20px;
     border-bottom: 1px solid rgb(255 255 255 / 6%);
@@ -609,7 +613,7 @@
 
 .cp-preset-chip:hover {
     background: rgb(88 101 242 / 18%);
-    border-color: #5865f2;
+    border-color: var(--brand-500);
     color: #fff;
 }
 
@@ -635,7 +639,7 @@
 }
 
 .cp-preset-del:hover {
-    color: #ed4245;
+    color: var(--status-danger);
 }
 
 .cp-preset-add {
@@ -657,7 +661,7 @@
 
 .cp-preset-add:hover {
     border-color: rgb(88 101 242 / 60%);
-    color: #5865f2;
+    color: var(--brand-500);
     background: rgb(88 101 242 / 8%);
 }
 
@@ -683,7 +687,7 @@
     border-radius: 99px !important;
 }
 
-/* ── Gifting Badges Display Fixes ── */
+/* Gifting badge display fixes */
 img[src*="gift_patron"],
 img[src*="gift_champion"],
 img[src*="gift_luminary"],
@@ -706,3 +710,170 @@ img[src*="3GRyXIR"] {
     transform-origin: center center !important;
 }
 
+/* Decorations, as square tiles */
+.cp-badge.cp-decoration {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    padding: 3px;
+    border-radius: 6px;
+    overflow: hidden;
+    line-height: 0;
+}
+
+.cp-decoration img {
+    display: block;
+    width: 46px;
+    height: 46px;
+    object-fit: contain;
+}
+
+/*
+ * Shelves and tiles scrolled out of view skip layout and paint. The first child is the None button, which has no
+ * fixed size
+ */
+.cp-effects {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 300px;
+}
+
+.cp-effects > .cp-badge:not(:first-child) {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 52px;
+}
+
+/* Motion: same timing as the settings and Control Center (endcordUi.css), so reduced motion applies here too */
+
+/* Staggered entrance, top first */
+:where(.cp-content > *) {
+    animation: cp-rise calc(var(--ec-motion-base) * 1.3) var(--ec-ease-out) backwards;
+}
+
+:where(.cp-content > :nth-child(2)) { animation-delay: calc(var(--ec-motion-base) * 0.06); }
+:where(.cp-content > :nth-child(3)) { animation-delay: calc(var(--ec-motion-base) * 0.12); }
+:where(.cp-content > :nth-child(4)) { animation-delay: calc(var(--ec-motion-base) * 0.18); }
+:where(.cp-content > :nth-child(5)) { animation-delay: calc(var(--ec-motion-base) * 0.24); }
+:where(.cp-content > :nth-child(6)) { animation-delay: calc(var(--ec-motion-base) * 0.3); }
+:where(.cp-content > :nth-child(n + 7)) { animation-delay: calc(var(--ec-motion-base) * 0.36); }
+
+@keyframes cp-rise {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+}
+
+/* Options lift on hover, sink when pressed, and the selected one pops */
+.cp-badge:hover {
+    transform: translateY(-1px);
+}
+
+.cp-badge:active {
+    transform: scale(0.93);
+    transition-duration: var(--ec-motion-fast);
+}
+
+.cp-badge--on {
+    animation: cp-pick var(--ec-motion-slow) var(--ec-ease-out);
+}
+
+@keyframes cp-pick {
+    40% {
+        transform: scale(1.08);
+    }
+}
+
+.cp-effects .cp-badge img {
+    transition: transform var(--ec-motion-slow) var(--ec-ease-spring);
+}
+
+.cp-effects .cp-badge:hover img {
+    transform: scale(1.08);
+}
+
+/* Toggle knob springs across, and stretches toward its target while pressed */
+.cp-toggle {
+    transition: background-color var(--ec-motion-base) var(--ec-ease-out);
+}
+
+.cp-toggle-thumb {
+    transition: transform calc(var(--ec-motion-base) * 1.4) var(--ec-ease-spring);
+}
+
+.cp-toggle-row:active .cp-toggle-thumb {
+    transform: translateX(2px) scaleX(1.25);
+}
+
+.cp-toggle-row:active .cp-toggle--on .cp-toggle-thumb {
+    transform: translateX(16px) scaleX(1.25);
+}
+
+.cp-toggle-row {
+    transition: background-color var(--ec-motion-fast) ease;
+}
+
+.cp-toggle-row:active {
+    background: rgb(255 255 255 / 8%);
+}
+
+/* Accent border on focused fields */
+.cp-input {
+    transition: border-color var(--ec-motion-base) ease, background-color var(--ec-motion-base) ease;
+}
+
+.cp-input:focus {
+    border-color: rgb(156 203 255 / 55%);
+    background: rgb(0 0 0 / 28%);
+}
+
+/* Press effect on buttons */
+.cp-btn,
+.cp-file-btn,
+.cp-preset-chip,
+.cp-preset-add {
+    transition:
+        background-color var(--ec-motion-fast) ease,
+        border-color var(--ec-motion-fast) ease,
+        color var(--ec-motion-fast) ease,
+        opacity var(--ec-motion-fast) ease,
+        transform var(--ec-motion-slow) var(--ec-ease-spring);
+}
+
+.cp-btn:active:not(:disabled),
+.cp-file-btn:active,
+.cp-preset-add:active {
+    transform: scale(0.95);
+    transition-duration: var(--ec-motion-fast);
+}
+
+.cp-preset-chip:hover {
+    transform: translateY(-1px);
+}
+
+.cp-preset-chip:active {
+    transform: scale(0.95);
+    transition-duration: var(--ec-motion-fast);
+}
+
+/* Newly saved presets pop in */
+.cp-preset-chip {
+    animation: cp-pop-in var(--ec-motion-slow) var(--ec-ease-spring) backwards;
+}
+
+@keyframes cp-pop-in {
+    from {
+        opacity: 0;
+        transform: scale(0.7);
+    }
+}
+
+/* Clear buttons rotate their cross 90° on hover */
+.cp-clear-btn svg {
+    transition: transform var(--ec-motion-slow) var(--ec-ease-spring);
+}
+
+.cp-clear-btn:hover svg {
+    transform: rotate(90deg);
+}

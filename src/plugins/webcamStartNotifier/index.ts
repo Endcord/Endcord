@@ -56,7 +56,7 @@ export default definePlugin({
 
                 voiceStates.forEach(state => {
                     if (state.channelId !== currentChannelId) {
-                        // User left the watched channel (or moved elsewhere) — drop stale entry
+                        // Left the watched channel (or moved): drop the entry
                         videoStates.delete(state.userId);
                         return;
                     }

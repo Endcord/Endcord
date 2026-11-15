@@ -1,21 +1,21 @@
 /* Miscellaneous */
 
-/* Fix to overwrite bad CSS in callTimer/alignedChatInputFix.css */
+/* Override bad CSS from callTimer/alignedChatInputFix.css */
 [class*="panels"] [class*="questProgressWrapper"] [class*="outer"] > [class*="inner"] {
     height: 100% !important;
 }
 
-/* Fix to overwrite bad CSS in callTimer/alignedChatInputFix.css */
+/* Override bad CSS from callTimer/alignedChatInputFix.css */
 [class*="panels"] [class*="questProgressWrapper"] > div {
     opacity: 1 !important;
 }
 
-/* Fix oversized confetti blocking Quest buttons. */
+/* The confetti was oversized and covered the Quest buttons */
 [class*="rewardDescriptionContainer"] [class*="progressWrapper"] > [class*="confetti"] {
     pointer-events: none;
 }
 
-/* Fix Questify button text clipping. */
+/* Keep the Questify button text from clipping */
 .questify-quest-item-restyle button [class*="buttonChildren"],
 .questify-quest-item-restyle button span {
     overflow: visible;

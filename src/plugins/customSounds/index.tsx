@@ -111,16 +111,6 @@ export async function ensureDataURICached(fileId: string): Promise<string | null
     return null;
 }
 
-export async function refreshDataURI(id: string): Promise<void> {
-    const override = getOverride(id);
-    if (!override?.selectedFileId) {
-        return;
-    }
-
-    const dataUri = await ensureDataURICached(override.selectedFileId);
-    if (!dataUri) console.error(`[CustomSounds] Failed to cache data URI for ${id}`);
-}
-
 async function preloadDataURIs() {
     for (const soundType of allSoundTypes) {
         const override = getOverride(soundType.id);
@@ -303,15 +293,6 @@ const settings = definePluginSettings({
         }
     }
 });
-
-export function isOverriden(id: string): boolean {
-    return !!getOverride(id)?.enabled;
-}
-
-export function findOverride(id: string): SoundOverride | null {
-    const override = getOverride(id);
-    return override?.enabled ? override : null;
-}
 
 export default definePlugin({
     name: "CustomSounds",

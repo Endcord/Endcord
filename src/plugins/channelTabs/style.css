@@ -149,7 +149,7 @@
     fill: none;
     stroke: var(--text-muted);
     stroke-width: 0.075rem;
-    transition: all 0.15s ease;
+    transition: stroke var(--ec-motion-fast) ease, fill var(--ec-motion-fast) ease;
 }
 
 .vc-channeltabs-bookmark-star:hover {
@@ -253,16 +253,6 @@
     opacity: 0.3;
 }
 
-.vc-channeltabs-tab-resizing {
-    pointer-events: none;
-    user-select: none;
-}
-
-.vc-channeltabs-tab-resizing * {
-    pointer-events: none;
-    user-select: none;
-}
-
 .vc-channeltabs-tab.vc-channeltabs-wider:not(.vc-channeltabs-tab-compact) {
     width: calc(16rem * var(--tab-width-scale, 1));
 }
@@ -270,7 +260,7 @@
 .vc-channeltabs-tab-compact {
     width: auto;
     min-width: calc(3rem * var(--tab-width-scale, 1));
-    transition: all 0.4s ease-out;
+    transition: max-width var(--ec-motion-slow) ease-out, padding var(--ec-motion-slow) ease-out, margin var(--ec-motion-slow) ease-out, opacity var(--ec-motion-slow) ease-out, transform var(--ec-motion-slow) ease-out;
 }
 
 .vc-channeltabs-tab-compact .vc-channeltabs-tab-inner {
@@ -308,17 +298,6 @@
     border: 1px solid var(--main-color, var(--brand-experiment, var(--brand-500)));
     border-bottom: 2px solid var(--main-color, var(--brand-experiment, var(--brand-500)));
     box-shadow: 0 1px 3px rgb(0 0 0 / 20%);
-}
-
-/* stylelint-disable-next-line no-descending-specificity */
-.vc-channeltabs-dark-theme.vc-channeltabs-tab-selected .vc-channeltabs-name-text {
-    font-weight: 600;
-    color: var(--white-500);
-}
-
-/* stylelint-disable-next-line no-descending-specificity */
-.vc-channeltabs-light-theme.vc-channeltabs-tab-selected .vc-channeltabs-name-text {
-    font-weight: 600;
 }
 
 .vc-channeltabs-tab-selected .vc-channeltabs-guild-acronym-icon span {
@@ -438,7 +417,7 @@
     margin: 0 4px;
     border-radius: 4px;
     background-color: var(--background-base-low);
-    transition: all 0.2s ease;
+    transition: background-color var(--ec-motion-fast) ease, color var(--ec-motion-fast) ease, transform var(--ec-motion-slow) var(--ec-ease-spring);
     flex-shrink: 0;
 }
 
@@ -453,7 +432,7 @@
 
 /* stylelint-disable-next-line no-descending-specificity */
 .vc-channeltabs-new-button svg {
-    transition: all 0.2s ease;
+    transition: color var(--ec-motion-fast) ease, fill var(--ec-motion-fast) ease, filter var(--ec-motion-fast) ease;
 }
 
 .vc-channeltabs-new-button:hover svg {
@@ -481,7 +460,7 @@
     margin: 0 0 0 4px;
     border-radius: 50%;
     color: var(--text-muted);
-    transition: all 0.15s ease, transform 0.2s ease-in-out;
+    transition: background-color var(--ec-motion-fast) ease, color var(--ec-motion-fast) ease, transform var(--ec-motion-base) ease-in-out;
 }
 
 .vc-channeltabs-close-button:hover {
@@ -607,7 +586,7 @@
     }
 }
 
-/* Enhance glow for selected tabs with mentions */
+/* Stronger glow on the selected tab */
 .vc-channeltabs-tab-selected:has([data-has-mention="true"]) {
     box-shadow:
         0 1px 3px rgb(0 0 0 / 20%),
@@ -634,7 +613,7 @@
     }
 }
 
-/* Enhanced Nitro glow for selected tab */
+/* Stronger Nitro glow on the selected tab */
 .vc-channeltabs-tab-selected.vc-channeltabs-tab-nitro {
     box-shadow:
         0 1px 3px rgb(0 0 0 / 20%),
@@ -738,7 +717,7 @@
     }
 }
 
-/* Enhanced gradient for selected Quests tab with active quests */
+/* Selected Quests tab while quests are running */
 .vc-channeltabs-tab-selected.vc-channeltabs-tab-quests-active::before {
     opacity: 1;
     filter: blur(3px);
@@ -800,7 +779,7 @@
     overflow: hidden;
 }
 
-/* New tab slide-in animation */
+/* Slide-in for new tabs */
 @keyframes vc-channeltabs-tab-enter {
     0% {
         opacity: 0;
@@ -850,7 +829,7 @@
     transition: none !important;
 }
 
-/* Disable tab transitions when any tab is being dragged for smoother reordering */
+/* No tab transitions while dragging; reordering is smoother without them */
 .vc-channeltabs-tab-container:has(.vc-channeltabs-tab-dragging) .vc-channeltabs-tab:not(.vc-channeltabs-tab-dragging) {
     transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.2s ease, box-shadow 0.2s ease;
 }
@@ -886,24 +865,20 @@
     }
 }
 
-.vc-channeltabs-tab-container {
-    transition: all 0.2s ease-out;
-}
-
-/* animation override settings */
+/* Per-animation toggles from the settings */
 /* stylelint-disable no-descending-specificity */
 
-/* Hover animation - disable if setting is off */
+/* Hover */
 .vc-channeltabs-container.vc-channeltabs-no-hover-animation .vc-channeltabs-tab:hover:not(.vc-channeltabs-tab-selected) {
     transform: none !important;
 }
 
-/* Selection animation - disable if setting is off */
+/* Selection */
 .vc-channeltabs-container.vc-channeltabs-no-selection-animation .vc-channeltabs-tab-selected {
     transform: none !important;
 }
 
-/* Drag & drop animation - disable if setting is off */
+/* Drag and drop */
 .vc-channeltabs-container.vc-channeltabs-no-drag-animation .vc-channeltabs-tab-dragging {
     opacity: 1 !important;
     transform: none !important;
@@ -920,12 +895,12 @@
     box-shadow: none !important;
 }
 
-/* Enter/exit animation - disable if setting is off */
+/* Enter and exit */
 .vc-channeltabs-container.vc-channeltabs-no-enter-exit-animation .vc-channeltabs-tab-entering {
     animation: none !important;
 }
 
-/* Also disable closing animation for instant disappear */
+/* Closed tabs disappear instantly too */
 .vc-channeltabs-container.vc-channeltabs-no-enter-exit-animation .vc-channeltabs-tab-closing {
     animation: none !important;
     opacity: 0 !important;
@@ -938,31 +913,31 @@
         background-color 0.15s ease !important;
 }
 
-/* Icon pop animation - disable if setting is off */
+/* Icon pop */
 .vc-channeltabs-container.vc-channeltabs-no-icon-pop-animation .vc-channeltabs-tab-selected .vc-channeltabs-icon,
 .vc-channeltabs-container.vc-channeltabs-no-icon-pop-animation .vc-channeltabs-tab-selected .vc-channeltabs-guild-acronym-icon {
     animation: none !important;
 }
 
-/* Selected tab border - disable if setting is off */
+/* Selected tab border */
 .vc-channeltabs-container.vc-channeltabs-no-selected-border .vc-channeltabs-tab-selected {
     border: 1px solid var(--background-mod-muted) !important;
     border-bottom: 1px solid var(--background-mod-muted) !important;
 }
 
-/* Selected tab background - disable if setting is off */
+/* Selected tab background */
 .vc-channeltabs-container.vc-channeltabs-no-selected-background .vc-channeltabs-tab-selected {
     background-color: transparent !important;
 }
 
-/* Tab shadows - disable if setting is off */
+/* Tab shadows */
 .vc-channeltabs-container.vc-channeltabs-no-tab-shadows .vc-channeltabs-tab,
 .vc-channeltabs-container.vc-channeltabs-no-tab-shadows .vc-channeltabs-tab-selected,
 .vc-channeltabs-container.vc-channeltabs-no-tab-shadows .vc-channeltabs-tab:hover {
     box-shadow: none !important;
 }
 
-/* Close button rotation - disable if setting is off */
+/* Close button rotation */
 .vc-channeltabs-container.vc-channeltabs-no-close-rotation .vc-channeltabs-tab-selected .vc-channeltabs-close-button:hover {
     transform: none !important;
 }
@@ -979,7 +954,7 @@
     transform: none !important;
 }
 
-/* Plus button animation - disable if setting is off */
+/* Plus button */
 .vc-channeltabs-container.vc-channeltabs-no-plus-animation .vc-channeltabs-new-button:hover {
     transform: none !important;
 }
@@ -992,7 +967,7 @@
     animation: none !important;
 }
 
-/* Mention glow - disable if setting is off */
+/* Mention glow */
 .vc-channeltabs-container.vc-channeltabs-no-mention-glow .vc-channeltabs-tab:has([data-has-mention="true"]) {
     animation: none !important;
     box-shadow: 0 1px 3px rgb(0 0 0 / 20%) !important;
@@ -1002,7 +977,7 @@
     box-shadow: 0 1px 3px rgb(0 0 0 / 20%) !important;
 }
 
-/* Compact mode expansion animation - disable if setting is off */
+/* Compact mode expansion */
 .vc-channeltabs-container.vc-channeltabs-no-compact-animation .vc-channeltabs-tab-compact {
     transition: none !important;
 }
@@ -1015,19 +990,19 @@
     transition: none !important;
 }
 
-/* Also disable tab-inner padding transition */
+/* and the tab-inner padding transition */
 .vc-channeltabs-container.vc-channeltabs-no-compact-animation .vc-channeltabs-tab-compact .vc-channeltabs-tab-inner {
     transition: none !important;
 }
 
-/* Make close button appear instantly with more specificity */
+/* Close button shows instantly (needs the extra specificity) */
 .vc-channeltabs-container.vc-channeltabs-no-compact-animation .vc-channeltabs-tab-compact:hover .vc-channeltabs-close-button-compact,
 .vc-channeltabs-container.vc-channeltabs-no-compact-animation .vc-channeltabs-tab-compact.vc-channeltabs-tab-selected .vc-channeltabs-close-button-compact {
     transition: none !important;
     transition-delay: 0s !important;
 }
 
-/* Tab positioning - disable if setting is off for INSTANT position changes */
+/* Tab position changes happen instantly */
 .vc-channeltabs-container.vc-channeltabs-no-tab-positioning .vc-channeltabs-tab-container {
     transition: none !important;
 }
@@ -1040,7 +1015,7 @@
     transition: none !important;
 }
 
-/* Compact auto-expand selected - disable if setting is off */
+/* Compact: auto-expanding the selected tab */
 .vc-channeltabs-container.vc-channeltabs-no-compact-auto-expand .vc-channeltabs-tab-compact.vc-channeltabs-tab-selected .vc-channeltabs-tab-inner {
     padding-right: 0 !important;
 }
@@ -1057,7 +1032,7 @@
     pointer-events: none;
 }
 
-/* Compact hover expansion - disable if setting is off */
+/* Compact: expanding on hover */
 .vc-channeltabs-container.vc-channeltabs-no-compact-hover-expand .vc-channeltabs-tab-compact:hover .vc-channeltabs-tab-inner {
     padding-right: 0 !important;
 }
@@ -1130,7 +1105,7 @@
     background-color: var(--background-mod-strong);
 }
 
-/* Folder item styling - indented and visually connected to folder */
+/* Folder items, indented under their folder */
 .vc-channeltabs-bookmark.vc-channeltabs-folder-item {
     margin-left: 0.5rem;
     border-left: 2px solid var(--background-mod-muted);
@@ -1155,7 +1130,7 @@
     box-shadow: 0 0 6px var(--hover-color, var(--main-color, var(--brand-experiment, var(--brand-500))));
 }
 
-/* keybind Settings Styles */
+/* Keybind settings */
 .channelTabs-keybind-settings {
     display: flex;
     flex-direction: column;
@@ -1204,7 +1179,7 @@
     font-family: var(--font-code);
     font-weight: 600;
     color: var(--text-strong);
-    transition: all 0.2s ease;
+    transition: background-color var(--ec-motion-fast) ease, border-color var(--ec-motion-fast) ease, color var(--ec-motion-fast) ease, box-shadow var(--ec-motion-fast) ease, opacity var(--ec-motion-fast) ease, transform var(--ec-motion-slow) var(--ec-ease-spring);
     outline: none;
     box-shadow: 0 0 0 1px var(--background-mod-muted);
 }
@@ -1274,7 +1249,7 @@
     }
 }
 
-/* Tab Number Badge Styles */
+/* Tab number badges */
 .vc-channeltabs-tab-number-badge {
     background-color: rgb(0 0 0 / 25%);
     color: var(--text-default);

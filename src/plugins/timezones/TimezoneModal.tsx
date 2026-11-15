@@ -5,11 +5,12 @@
  */
 
 import * as DataStore from "@api/DataStore";
+import { EndcordModal } from "@components/EndcordModal";
 import { HeadingSecondary } from "@components/Heading";
 import { RenderModalProps } from "@endcord/discord-types";
 import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
-import { Modal, SearchableSelect, useEffect, useMemo, useState } from "@webpack/common";
+import { SearchableSelect, useEffect, useMemo, useState } from "@webpack/common";
 
 import { DATASTORE_KEY, getSystemTimezone, resolveUserTimezone, settings, timezones } from ".";
 import { setTimezone, setUserDatabaseTimezone } from "./database";
@@ -70,7 +71,7 @@ export function SetTimezoneModal({ userId, modalProps, database }: { userId: str
     }
 
     return (
-        <Modal
+        <EndcordModal
             {...modalProps}
             size="sm"
             title={t("Timezones")}
@@ -89,6 +90,6 @@ export function SetTimezoneModal({ userId, modalProps, database }: { userId: str
                     onChange={v => setCurrentValue(v)}
                 />
             </section>
-        </Modal>
+        </EndcordModal>
     );
 }

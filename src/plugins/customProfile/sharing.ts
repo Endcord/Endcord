@@ -14,6 +14,7 @@ import { CloudUploadPlatform } from "@endcord/discord-types/enums";
 import { Logger } from "@utils/Logger";
 import { CloudUploader, Constants, FluxDispatcher, GuildStore, ReadStateStore, RestAPI } from "@webpack/common";
 
+import { BADGES, FLAG, SPECIAL_BADGES, TIERED_BADGES } from "./badgeData";
 import type { CustomProfileData } from "./data";
 
 export const PROFILES_GUILD_ID = "1543323763695820942";
@@ -81,19 +82,42 @@ export const sharingRetryAt = () => retryAt;
 
 // ---- What a profile message may say ------------------------------------------------------------------------------
 
-const DISCORD_CDN = /^https:\/\/(?:cdn\.discordapp\.com|media\.discordapp\.net)\/[^\s"'<>]+$/;
+/**
+ * Only the characters Discord's own picture links are made of. A shared picture link ends up inside CSS url() in
+ * places (FullVCPFP, ThemeAttributes, themes), where a quote, a parenthesis or a comma could end the link and start
+ * another, so none of those get through; a link with one in it just isn't shared
+ */
+const DISCORD_CDN = /^https:\/\/(?:cdn\.discordapp\.com|media\.discordapp\.net)\/[\w\-./?=&%]{1,600}$/;
 const TOKEN = /^[\w.-]{1,80}$/;
 const SNOWFLAKE = /^\d{1,25}$/;
 const ASSET_PATH = /^(?!.*\.\.)[\w\-./]{1,160}$/;
+/** Discord names its nameplate palettes like crimson or bubble_gum */
+const PALETTE = /^[a-z_]{1,40}$/;
+/** Control characters and the invisible marks that hide text or flip its direction. The zero-width joiner stays: emoji are joined with it */
+const UNPRINTABLE = /[\u0000-\u001F\u007F-\u009F\u200B\u200C\u200E\u200F\u2028-\u202E\u2060-\u2064\u2066-\u206F\uFEFF]/g;
+const UNPRINTABLE_IN_BIO = /[\u0000-\u0009\u000B-\u001F\u007F-\u009F\u200B\u200C\u200E\u200F\u2028-\u202E\u2060-\u2064\u2066-\u206F\uFEFF]/g;
+/** The badge bits CustomProfile knows. The other bits mean something else to Discord: system account, verified bot, spammer */
+const BADGE_BITS = Object.values(FLAG).reduce((bits, flag) => bits | flag, 0);
 
-const text = (value: unknown, max: number) => typeof value === "string" && value.length <= max ? value : undefined;
+/** A string of at most max characters, without the characters nobody can see */
+const text = (value: unknown, max: number, unprintable = UNPRINTABLE) => {
+    if (typeof value !== "string" || value.length > max) return undefined;
+    const clean = value.replace(unprintable, "");
+    return clean.trim() ? clean : undefined;
+};
 const int = (value: unknown, min: number, max: number) => Number.isInteger(value) && (value as number) >= min && (value as number) <= max ? value as number : undefined;
 const matching = (value: unknown, pattern: RegExp) => typeof value === "string" && pattern.test(value) ? value : undefined;
+/** A calendar day as the date field stores it, one that exists */
+const day = (value: unknown) => {
+    const date = matching(value, /^\d{4}-\d{2}-\d{2}$/);
+    const time = date ? new Date(`${date}T12:00:00Z`) : null;
+    return time && !Number.isNaN(time.getTime()) && time.toISOString().startsWith(date!) ? date : undefined;
+};
 
 /**
  * Keeps only what a shared profile may set, each of the right type and size. Everyone's client reads these messages,
  * so pictures must be on Discord's own servers (anything else would tell a stranger who looked at the profile), and
- * email, phone and the account's creation date never come from someone else
+ * email and phone never come from someone else
  */
 export function sanitizeShared(raw: unknown): CustomProfileData | null {
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
@@ -106,16 +130,18 @@ export function sanitizeShared(raw: unknown): CustomProfileData | null {
 
     set("username", text(r.username, 32));
     set("globalName", text(r.globalName, 32));
-    set("bio", text(r.bio, 400));
+    set("bio", text(r.bio, 400, UNPRINTABLE_IN_BIO));
     set("pronouns", text(r.pronouns, 40));
     set("oldName", text(r.oldName, 32));
     set("avatar", matching(r.avatar, DISCORD_CDN));
     set("banner", matching(r.banner, DISCORD_CDN));
     set("accentColor", int(r.accentColor, 0, 0xFFFFFF));
     set("accentColor2", int(r.accentColor2, 0, 0xFFFFFF));
-    set("badgeFlags", int(r.badgeFlags, 0, 2 ** 31 - 1));
+    const flags = int(r.badgeFlags, 0, 2 ** 31 - 1);
+    if (flags !== undefined && (flags & BADGE_BITS) !== 0) out.badgeFlags = flags & BADGE_BITS;
     set("nitroLevel", int(r.nitroLevel, 0, 20));
     set("nitroSince", matching(r.nitroSince, /^\d{4}-\d{2}-\d{2}$/));
+    set("createdAt", day(r.createdAt));
     set("boostMonths", int(r.boostMonths, 0, 30));
     if (typeof r.nitro === "boolean") out.nitro = r.nitro;
     set("decorationAsset", matching(r.decorationAsset, TOKEN));
@@ -123,13 +149,16 @@ export function sanitizeShared(raw: unknown): CustomProfileData | null {
     set("profileFrameId", matching(r.profileFrameId, SNOWFLAKE));
 
     if (Array.isArray(r.customBadgeIds) && r.customBadgeIds.length <= 40) {
-        const ids = r.customBadgeIds.filter(id => matching(id, TOKEN));
-        if (ids.length) out.customBadgeIds = ids as string[];
+        // Only badges CustomProfile has, as their own properties: "constructor" and its kind name none
+        const known = (id: unknown): id is string => typeof id === "string" && (Object.hasOwn(SPECIAL_BADGES, id) || BADGES.some(badge => String(badge.flag) === id));
+        const ids = [...new Set(r.customBadgeIds.filter(known))];
+        if (ids.length) out.customBadgeIds = ids;
     }
     if (r.tieredBadges && typeof r.tieredBadges === "object" && !Array.isArray(r.tieredBadges)) {
         const tiers: Record<string, number> = {};
         for (const [key, tier] of Object.entries(r.tieredBadges).slice(0, 20)) {
-            if (matching(key, TOKEN) && int(tier, 0, 20) !== undefined) tiers[key] = tier as number;
+            const type = TIERED_BADGES.find(type => type.key === key);
+            if (type && int(tier, 0, type.tiers.length - 1) !== undefined) tiers[key] = tier as number;
         }
         if (Object.keys(tiers).length) out.tieredBadges = tiers;
     }
@@ -137,7 +166,13 @@ export function sanitizeShared(raw: unknown): CustomProfileData | null {
     const plate = r.nameplate as Record<string, unknown> | undefined;
     if (plate && typeof plate === "object") {
         const skuId = matching(plate.skuId, SNOWFLAKE), asset = matching(plate.asset, ASSET_PATH);
-        if (skuId && asset) out.nameplate = { skuId, asset, label: text(plate.label, 80), palette: text(plate.palette, 40) };
+        if (skuId && asset) {
+            const nameplate: NonNullable<CustomProfileData["nameplate"]> = { skuId, asset };
+            const label = text(plate.label, 80), palette = matching(plate.palette, PALETTE);
+            if (label) nameplate.label = label;
+            if (palette) nameplate.palette = palette;
+            out.nameplate = nameplate;
+        }
     }
 
     const styles = r.displayNameStyles as Record<string, unknown> | undefined;
@@ -177,7 +212,7 @@ export function readProfileMessage(content: string, attachments: Attachments = [
  */
 export function writeProfileMessage(data: CustomProfileData) {
     const shared: Record<string, unknown> = { ...data };
-    for (const key of ["email", "phone", "createdAt", "copiedUserId"]) delete shared[key];
+    for (const key of ["email", "phone", "copiedUserId"]) delete shared[key];
 
     const files: File[] = [];
     for (const key of ["avatar", "banner"] as const) {
@@ -358,7 +393,7 @@ export async function startSharing(changed: (userIds: string[]) => void, { read,
         cache = { ...saved, profiles: {} };
         for (const [id, entry] of Object.entries(saved.profiles)) {
             const data = sanitizeShared(entry?.d);
-            if (data && typeof entry.m === "string") cache.profiles[id] = { m: entry.m, d: data };
+            if (data && SNOWFLAKE.test(id) && typeof entry.m === "string" && SNOWFLAKE.test(entry.m)) cache.profiles[id] = { m: entry.m, d: data };
         }
         if (hasSharedProfiles()) onChange(sharedProfileIds());
     }
@@ -402,7 +437,7 @@ function upload(file: File) {
     });
 }
 
-/** Short, and the same for the same profile: what was shared, without keeping a copy of it */
+/** Short fingerprint of what was shared, so no copy of it has to be kept */
 function fingerprint(data: CustomProfileData | null) {
     const text = data ? `${writeProfileMessage(data).content + (data.avatar?.length ?? 0)}:${data.banner?.length ?? 0}` : "";
     let hash = 2166136261;
@@ -466,7 +501,7 @@ export async function publishProfile(myId: string, data: CustomProfileData | nul
                 url: Constants.Endpoints.MESSAGES(PROFILES_CHANNEL_ID),
                 body: {
                     content,
-                    // Quiet and plain: no pings, no link previews
+                    // No pings, no link previews
                     flags: (1 << 2) | (1 << 12),
                     allowed_mentions: { parse: [] },
                     attachments: attachments.map((file, index) => ({ id: String(index), ...file }))

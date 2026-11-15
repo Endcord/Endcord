@@ -131,6 +131,8 @@ export const settings = definePluginSettings({
         default: false
     },
     followUserId: {
+        // Whoever this names is followed into voice channels and calls, microphone and all, so no import picks them
+        sensitive: true,
         type: OptionType.STRING,
         description: "Followed User ID",
         restartNeeded: false,

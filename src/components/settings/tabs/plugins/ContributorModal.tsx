@@ -45,7 +45,16 @@ function ContributorModal({ user, modalProps }: { user: User; modalProps: Render
 
     const plugins = useMemo(() => {
         // Authors come from what the build read where it could, so the code of every plugin isn't loaded to list them
-        const authorsOf = (name: string) => getPluginListInfo(name)?.w?.map(key => Devs[key]) ?? Plugins[name].authors;
+        const authorsOf = (name: string) => {
+            const known = getPluginListInfo(name)?.w;
+            if (known) return known.map(key => Devs[key]);
+            try {
+                return Plugins[name].authors;
+            } catch {
+                // Its code is gone with a renderer.js replaced while Discord runs (needsRestart)
+                return undefined;
+            }
+        };
         return Object.keys(Plugins)
             .filter(name => !name.endsWith("API"))
             .filter(name => authorsOf(name)?.some(a => String(a.id) === String(user.id) || a.name?.toLowerCase() === user.username?.toLowerCase()))

@@ -14,10 +14,6 @@ const SafePalette = ErrorBoundary.wrap(Palette, { noop: true });
 
 let activeKey: string | null = null;
 
-export function isPaletteOpen() {
-    return activeKey !== null;
-}
-
 export function closePalette() {
     if (activeKey) {
         closeModal(activeKey);

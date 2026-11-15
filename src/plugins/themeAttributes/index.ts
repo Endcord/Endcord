@@ -7,6 +7,7 @@
 import { Message } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
+import { cssUrl } from "@utils/misc";
 import definePlugin from "@utils/types";
 import { UserStore } from "@webpack/common";
 
@@ -61,10 +62,11 @@ export default definePlugin({
     getAvatarStyles(src: string | null) {
         if (typeof src !== "string" || src.startsWith("data:")) return {};
 
+        // Quoted: plugins like CustomProfile and UserPFP put their own links in the avatar's src
         return Object.fromEntries(
             [128, 256, 512, 1024, 2048, 4096].map(size => [
                 `--avatar-url-${size}`,
-                `url(${src.replace(/\d+$/, String(size))})`
+                cssUrl(src.replace(/\d+$/, String(size)))
             ])
         );
     },

@@ -144,7 +144,7 @@ export default definePlugin({
                     || UserGuildSettingsStore.isChannelMuted(null, channel.id) // If the user has muted the DM/group channel.
                 ) return;
 
-            // Retrieve the message component for the message.
+            // The message record
             // Fast path: the reducer has usually already registered this message,
             // so a plain lookup avoids the store mutation receiveMessage performs
             // for every candidate. receiveMessage stays as the fallback for the

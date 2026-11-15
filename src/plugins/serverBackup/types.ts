@@ -4,7 +4,9 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-export const BACKUP_FORMAT = "equicord-server-backup";
+export const BACKUP_FORMAT = "endcord-server-backup";
+/** What backups made before the rename say */
+export const OLD_BACKUP_FORMAT = "equicord-server-backup";
 export const BACKUP_VERSION = 1;
 
 export const ChannelTypes = {
@@ -104,7 +106,7 @@ export interface BackupGuildSettings {
 }
 
 export interface GuildBackup {
-    format: typeof BACKUP_FORMAT;
+    format: typeof BACKUP_FORMAT | typeof OLD_BACKUP_FORMAT;
     version: typeof BACKUP_VERSION;
     createdAt: string;
     guild: BackupGuildSettings;

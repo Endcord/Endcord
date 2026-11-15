@@ -4,9 +4,10 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { EndcordModal } from "@components/EndcordModal";
 import { RenderModalProps } from "@endcord/discord-types";
 import { t } from "@utils/i18n";
-import { Modal, React } from "@webpack/common";
+import { React } from "@webpack/common";
 
 import { sendRemix } from ".";
 import { brushCanvas, canvas, cropCanvas, ctx, exportImg, shapeCanvas } from "./editor/components/Canvas";
@@ -38,7 +39,7 @@ async function closeModal(closeFunc: () => void, save?: boolean) {
 
 export default function RemixModal({ modalProps, close, url }: Props) {
     return (
-        <Modal
+        <EndcordModal
             {...modalProps}
             size="lg"
             title={t("Remix")}
@@ -59,6 +60,6 @@ export default function RemixModal({ modalProps, close, url }: Props) {
             ]}
         >
             <Editor url={url} />
-        </Modal>
+        </EndcordModal>
     );
 }

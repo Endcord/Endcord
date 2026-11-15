@@ -37,7 +37,7 @@ migrateRemovedPlugin("InRole", "ClickableRoles");
 
 export default definePlugin({
     name: "InRole",
-    description: "Know who is in a role with the role context menu or /inrole command (read plugin info!)",
+    description: "Shows who has a role, from the role's right-click menu or the /inrole command.",
     tags: ["Commands", "Roles"],
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     dependencies: ["UserSettingsAPI", "CommandsAPI"],

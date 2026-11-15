@@ -5,12 +5,13 @@
  */
 
 import { Button } from "@components/Button";
+import { EndcordModal } from "@components/EndcordModal";
 import { Flex } from "@components/Flex";
 import { Heading } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
 import type { RenderModalProps } from "@endcord/discord-types";
 import { t } from "@utils/i18n";
-import { Checkbox, FluxDispatcher, MessageActions, Modal, openModal, PendingReplyStore, showToast, Toasts, useEffect, useState } from "@webpack/common";
+import { Checkbox, FluxDispatcher, MessageActions, openModal, PendingReplyStore, showToast, Toasts, useEffect, useState } from "@webpack/common";
 
 import { ApplicationField, BooleanField, DateTimeField, getDateTimeLocalValue, ParticipantField, TextField } from "./fields";
 import { abortActiveClipUploads, type ClipMetadata, getClipCreatedAt, getClipTitleFromName, getDefaultClipTitle, getDefaultFileName, getErrorMessage, getParticipantIds, getString, isValidDate, pickClipFile, uploadClipFile } from "./upload";
@@ -105,7 +106,7 @@ function UploadClipFileModal({ modalProps, channelId, clip }: { modalProps: Rend
     }
 
     return (
-        <Modal
+        <EndcordModal
             {...modalProps}
             title={t("Upload Clip File")}
             notice={notice}
@@ -154,6 +155,6 @@ function UploadClipFileModal({ modalProps, channelId, clip }: { modalProps: Rend
                     <BooleanField label={t("Thumbnail")} value={thumbnail} onChange={setThumbnail} disabled={uploading} />
                 </Flex>
             </Flex>
-        </Modal>
+        </EndcordModal>
     );
 }

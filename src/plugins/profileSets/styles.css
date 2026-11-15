@@ -167,7 +167,7 @@
     background-color: var(--background-primary);
     border-radius: 6px;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: background-color var(--ec-motion-fast) ease, border-color var(--ec-motion-fast) ease, box-shadow var(--ec-motion-fast) ease;
     border: 2px solid transparent;
     outline: none;
     min-width: 0;

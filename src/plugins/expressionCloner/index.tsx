@@ -8,6 +8,7 @@ import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/Co
 import { migratePluginSettings } from "@api/Settings";
 import { BaseText } from "@components/BaseText";
 import { CheckedTextInput } from "@components/CheckedTextInput";
+import { EndcordModal } from "@components/EndcordModal";
 import { Flex } from "@components/Flex";
 import { Guild, GuildSticker } from "@endcord/discord-types";
 import { StickerFormatType } from "@endcord/discord-types/enums";
@@ -17,7 +18,7 @@ import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import definePlugin from "@utils/types";
 import { findByCodeLazy } from "@webpack";
-import { Constants, EmojiStore, FluxDispatcher, Forms, GuildStore, IconUtils, Menu, Modal, openModalLazy, PermissionsBits, PermissionStore, React, RestAPI, StickersStore, Toasts, Tooltip, UserStore } from "@webpack/common";
+import { Constants, EmojiStore, FluxDispatcher, Forms, GuildStore, IconUtils, Menu, openModalLazy, PermissionsBits, PermissionStore, React, RestAPI, StickersStore, Toasts, Tooltip, UserStore } from "@webpack/common";
 import { Promisable } from "type-fest";
 
 const uploadEmoji = findByCodeLazy(".GUILD_EMOJIS(", "EMOJI_UPLOAD_START");
@@ -318,7 +319,7 @@ function buildMenuItem(type: "Emoji" | "Sticker", fetchData: () => Promisable<Om
                     const url = getUrl(data, 128);
 
                     return modalProps => (
-                        <Modal
+                        <EndcordModal
                             {...modalProps}
                             title={
                                 <Flex gap="0.5em" alignItems="center">
@@ -335,7 +336,7 @@ function buildMenuItem(type: "Emoji" | "Sticker", fetchData: () => Promisable<Om
                             }
                         >
                             <CloneModal data={data} />
-                        </Modal>
+                        </EndcordModal>
                     );
                 })
             }

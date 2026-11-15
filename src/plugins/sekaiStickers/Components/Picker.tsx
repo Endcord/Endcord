@@ -4,11 +4,12 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { EndcordModal } from "@components/EndcordModal";
 import { Flex } from "@components/Flex";
 import { RenderModalProps } from "@endcord/discord-types";
 import { characters } from "@plugins/sekaiStickers/characters";
 import { t } from "@utils/i18n";
-import { Modal,React, ScrollerThin, TextInput } from "@webpack/common";
+import { React, ScrollerThin, TextInput } from "@webpack/common";
 
 export default function CharSelectModal({ modalProps, setCharacter }: { modalProps: RenderModalProps; setCharacter?: any; }) {
     const [search, setSearch] = React.useState<string>("");
@@ -30,7 +31,7 @@ export default function CharSelectModal({ modalProps, setCharacter }: { modalPro
         });
     }, [search, characters]);
     return (
-        <Modal {...modalProps} size="lg" title={t("Select character menu")}>
+        <EndcordModal {...modalProps} size="lg" title={t("Select character menu")}>
             <Flex flexDirection="column" style={{ paddingTop: 12 }}>
                 <TextInput content="mafuyu" placeholder={t("Mafuyu")} onChange={(e: string) => setSearch(e)} />
                 <ScrollerThin style={{ height: 520 }}>
@@ -39,6 +40,6 @@ export default function CharSelectModal({ modalProps, setCharacter }: { modalPro
                     </div>
                 </ScrollerThin>
             </Flex>
-        </Modal>
+        </EndcordModal>
     );
 }

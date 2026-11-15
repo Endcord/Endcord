@@ -54,8 +54,6 @@ function formatDuration(ms: number) {
     return res;
 }
 
-
-
 export default definePlugin({
     name: "CallTimer",
     description: "Shows how long you have been in the current voice call",
@@ -63,9 +61,6 @@ export default definePlugin({
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     managedStyle: alignedChatInputFix,
     settings,
-
-    startTime: 0,
-    interval: void 0,
 
     patches: [
         {

@@ -142,7 +142,7 @@ export async function getCloudSettings(shouldNotify = true, force = false) {
         const data = await res.arrayBuffer();
 
         const settings = new TextDecoder().decode(inflateSync(new Uint8Array(data)));
-        await importSettings(settings, "cloud");
+        await importSettings(settings);
 
         // sync with server timestamp instead of local one
         PlainSettings.cloud.settingsSyncVersion = written;

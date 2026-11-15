@@ -22,9 +22,9 @@ export default definePlugin({
             if (!emojiWrapper) return;
             if (!target.closest("[class*='emojiPicker'], #emoji-picker-tab-panel, [class*='expressionPicker']")) return;
 
-            emojiWrapper.style.border = "1px solid #5865f2";
+            emojiWrapper.style.border = "1px solid var(--brand-500)";
             emojiWrapper.style.borderRadius = "4px";
-            emojiWrapper.style.background = "rgba(88, 101, 242, 0.05)";
+            emojiWrapper.style.background = "color-mix(in srgb, var(--brand-500) 5%, transparent)";
 
             try { Object.defineProperty(e, "shiftKey", { get: () => true, configurable: true }); } catch (err) { }
         };

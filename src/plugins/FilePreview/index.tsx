@@ -38,7 +38,7 @@ const settings = definePluginSettings({
 
 export default definePlugin({
     name: "FileViewer",
-    description: "View PDF and Office files directly inside Discord messages.",
+    description: "View PDF, Office and 3D model files inside Discord. The file's link is sent to Google, Microsoft or viewstl.com, which download the file to show it.",
     tags: ["Media", "Utility"],
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
@@ -73,6 +73,9 @@ export default definePlugin({
                 message: msg,
                 onClick: () => {
                     const iframe = document.createElement("iframe");
+                    // Scripts and its own origin are what a viewer needs; without the rest it can't send Discord's window anywhere
+                    iframe.setAttribute("sandbox", "allow-scripts allow-same-origin allow-forms allow-popups");
+                    iframe.referrerPolicy = "no-referrer";
                     iframe.src = viewUrl;
                     iframe.style.width = "90%";
                     iframe.style.height = "70vh";
@@ -80,7 +83,7 @@ export default definePlugin({
                     iframe.style.borderRadius = "8px";
                     iframe.style.display = "block";
                     iframe.style.margin = "2em auto";
-                    iframe.className = "eqc-fileviewer";
+                    iframe.className = "ec-fileviewer";
 
                     const modal = document.createElement("div");
                     modal.style.position = "fixed";

@@ -8,8 +8,8 @@ body:
       attributes:
           value: |
             This form is not for any of the following:
-            - Plugin requests — Go to our [Discord server](https://discord.gg/D9uwnFnqmd) for that
-            - Feature requests for plugins — Go to our [Discord server](https://discord.gg/D9uwnFnqmd) for that
+            - Plugin requests — Go to the [Endcord Discord server](https://discord.gg/endcord) for that
+            - Feature requests for plugins — Go to the [Endcord Discord server](https://discord.gg/endcord) for that
 
     - type: textarea
       id: feature-description

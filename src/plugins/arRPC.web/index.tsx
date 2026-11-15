@@ -28,11 +28,10 @@ async function lookupApp(applicationId: string): Promise<string> {
 let ws: WebSocket;
 export default definePlugin({
     name: "WebRichPresence (arRPC)",
-    description: "Client plugin for arRPC to enable RPC on Discord Web (experimental)",
+    description: "Shows the games and apps arRPC sees as your status, in the browser and in Endcord Desktop. Needs arRPC running on this computer (experimental)",
     tags: ["Activity", "Utility"],
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     reporterTestable: ReporterTestable.None,
-    hidden: IS_VESKTOP || "legcord" in window,
 
     settingsAboutComponent: () => (
         <>
@@ -59,7 +58,8 @@ export default definePlugin({
             activity.name ||= app.name;
         }
 
-        FluxDispatcher.dispatch({ type: "LOCAL_ACTIVITY_UPDATE", ...data });
+        // type last: the server's own "type" must not turn this into another event
+        FluxDispatcher.dispatch({ ...data, type: "LOCAL_ACTIVITY_UPDATE" });
     },
 
     async start() {

@@ -8,13 +8,14 @@ import "./styles.css";
 
 import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
 import { Devs } from "@utils/constants";
+import { ENDCORD_THEME } from "@utils/css";
 import { t } from "@utils/i18n";
 import { localStorage } from "@utils/localStorage";
 import definePlugin from "@utils/types";
 import { findStoreLazy } from "@webpack";
-import { FluxDispatcher, React, ReactDOM,SelectedChannelStore, UserStore } from "@webpack/common";
+import { FluxDispatcher, React, ReactDOM, SelectedChannelStore, UserStore } from "@webpack/common";
 
-// ─── Unique IDs ─────────────────────────────────────────────────────────────
+// ---- Ids ----
 let _idCounter = 0;
 function uniqueSnowflake(date: Date): string {
     const offset = _idCounter++ % 4096;
@@ -22,15 +23,16 @@ function uniqueSnowflake(date: Date): string {
     return ((BigInt(ms) << 22n) | BigInt(offset)).toString();
 }
 
-// ─── Random seconds helper ───────────────────────────────────────────────────
 // Adds 1-59 random seconds so timestamps never land exactly on :00
 function randomSeconds(date: Date): Date {
     const sec = 1 + Math.floor(Math.random() * 59);
     return new Date(date.getTime() + sec * 1000);
 }
 
-// ─── Persistence ─────────────────────────────────────────────────────────────
-const STORAGE_KEY = "nightcord_fakedm_fakes";
+// ---- Persistence ----
+const STORAGE_KEY = "endcord_fakedm_fakes";
+// What was saved before the key was renamed
+const OLD_STORAGE_KEY = "nightcord_fakedm_fakes";
 
 interface PersistedMessage {
     type: "message";
@@ -57,13 +59,16 @@ type PersistedFake = PersistedMessage | PersistedCall;
 
 function loadPersisted(): PersistedFake[] {
     try {
-        const raw = localStorage.getItem(STORAGE_KEY);
+        const raw = localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(OLD_STORAGE_KEY);
         return raw ? JSON.parse(raw) : [];
     } catch { return []; }
 }
 
 function savePersisted(fakes: PersistedFake[]) {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(fakes)); } catch { }
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(fakes));
+        localStorage.removeItem(OLD_STORAGE_KEY);
+    } catch { }
 }
 
 function removePersisted(channelId: string, ids: Set<string>) {
@@ -71,7 +76,7 @@ function removePersisted(channelId: string, ids: Set<string>) {
     savePersisted(fakes);
 }
 
-// ─── Fake message ID storage ───────────────────────────────────────────────
+// ---- Fake message ids ----
 const fakeIds = new Map<string, Set<string>>();
 
 function registerFake(channelId: string, id: string) {
@@ -92,7 +97,7 @@ function clearFakes(channelId: string): number {
     return n;
 }
 
-// ─── Avatar URL ───────────────────────────────────────────────────────────────
+// ---- Avatar URL ----
 function avatarUrl(user: any): string {
     if (!user) return "";
     if (user.avatar) return `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp?size=32`;
@@ -102,7 +107,7 @@ function avatarUrl(user: any): string {
     return `https://cdn.discordapp.com/embed/avatars/${idx}.png`;
 }
 
-// ─── Channel helpers ─────────────────────────────────────────────────────────
+// ---- Channel helpers ----
 const ChannelStore = findStoreLazy("ChannelStore");
 
 /** Returns the current channel if it's a DM (type 1) or group DM (type 3), else null */
@@ -145,7 +150,7 @@ function getChannelMembers(): any[] {
     } catch { return []; }
 }
 
-// ─── Build author object ──────────────────────────────────────────────────────
+// ---- Author ----
 function buildAuthor(user: any) {
     return {
         id: user.id,
@@ -164,7 +169,7 @@ function buildAuthor(user: any) {
     };
 }
 
-// ─── Message injection ────────────────────────────────────────────────────────
+// ---- Messages ----
 function inject(channelId: string, author: any, content: string, date: Date, persistedId?: string) {
     const actualDate = persistedId ? date : randomSeconds(date);
     const id = persistedId ?? uniqueSnowflake(actualDate);
@@ -206,7 +211,7 @@ function inject(channelId: string, author: any, content: string, date: Date, per
     }
 }
 
-// ─── Call injection ───────────────────────────────────────────────────────────
+// ---- Calls ----
 function injectCall(
     channelId: string,
     caller: any,
@@ -269,7 +274,7 @@ function injectCall(
     }
 }
 
-// ─── Restore persisted fakes on startup ──────────────────────────────────────
+// ---- Restoring saved fakes on startup ----
 let _restoreHandler: (() => void) | null = null;
 
 function scheduleRestore() {
@@ -305,13 +310,13 @@ function doRestore() {
     }
 }
 
-// ─── Date helpers ─────────────────────────────────────────────────────────────
+// ---- Dates ----
 function toLocal(d: Date): string {
     const p = (n: number) => String(n).padStart(2, "0");
     return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
-// ─── Avatar component ─────────────────────────────────────────────────────────
+// ---- Avatar ----
 function UserAvatar({ user }: { user: any; }) {
     const [err, setErr] = React.useState(false);
     if (!user) return null;
@@ -320,7 +325,7 @@ function UserAvatar({ user }: { user: any; }) {
     return <img src={url} className="fdm-sender-avatar" alt="" onError={() => setErr(true)} />;
 }
 
-// ─── Member selector (group DM) ───────────────────────────────────────────────
+// ---- Member picker (group DMs) ----
 function MemberSelect({ members, value, onChange, label }: { members: any[]; value: string; onChange(id: string): void; label?: string; }) {
     return (
         <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 12px" }}>
@@ -329,12 +334,12 @@ function MemberSelect({ members, value, onChange, label }: { members: any[]; val
                 value={value}
                 onChange={e => onChange(e.target.value)}
                 style={{
-                    flex: 1, background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)",
+                    flex: 1, background: "var(--ec-panel)", border: "1px solid var(--ec-line)",
                     borderRadius: 6, color: "#fff", fontSize: 13, padding: "4px 6px", cursor: "pointer",
                 }}
             >
                 {members.map(m => (
-                    <option key={m.id} value={m.id} style={{ background: "#2b2d31" }}>
+                    <option key={m.id} value={m.id} style={{ background: "var(--ec-panel)" }}>
                         {m.globalName || m.username}
                     </option>
                 ))}
@@ -343,7 +348,7 @@ function MemberSelect({ members, value, onChange, label }: { members: any[]; val
     );
 }
 
-// ─── FakeDM Panel ───────────────────────────────────────────────────────────
+// ---- Panel ----
 function FakeDMPanel({ onClose, btnRect }: { onClose(): void; btnRect: DOMRect; }) {
     const me = UserStore.getCurrentUser();
     const ch = getCurrentDMChannel();
@@ -351,15 +356,14 @@ function FakeDMPanel({ onClose, btnRect }: { onClose(): void; btnRect: DOMRect; 
     const isGroup = ch?.type === 3;
     const other = getOtherUser(); // only set for 1:1 DMs
     const members = getChannelMembers(); // set for both 1:1 and group DMs
-    const isInDMOrGroup = !!ch; // true for type 1 AND type 3
+    const isInDMOrGroup = !!ch; // DMs and group DMs
 
     // Mode: "message" | "call"
     const [mode, setMode] = React.useState<"message" | "call">("message");
 
-    // Message mode state — for groups we use a member ID string; for 1:1 we keep "me"/"other"
+    // Sender: a member id in groups, "me" or "other" in 1:1 DMs
     const [senderId, setSenderId] = React.useState<string>(() => me?.id ?? "");
 
-    // Call mode state
     const [callerId, setCallerId] = React.useState<string>(() => me?.id ?? "");
     const [callReceiverId, setCallReceiverId] = React.useState<string>(() => {
         // Default "other" for calls = first non-me member
@@ -374,7 +378,7 @@ function FakeDMPanel({ onClose, btnRect }: { onClose(): void; btnRect: DOMRect; 
     const textareaRef = React.useRef<HTMLTextAreaElement>(null);
     const panelRef = React.useRef<HTMLDivElement>(null);
 
-    // ── Position ──────────────────────────────────────────────────────────────
+    // ---- Position ----
     const [pos, setPos] = React.useState<React.CSSProperties>({ opacity: 0, position: "fixed", zIndex: 1000000, width: "430px" });
 
     React.useLayoutEffect(() => {
@@ -462,8 +466,8 @@ function FakeDMPanel({ onClose, btnRect }: { onClose(): void; btnRect: DOMRect; 
             <div className="fdm-backdrop" onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 999999, backgroundColor: "rgba(0,0,0,0.4)" }} />
             <div
                 ref={panelRef}
-                className="fdm-panel"
-                style={{ ...pos, backgroundColor: "#2b2d31", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px", boxShadow: "0 16px 48px rgba(0,0,0,0.65), 0 2px 8px rgba(0,0,0,0.4)", overflow: "hidden" }}
+                className={`fdm-panel ${ENDCORD_THEME}`}
+                style={{ ...pos, backgroundColor: "var(--ec-night)", border: "1px solid var(--ec-line)", borderRadius: "12px", boxShadow: "0 16px 48px rgba(0,0,0,0.65), 0 2px 8px rgba(0,0,0,0.4)", overflow: "hidden" }}
                 onClick={e => e.stopPropagation()}
                 onMouseDown={e => e.stopPropagation()}
                 onMouseUp={e => e.stopPropagation()}
@@ -475,8 +479,8 @@ function FakeDMPanel({ onClose, btnRect }: { onClose(): void; btnRect: DOMRect; 
 
                 {/* Mode tabs */}
                 <div style={{ display: "flex", gap: 6, padding: "0 12px 10px" }}>
-                    <button onClick={() => setMode("message")} style={{ flex: 1, padding: "5px 0", borderRadius: 6, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, background: mode === "message" ? "#5865f2" : "rgba(255,255,255,0.07)", color: mode === "message" ? "#fff" : "rgba(255,255,255,0.5)" }}>{t("💬 Message")}</button>
-                    <button onClick={() => setMode("call")} style={{ flex: 1, padding: "5px 0", borderRadius: 6, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, background: mode === "call" ? "#5865f2" : "rgba(255,255,255,0.07)", color: mode === "call" ? "#fff" : "rgba(255,255,255,0.5)" }}>{t("📞 Call")}</button>
+                    <button onClick={() => setMode("message")} style={{ flex: 1, padding: "5px 0", borderRadius: 6, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, background: mode === "message" ? "var(--ec-cobalt)" : "rgba(255,255,255,0.07)", color: mode === "message" ? "#fff" : "rgba(255,255,255,0.5)" }}>{t("Message")}</button>
+                    <button onClick={() => setMode("call")} style={{ flex: 1, padding: "5px 0", borderRadius: 6, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, background: mode === "call" ? "var(--ec-cobalt)" : "rgba(255,255,255,0.07)", color: mode === "call" ? "#fff" : "rgba(255,255,255,0.5)" }}>{t("Call")}</button>
                 </div>
 
                 {!isInDMOrGroup ? (
@@ -514,8 +518,8 @@ function FakeDMPanel({ onClose, btnRect }: { onClose(): void; btnRect: DOMRect; 
                         {CallerRow}
 
                         <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px" }}>
-                            <button onClick={() => setCallMissed(false)} style={{ flex: 1, padding: "4px 0", borderRadius: 6, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, background: !callMissed ? "#3ba55c" : "rgba(255,255,255,0.07)", color: !callMissed ? "#fff" : "rgba(255,255,255,0.45)" }}>{t("✅ Answered")}</button>
-                            <button onClick={() => setCallMissed(true)} style={{ flex: 1, padding: "4px 0", borderRadius: 6, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, background: callMissed ? "#ed4245" : "rgba(255,255,255,0.07)", color: callMissed ? "#fff" : "rgba(255,255,255,0.45)" }}>{t("❌ Missed")}</button>
+                            <button onClick={() => setCallMissed(false)} style={{ flex: 1, padding: "4px 0", borderRadius: 6, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, background: !callMissed ? "var(--ec-cobalt)" : "rgba(255,255,255,0.07)", color: !callMissed ? "#fff" : "rgba(255,255,255,0.45)" }}>{t("Answered")}</button>
+                            <button onClick={() => setCallMissed(true)} style={{ flex: 1, padding: "4px 0", borderRadius: 6, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, background: callMissed ? "var(--ec-ember)" : "rgba(255,255,255,0.07)", color: callMissed ? "#fff" : "rgba(255,255,255,0.45)" }}>{t("Missed")}</button>
                             {!callMissed && (
                                 <>
                                     <input type="number" min="0" step="1" className="fdm-date-input" style={{ width: 52, textAlign: "center", flexShrink: 0 }} value={callDuration} onChange={e => setCallDuration(e.target.value)} />
@@ -549,7 +553,7 @@ function FakeDMPanel({ onClose, btnRect }: { onClose(): void; btnRect: DOMRect; 
     );
 }
 
-// ─── Icon ─────────────────────────────────────────────────────────────────────
+// ---- Icon ----
 function FakeDMIcon({ height = 20, width = 20, className }: any) {
     return (
         <svg className={className} aria-hidden="true" role="img" xmlns="http://www.w3.org/2000/svg" width={width} height={height} fill="none" viewBox="0 0 24 24">
@@ -559,12 +563,12 @@ function FakeDMIcon({ height = 20, width = 20, className }: any) {
     );
 }
 
-// ─── Chat Bar Button ──────────────────────────────────────────────────────────
+// ---- Chat bar button ----
 const FakeDMButton: ChatBarButtonFactory = (props: any) => {
     const { isMainChat } = props;
     const [btnRect, setBtnRect] = React.useState<DOMRect | null>(null);
 
-    // Show in main chat AND in group DMs (type 3)
+    // In the main chat, and in DMs and group DMs
     const ch = getCurrentDMChannel();
     if (!isMainChat && !ch) return null;
 
@@ -588,7 +592,7 @@ const FakeDMButton: ChatBarButtonFactory = (props: any) => {
     );
 };
 
-// ─── Plugin ───────────────────────────────────────────────────────────────────
+// ---- Plugin ----
 export default definePlugin({
     name: "FakeDM",
     enabledByDefault: false,

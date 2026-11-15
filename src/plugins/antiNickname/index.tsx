@@ -17,8 +17,8 @@ const settings = definePluginSettings({
     }
 });
 
-// Anti-loop: track guilds we're currently resetting to avoid infinite loops
-// (our own PATCH will trigger GUILD_MEMBER_UPDATE with nick null, which is fine, but we avoid duplicates)
+// Guilds we're resetting right now. Our own PATCH fires GUILD_MEMBER_UPDATE as well, this keeps it from
+// sending a second one
 const resettingGuilds = new Set<string>();
 
 async function resetNick(guildId: string, forcedNick: string, currentUserId: string) {
@@ -26,8 +26,8 @@ async function resetNick(guildId: string, forcedNick: string, currentUserId: str
     resettingGuilds.add(guildId);
 
     try {
-        // Method 1: "Edit Server Profile" endpoint (no permission required)
-        // This is exactly what Discord calls when you click "Reset Nickname" in settings
+        // The server profile endpoint first, which needs no permission. It's what Discord's own
+        // "Reset Nickname" button calls
         try {
             await RestAPI.patch({
                 url: `/users/@me/guilds/${guildId}/profile`,
@@ -37,12 +37,12 @@ async function resetNick(guildId: string, forcedNick: string, currentUserId: str
             if (settings.store.showToast) {
                 showToast({ text: `AntiNickname: nickname "${forcedNick}" removed`, variant: "success" });
             }
-            return; // success, no need for fallback
+            return;
         } catch (e1: any) {
-            // If it fails (e.g. server without server profiles), try method 2
+            // Fails on servers without server profiles
         }
 
-        // Method 2: direct PATCH on the member (works if you have "Change Nickname" permission)
+        // Then a PATCH on the member, which needs the Change Nickname permission
         await RestAPI.patch({
             url: `/guilds/${guildId}/members/@me`,
             body: { nick: "" }
@@ -81,7 +81,7 @@ export default definePlugin({
             // nick null or empty = already reset (by us or the admin), nothing to do
             if (!nick) return;
 
-            // Someone forced a nick on us — reset immediately
+            // Someone set a nickname on us, reset it
             setTimeout(() => resetNick(guildId, nick, currentUser.id), 300);
         }
     },

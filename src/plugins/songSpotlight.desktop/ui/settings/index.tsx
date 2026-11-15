@@ -6,6 +6,7 @@
 
 import { BaseText } from "@components/BaseText";
 import { Button } from "@components/Button";
+import { EndcordModal } from "@components/EndcordModal";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
 import { RenderModalProps } from "@endcord/discord-types";
@@ -22,7 +23,7 @@ import { sid } from "@song-spotlight/api/util";
 import { readClipboard } from "@utils/clipboard";
 import { copyWithToast } from "@utils/discord";
 import { t } from "@utils/i18n";
-import { Alerts, Modal,openModal, Parser, showToast, Toasts, useCallback, useEffect, useMemo, useRef, useState } from "@webpack/common";
+import { Alerts, openModal, Parser, showToast, Toasts, useCallback, useEffect, useMemo, useRef, useState } from "@webpack/common";
 
 // Shape check for clipboard imports. Each song is still validated by Native.validateSong afterwards, so this
 // only needs to reject malformed JSON. It replaces the zod schema from @song-spotlight/api/structs, which pulled
@@ -224,11 +225,11 @@ export default function Settings({ templateData }: SettingsProps) {
 export function SettingsModal({ modalProps, ...props }: SettingsProps & { modalProps: RenderModalProps; }) {
     return (
         <ErrorBoundary>
-            <Modal {...modalProps} size="lg" title={t("Song Spotlight")}>
+            <EndcordModal {...modalProps} size="lg" title={t("Song Spotlight")}>
                 <div style={{ marginBottom: "20px" }}>
                     <Settings {...props} />
                 </div>
-            </Modal>
+            </EndcordModal>
         </ErrorBoundary>
     );
 }

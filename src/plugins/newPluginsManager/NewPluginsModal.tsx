@@ -8,6 +8,7 @@ import "./styles.css";
 
 import { Settings, useSettings } from "@api/Settings";
 import { BaseText } from "@components/BaseText";
+import { EndcordModal } from "@components/EndcordModal";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Link } from "@components/Link";
 import { Notice } from "@components/Notice";
@@ -18,7 +19,7 @@ import { ChangeList } from "@utils/ChangeList";
 import { classNameFactory } from "@utils/css";
 import { t } from "@utils/i18n";
 import { useForceUpdater } from "@utils/react";
-import { closeModal, Modal, openModal, Tooltip, useMemo } from "@webpack/common";
+import { closeModal, openModal, Tooltip, useMemo } from "@webpack/common";
 import { ReactNode } from "react";
 
 import Plugins, { isPluginLoaded } from "~plugins";
@@ -121,7 +122,7 @@ function NewPluginsModal({ modalProps, newPlugins, newSettings }: ModalComponent
     };
 
     return (
-        <Modal
+        <EndcordModal
             {...modalProps}
             size="md"
             title={
@@ -161,7 +162,7 @@ function NewPluginsModal({ modalProps, newPlugins, newSettings }: ModalComponent
                 {pluginCards}
                 {requiredPluginCards}
             </div>
-        </Modal >
+        </EndcordModal>
     );
 }
 

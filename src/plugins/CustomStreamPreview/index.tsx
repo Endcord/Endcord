@@ -10,6 +10,7 @@ import ErrorBoundary from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
 import { RenderModalProps } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
+import { ENDCORD_THEME } from "@utils/css";
 import { t } from "@utils/i18n";
 import { closeModal, ModalCloseButton as ModalCloseButtonRaw, ModalContent as ModalContentRaw, ModalFooter as ModalFooterRaw, ModalHeader as ModalHeaderRaw, ModalRoot as ModalRootRaw, ModalSize, openModal } from "@utils/modal";
 import definePlugin from "@utils/types";
@@ -18,9 +19,8 @@ import { ApplicationStreamingStore, Button, Forms, React, showToast, Text, Toast
 import { StreamCreateEvent, StreamDeleteEvent } from "./types";
 import { getSavedPreview, getStreamingState, imageFileToStreamPreview, isSendingPreview, parseStreamKey, savePreview, startSendingPreview, stopSendingPreview } from "./utilities";
 
-// The low-level Modal* components in @utils/modal are deprecated and typed `never`
-// to push migration; at runtime they still resolve to the real components. Re-type
-// them as renderable components so this modal compiles without changing behavior.
+// The Modal* components in @utils/modal are typed `never` because they're deprecated, but they still work at
+// runtime, so they're re-typed here
 const ModalRoot = ModalRootRaw;
 const ModalHeader = ModalHeaderRaw;
 const ModalContent = ModalContentRaw;
@@ -84,13 +84,14 @@ function PreviewModal({ modalProps, close }: { modalProps: RenderModalProps; clo
     };
 
     return (
-        <ModalRoot {...modalProps} size={ModalSize.SMALL}>
+        <ModalRoot {...modalProps} className={ENDCORD_THEME} size={ModalSize.SMALL}>
             <ModalHeader>
                 <Text variant="heading-lg/semibold" style={{ flexGrow: 1 }}>{t("Custom Stream Preview")}</Text>
                 <ModalCloseButton onClick={close} />
             </ModalHeader>
 
             <ModalContent>
+                <div className="ec-modal-marker" hidden />
                 <Forms.FormText>
                     {t("Choose an image from your device to use as your stream preview.")}
                 </Forms.FormText>
@@ -139,8 +140,7 @@ function PreviewModal({ modalProps, close }: { modalProps: RenderModalProps; clo
 }
 
 function PreviewButton(props: UserAreaRenderProps) {
-    // Only show the button while the current user is actively streaming;
-    // it disappears as soon as the stream ends (the store re-renders this).
+    // Only while streaming; the store re-renders this when the stream ends
     const isStreaming = useStateFromStores([ApplicationStreamingStore], () => Boolean(ApplicationStreamingStore.getCurrentUserActiveStream()));
     if (!isStreaming) return null;
 
@@ -167,7 +167,6 @@ export default definePlugin({
     tags: ["Voice", "Utility"],
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     dependencies: ["UserAreaAPI"],
-    aliases: ["CustomScreenSharePreview"],
 
     userAreaButton: {
         icon: PreviewIcon,

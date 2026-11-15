@@ -6,10 +6,11 @@
 
 import "./styles.css";
 
-import { ApplicationCommandInputType, ApplicationCommandOptionType, findOption, registerCommand, sendBotMessage } from "@api/Commands";
+import { ApplicationCommandInputType, ApplicationCommandOptionType, commands, findOption, registerCommand, sendBotMessage, unregisterCommand } from "@api/Commands";
 import { migratePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import { sendMessage } from "@utils/discord";
+import { Logger } from "@utils/Logger";
 import definePlugin from "@utils/types";
 import { FluxDispatcher, MessageActions, PendingReplyStore } from "@webpack/common";
 
@@ -17,6 +18,7 @@ import { openCreateTagModal } from "./CreateTagModal";
 import { getTag, getTags, removeTag, settings, Tag } from "./settings";
 
 const CustomCommandsMarker = Symbol("CustomCommands");
+const logger = new Logger("CustomCommands");
 const ArgumentRegex = /{{(.+?)}}/g;
 
 export function parseTagArguments(message: string) {
@@ -87,7 +89,20 @@ export default definePlugin({
     async start() {
         const tags = getTags();
         for (const tagName in tags) {
-            registerTagCommand(tags[tagName]);
+            // One tag named like another plugin's command mustn't keep the rest from working
+            try {
+                registerTagCommand(tags[tagName]);
+            } catch (e) {
+                logger.error(`Couldn't add the tag ${tagName}`, e);
+            }
+        }
+    },
+
+    // The tags are registered by hand, so they're taken away by hand too. Without this they stayed usable with the
+    // plugin off, and turning it on again failed on the first tag, which was still there
+    stop() {
+        for (const tagName in getTags()) {
+            if (commands[tagName]?.[CustomCommandsMarker]) unregisterCommand(tagName);
         }
     },
 

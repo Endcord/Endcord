@@ -61,7 +61,7 @@ export const boostBadgeRef = (level: number, name: string, levels: Levels): Disc
 export function specialBadgeRef(id: string, giftIds: string[], giftLevels: Levels): DiscordBadgeRef | undefined {
     const gift = giftIds.indexOf(id);
     if (gift !== -1) return { type: DiscordBadgeType.GIFTING, tier: gift, tierName: giftLevels[gift].label, tiers: giftLevels };
-    return id in SPECIAL_BADGE_TYPES ? { type: SPECIAL_BADGE_TYPES[id] } : undefined;
+    return Object.hasOwn(SPECIAL_BADGE_TYPES, id) ? { type: SPECIAL_BADGE_TYPES[id] } : undefined;
 }
 
 export function tieredBadgeRef(key: string, tier: number, name: string, levels: Levels): DiscordBadgeRef | undefined {

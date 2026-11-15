@@ -1,15 +1,13 @@
-# Endcord Installer Build + Self-Test Script (Endcord-main2)
-# -NoSite builds and tests without copying the installer into the site folder
-param([switch]$NoSite)
+# Builds EndcordInstaller.exe from dist/ and runs its self-test. The exe and a zip of it go to dist\Installer, and a copy
+# of the exe next to this repo. Releases ship them from GitHub (scripts/githubRelease.mjs), never from the site
 $ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $cscPath = "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
 $outExe = Join-Path $repoRoot "EndcordInstaller.exe"
-# The installer copy and the site folder sit next to this repo
+# The installer copy sits next to this repo
 $workDir = Split-Path -Parent $repoRoot
 $desktopExe = Join-Path $workDir "EndcordInstaller.exe"
-$siteDir = Join-Path $workDir "Endcord-site"
 $distInstallerDir = Join-Path $repoRoot "dist\Installer"
 
 try {
@@ -69,6 +67,7 @@ $cscArgs = @(
     "/resource:`"$(Join-Path $repoRoot 'assets/app_logo.png')`",app_logo.png",
     "/r:System.dll",
     "/r:System.Core.dll",
+    "/r:System.IO.Compression.dll",
     "/r:System.Drawing.dll",
     "/r:System.Windows.Forms.dll",
     "/r:System.Web.Extensions.dll",
@@ -109,14 +108,11 @@ if (!(Test-Path $distInstallerDir)) {
 }
 Copy-Item -Path $outExe -Destination (Join-Path $distInstallerDir "EndcordInstaller.exe") -Force
 Copy-Item -Path $outExe -Destination $desktopExe -Force
+# For browsers that block a downloaded .exe: the same installer in a zip
+$zipPath = Join-Path $distInstallerDir "EndcordInstaller.zip"
+if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
+Compress-Archive -Path $outExe -DestinationPath $zipPath -Force
 
-if ((-not $NoSite) -and (Test-Path $siteDir)) {
-    Copy-Item -Path $outExe -Destination (Join-Path $siteDir "EndcordInstaller.exe") -Force
-    $zipPath = Join-Path $siteDir "EndcordInstaller.zip"
-    if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
-    Compress-Archive -Path $outExe -DestinationPath $zipPath -Force
-}
-
-# The installer isn't code-signed, so this hash is what people can check their download against
+# What people can check their download against
 Write-Host ("SHA-256 of EndcordInstaller.exe: " + (Get-FileHash -Algorithm SHA256 -LiteralPath $outExe).Hash.ToLowerInvariant()) -ForegroundColor Gray
 Write-Host "Build & Test complete!" -ForegroundColor Green

@@ -23,12 +23,17 @@
     border-radius: 8px;
     font-size: 14px;
     font-weight: 500;
-    transition: background-color var(--ec-motion-fast) ease;
+    transition: background-color var(--ec-motion-fast) ease, transform var(--ec-motion-slow) var(--ec-ease-spring);
     box-sizing: border-box;
 }
 
 .vc-settings-quickActions-pill:hover {
     background: var(--control-secondary-background-hover);
+}
+
+.vc-settings-quickActions-pill:active {
+    transform: scale(0.96);
+    transition-duration: var(--ec-motion-fast);
 }
 
 .vc-settings-quickActions-pill:focus-visible {
@@ -40,4 +45,9 @@
     flex-shrink: 0;
     width: 20px;
     height: 20px;
+    transition: transform var(--ec-motion-slow) var(--ec-ease-spring);
+}
+
+.vc-settings-quickActions-pill:hover .vc-settings-quickActions-img {
+    transform: scale(1.12) rotate(-8deg);
 }

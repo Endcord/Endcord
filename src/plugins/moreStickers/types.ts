@@ -159,17 +159,3 @@ export interface FFmpegState {
     isLoaded: boolean;
 }
 
-export interface DynamicPackSetMeta {
-    id: string;
-    version?: string;
-
-    title?: string;
-    author?: {
-        name: string;
-        url?: string;
-    };
-
-    packs: DynamicStickerPackMeta[];
-    refreshUrl: string;
-    authHeaders?: Record<string, string>;
-}

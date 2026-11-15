@@ -66,19 +66,24 @@ export default definePlugin({
         this.rules = [];
 
         for (const [name, provider] of Object.entries(res.providers)) {
-            const urlPattern = new RegExp(provider.urlPattern, "i");
+            // The list is maintained by others: one pattern JavaScript can't parse must not cost every other provider
+            try {
+                const urlPattern = new RegExp(provider.urlPattern, "i");
 
-            const rules = provider.rules?.map(rule => new RegExp(rule, "i"));
-            const rawRules = provider.rawRules?.map(rule => new RegExp(rule, "i"));
-            const exceptions = provider.exceptions?.map(ex => new RegExp(ex, "i"));
+                const rules = provider.rules?.map(rule => new RegExp(rule, "i"));
+                const rawRules = provider.rawRules?.map(rule => new RegExp(rule, "i"));
+                const exceptions = provider.exceptions?.map(ex => new RegExp(ex, "i"));
 
-            this.rules.push({
-                name,
-                urlPattern,
-                rules,
-                rawRules,
-                exceptions,
-            });
+                this.rules.push({
+                    name,
+                    urlPattern,
+                    rules,
+                    rawRules,
+                    exceptions,
+                });
+            } catch (e) {
+                console.error(`[ClearURLs] Skipping the rules for ${name}`, e);
+            }
         }
     },
 

@@ -54,7 +54,8 @@ export async function loadBadges() {
                 reviewdb: settings.store.showReviewDB,
                 aliucord: settings.store.showAliucord,
                 raincord: settings.store.showRaincord,
-                enmity: settings.store.showEnmity
+                enmity: settings.store.showEnmity,
+                paicord: settings.store.showPaicord
             };
 
             if (mod in conditionalMods && !conditionalMods[mod]) return false;

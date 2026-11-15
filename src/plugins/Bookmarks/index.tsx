@@ -9,6 +9,7 @@ import { updateMessage } from "@api/MessageUpdater";
 import { Flex } from "@components/Flex";
 import { Message, RenderModalProps } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
+import { ENDCORD_THEME } from "@utils/css";
 import { t } from "@utils/i18n";
 import { ModalCloseButton, ModalContent, ModalHeader, ModalRoot, ModalSize, openModal } from "@utils/modal";
 import definePlugin from "@utils/types";
@@ -89,7 +90,7 @@ function BookmarksModal({ rootProps }: { rootProps: RenderModalProps; }) {
         && (guild === "" || (b.guildId ?? "dm") === guild));
 
     return (
-        <ModalRoot {...rootProps} size={ModalSize.LARGE}>
+        <ModalRoot {...rootProps} className={ENDCORD_THEME} size={ModalSize.LARGE}>
             <ModalHeader>
                 <Flex style={{ flexDirection: "column", gap: 8, width: "100%" }}>
                     <Flex style={{ alignItems: "center" }}>
@@ -103,6 +104,7 @@ function BookmarksModal({ rootProps }: { rootProps: RenderModalProps; }) {
                 </Flex>
             </ModalHeader>
             <ModalContent>
+                <div className="ec-modal-marker" hidden />
                 {shown.length === 0
                     ? <Text variant="text-md/normal" style={{ padding: "16px 0" }}>{list.length === 0 ? "No bookmarks yet. Hover a message and click the bookmark button." : "Nothing matches your search."}</Text>
                     : shown.map(b => (

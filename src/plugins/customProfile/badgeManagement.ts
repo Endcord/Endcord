@@ -16,6 +16,7 @@
 import { BadgeListProcessors } from "@api/Badges";
 import { DataStore } from "@api/index";
 import { Logger } from "@utils/Logger";
+import { wrapMethod } from "@utils/wrapMethod";
 import { findByCodeLazy, findByPropsLazy, findStoreLazy } from "@webpack";
 import { AuthenticationStore, RestAPI } from "@webpack/common";
 
@@ -128,29 +129,28 @@ function sortByLayout<T>(items: T[], typeIdOf: (item: T) => number | undefined) 
 }
 
 // ---- catalog: what the "Customize your badges" panel lists ----
-let origGetBadges: ((userId?: string) => any[]) | undefined;
-let origGetBadgeById: ((id: number, userId?: string) => any) | undefined;
+// Wrapped through wrapMethod, so another plugin wrapping the same methods can stop in any order
+const unwraps: Array<() => void> = [];
 
 // While custom badges are set they replace the account's own badges, in the panel as on the profile.
 // Without custom badges (or after a reset) the account's badges are left exactly as Discord has them.
-function wrappedGetBadges(this: any, userId?: string) {
-    const real = origGetBadges!.call(this, userId);
+function wrappedGetBadges(this: any, original: (this: any, userId?: string) => any[], userId?: string) {
+    const real = original.call(this, userId);
     const me = currentUserId();
     if (!active.length || (userId ?? me) !== me || !real.length) return real;
     const hidden = new Set(layout.hidden ?? []);
     return sortByLayout(active.map(b => catalogEntry(b, hidden.has(badgeTypeId(b.key)))), e => e.badge_id);
 }
 
-function wrappedGetBadgeById(this: any, id: number, userId?: string) {
+function wrappedGetBadgeById(this: any, original: (this: any, id: number, userId?: string) => any, id: number, userId?: string) {
     if (isOurId(id) && (userId ?? currentUserId()) === currentUserId()) {
         const b = active.find(x => badgeTypeId(x.key) === id);
         if (b) return catalogEntry(b, layout.hidden?.includes(id) ?? false);
     }
-    return origGetBadgeById!.call(this, id, userId);
+    return original.call(this, id, userId);
 }
 
 // ---- saving: keep our ids out of the request, remember them locally ----
-const origRest: Record<string, (...args: any[]) => any> = {};
 
 function stripOurIds(body: any): boolean {
     if (!body || typeof body !== "object") return false;
@@ -172,8 +172,7 @@ function stripOurIds(body: any): boolean {
 }
 
 function wrapRest(method: string) {
-    const orig = origRest[method] = RestAPI[method];
-    RestAPI[method] = function (this: any, req: any, ...rest: any[]) {
+    unwraps.push(wrapMethod(RestAPI as any, method, function (this: any, original: any, req: any, ...rest: any[]) {
         try {
             const me = currentUserId();
             if (me && req && typeof req === "object" && req.body && stripOurIds(req.body)) {
@@ -187,8 +186,8 @@ function wrapRest(method: string) {
         } catch (e) {
             logger.error("Failed to filter badge layout", e);
         }
-        return orig.call(this, req, ...rest);
-    };
+        return original.call(this, req, ...rest);
+    }));
 }
 
 // ---- profile: apply the saved layout to the shown badges ----
@@ -222,12 +221,11 @@ export async function startBadgeManagement() {
         layoutsByUser = await DataStore.get(DS_LAYOUT) ?? {};
         layout = layoutsByUser[currentUserId() ?? ""] ??= {};
 
-        origGetBadges = BadgeDirectoryStore.getBadges;
-        origGetBadgeById = BadgeDirectoryStore.getBadgeById;
-        BadgeDirectoryStore.getBadges = wrappedGetBadges;
-        BadgeDirectoryStore.getBadgeById = wrappedGetBadgeById;
-
-        for (const m of ["patch", "put", "post"]) wrapRest(m);
+        if (!unwraps.length) {
+            unwraps.push(wrapMethod(BadgeDirectoryStore, "getBadges", wrappedGetBadges));
+            unwraps.push(wrapMethod(BadgeDirectoryStore, "getBadgeById", wrappedGetBadgeById));
+            for (const m of ["patch", "put", "post"]) wrapRest(m);
+        }
         BadgeListProcessors.add(applyLayout);
         emitCatalogChange();
     } catch (e) {
@@ -237,10 +235,7 @@ export async function startBadgeManagement() {
 
 export function stopBadgeManagement() {
     BadgeListProcessors.delete(applyLayout);
-    for (const [m, fn] of Object.entries(origRest)) RestAPI[m] = fn;
-    if (origGetBadges) BadgeDirectoryStore.getBadges = origGetBadges;
-    if (origGetBadgeById) BadgeDirectoryStore.getBadgeById = origGetBadgeById;
-    origGetBadges = origGetBadgeById = undefined;
+    for (const unwrap of unwraps.splice(0)) unwrap();
     active = [];
     emitCatalogChange();
 }

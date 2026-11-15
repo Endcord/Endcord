@@ -74,6 +74,8 @@ export default definePlugin({
             replacement: {
                 match: /(#{intl::APP_TAG::hash}":\[").{0,30}("\])/,
                 replace: "$1BOT$2",
+                // Some languages already call it BOT (Romanian), where this changes nothing
+                noWarn: true
             }
         }
     ],

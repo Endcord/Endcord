@@ -32,7 +32,7 @@ function ColorField({ label, hint, value, fallback, onChange }: { label: string;
 
     return (
         <div className={cl("color")}>
-            {/* The browser's own picker fires for every movement, and unlike Discord's it's always loaded */}
+            {/* Native color input: fires on every movement and, unlike Discord's picker, is always available */}
             <input
                 className={cl("swatch")}
                 type="color"
@@ -75,7 +75,7 @@ function Choices<T extends string>({ label, value, options, onChange }: { label:
 // A different message each time, like the install command on the site
 const COPIED = ["Theme copied to your clipboard", "Copied 🐼", "In your clipboard, ready to go.", "Copied. The panda approves."];
 let copies = 0;
-// After enough rolls the panda has an opinion
+// The panda comments after enough rolls
 const ROLLS_FOR_PANDA = 10;
 
 function StudioTab() {

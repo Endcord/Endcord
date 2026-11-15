@@ -15,7 +15,7 @@ import ErrorBoundary from "@components/ErrorBoundary";
 import { RenderModalProps, User } from "@endcord/discord-types";
 import { debounce } from "@shared/debounce";
 import { BAN_RISK, BAN_RISK_LEAD } from "@utils/banRisk";
-import { Devs } from "@utils/constants";
+import { Devs, REPO_URL } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import { useI18n } from "@utils/i18n";
 import { proxyLazy } from "@utils/lazy";
@@ -30,7 +30,7 @@ import { PluginMeta } from "~plugins";
 
 import { OptionComponentMap } from "./components";
 import { openContributorModal } from "./ContributorModal";
-import { WebsiteButton } from "./LinkIconButton";
+import { GithubButton } from "./LinkIconButton";
 import { PluginPreview } from "./PluginPreview";
 
 const cl = classNameFactory("vc-plugin-modal-");
@@ -41,7 +41,7 @@ const UserRecord: Constructor<Partial<User>> = proxyLazy(() => UserStore.getCurr
 interface PluginModalProps extends RenderModalProps {
     plugin: Plugin;
     onRestartNeeded(key: string): void;
-    /** A setting to scroll to and point out, when someone searched for it */
+    /** Setting to scroll to and highlight, when the modal was opened from a search */
     focusSetting?: string;
 }
 
@@ -115,7 +115,7 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
 
     useEffect(() => {
         if (!focusSetting) return;
-        // After the dialog's opening animation has laid it out
+        // Wait for the modal's open animation so the layout is final
         const timer = setTimeout(() => {
             document.querySelector(`[data-ec-setting="${CSS.escape(focusSetting)}"]`)?.scrollIntoView({ block: "center", behavior: "smooth" });
         }, 200);
@@ -197,9 +197,9 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
                     <BaseText tag="h1" weight="semibold" size="lg">{plugin.name}</BaseText>
                     {!pluginMeta.userPlugin && (
                         <div className="vc-settings-modal-links">
-                            <WebsiteButton
-                                text={t("View more info")}
-                                href={`https://endcord.com/plugins/${plugin.name}`}
+                            <GithubButton
+                                text={t("View Source Code")}
+                                href={`${REPO_URL}/tree/main/src/plugins/${pluginMeta.folderName}`}
                             />
                         </div>
                     )}

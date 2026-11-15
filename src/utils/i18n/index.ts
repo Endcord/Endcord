@@ -109,7 +109,8 @@ export function t(key: string, vars?: Record<string, string | number>): string {
     }
     if (vars) {
         for (const [k, v] of Object.entries(vars)) {
-            res = res.replace(new RegExp(`\\{${k}\\}`, "g"), String(v));
+            // A function, so a $ in the value isn't read as a replacement pattern
+            res = res.replace(new RegExp(`\\{${k}\\}`, "g"), () => String(v));
         }
     }
     return res;

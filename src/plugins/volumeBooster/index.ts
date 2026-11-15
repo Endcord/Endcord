@@ -60,7 +60,7 @@ export default definePlugin({
                 replace: (_, higherMaxVolume) => `${higherMaxVolume}*$self.settings.store.multiplier`
             }
         },
-        // Patches needed for web/vesktop
+        // Patches needed in the browser and Endcord Desktop
         {
             find: "streamSourceNode",
             predicate: () => !IS_DISCORD_DESKTOP,

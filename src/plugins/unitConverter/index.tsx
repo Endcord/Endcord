@@ -18,7 +18,6 @@
 
 import "./style.css";
 
-import { addMessageAccessory } from "@api/MessageAccessories";
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
@@ -68,8 +67,7 @@ export default definePlugin({
             };
         }
     },
-    start() {
-        addMessageAccessory("vc-converter", props => <ConverterAccessory message={props.message} />);
-    },
+    // Not added by hand in start(): with no stop() to take it away, conversions kept showing with the plugin off
+    renderMessageAccessory: props => <ConverterAccessory message={props.message} />,
     settings,
 });

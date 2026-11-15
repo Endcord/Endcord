@@ -6,18 +6,13 @@
 
 import { BaseText } from "@components/BaseText";
 import { Button, TextButton } from "@components/Button";
+import { EndcordModal } from "@components/EndcordModal";
 import { RenderModalProps } from "@endcord/discord-types";
 import { images } from "@plugins/loginWithQR/images";
 import { getIntlMessage } from "@utils/discord";
 import { t as translateText } from "@utils/i18n";
 import { findByPropsLazy } from "@webpack";
-import {
-    Modal,
-    openModal,
-    RestAPI,
-    useEffect,
-    useRef,
-    useState } from "@webpack/common";
+import { openModal, RestAPI, useEffect, useRef, useState } from "@webpack/common";
 
 import { cl } from "..";
 
@@ -107,7 +102,7 @@ function VerifyModal({
     }, [state]);
 
     return (
-        <Modal size="sm" {...props} title={translateText("Verify Login")}>
+        <EndcordModal size="sm" {...props} title={translateText("Verify Login")}>
             <div className={cl("device-content")}>
                 {state === VerifyState.LoggedIn ? (
                     <>
@@ -212,7 +207,7 @@ function VerifyModal({
                     </TextButton>
                 )}
             </div>
-        </Modal>
+        </EndcordModal>
     );
 }
 

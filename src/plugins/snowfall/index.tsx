@@ -353,14 +353,12 @@ const SnowfallManager: React.FC = () => {
     const styleRef = React.useRef<HTMLStyleElement | null>(null);
 
     React.useEffect(() => {
-        // Inject CSS
         const styleEl = document.createElement("style");
         styleEl.id = "snowfall-styles";
         styleEl.textContent = SnowfallCSS;
         document.head.appendChild(styleEl);
         styleRef.current = styleEl;
 
-        // Get initial snow type from settings
         const snowType = settings.store.typeOfSnow as "text" | "solid" | "image";
         const snowOptions: Partial<typeof CopleSnow.defaultOptions> = {
             autoplay: false,
@@ -376,7 +374,6 @@ const SnowfallManager: React.FC = () => {
             snowOptions.content = SNOWFLAKE_SVGS;
         }
 
-        // Create snow instance with settings
         const snow = new CopleSnow(snowOptions);
         snowRef.current = snow;
 

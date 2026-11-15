@@ -1,8 +1,8 @@
 /*
- * Endcord's own screens wear the installer's colors on every Discord theme. An element with both of these classes makes
- * Discord work out all of its colors again, here from its own scales moved onto night blue and cobalt, so Discord's
- * buttons, switches and inputs inside follow without being styled one by one. The !important keeps a look from Theme
- * Studio or a community theme, which recolors the same scales, from reaching these screens.
+ * Endcord's screens keep the installer's colors on every Discord theme. An element with both classes makes Discord
+ * recompute its color tokens, here from its own scales remapped to night blue and cobalt, so Discord's buttons,
+ * switches and inputs inside follow without being styled one by one. !important keeps Theme Studio presets and
+ * community themes, which recolor the same scales, off these screens.
  */
 .ec-theme.theme-dark {
     color-scheme: dark;

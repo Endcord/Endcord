@@ -5,11 +5,12 @@
  */
 
 import { CodeBlock } from "@components/CodeBlock";
+import { EndcordModal } from "@components/EndcordModal";
 import { copyWithToast, openImageModal } from "@utils/discord";
 import { t } from "@utils/i18n";
 import { ModalContent, openModal } from "@utils/modal";
 import { saveFile } from "@utils/web";
-import { Modal, React, useMemo } from "@webpack/common";
+import { React, useMemo } from "@webpack/common";
 
 const CopyIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width={20} height={20} fill="currentColor">
@@ -123,7 +124,7 @@ function TextFileModal({ name, blob, buffer, transitionState, onClose }: TextFil
     };
 
     return (
-        <Modal transitionState={transitionState} onClose={onClose} size="lg" title={name}>
+        <EndcordModal transitionState={transitionState} onClose={onClose} size="lg" title={name}>
             <ModalContent style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "12px" }}>
                 <div style={{
                     display: "flex",
@@ -194,7 +195,7 @@ function TextFileModal({ name, blob, buffer, transitionState, onClose }: TextFil
                         {t("Cannot preview this binary file")}</div>
                 )}
             </ModalContent>
-        </Modal>
+        </EndcordModal>
     );
 }
 

@@ -22,6 +22,10 @@ const logger = new Logger("PdfViewer");
 const PDFJS_VERSION = "3.11.174";
 const PDFJS_LIB = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VERSION}/pdf.min.js`;
 const PDFJS_WORKER = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VERSION}/pdf.worker.min.js`;
+// The hashes cdnjs publishes for this version. pdf.js runs inside Discord's own page, so a CDN that ever served
+// something else must be refused by the browser, not trusted
+const PDFJS_LIB_INTEGRITY = "sha512-q+4liFwdPC/bNdhUpZx6aXDx/h77yEQtn4I1slHydcbZK34nLaR3cAeYSJshoxIOq3mjEf7xJE8YWIUHMn+oCQ==";
+const PDFJS_WORKER_INTEGRITY = "sha512-BbrZ76UNZq5BhH7LL7pn9A4TKQpQeNCHOo65/akfelcIBbcVvYWOFQKPXIrykE3qZxYjmDX573oa4Ywsc7rpTw==";
 
 const ZOOMS = [0.5, 0.75, 1, 1.25, 1.5, 2, 3];
 
@@ -86,11 +90,20 @@ function loadPdfjs() {
     return pdfjsPromise ??= new Promise<PdfLib>((resolve, reject) => {
         const s = document.createElement("script");
         s.src = PDFJS_LIB;
+        s.integrity = PDFJS_LIB_INTEGRITY;
+        s.crossOrigin = "anonymous";
         s.async = true;
-        s.onload = () => {
-            if (!window.pdfjsLib) return reject(new Error("Failed to load PDF.js"));
-            window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER;
-            resolve(window.pdfjsLib);
+        s.onload = async () => {
+            try {
+                if (!window.pdfjsLib) throw new Error("Failed to load PDF.js");
+                // Given the address, pdf.js would start its worker unchecked. It gets the checked bytes instead
+                const worker = await fetch(PDFJS_WORKER, { integrity: PDFJS_WORKER_INTEGRITY });
+                window.pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(new Blob([await worker.blob()], { type: "text/javascript" }));
+                resolve(window.pdfjsLib);
+            } catch (e) {
+                pdfjsPromise = null;
+                reject(e);
+            }
         };
         s.onerror = () => {
             pdfjsPromise = null;

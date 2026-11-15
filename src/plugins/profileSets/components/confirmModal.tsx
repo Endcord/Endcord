@@ -4,9 +4,10 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { EndcordModal } from "@components/EndcordModal";
 import { Paragraph } from "@components/Paragraph";
 import { RenderModalProps } from "@endcord/discord-types";
-import { Modal, React } from "@webpack/common";
+import { React } from "@webpack/common";
 
 interface ConfirmModalProps extends RenderModalProps {
     title: string;
@@ -32,7 +33,7 @@ export function ConfirmModal({ title, message, confirmText, cancelText, onConfir
     };
 
     return (
-        <Modal
+        <EndcordModal
             {...props}
             size="sm"
             title={title}
@@ -50,7 +51,7 @@ export function ConfirmModal({ title, message, confirmText, cancelText, onConfir
             ]}
         >
             <Paragraph>{message}</Paragraph>
-        </Modal>
+        </EndcordModal>
     );
 }
 
@@ -61,7 +62,7 @@ export function ImportProfilesModal({ title, message, onOverride, onMerge, onCan
     };
 
     return (
-        <Modal
+        <EndcordModal
             {...props}
             size="sm"
             title={title}
@@ -84,6 +85,6 @@ export function ImportProfilesModal({ title, message, onOverride, onMerge, onCan
             ]}
         >
             <Paragraph>{message}</Paragraph>
-        </Modal>
+        </EndcordModal>
     );
 }

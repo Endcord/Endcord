@@ -6,8 +6,10 @@
 
 // What CustomProfile can put on a profile from Discord's shop, and Discord's display name styles
 
+import { DataStore } from "@api/index";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { useI18n } from "@utils/i18n";
+import { LazyComponent } from "@utils/lazyReact";
 import { findByCodeLazy, findByPropsLazy, findComponentByCodeLazy, findStoreLazy } from "@webpack";
 import { React, useStateFromStores } from "@webpack/common";
 
@@ -84,29 +86,78 @@ export interface ShopCollectible {
     item: any;
 }
 
+type ShopLists = Record<CollectibleType, ShopCollectible[]>;
+const emptyLists = (): ShopLists => ({ 0: [], 1: [], 2: [], 3: [] });
+
+// How Discord's own shop asks for the catalog: variants as groups, bundles included. Asking the same way gets every
+// product the shop shows (asking with no options left out what's only sold in a bundle), and the store then counts it
+// as the shop's fetch too, so neither asks again for the other
+const VARIANTS_GROUP = 2;
+const shopFetchOptions = () => ({ variantsReturnStyle: VARIANTS_GROUP, includeBundles: true, skipNumCategories: CollectiblesCategoryStore.skipNumCategories });
+
+/** A product, and the products inside it: a bundle's parts and a group's variants, some of them sold only that way */
+function addProduct(lists: ShopLists, seen: Set<string>, product: any) {
+    if (!product?.skuId) return;
+    const item = product.items?.length === 1 ? product.items[0] : null;
+    if (item && item.type in lists && !seen.has(product.skuId)) {
+        seen.add(product.skuId);
+        const { name, variantLabel } = product;
+        lists[item.type as CollectibleType].push({ skuId: product.skuId, name: variantLabel && !String(name).includes(variantLabel) ? `${name} (${variantLabel})` : name, item });
+    }
+    for (const part of product.bundledProducts ?? []) addProduct(lists, seen, part);
+    for (const variant of product.variants ?? []) addProduct(lists, seen, variant);
+}
+
+// The last catalog Discord gave, kept on this computer, so the window lists it at once on the next open instead of
+// waiting for the shop again: Discord's store starts empty with every start. Only what the shelves and a pick read
+const CATALOG_KEY = "CustomProfile_shopCatalog";
+const CATALOG_VERSION = 1;
+function slim({ skuId, name, item }: ShopCollectible): ShopCollectible {
+    const layers = Array.isArray(item.layers) ? item.layers.map(({ id, type, anchor }: any) => ({ id, type, anchor })) : undefined;
+    const palette = item.palette == null || typeof item.palette !== "object" ? item.palette : JSON.parse(JSON.stringify(item.palette));
+    return { skuId, name, item: { type: item.type, asset: item.asset, label: item.label, palette, thumbnailPreviewSrc: item.thumbnailPreviewSrc, layers } };
+}
+
 export function useShopCollectibles() {
-    const fetchedAt = useStateFromStores([CollectiblesCategoryStore], () => CollectiblesCategoryStore.lastSuccessfulFetch);
-    const [failed, setFailed] = React.useState(false);
+    // Products also arrive one at a time (one opened in the shop, a profile's decoration), into the same map
+    const version = useStateFromStores([CollectiblesCategoryStore], () => `${CollectiblesCategoryStore.lastSuccessfulFetch ?? 0}:${CollectiblesCategoryStore.products?.size ?? 0}`);
+    const fetchedAt: number | undefined = CollectiblesCategoryStore.lastSuccessfulFetch;
+    const failed = useStateFromStores([CollectiblesCategoryStore], () => CollectiblesCategoryStore.error != null && !CollectiblesCategoryStore.isFetchingCategories);
+    const [saved, setSaved] = React.useState<ShopLists | null>(null);
 
     React.useEffect(() => {
-        if (CollectiblesCategoryStore.products?.size) return;
-        Promise.resolve()
-            .then(() => fetchCollectiblesCategories({}))
-            .catch(() => setFailed(true));
+        DataStore.get(CATALOG_KEY)
+            .then(stored => { if (stored?.version === CATALOG_VERSION && stored.lists) setSaved(stored.lists); })
+            .catch(() => { });
+        // A few products don't mean the catalog is there, only a finished catalog fetch does
+        if (CollectiblesCategoryStore.lastSuccessfulFetch || CollectiblesCategoryStore.isFetchingCategories) return;
+        Promise.resolve().then(() => fetchCollectiblesCategories(shopFetchOptions())).catch(() => { });
     }, []);
 
-    const byType = React.useMemo(() => {
-        const lists: Record<CollectibleType, ShopCollectible[]> = { 0: [], 1: [], 2: [], 3: [] };
+    const live = React.useMemo(() => {
+        const lists = emptyLists();
         const seen = new Set<string>();
-        for (const product of CollectiblesCategoryStore.products?.values() ?? []) {
-            // Bundles hold several items; each of those is also sold on its own
-            const item = product.items?.length === 1 ? product.items[0] : null;
-            if (!item || !(item.type in lists) || seen.has(product.skuId)) continue;
-            seen.add(product.skuId);
-            lists[item.type as CollectibleType].push({ skuId: product.skuId, name: product.name, item });
+        for (const product of CollectiblesCategoryStore.products?.values() ?? []) addProduct(lists, seen, product);
+        return lists;
+    }, [version]);
+
+    React.useEffect(() => {
+        if (!fetchedAt) return;
+        const lists = emptyLists();
+        for (const type of [0, 1, 2, 3] as CollectibleType[]) lists[type] = live[type].map(slim);
+        DataStore.set(CATALOG_KEY, { version: CATALOG_VERSION, lists }).catch(() => { });
+    }, [fetchedAt]);
+
+    // Until Discord's catalog is in: the saved one, with what the store already has first
+    const byType = React.useMemo(() => {
+        if (fetchedAt || !saved) return live;
+        const lists = emptyLists();
+        for (const type of [0, 1, 2, 3] as CollectibleType[]) {
+            const known = new Set(live[type].map(entry => entry.skuId));
+            lists[type] = [...live[type], ...(saved[type] ?? []).filter(entry => !known.has(entry.skuId))];
         }
         return lists;
-    }, [fetchedAt]);
+    }, [live, saved, fetchedAt]);
 
     const empty = !Object.values(byType).some(list => list.length);
     return { byType, loading: !failed && empty, failed: failed && empty };
@@ -196,29 +247,44 @@ export interface NameStyleOption {
 export const toHex = (color: number) => `#${color.toString(16).padStart(6, "0")}`;
 export const fromHex = (hex: string) => parseInt(hex.slice(1), 16);
 
-export function DisplayNameStylePicker({ value, fonts, effects, previewName, onChange }: {
+interface NameStylePickerProps {
     value: DisplayNameStyles | undefined;
-    previewName: string;
     fonts: NameStyleOption[];
     effects: NameStyleOption[];
     onChange(value: DisplayNameStyles | undefined): void;
-}) {
-    const { t } = useI18n();
-    if (!fonts.length || !effects.length) return <div className="cp-hint">{t("This version of Discord has no display name styles.")}</div>;
+}
 
-    const current: DisplayNameStyles = value ?? {
+function currentStyles({ value, fonts, effects }: Omit<NameStylePickerProps, "onChange">): DisplayNameStyles {
+    return value ?? {
         fontId: fonts.find(font => font.name === "Default")?.id ?? fonts[0].id,
         effectId: effects.find(effect => effect.name === "Solid")?.id ?? effects[0].id,
         colors: [0x9ccbff]
     };
+}
+
+/** The big preview follows the name as it's typed; the two dozen choices under it only redraw when a style changes */
+export const DisplayNameStylePicker = LazyComponent(() => React.memo(function DisplayNameStylePicker({ previewName, ...props }: NameStylePickerProps & { previewName: string; }) {
+    const { t } = useI18n();
+    if (!props.fonts.length || !props.effects.length) return <div className="cp-hint">{t("This version of Discord has no display name styles.")}</div>;
+
+    return (
+        <>
+            <div className="cp-name-preview">
+                <StyledName name={previewName} styles={currentStyles(props)} animate />
+            </div>
+            <NameStyleChoices {...props} />
+        </>
+    );
+}));
+
+const NameStyleChoices = LazyComponent(() => React.memo(function NameStyleChoices({ value, fonts, effects, onChange }: NameStylePickerProps) {
+    const { t } = useI18n();
+    const current = currentStyles({ value, fonts, effects });
     const update = (patch: Partial<DisplayNameStyles>) => onChange({ ...current, ...patch });
     const [first, second] = current.colors;
 
     return (
         <>
-            <div className="cp-name-preview">
-                <StyledName name={previewName} styles={current} animate />
-            </div>
             <div className="cp-badges" style={{ flexWrap: "wrap", gap: 6 }}>
                 <button onClick={() => onChange(undefined)} className={`cp-badge ${!value ? "cp-badge--on" : ""}`}>{t("None")}</button>
                 {fonts.map(font => (
@@ -246,4 +312,4 @@ export function DisplayNameStylePicker({ value, fonts, effects, previewName, onC
             <div className="cp-hint">{t("The second color is for Gradient, Glow and Prism.")}</div>
         </>
     );
-}
+}));

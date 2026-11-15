@@ -14,7 +14,7 @@ import type { ReactNode } from "react";
  * pixels like the logo when pixel style is on. In the pixel rows "#" is solid and "+" a quieter second tone. The
  * smooth drawing is a function because React isn't there yet when this file loads
  */
-function pixelIcon(rows: string[], smooth: () => ReactNode) {
+export function pixelIcon(rows: string[], smooth: () => ReactNode) {
     const size = rows.length;
     const tone = (mark: string) => rows.flatMap((row, y) => [...row].map((cell, x) => cell === mark ? `M${x} ${y}h1v1h-1z` : "")).join("");
     const solid = tone("#");
@@ -40,7 +40,7 @@ function pixelIcon(rows: string[], smooth: () => ReactNode) {
 }
 
 // The quieter second tone in the smooth drawings
-const SOFT = 0.45;
+export const SOFT = 0.45;
 
 export const GamepadIcon = pixelIcon([
     "..........",
@@ -342,7 +342,7 @@ export const SleepIcon = pixelIcon([
     </>
 ));
 
-// A corner: stepped in pixels, round when smooth. It stands for pixel style
+// Corner icon, stepped in pixel style and rounded otherwise. Used for the pixel style setting
 export const CornerIcon = pixelIcon([
     "......####",
     "......####",
@@ -361,7 +361,158 @@ export const CornerIcon = pixelIcon([
     </>
 ));
 
-/** Endcord's panda. It sleeps on the logo, and wakes up when someone's there */
+// ---- The settings sidebar --------------------------------------------------------------------------------------
+// Filled two-tone icons to match Discord's own: the body at 40% opacity, the distinctive part solid
+
+export const filled = (children: () => ReactNode) => () => <g fill="currentColor" stroke="none">{children()}</g>;
+
+export const PluginsTabIcon = pixelIcon([
+    "++++...#..",
+    "++++..###.",
+    "++++.#####",
+    "++++..###.",
+    ".......#..",
+    "..........",
+    "++++..++++",
+    "++++..++++",
+    "++++..++++",
+    "++++..++++"
+], filled(() => (
+    <>
+        <g opacity={SOFT}>
+            <rect x="3" y="3" width="8" height="8" rx="2.2" />
+            <rect x="3" y="13" width="8" height="8" rx="2.2" />
+            <rect x="13" y="13" width="8" height="8" rx="2.2" />
+        </g>
+        <rect x="13.4" y="3.4" width="7.2" height="7.2" rx="1.8" transform="rotate(45 17 7)" />
+    </>
+)));
+
+export const ThemesTabIcon = pixelIcon([
+    "...++++...",
+    ".++++++++.",
+    "++##++##++",
+    "++##++##++",
+    "++++++++++",
+    "+##+++++..",
+    "+##++++...",
+    "+++++++...",
+    ".+++++++..",
+    "...++++..."
+], filled(() => (
+    <>
+        <path opacity={SOFT} d="M12 3a9 9 0 1 0 0 18c1.3 0 2-1 1.7-2.1l-.3-1.2a2 2 0 0 1 1.9-2.6H17a4 4 0 0 0 4-4C21 6.8 17 3 12 3Z" />
+        <circle cx="7.5" cy="12.3" r="1.6" />
+        <circle cx="9.4" cy="7.8" r="1.6" />
+        <circle cx="14.3" cy="7.5" r="1.6" />
+    </>
+)));
+
+export const UpdaterTabIcon = pixelIcon([
+    "...++++...",
+    ".++++++++.",
+    ".+++##+++.",
+    "++++##++++",
+    "++++##++++",
+    "++######++",
+    "+++####+++",
+    ".+++##+++.",
+    ".++++++++.",
+    "...++++..."
+], filled(() => (
+    <>
+        <circle opacity={SOFT} cx="12" cy="12" r="9.5" />
+        <path d="M12 6.6a1.1 1.1 0 0 1 1.1 1.1v6.1l2.1-2.1a1.1 1.1 0 1 1 1.6 1.6l-4 4a1.1 1.1 0 0 1-1.6 0l-4-4a1.1 1.1 0 1 1 1.6-1.6l2.1 2.1V7.7A1.1 1.1 0 0 1 12 6.6Z" />
+    </>
+)));
+
+export const BackupTabIcon = pixelIcon([
+    "..........",
+    "##########",
+    "##########",
+    "..........",
+    ".++++++++.",
+    ".++####++.",
+    ".++++++++.",
+    ".++++++++.",
+    ".++++++++.",
+    ".........."
+], filled(() => (
+    <>
+        <rect x="3" y="3.5" width="18" height="5" rx="1.8" />
+        <path opacity={SOFT} d="M4.5 10h15v8a2.5 2.5 0 0 1-2.5 2.5H7A2.5 2.5 0 0 1 4.5 18v-8Z" />
+        <rect x="9" y="12.2" width="6" height="2.2" rx="1.1" />
+    </>
+)));
+
+export const DiagnosticsTabIcon = pixelIcon([
+    "..........",
+    "...++++...",
+    ".+++++++#.",
+    ".++++++#+.",
+    "+++++##+++",
+    "++++##++++",
+    "+++###++++",
+    "+++###++++",
+    "..........",
+    ".........."
+], filled(() => (
+    <>
+        <path opacity={SOFT} d="M12 3.5A9.5 9.5 0 0 0 4.1 18.3a1.5 1.5 0 0 0 1.3.7h13.2a1.5 1.5 0 0 0 1.3-.7A9.5 9.5 0 0 0 12 3.5Z" />
+        <path d="M16.9 8.6a1 1 0 0 1 .2 1.4l-3.2 4.5a2.3 2.3 0 1 1-1.6-1.2l3.2-4.5a1 1 0 0 1 1.4-.2Z" />
+    </>
+)));
+
+// Bandage, for the Patch Helper tab
+export const PatchHelperTabIcon = pixelIcon([
+    ".......++.",
+    "......++++",
+    ".....+++++",
+    "....##+++.",
+    "...####+..",
+    "..+####...",
+    ".+++##....",
+    "+++++.....",
+    "++++......",
+    ".++......."
+], filled(() => (
+    <>
+        <rect opacity={SOFT} x="2" y="8" width="20" height="8" rx="4" transform="rotate(-45 12 12)" />
+        <rect x="8.5" y="8.5" width="7" height="7" rx="1.6" transform="rotate(-45 12 12)" />
+    </>
+)));
+
+// The logo at icon size, as on the app icon: an E in ice with cobalt below it, the panda asleep on top
+const LOGO_ROWS = [
+    "................zzzz",
+    "......KK....KK....z.",
+    "......KWWWWWWK...z..",
+    "......WWWWWWWw..zzzz",
+    "......WKKWWKKw......",
+    "......WKKWWKKw......",
+    "......WWWKKWWw......",
+    "....KKIIIIIIIIKK....",
+    "...IIIIIIIIIIIII....",
+    "...IIIIIIIIIIIIIS...",
+    "...IIISSSSSSSSSSS...",
+    "...IIIS.............",
+    "...IIIIIIIIII.......",
+    "...IIIIIIIIIIS......",
+    "...IIISSSSSSSS......",
+    "...IIIS.............",
+    "...IIIIIIIIIIIII....",
+    "...IIIIIIIIIIIIIS...",
+    "....IIIIIIIIIIISS...",
+    ".....SSSSSSSSSSS...."
+];
+const LOGO_PALETTE = { K: "#232C40", W: "#F3F6FB", w: "#C9D3E4", I: "#9CCBFF", S: "#3D74E0", z: "#9CCBFF" };
+
+/** The logo at icon size. Always in the logo's colors, not currentColor */
+export function EndcordLogoIcon({ width = 20, className }: IconProps) {
+    return <PixelArt className={className} rows={LOGO_ROWS} palette={LOGO_PALETTE} pixel={Math.max(1, Math.floor(Number(width) / 20))} />;
+}
+
+/** The panda from the logo. Asleep by default, awake on hover */
 export function EndcordMark({ width = 17, className, asleep }: IconProps & { asleep?: boolean; }) {
     return <PixelArt className={className} rows={asleep ? SLEEPING_PANDA_ROWS : PANDA_ROWS} palette={PANDA_PALETTE} pixel={Math.max(1, Math.floor(Number(width) / 17))} />;
 }
@@ -382,7 +533,7 @@ const WORDMARK_ROWS = [...LETTER_ROWS, ".".repeat(LETTER_ROWS[0].length)].map((r
     [...row].map((cell, x) => cell === "#" ? "#" : all[y - 1]?.[x - 1] === "#" ? "s" : ".").join("")
 );
 
-/** The name, set in type, or in pixel letters when pixel style is on */
+/** The "Endcord" wordmark, in pixel letters when pixel style is on */
 export const EndcordWordmark = ({ className }: { className?: string; }) => (
     <>
         <span className={classes(className, "ec-icon-smooth", "ec-wordmark")}>Endcord</span>
@@ -390,7 +541,7 @@ export const EndcordWordmark = ({ className }: { className?: string; }) => (
     </>
 );
 
-// The dashes, dots and plus signs that fly around the logo, in pixel style only
+// Pixel style only: the dashes, dots and plus signs around the logo
 const SPARK_ROWS = [
     "............#.................",
     "...c.......###.........c......",

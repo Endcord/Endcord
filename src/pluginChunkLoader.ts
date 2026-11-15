@@ -17,6 +17,7 @@ import { findLocaleTable, type LocaleKind, LOCALES_MARKER } from "@shared/extern
 import { CHUNK_ON_BY_DEFAULT, CHUNK_REQUIRED, type ChunkIndex, CHUNKS_MARKER, LAYOUT_TRAILER, type RendererLayout, STARTUP_HEADER, startupFileOf, startupKey, unescapeChunk } from "@shared/pluginChunks";
 import { webFrame } from "electron/renderer";
 import { closeSync, fstatSync, openSync, readFileSync, readSync, renameSync, rmSync, statSync, writeFileSync } from "fs";
+import { basename, dirname, join } from "path";
 
 const STARTUP_VERSION = 1;
 
@@ -55,6 +56,8 @@ let startup: StartupParts | undefined;
 /** Plugin code loaded until then belongs to the start (dependencies); later it's someone opening the plugin list */
 const captureUntil = Date.now() + 5_000;
 const defined = new Set<number>();
+/** When the renderer file this start ran was last found gone (see loadPluginChunks) */
+let goneAt = -Infinity;
 
 function readRange(fd: number, from: number, to: number) {
     const buffer = Buffer.alloc(Math.max(0, to - from));
@@ -294,26 +297,48 @@ export function splitRenderer(file: Buffer, path: string, settings: Settings | n
 }
 
 /**
- * Defines these chunks and the ones they import, read from renderer.js. Does nothing when renderer.js changed since
- * the start (an update waiting for a restart): the caller then reports the plugin as unavailable.
+ * The renderer file this start ran, opened: renderer.js itself, or after an update that's waiting for a restart, the
+ * copy the updater kept in previous/. undefined when neither is it any more (files replaced by hand or the installer)
+ */
+function openRunningRenderer() {
+    const { path, headAt } = source!;
+    const head = Buffer.from(source!.head, "utf-8");
+    for (const candidate of [path, join(dirname(path), "previous", basename(path))]) {
+        let fd: number | undefined;
+        try {
+            fd = openSync(candidate, "r");
+            if (readRange(fd, headAt, headAt + head.length).equals(head)) return fd;
+        } catch { }
+        if (fd !== undefined) closeSync(fd);
+    }
+    return undefined;
+}
+
+/**
+ * Defines these chunks and the ones they import, read from the renderer file this start ran. Does nothing when that
+ * file is gone (see openRunningRenderer): the plugin then throws with needsRestart, and the plugin list asks for one.
  */
 export function loadPluginChunks(ids: string[]) {
     if (!source || !Array.isArray(ids)) return;
     const wanted = withDependencies(source.index, ids.map(id => typeof id === "string" && id[0] === "c" ? Number(id.slice(1)) : NaN).filter(Number.isInteger));
     if (!wanted.length) return;
 
-    let fd: number | undefined;
+    // Searching the plugin list reads hundreds of plugins in a row; once the file is gone, don't open both files for
+    // each of them. Checked again after a moment, in case it was only being written
+    if (Date.now() - goneAt < 5_000) return;
+    const fd = openRunningRenderer();
+    if (fd === undefined) {
+        goneAt = Date.now();
+        return;
+    }
     try {
-        fd = openSync(source.path, "r");
-        const head = Buffer.from(source.head, "utf-8");
-        if (!readRange(fd, source.headAt, source.headAt + head.length).equals(head)) return;
         // While the start is still going (dependencies being loaded), the startup file should hold these too
         if (startup && Date.now() < captureUntil) startup.changed = true;
         define(readChunks(fd, wanted));
     } catch (e) {
         console.error("[Endcord] Couldn't read plugin code from renderer.js", e);
     } finally {
-        if (fd !== undefined) closeSync(fd);
+        closeSync(fd);
     }
 }
 

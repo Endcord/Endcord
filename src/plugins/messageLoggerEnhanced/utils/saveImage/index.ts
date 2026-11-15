@@ -21,7 +21,7 @@ import { Flogger, settings } from "@plugins/messageLoggerEnhanced";
 import { LoggedAttachment, LoggedMessage, LoggedMessageJSON } from "@plugins/messageLoggerEnhanced/types";
 import { memoize } from "@plugins/messageLoggerEnhanced/utils/memoize";
 
-import { deleteImage, downloadAttachment, getImage, } from "./ImageManager";
+import { downloadAttachment, getImage } from "./ImageManager";
 
 export function getFileExtension(str: string) {
     const matches = str.match(/(\.[a-zA-Z0-9]+)(?:\?.*)?$/);
@@ -90,13 +90,6 @@ export async function cacheMessageImages(message: LoggedMessage | LoggedMessageJ
 
     } catch (error) {
         Flogger.error("Error caching message images:", error);
-    }
-}
-
-export async function deleteMessageImages(message: LoggedMessage | LoggedMessageJSON) {
-    for (let i = 0; i < message.attachments.length; i++) {
-        const attachment = message.attachments[i];
-        await deleteImage(attachment.id);
     }
 }
 

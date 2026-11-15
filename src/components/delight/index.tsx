@@ -17,8 +17,8 @@ import { classes } from "@utils/misc";
 import { createRoot, useEffect, useMemo, useRef, useState } from "@webpack/common";
 import type { ReactNode } from "react";
 
-// Small surprises for curious people, the same ones the site has. Nothing here loads anything or sends data anywhere,
-// and apart from a yawn in an idle settings tab, all of it answers something the person did
+// Easter eggs, the same ones the site has. Nothing here loads or sends anything, and everything except the idle
+// yawn is triggered by something the user did. The panda's visits are the hidden plugin PandaVisits
 
 const cl = classNameFactory("ec-delight-");
 const logger = new Logger("Endcord", "#9ccbff");
@@ -31,7 +31,7 @@ const HEART_COUNT = 6;
 const HEART_TIME = 1_500;
 const VERSION_TAPS = 3;
 const VERSION_TAP_WINDOW = 1_500;
-// Five boops this close together and the panda gives in
+// Five clicks within this window
 const BOOP_STREAK = 5;
 const BOOP_WINDOW = 4_000;
 const ROLL_TIME = 1_100;
@@ -74,7 +74,7 @@ function PandaPeek({ first, time }: { first: string; time: number; }) {
             timer.current = setTimeout(() => setShown(false), ms);
         };
 
-        // A frame later, so the panda slides in instead of just being there
+        // Next frame, so the slide-in transition actually runs
         requestAnimationFrame(() => say?.(first, time));
 
         return () => {
@@ -127,7 +127,7 @@ export function barrelRoll() {
     setTimeout(() => app.classList.remove(cl("roll")), ROLL_TIME);
 }
 
-/** A line for days worth a line, or undefined */
+/** Message for special dates, or undefined */
 export function seasonalLine(date: Date) {
     const day = `${date.getMonth() + 1}-${date.getDate()}`;
 
@@ -211,10 +211,10 @@ export function tapVersion() {
 let yawned = false;
 let greeted = false;
 
-/** Sitting still in a settings tab for a while gets checked on, once */
+/** One-time message after sitting idle in a settings tab */
 export function useIdlePanda() {
     useEffect(() => {
-        // On a day worth a line, the first settings tab of the session gets one
+        // On special dates, the first settings tab opened in the session shows the message
         if (!greeted) {
             greeted = true;
             const line = seasonalLine(new Date());
@@ -249,7 +249,7 @@ export function useIdlePanda() {
 
 let reachedTheEnd = false;
 
-/** Goes at the bottom of a long list, for the people who scroll all the way down */
+/** Footer for long lists, for the people who scroll all the way down */
 export function EndOfListPanda() {
     const marker = useRef<HTMLDivElement>(null);
 

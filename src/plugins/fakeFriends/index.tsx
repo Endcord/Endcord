@@ -10,83 +10,82 @@ import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
 import { Modals, openModal } from "@utils/modal";
 import definePlugin from "@utils/types";
+import { Unwrap, wrapMethod } from "@utils/wrapMethod";
 import { findByPropsLazy, findStoreLazy } from "@webpack";
 import { ChannelStore, FluxDispatcher, GuildMemberStore, Menu, React, RelationshipStore, showToast, UserStore, UserUtils } from "@webpack/common";
 
-// fakeState is in memory only — does NOT persist across restarts
+// In memory only, so the fakes are gone after a restart. That's on purpose
 const fakeState = new Map<string, "pending" | "accepted">();
 
 async function persistState() {
-    // No persistence — fakeState reset on restart intentionally
+    // Nothing to save
 }
 
 async function loadState() {
-    // No loading at startup — fakeState starts empty
+    // Nothing to load
 }
 
-// ── Patch RelationshipStore ────────────────────────────────────────────────────
-let origGetRelType: Function | null = null;
-let origIsFriend: Function | null = null;
-let origGetFriendIDs: Function | null = null;
-let origGetMutable: Function | null = null;
+// ---- RelationshipStore ----
+// Through wrapMethod: SurfaceTranslate and others wrap the same stores, and putting a method back by hand on stop
+// brought back their wrappers in the wrong order, or wrapped one of ours twice so it called itself
+const unwrapStore: Unwrap<any>[] = [];
+let realRelationshipType: ((userId: string) => number) | null = null;
+
+function wrapIfThere<T extends object>(list: Unwrap<any>[], obj: T, key: keyof T, wrapper: any) {
+    if (typeof obj?.[key] !== "function") return null;
+    const unwrap = wrapMethod(obj, key, wrapper);
+    list.push(unwrap);
+    return unwrap;
+}
 
 function patchStore() {
+    if (unwrapStore.length) return;
     const store = RelationshipStore as any;
-    if (!origGetRelType && typeof store.getRelationshipType === "function") {
-        origGetRelType = store.getRelationshipType;
-        store.getRelationshipType = function (userId: string) {
-            const s = fakeState.get(userId);
-            if (s === "accepted") return RelationshipType.FRIEND;
-            if (s === "pending") return RelationshipType.INCOMING_REQUEST;
-            return origGetRelType!.call(this, userId);
-        };
-    }
-    if (!origIsFriend && typeof store.isFriend === "function") {
-        origIsFriend = store.isFriend;
-        store.isFriend = function (userId: string) {
-            if (fakeState.get(userId) === "accepted") return true;
-            return origIsFriend!.call(this, userId);
-        };
-    }
-    if (!origGetFriendIDs && typeof store.getFriendIDs === "function") {
-        origGetFriendIDs = store.getFriendIDs;
-        store.getFriendIDs = function () {
-            const real: string[] = origGetFriendIDs!.call(this);
-            const extra = [...fakeState.entries()].filter(([, s]) => s === "accepted").map(([id]) => id);
-            return [...new Set([...real, ...extra])];
-        };
-    }
-    if (!origGetMutable && typeof store.getMutableRelationships === "function") {
-        origGetMutable = store.getMutableRelationships;
-        store.getMutableRelationships = function () {
-            const real = origGetMutable!.call(this);
-            for (const [id, s] of fakeState) {
-                if (s === "accepted") real.set(id, RelationshipType.FRIEND);
-                if (s === "pending") real.set(id, RelationshipType.INCOMING_REQUEST);
-            }
-            return real;
-        };
-    }
+    const relType = wrapIfThere(unwrapStore, store, "getRelationshipType", function (this: any, original: any, userId: string) {
+        const s = fakeState.get(userId);
+        if (s === "accepted") return RelationshipType.FRIEND;
+        if (s === "pending") return RelationshipType.INCOMING_REQUEST;
+        return original.call(this, userId);
+    });
+    realRelationshipType = relType ? relType.original : null;
+    wrapIfThere(unwrapStore, store, "isFriend", function (this: any, original: any, userId: string) {
+        if (fakeState.get(userId) === "accepted") return true;
+        return original.call(this, userId);
+    });
+    wrapIfThere(unwrapStore, store, "getFriendIDs", function (this: any, original: any) {
+        const real: string[] = original.call(this);
+        const extra = [...fakeState.entries()].filter(([, s]) => s === "accepted").map(([id]) => id);
+        return [...new Set([...real, ...extra])];
+    });
+    wrapIfThere(unwrapStore, store, "getMutableRelationships", function (this: any, original: any) {
+        const real = original.call(this);
+        for (const [id, s] of fakeState) {
+            if (s === "accepted") real.set(id, RelationshipType.FRIEND);
+            if (s === "pending") real.set(id, RelationshipType.INCOMING_REQUEST);
+        }
+        return real;
+    });
 }
 
 function unpatchStore() {
-    const store = RelationshipStore as any;
-    if (origGetRelType) { store.getRelationshipType = origGetRelType; origGetRelType = null; }
-    if (origIsFriend) { store.isFriend = origIsFriend; origIsFriend = null; }
-    if (origGetFriendIDs) { store.getFriendIDs = origGetFriendIDs; origGetFriendIDs = null; }
-    if (origGetMutable) { store.getMutableRelationships = origGetMutable; origGetMutable = null; }
+    for (const unwrap of unwrapStore.splice(0)) unwrap();
+    realRelationshipType = null;
 }
 
-// ── Patch acceptFriend ─────────────────────────────────────────────────────────
-let origAccept: Function | null = null;
+/** What Discord itself says about someone, without the fake */
+function realRelationship(userId: string): number {
+    return realRelationshipType ? realRelationshipType(userId) : (RelationshipStore as any).getRelationshipType(userId);
+}
+
+// ---- acceptFriend ----
+const RelationshipActions = findByPropsLazy("acceptFriendRequest", "cancelFriendRequest");
+const unwrapAccept: Unwrap<any>[] = [];
 
 function patchAcceptFriend() {
+    if (unwrapAccept.length) return;
     try {
-        const RA = findByPropsLazy("acceptFriendRequest", "cancelFriendRequest");
-        if (!RA || origAccept) return;
-        origAccept = RA.acceptFriendRequest;
         // Discord passes { userId, ... }; older builds passed the id directly
-        RA.acceptFriendRequest = async function (arg: any, ...args: any[]) {
+        wrapIfThere(unwrapAccept, RelationshipActions, "acceptFriendRequest", async function (this: any, original: any, arg: any, ...args: any[]) {
             const userId: string = typeof arg === "object" ? arg?.userId : arg;
             if (fakeState.get(userId) === "pending") {
                 fakeState.set(userId, "accepted");
@@ -97,21 +96,16 @@ function patchAcceptFriend() {
                 });
                 return;
             }
-            return origAccept!.call(this, arg, ...args);
-        };
+            return original.call(this, arg, ...args);
+        });
     } catch (e) { console.warn("[FF] patchAcceptFriend:", e); }
 }
 
 function unpatchAcceptFriend() {
-    try {
-        if (!origAccept) return;
-        const RA = findByPropsLazy("acceptFriendRequest", "cancelFriendRequest");
-        if (RA) RA.acceptFriendRequest = origAccept;
-        origAccept = null;
-    } catch { }
+    for (const unwrap of unwrapAccept.splice(0)) unwrap();
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
+// ---- Helpers ----
 function makeUserPayload(user: any) {
     return {
         id: user.id,
@@ -161,7 +155,7 @@ async function addPendingRequest(user: any) {
     });
 }
 
-// ── Reapplying fakeStates at startup ──────────────────────────────────
+// ---- Reapplying fakes at startup ----
 // After reload, we redispatch all saved states
 async function reapplyFakeStates() {
     for (const [userId, state] of fakeState) {
@@ -191,45 +185,32 @@ async function reapplyFakeStates() {
 }
 
 const fakeDMChannelObjects = new Map<string, any>();
-let origGetChannel: Function | null = null;
-let origGetDMFromUserId: Function | null = null;
-let origGetSorted: Function | null = null;
+const unwrapChannels: Unwrap<any>[] = [];
 
 function patchChannelStore() {
+    if (unwrapChannels.length) return;
     const store = ChannelStore as any;
 
-    if (!origGetChannel && typeof store.getChannel === "function") {
-        origGetChannel = store.getChannel;
-        store.getChannel = function (id: string) {
-            if (fakeDMChannelObjects.has(id)) return fakeDMChannelObjects.get(id);
-            return origGetChannel!.call(this, id);
-        };
-    }
+    wrapIfThere(unwrapChannels, store, "getChannel", function (this: any, original: any, id: string) {
+        if (fakeDMChannelObjects.has(id)) return fakeDMChannelObjects.get(id);
+        return original.call(this, id);
+    });
 
-    if (!origGetDMFromUserId && typeof store.getDMFromUserId === "function") {
-        origGetDMFromUserId = store.getDMFromUserId;
-        store.getDMFromUserId = function (userId: string) {
-            for (const [cid, ch] of fakeDMChannelObjects) {
-                if ((ch.recipientIDs ?? []).includes(userId)) return cid;
-            }
-            return origGetDMFromUserId!.call(this, userId);
-        };
-    }
+    wrapIfThere(unwrapChannels, store, "getDMFromUserId", function (this: any, original: any, userId: string) {
+        for (const [cid, ch] of fakeDMChannelObjects) {
+            if ((ch.recipientIDs ?? []).includes(userId)) return cid;
+        }
+        return original.call(this, userId);
+    });
 
-    if (!origGetSorted && typeof store.getSortedPrivateChannels === "function") {
-        origGetSorted = store.getSortedPrivateChannels;
-        store.getSortedPrivateChannels = function () {
-            const real = origGetSorted!.call(this) ?? [];
-            return [...real, ...fakeDMChannelObjects.values()];
-        };
-    }
+    wrapIfThere(unwrapChannels, store, "getSortedPrivateChannels", function (this: any, original: any) {
+        const real = original.call(this) ?? [];
+        return [...real, ...fakeDMChannelObjects.values()];
+    });
 }
 
 function unpatchChannelStore() {
-    const store = ChannelStore as any;
-    if (origGetChannel) { store.getChannel = origGetChannel; origGetChannel = null; }
-    if (origGetDMFromUserId) { store.getDMFromUserId = origGetDMFromUserId; origGetDMFromUserId = null; }
-    if (origGetSorted) { store.getSortedPrivateChannels = origGetSorted; origGetSorted = null; }
+    for (const unwrap of unwrapChannels.splice(0)) unwrap();
     fakeDMChannelObjects.clear();
 }
 
@@ -250,7 +231,7 @@ async function doFakeFriendRequest(userId: string) {
     await addPendingRequest(user);
 }
 
-// ── Modal React pour saisir un nombre ─────────────────────────────────────────────
+// ---- Modal asking for a number ----
 function askCount(title: string, max: number): Promise<number | null> {
     return new Promise(resolve => {
         const resolveRef = { current: resolve, done: false };
@@ -342,7 +323,7 @@ function askCount(title: string, max: number): Promise<number | null> {
     });
 }
 
-// ── Candidats d'un serveur ────────────────────────────────────────────────────
+// ---- A server's candidates ----
 async function fetchAllGuildMembers(guildId: string): Promise<void> {
     const queries = [
         ..."abcdefghijklmnopqrstuvwxyz0123456789".split(""),
@@ -372,10 +353,7 @@ async function fetchAllGuildMembers(guildId: string): Promise<void> {
 function getGuildCandidates(guildId: string): string[] {
     const me = UserStore.getCurrentUser()?.id;
     const memberIds: string[] = (GuildMemberStore.getMemberIds(guildId)) ?? [];
-    const realRelNone = (id: string) => {
-        const fn = origGetRelType ?? ((uid: string) => (RelationshipStore as any).getRelationshipType(uid));
-        return fn.call(RelationshipStore, id) === RelationshipType.NONE;
-    };
+    const realRelNone = (id: string) => realRelationship(id) === RelationshipType.NONE;
     return memberIds.filter(id => {
         if (id === me || !realRelNone(id)) return false;
         const cached = UserStore.getUser(id) as any;
@@ -384,7 +362,7 @@ function getGuildCandidates(guildId: string): string[] {
     });
 }
 
-// ── Fake Friend Request avec saisie du nombre ─────────────────────────────────
+// ---- Fake friend requests, with a count ----
 async function floodGuild(guildId: string) {
     showToast({ text: "Loading members...", variant: "default" });
     await fetchAllGuildMembers(guildId);
@@ -417,7 +395,7 @@ async function floodGuild(guildId: string) {
     showToast({ text: `${sent} fake friend request${sent > 1 ? "s" : ""} sent!`, variant: "success" });
 }
 
-// ── Remove fake requests pour un serveur ──────────────────────────────────────
+// ---- Removing a server's fake requests ----
 async function removeFakeFriendsForGuild(guildId: string) {
     const memberIds = new Set<string>(GuildMemberStore.getMemberIds(guildId));
     const toRemove = [...fakeState.keys()].filter(id => memberIds.has(id));
@@ -438,55 +416,43 @@ async function removeFakeFriendsForGuild(guildId: string) {
 }
 
 const MessageRequestStoreLazy = findStoreLazy("MessageRequestStore");
-let MessageRequestStore: any = null;
-let origGetIds: Function | null = null;
-let origGetCount: Function | null = null;
-let origIsRequest: Function | null = null;
+const unwrapRequests: Unwrap<any>[] = [];
 
 const fakeMessageRequests = new Map<string, { user: any; channelId: string; msgId: string; timestamp: string; }>();
 
 function patchMessageRequestStore() {
-    if (MessageRequestStore) return;
+    if (unwrapRequests.length) return;
     try {
         // Discord's MessageRequestStore: channel id set, count and per-channel check.
         const store = MessageRequestStoreLazy;
         if (typeof store?.getMessageRequestChannelIds !== "function") return;
-        MessageRequestStore = store;
 
-        origGetIds = store.getMessageRequestChannelIds;
-        store.getMessageRequestChannelIds = function () {
-            const real = origGetIds!.call(this) as Set<string>;
+        wrapIfThere(unwrapRequests, store, "getMessageRequestChannelIds", function (this: any, original: any) {
+            const real = original.call(this) as Set<string>;
             if (!fakeMessageRequests.size) return real;
             const merged = new Set(real);
             for (const channelId of fakeMessageRequests.keys()) merged.add(channelId);
             return merged;
-        };
+        });
 
-        origGetCount = store.getMessageRequestsCount;
-        store.getMessageRequestsCount = function () {
+        wrapIfThere(unwrapRequests, store, "getMessageRequestsCount", function () {
             return store.getMessageRequestChannelIds().size;
-        };
+        });
 
-        origIsRequest = store.isMessageRequest;
-        store.isMessageRequest = function (channelId: string) {
+        wrapIfThere(unwrapRequests, store, "isMessageRequest", function (this: any, original: any, channelId: string) {
             if (fakeMessageRequests.has(channelId)) return true;
-            return origIsRequest!.call(this, channelId);
-        };
+            return original.call(this, channelId);
+        });
     } catch (e) {
         console.warn("[FF] patchMessageRequestStore:", e);
     }
 }
 
 function unpatchMessageRequestStore() {
-    if (!MessageRequestStore) return;
-    if (origGetIds) MessageRequestStore.getMessageRequestChannelIds = origGetIds;
-    if (origGetCount) MessageRequestStore.getMessageRequestsCount = origGetCount;
-    if (origIsRequest) MessageRequestStore.isMessageRequest = origIsRequest;
-    origGetIds = origGetCount = origIsRequest = null;
-    MessageRequestStore = null;
+    for (const unwrap of unwrapRequests.splice(0)) unwrap();
 }
 
-// ── Context menus ──────────────────────────────────────────────────────────────
+// ---- Context menus ----
 const userContextPatch: NavContextMenuPatchCallback = (children, props) => {
     if (!children || !Array.isArray(children)) return;
     try {
@@ -494,9 +460,7 @@ const userContextPatch: NavContextMenuPatchCallback = (children, props) => {
         if (!userId || userId === UserStore.getCurrentUser()?.id) return;
 
         const state = fakeState.get(userId);
-        const realRel = origGetRelType
-            ? origGetRelType.call(RelationshipStore, userId)
-            : (RelationshipStore as any).getRelationshipType(userId);
+        const realRel = realRelationship(userId);
 
         if (!state && realRel !== RelationshipType.NONE) return;
 
@@ -545,7 +509,7 @@ const guildContextPatch: NavContextMenuPatchCallback = (children, props) => {
         const guildId = props?.guild?.id ?? props?.guildId;
         if (!guildId) return;
 
-        // Compter combien de fake states concernent ce serveur
+        // How many fakes belong to this server
         const memberIds = new Set<string>(GuildMemberStore.getMemberIds(guildId));
         const fakeCount = [...fakeState.keys()].filter(id => memberIds.has(id)).length;
 
@@ -554,7 +518,7 @@ const guildContextPatch: NavContextMenuPatchCallback = (children, props) => {
                 action={() => floodGuild(guildId)} />
         ];
 
-        // Bouton "Remove fake friend requests" — visible seulement si des fakes existent pour ce serveur
+        // "Remove fake friend requests", only when this server has any
         if (fakeCount > 0) {
             items.push(
                 <Menu.MenuItem
@@ -576,7 +540,7 @@ const guildContextPatch: NavContextMenuPatchCallback = (children, props) => {
     }
 };
 
-// ── Plugin ─────────────────────────────────────────────────────────────────────
+// ---- Plugin ----
 export default definePlugin({
     name: "FakeFriends",
     enabledByDefault: false,
@@ -592,10 +556,10 @@ export default definePlugin({
         addContextMenuPatch("user-context", userContextPatch);
         addContextMenuPatch("guild-context", guildContextPatch);
 
-        // Charger l'état persistant puis réappliquer les dispatches
+        // Load the saved state, then dispatch it again
         await loadState();
         if (fakeState.size > 0) {
-            // Délai pour laisser Discord se charger complètement
+            // Give Discord time to finish loading
             setTimeout(() => reapplyFakeStates(), 3000);
         }
     },
@@ -604,8 +568,8 @@ export default definePlugin({
         removeContextMenuPatch("user-context", userContextPatch);
         removeContextMenuPatch("guild-context", guildContextPatch);
         unpatchAcceptFriend();
-        // On ne clear pas fakeState au stop — persistant intentionnellement
-        // Pour reset : clic Reset dans le plugin ou "Remove fake friend requests"
+        // fakeState isn't cleared on stop, on purpose. To reset, use Reset in the plugin settings or
+        // "Remove fake friend requests"
         unpatchStore();
         unpatchChannelStore();
         unpatchMessageRequestStore();

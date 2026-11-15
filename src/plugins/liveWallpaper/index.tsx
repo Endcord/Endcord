@@ -12,14 +12,14 @@ import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 import { Button, Forms, React, showToast, Toasts } from "@webpack/common";
 
-// ── Constants ──────────────────────────────────────────────────────────────────
+// ---- Constants ----
 
 const STYLE_ID = "live-wallpaper-style";
 const CONTAINER_ID = "live-wallpaper-container";
 let active = false;
 let wallpaperGeneration = 0;
 
-// ── File picker ────────────────────────────────────────────────────────────────
+// ---- File picker ----
 
 function pickFile(): Promise<string | null> {
     return new Promise(resolve => {
@@ -74,7 +74,7 @@ function SettingsComponent() {
             <Forms.FormTitle tag="h3">{t("File (Image / Gif / Video)")}</Forms.FormTitle>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                {/* File Picker */}
+                {/* File picker */}
                 <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                     <Button
                         size={Button.Sizes.SMALL}
@@ -112,7 +112,7 @@ function SettingsComponent() {
                     )}
                 </div>
 
-                {/* URL Input (Alternative) */}
+                {/* Or a URL */}
                 <div style={{ marginTop: "8px" }}>
                     <Forms.FormTitle tag="h5" style={{ marginBottom: "8px" }}>{t("OR Paste a URL")}</Forms.FormTitle>
                     <input
@@ -157,15 +157,14 @@ function SettingsComponent() {
     );
 }
 
-// ── Settings ───────────────────────────────────────────────────────────────────
+// ---- Settings ----
 
 const settings = definePluginSettings({
     main: {
         type: OptionType.COMPONENT,
         component: SettingsComponent,
     },
-    // Note: We removed wallpaperUrl from here.
-    // Storage is handled MANUALLY via DataStore in SettingsComponent.
+    // The wallpaper URL isn't a setting: SettingsComponent keeps it in DataStore
     opacity: {
         type: OptionType.SLIDER,
         description: "Wallpaper opacity (0 = invisible, 0.5 = max)",
@@ -211,7 +210,7 @@ const settings = definePluginSettings({
     },
 });
 
-// ── Wallpaper injection ────────────────────────────────────────────────────────
+// ---- Wallpaper ----
 
 function removeWallpaperElements() {
     document.getElementById(STYLE_ID)?.remove();
@@ -259,7 +258,6 @@ async function applyWallpaper() {
 `.trim();
     document.head.appendChild(style);
 
-    // Create the container with the image/video
     const container = document.createElement("div");
     container.id = CONTAINER_ID;
 
@@ -280,11 +278,11 @@ async function applyWallpaper() {
         container.appendChild(img);
     }
 
-    // Inject at the end of body (on top of everything)
+    // At the end of body, above everything else
     document.body.appendChild(container);
 }
 
-// ── Plugin ─────────────────────────────────────────────────────────────────────
+// ---- Plugin ----
 
 export default definePlugin({
     name: "LiveWallpaper",

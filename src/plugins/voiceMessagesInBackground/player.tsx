@@ -64,7 +64,7 @@ export function VoiceMessagesInBackgroundPlayer() {
     const nextSpeed = SPEEDS[(SPEEDS.findIndex(speed => speed === snapshot.speed) + 1) % SPEEDS.length];
 
     return (
-        <div className={cl("player", { playing: !snapshot.paused })} aria-label="Voice Messages In-Background player">
+        <div className={cl("player", { "player-playing": !snapshot.paused })} aria-label="Voice Messages In-Background player">
             <div className={cl("voice-icon")}>
                 <Microphone width={17} height={17} />
             </div>

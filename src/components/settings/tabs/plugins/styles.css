@@ -85,10 +85,6 @@
     cursor: help;
 }
 
-.vc-plugins-dep-name {
-    margin: 0 auto;
-}
-
 .vc-plugins-info-card {
     padding: 1em;
     display: flex;
@@ -153,11 +149,16 @@
     color: var(--ec-paper);
     text-align: left;
     cursor: pointer;
-    transition: transform var(--ec-motion-fast) var(--ec-ease-out);
+    transition: transform var(--ec-motion-slow) var(--ec-ease-spring);
 }
 
 .vc-plugins-stat:hover {
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+}
+
+.vc-plugins-stat:active {
+    transform: scale(0.97);
+    transition-duration: var(--ec-motion-fast);
 }
 
 .vc-plugins-stat-wide {

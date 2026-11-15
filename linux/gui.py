@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Endcord Linux installer GUI — same layout/colors as installer/InstallerGUI.cs
+# The Linux installer GUI, laid out and colored like the Windows one (installer/InstallerGUI.cs)
 from __future__ import print_function
 
 import base64
@@ -7,6 +7,7 @@ import hashlib
 import hmac
 import json
 import os
+import re
 import secrets
 import shutil
 import socket
@@ -31,16 +32,22 @@ if os.environ.get("SUDO_USER") and os.geteuid() == 0:
 CONFIG = os.environ.get("XDG_CONFIG_HOME") or os.path.join(HOME, ".config")
 DIST_DIR = os.path.join(CONFIG, "Endcord", "dist")
 FILES = ("patcher.js", "preload.js", "renderer.js", "renderer.css")
-# Where the files are, and the manifest with their checksums
+# Where the files are, and the manifest with their checksums. endcord.com has them in one archive
 MIRRORS = (
     ("https://raw.githubusercontent.com/Endcord/Endcord/main/dist", "https://raw.githubusercontent.com/Endcord/Endcord/main/version.json"),
-    ("https://endcord.com/dist", "https://endcord.com/version.json"),
+    ("https://endcord.com/EndcordFiles.tar.gz", "https://endcord.com/version.json"),
 )
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 HERE = Path(SCRIPT_DIR)
 QUIT = threading.Event()
 # Any web page can reach the local API, so requests have to prove they come from the installer's window
 TOKEN = secrets.token_urlsafe(32)
+# The window's address shows in the process list, so it carries a code that opens the page once, never the token itself.
+# The page then keeps a cookie, which is what a reload shows
+PAGE_CODE = secrets.token_urlsafe(32)
+PAGE_COOKIE = secrets.token_urlsafe(32)
+PAGE_LOCK = threading.Lock()
+PAGE_OPENED = False
 UPDATE_KEY = """-----BEGIN PUBLIC KEY-----
 MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEJi37GlwG/uPNC4oQicUcI1bPlnri
 1pXQGzUzDQwBnxQ1+F7tFtUkOjancC1eScKb9H9eASOz7iUA3CiGgXtHaw==
@@ -205,6 +212,12 @@ def verify_manifest(manifest):
     fields = [str(manifest.get(key) or "") for key in ("version", "hash", "updatedAt", "installerSha256")]
     if not all(fields):
         raise RuntimeError("the release is incomplete")
+    # Each signed field keeps to its own line of the signed text, and the release is Endcord's four files and nothing else
+    if not re.fullmatch(r"[0-9a-fA-F]{64}", fields[3]) or not all(re.fullmatch(r"[\w.+-]{1,64}", f) for f in fields[:3]):
+        raise RuntimeError("the release is malformed")
+    listed = manifest.get("assets")
+    if not isinstance(listed, list) or sorted(str(a.get("name")) for a in listed if isinstance(a, dict)) != sorted(FILES):
+        raise RuntimeError("the release doesn't list Endcord's files")
     assets = sorted("%s %s" % (a["name"], a["sha256"].lower()) for a in manifest["assets"])
     tmp = tempfile.mkdtemp(prefix="endcord-")
     try:
@@ -231,6 +244,20 @@ def fetch_checksums(url):
     return sums
 
 
+def read_bundle(url):
+    """The four files from the release archive, read by name; nothing else in it is opened or written."""
+    import io
+    import tarfile
+    files = {}
+    with tarfile.open(fileobj=io.BytesIO(download(url)), mode="r:gz") as tar:
+        for f in FILES:
+            member = tar.getmember(f)
+            if not member.isfile():
+                raise RuntimeError("%s in the archive isn't a file" % f)
+            files[f] = tar.extractfile(member).read()
+    return files
+
+
 def fetch_dist():
     os.makedirs(DIST_DIR, exist_ok=True)
     local = find_local_dist()
@@ -242,12 +269,13 @@ def fetch_dist():
     for mirror, manifest in MIRRORS:
         try:
             sums = fetch_checksums(manifest)
-            files = {}
+            if mirror.endswith(".tar.gz"):
+                files = read_bundle(mirror)
+            else:
+                files = {f: download(mirror + "/" + f) for f in FILES}
             for f in FILES:
-                data = download(mirror + "/" + f)
-                if hashlib.sha256(data).hexdigest() != sums[f].lower():
+                if hashlib.sha256(files[f]).hexdigest() != sums[f].lower():
                     raise RuntimeError("%s doesn't match its checksum" % f)
-                files[f] = data
             # Everything is downloaded and checked before the installed copy is touched
             for f, data in files.items():
                 with open(os.path.join(DIST_DIR, f), "wb") as out:
@@ -345,7 +373,22 @@ fi
 """
 
 
+def is_system_folder(path):
+    """Root works inside this folder, so it must be one only root can change, wherever a link to it came from."""
+    try:
+        for p in (path, os.path.dirname(path)):
+            st = os.stat(p)
+            if st.st_uid != 0 or st.st_mode & 0o002:
+                return False
+        return True
+    except OSError:
+        return False
+
+
 def run_priv(mode, res):
+    res = os.path.realpath(res)
+    if not is_system_folder(res):
+        raise RuntimeError("%s isn't a system folder, so it won't be changed with admin rights" % res)
     fd, path = tempfile.mkstemp(prefix="endcord-", suffix=".sh")
     os.close(fd)
     try:
@@ -788,6 +831,10 @@ def token_matches(value):
     return hmac.compare_digest(value.encode("utf-8", "replace"), TOKEN.encode("utf-8"))
 
 
+def same(value, expected):
+    return hmac.compare_digest(value.encode("utf-8", "replace"), expected.encode("utf-8"))
+
+
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt, *args):
         return
@@ -805,9 +852,27 @@ class Handler(BaseHTTPRequestHandler):
         token = self.headers.get("X-Endcord-Token") or ""
         return host == "127.0.0.1:%d" % self.server.server_address[1] and token_matches(token)
 
+    def _may_open_page(self, query):
+        """The one-time code from the window's address, or the cookie the page got with it."""
+        global PAGE_OPENED
+        cookies = (self.headers.get("Cookie") or "").replace(" ", "").split(";")
+        if any(same(c, "endcord=" + PAGE_COOKIE) for c in cookies):
+            return True
+        if not same(query.replace("code=", "", 1), PAGE_CODE):
+            return False
+        with PAGE_LOCK:
+            if PAGE_OPENED:
+                # Someone else already used the code: whoever it was holds the token now, so nothing more is served
+                QUIT.set()
+                return False
+            PAGE_OPENED = True
+        return True
+
     def _html(self):
         raw = HTML.replace("__TOKEN__", TOKEN).encode("utf-8")
         self.send_response(200)
+        self.send_header("Set-Cookie", "endcord=%s; HttpOnly; SameSite=Strict; Path=/" % PAGE_COOKIE)
+        self.send_header("Cache-Control", "no-store")
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.send_header("Content-Length", str(len(raw)))
         self.end_headers()
@@ -816,7 +881,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         path, _, query = self.path.partition("?")
         if path in ("/", "/index.html"):
-            if token_matches(query.replace("token=", "", 1)):
+            if self._may_open_page(query):
                 self._html()
             else:
                 self.send_error(403)
@@ -931,7 +996,7 @@ def main():
     httpd = ThreadingHTTPServer(("127.0.0.1", port), Handler)
     t = threading.Thread(target=httpd.serve_forever, daemon=True)
     t.start()
-    url = "http://127.0.0.1:%d/?token=%s" % (port, TOKEN)
+    url = "http://127.0.0.1:%d/?code=%s" % (port, PAGE_CODE)
     try:
         open_window(url)
     finally:

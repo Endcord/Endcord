@@ -25,17 +25,21 @@ export async function readRecording(_: any, filePath: string) {
     }
 }
 
+// Windows opens these as devices whatever extension follows
+const DEVICE_NAME = /^(con|prn|aux|nul|com\d|lpt\d)(\.|$)/i;
+
 export async function saveRecording(_: any, fileBuffer: ArrayBuffer, folder: string, filename: string) {
     folder = normalize(folder || app.getPath("downloads"));
     filename = basename(normalize(filename));
 
     // The folder comes from the renderer, so never write anything Windows could run. A UNC path would also hand the login hash to that server
-    if (!fileBuffer || !isAbsolute(folder) || folder.startsWith("\\\\") || !/^[\w.-]+\.ogg$/.test(filename)) {
+    if (!fileBuffer || !isAbsolute(folder) || folder.startsWith("\\\\") || !/^[\w.-]+\.ogg$/.test(filename) || DEVICE_NAME.test(filename)) {
         throw new Error("Invalid path");
     }
 
     const destPath = join(folder, filename);
     await mkdir(folder, { recursive: true });
-    await writeFile(destPath, Buffer.from(fileBuffer));
+    // "wx": a recording never replaces a file that's already there
+    await writeFile(destPath, Buffer.from(fileBuffer), { flag: "wx" });
     return destPath;
 }

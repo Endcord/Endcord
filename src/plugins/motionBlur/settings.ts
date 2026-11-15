@@ -18,13 +18,9 @@ export const settings = definePluginSettings({
     maxBlur: {
         type: OptionType.SLIDER,
         description: "Maximum blur radius (in pixels)",
-        markers: [2, 4, 6, 8, 12, 16],
+        // The blur stops at 6 px (see triggerBlurPulse), so the slider does too
+        markers: [1, 2, 3, 4, 5, 6],
         default: 6,
         stickToMarkers: false,
-    },
-    applyToWholeApp: {
-        type: OptionType.BOOLEAN,
-        description: "Apply motion blur to the entire Discord window during scroll and movement",
-        default: true,
     },
 });

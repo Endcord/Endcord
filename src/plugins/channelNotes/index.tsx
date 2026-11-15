@@ -9,12 +9,13 @@ import "./styles.css";
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { addChannelToolbarButton, ChannelToolbarButton, removeChannelToolbarButton } from "@api/HeaderBar";
 import { DataStore } from "@api/index";
+import { EndcordModal } from "@components/EndcordModal";
 import { Channel, RenderModalProps } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import { t, useI18n } from "@utils/i18n";
 import definePlugin from "@utils/types";
-import { ChannelStore, GuildStore, Menu, Modal, NavigationRouter, openModal, React, SelectedChannelStore, useEffect, useMemo, UserStore, useState, useStateFromStores } from "@webpack/common";
+import { ChannelStore, GuildStore, Menu, NavigationRouter, openModal, React, SelectedChannelStore, useEffect, useMemo, UserStore, useState, useStateFromStores } from "@webpack/common";
 
 const cl = classNameFactory("ec-notes-");
 const DS_KEY = "ChannelNotes_notes";
@@ -83,7 +84,7 @@ function NoteEditor({ channelId, modalProps }: { channelId: string; modalProps: 
     };
 
     return (
-        <Modal
+        <EndcordModal
             {...modalProps}
             size="md"
             title={existing ? t("Edit note") : t("Add a note")}
@@ -107,7 +108,7 @@ function NoteEditor({ channelId, modalProps }: { channelId: string; modalProps: 
                 <span>{t("Ctrl+Enter to save")}</span>
                 <span>{text.length.toLocaleString()} / {MAX_LENGTH.toLocaleString()}</span>
             </div>
-        </Modal>
+        </EndcordModal>
     );
 }
 
@@ -125,7 +126,7 @@ function AllNotes({ modalProps }: { modalProps: RenderModalProps; }) {
         .sort((a, b) => b.note.updatedAt - a.note.updatedAt), [all, query]);
 
     return (
-        <Modal {...modalProps} size="md" title={t("Channel notes")} subtitle={t("Private notes you added to channels and conversations.")}>
+        <EndcordModal {...modalProps} size="md" title={t("Channel notes")} subtitle={t("Private notes you added to channels and conversations.")}>
             <input className={cl("search")} placeholder={t("Search notes")} value={query} onChange={e => setQuery(e.currentTarget.value)} />
             {!entries.length && <p className={cl("empty")}>{Object.keys(all).length ? t("No notes match your search.") : t("No notes yet. Right-click a channel or conversation and choose Add note.")}</p>}
             <div className={cl("list")}>
@@ -143,7 +144,7 @@ function AllNotes({ modalProps }: { modalProps: RenderModalProps; }) {
                     </article>
                 ))}
             </div>
-        </Modal>
+        </EndcordModal>
     );
 }
 

@@ -11,12 +11,6 @@
     flex: 1;
 }
 
-.vc-new-plugins-header-trailing {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-}
-
 .vc-new-plugins-title {
     color: var(--text-strong);
     padding-right: 32px;
@@ -38,13 +32,4 @@
     align-items: center;
     flex-direction: row-reverse;
     gap: 16px;
-}
-
-.vc-new-plugins-restart-list {
-    padding-left: 1.25em;
-    margin-top: 8px;
-}
-
-.vc-new-plugins-restart-list li {
-    list-style: disc;
 }

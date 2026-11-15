@@ -139,20 +139,55 @@ export function recordUnconfirmedLoad() {
     return restorePreviousVersion(state);
 }
 
+// Signed out, Discord waits on its login page and Endcord never reports in, but nothing is wrong
+export const SIGNED_OUT_PAGE = /^\/(?:login|register|reset|verify|authorize|oauth2|invite)/;
+
+function isSignedOutPage(url: string) {
+    try {
+        return SIGNED_OUT_PAGE.test(new URL(url).pathname);
+    } catch {
+        return false;
+    }
+}
+
+/** Takes a load back out of the count: its page turned out to be the login screen, where no update can be confirmed */
+export function forgiveUnconfirmedLoad() {
+    const state = readState();
+    if (!state?.loads) return;
+
+    state.loads--;
+    writeState(state);
+}
+
 export function initUpdateRollback() {
     recoverInterruptedUpdate();
 
     // Counting page loads rather than process starts ignores second instances and starting up offline
     app.on("browser-window-created", (_, win) => {
+        // Whether the page showing now is in the count
+        let counted = false;
+
         win.webContents.on("did-finish-load", () => {
+            counted = false;
+            const url = win.webContents.getURL();
             let origin: string;
             try {
-                ({ origin } = new URL(win.webContents.getURL()));
+                ({ origin } = new URL(url));
             } catch {
                 return;
             }
 
-            if (isDiscordOrigin(origin) && recordUnconfirmedLoad()) win.webContents.reload();
+            if (!isDiscordOrigin(origin) || isSignedOutPage(url)) return;
+            counted = true;
+            if (recordUnconfirmedLoad()) win.webContents.reload();
+        });
+
+        // Signed out, Discord opens /app and only then moves to /login. Three starts like that would otherwise undo a
+        // working update and refuse it for a day
+        win.webContents.on("did-navigate-in-page", (_, url) => {
+            if (!counted || !isSignedOutPage(url)) return;
+            counted = false;
+            forgiveUnconfirmedLoad();
         });
     });
 }

@@ -22,15 +22,6 @@ export interface RemoteStreak {
     today_date: string | null;
 }
 
-export interface StreaksState {
-    streaks: Record<string, RemoteStreak>;
-    fetch: () => Promise<void>;
-    update: (recipientId: string) => Promise<void>;
-    refresh: (recipientId: string) => Promise<void>;
-    migrate: () => Promise<void>;
-    clear: () => void;
-}
-
 export const useStreaksStore = proxyLazy(() => zustandCreate((set: any, get: any) => ({
     streaks: {},
     clear: () => set({ streaks: {} }),

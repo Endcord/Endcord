@@ -12,12 +12,12 @@ import definePlugin, { OptionType } from "@utils/types";
 import { findByPropsLazy, findStoreLazy } from "@webpack";
 import { React } from "@webpack/common";
 
-// ── Discord internals ──────────────────────────────────────────────────────────
+// ---- Discord internals ----
 
 const MessageActions = findByPropsLazy("deleteMessage", "startEditMessage");
 const UserStore = findStoreLazy("UserStore");
 
-// ── Settings ───────────────────────────────────────────────────────────────────
+// ---- Settings ----
 
 const settings = definePluginSettings({
     active: {
@@ -36,7 +36,7 @@ const settings = definePluginSettings({
     },
 });
 
-// ── Timer tracking ─────────────────────────────────────────────────────────────
+// ---- Timers ----
 
 interface TimerEntry {
     channelId: string;
@@ -79,7 +79,7 @@ function cleanup() {
     timerListeners.clear();
 }
 
-// ── Timer Badge Component (rendered on messages) ───────────────────────────────
+// ---- Timer badge (on messages) ----
 
 function TimerBadge({ messageId }: { messageId: string; }) {
     const [remaining, setRemaining] = React.useState<number | null>(null);
@@ -144,7 +144,7 @@ function TimerBadge({ messageId }: { messageId: string; }) {
     );
 }
 
-// ── Chat Bar Icon ──────────────────────────────────────────────────────────────
+// ---- Chat bar icon ----
 
 function SelfDestructIcon({ active, width = 20, height = 20 }: { active?: boolean; width?: number; height?: number; }) {
     return (
@@ -158,7 +158,7 @@ function SelfDestructIcon({ active, width = 20, height = 20 }: { active?: boolea
             viewBox="0 0 24 24"
             style={{ color: active ? "#ed4245" : "currentColor" }}
         >
-            {/* Bombe / timer icon */}
+            {/* Bomb timer icon */}
             <circle cx="12" cy="13" r="8" stroke="currentColor" strokeWidth="2" fill="none" />
             <path d="M12 9v4l3 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             <path d="M12 5V3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -173,7 +173,7 @@ function SelfDestructIcon({ active, width = 20, height = 20 }: { active?: boolea
     );
 }
 
-// ── Chat Bar Button ────────────────────────────────────────────────────────────
+// ---- Chat bar button ----
 
 const SelfDestructButton: ChatBarButtonFactory = ({ isMainChat }) => {
     const [active, setActive] = React.useState(settings.store.active);
@@ -199,7 +199,7 @@ const SelfDestructButton: ChatBarButtonFactory = ({ isMainChat }) => {
     );
 };
 
-// ── Plugin ─────────────────────────────────────────────────────────────────────
+// ---- Plugin ----
 
 export default definePlugin({
     name: "SelfDestruct",
@@ -235,7 +235,7 @@ export default definePlugin({
     },
 
     start() {
-        // Reset au démarrage — pas de timers persistants
+        // Timers don't survive a restart
     },
 
     stop() {

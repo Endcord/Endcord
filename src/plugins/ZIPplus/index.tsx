@@ -286,7 +286,6 @@ function handlePaste(event: ClipboardEvent) {
     });
 }
 
-// Get native helper for desktop
 function getNative(): ZipPreviewNative | null {
     if (!IS_DISCORD_DESKTOP || !EndcordNative?.pluginHelpers) return null;
     const native: unknown = EndcordNative.pluginHelpers["ZIP+"];
@@ -445,7 +444,7 @@ function cacheBlob(key: string, blob: Blob) {
     }
 }
 
-// Component to render inside each zip attachment
+// Rendered inside each zip attachment
 function ZipAttachmentPreviewInner({ attachment }: { attachment: ZipAttachmentLike; }) {
     const cacheKey = getAttachmentKey(attachment);
     const [blob, setBlob] = useState<Blob | null>(() => blobCache.get(cacheKey) || null);

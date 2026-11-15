@@ -6,6 +6,7 @@
 
 import "./styles.css";
 
+import { EndcordModal } from "@components/EndcordModal";
 import { Guild, RenderModalProps, User } from "@endcord/discord-types";
 import { classNameFactory } from "@utils/css";
 import { getGuildAcronym, openImageModal, openUserProfile } from "@utils/discord";
@@ -13,7 +14,7 @@ import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import { useAwaiter } from "@utils/react";
 import { findComponentByCodeLazy, findCssClassesLazy } from "@webpack";
-import { FluxDispatcher, Forms, GuildChannelStore, GuildMemberStore, GuildRoleStore, IconUtils, Modal,openModal, Parser, PresenceStore, RelationshipStore, ScrollerThin, SnowflakeUtils, TabBar, Timestamp, useEffect, UserStore, UserUtils, useState, useStateFromStores } from "@webpack/common";
+import { FluxDispatcher, Forms, GuildChannelStore, GuildMemberStore, GuildRoleStore, IconUtils, openModal, Parser, PresenceStore, RelationshipStore, ScrollerThin, SnowflakeUtils, TabBar, Timestamp, useEffect, UserStore, UserUtils, useState, useStateFromStores } from "@webpack/common";
 
 const IconClasses = findCssClassesLazy("icon", "acronym", "childWrapper");
 const FriendRow = findComponentByCodeLazy("discriminatorClass:", ".isMobileOnline", "avatarSrc:");
@@ -74,7 +75,7 @@ function GuildInfoModal({ guild, modalProps }: GuildProps & { modalProps: Render
     });
 
     return (
-        <Modal
+        <EndcordModal
             {...modalProps}
             size="lg"
             title={
@@ -150,7 +151,7 @@ function GuildInfoModal({ guild, modalProps }: GuildProps & { modalProps: Render
                 {currentTab === Tabs.BlockedUsers && <BlockedUsersTab guild={guild} setCount={setBlockedCount} />}
                 {currentTab === Tabs.IgnoredUsers && <IgnoredUserTab guild={guild} setCount={setIgnoredCount} />}
             </div>
-        </Modal>
+        </EndcordModal>
     );
 }
 

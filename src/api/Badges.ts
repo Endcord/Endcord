@@ -21,11 +21,11 @@ export const enum BadgeRarity {
     RARE = 2,
     EPIC = 3,
     MYTHIC = 5,
-    /** Endcord's own, above anything Discord gives out: only the people who build Endcord have it */
+    /** Endcord's own tier, above Discord's rarest. Only Endcord developers have it */
     CELESTIAL = 6
 }
 
-/** What clicking a badge shows, laid out like Discord's own badge page */
+/** Badge details modal, laid out like Discord's */
 export interface BadgeDetails {
     /** A short line under the title, like Discord's "A spoonful of knowledge" */
     flavor?: string;

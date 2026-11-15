@@ -5,6 +5,7 @@
  */
 
 import { CodeBlock } from "@components/CodeBlock";
+import { EndcordModal } from "@components/EndcordModal";
 import { Heading } from "@components/Heading";
 import { Heart } from "@components/Heart";
 import { Paragraph } from "@components/Paragraph";
@@ -16,7 +17,7 @@ import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import type { PluginNative } from "@utils/types";
 import { findComponentByCodeLazy } from "@webpack";
-import { Button, Modal, openModal, Parser, React, showToast, Toasts } from "@webpack/common";
+import { Button, openModal, Parser, React, showToast, Toasts } from "@webpack/common";
 
 import { logger } from "./ThemeTab";
 
@@ -47,7 +48,7 @@ export const ThemeInfoModal: React.FC<ThemeInfoModalProps> = ({ author, theme, .
     const lastUpdated = Math.floor(new Date(last_updated ?? 0).getTime() / 1000);
 
     return (
-        <Modal
+        <EndcordModal
             {...props}
             size="md"
             title={`${name} details`}
@@ -67,7 +68,7 @@ export const ThemeInfoModal: React.FC<ThemeInfoModalProps> = ({ author, theme, .
                         const exists = await Native.themeExists(theme);
                         if (exists) {
                             openModal(modalProps => (
-                                <Modal
+                                <EndcordModal
                                     {...modalProps}
                                     size="sm"
                                     title={t("Conflict!")}
@@ -97,7 +98,7 @@ export const ThemeInfoModal: React.FC<ThemeInfoModalProps> = ({ author, theme, .
                                             </div>
                                         </div>
                                     </Paragraph>
-                                </Modal>
+                                </EndcordModal>
                             ));
                         } else {
                             await downloadTheme(theme);
@@ -177,7 +178,7 @@ export const ThemeInfoModal: React.FC<ThemeInfoModalProps> = ({ author, theme, .
                         <Button
                             disabled={!theme.content || theme.id === "preview"}
                             onClick={() => openModal(modalProps => (
-                                <Modal
+                                <EndcordModal
                                     {...modalProps}
                                     size="lg"
                                     title={t("Theme Source")}
@@ -200,7 +201,7 @@ export const ThemeInfoModal: React.FC<ThemeInfoModalProps> = ({ author, theme, .
                                     <Paragraph style={{ padding: "8px" }}>
                                         <CodeBlock lang="css" content={themeContent} />
                                     </Paragraph>
-                                </Modal>
+                                </EndcordModal>
                             ))}
                         >
                             {t("View Theme Source")}</Button>
@@ -228,6 +229,6 @@ export const ThemeInfoModal: React.FC<ThemeInfoModalProps> = ({ author, theme, .
                     )}
                 </div>
             </div>
-        </Modal>
+        </EndcordModal>
     );
 };

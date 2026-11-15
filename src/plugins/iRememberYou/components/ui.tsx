@@ -33,7 +33,7 @@ function UsersCollectionRows({ usersCollection }: { usersCollection: Data["users
     return (
         <>
             {Object.entries(usersCollection)
-                .map(([_key, { users, name }]) => ({ name, users: Object.values(users) }))
+                .map(([_key, { users, name }]) => ({ name, users: Object.values(users ?? {}) }))
                 .sort((a, b) => b.users.length - a.users.length)
                 .map(({ name, users }) => (
                     <aside key={name}>
@@ -107,7 +107,7 @@ function UserRow({ user, allowOwner = true }: { user: IStorageUser, allowOwner?:
 
 function SearchElement({ usersCollection }: { usersCollection: Data["usersCollection"]; }) {
     const [current, setCurrent] = React.useState("");
-    const list = Object.values(usersCollection).flatMap(col => Object.values(col.users));
+    const list = Object.values(usersCollection).flatMap(col => Object.values(col?.users ?? {}));
 
     return (
         <section className={cl("search")}>

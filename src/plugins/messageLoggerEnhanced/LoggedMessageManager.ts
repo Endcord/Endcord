@@ -26,6 +26,7 @@ let lastCleanupTime = 0;
 const CLEANUP_COOLDOWN = 60 * 1000;
 
 export const addMessage = async (message: LoggedMessage | LoggedMessageJSON, status: DBMessageStatus, currentChannelId?: string) => {
+    if (!settings.store.saveMessages) return;
     if (settings.store.saveImages && status === DBMessageStatus.DELETED)
         await cacheMessageImages(message);
     const finalMessage = cleanupMessage(message);

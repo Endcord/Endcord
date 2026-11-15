@@ -7,14 +7,14 @@
 // Turns the raw runs in benchmark/results into summary.json, a Markdown table and SVG charts.
 // Usage: node benchmark/summarize.mjs [resultsDir]
 
-import { readdirSync, readFileSync, writeFileSync } from "fs";
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "fs";
 import { dirname, join } from "path";
 
 const HERE = dirname(new URL(import.meta.url).pathname.replace(/^\/(\w:)/, "$1"));
 const DIR = process.argv[2] ?? join(HERE, "results");
-const ORDER = ["endcord", "vencord", "equicord", "vanilla"];
-const NAMES = { endcord: "Endcord", vencord: "Vencord", equicord: "Equicord", vanilla: "Vanilla Discord" };
-const COLORS = { endcord: "#3d74e0", vencord: "#8d9bb5", equicord: "#b3bfd4", vanilla: "#5a6985" };
+const ORDER = ["endcord", "desktop", "vencord", "equicord", "vanilla"];
+const NAMES = { endcord: "Endcord", desktop: "Endcord Desktop", vencord: "Vencord", equicord: "Equicord", vanilla: "Vanilla Discord" };
+const COLORS = { endcord: "#3d74e0", desktop: "#3d74e0", vencord: "#8d9bb5", equicord: "#b3bfd4", vanilla: "#5a6985" };
 
 const runs = {};
 for (const f of readdirSync(DIR).filter(f => /^[a-z]+_\d+\.json$/.test(f))) {
@@ -86,4 +86,7 @@ function chart(m) {
     });
     return s + "</svg>";
 }
-for (const m of METRICS.filter(m => m.chart)) writeFileSync(join(HERE, "charts", `${m.key}.svg`), chart(m));
+// The main results keep their charts in benchmark/charts, any other results folder in its own charts folder
+const CHARTS = process.argv[2] ? join(DIR, "charts") : join(HERE, "charts");
+mkdirSync(CHARTS, { recursive: true });
+for (const m of METRICS.filter(m => m.chart)) writeFileSync(join(CHARTS, `${m.key}.svg`), chart(m));

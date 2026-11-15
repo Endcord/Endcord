@@ -20,7 +20,8 @@ export function EndcordModal({ children, ...props }: ComponentProps<typeof Modal
 
     return (
         <Modal {...props}>
-            <div ref={marker} hidden />
+            {/* endcordUi.css also hangs the staggered entrance off this */}
+            <div ref={marker} className="ec-modal-marker" hidden />
             {children}
         </Modal>
     );

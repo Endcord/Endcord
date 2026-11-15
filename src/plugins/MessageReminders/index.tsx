@@ -10,6 +10,7 @@ import { showNotification } from "@api/Notifications";
 import { Flex } from "@components/Flex";
 import { Message, RenderModalProps } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
+import { ENDCORD_THEME } from "@utils/css";
 import { t } from "@utils/i18n";
 import { ModalCloseButton, ModalContent, ModalHeader, ModalRoot, ModalSize, openModal } from "@utils/modal";
 import definePlugin from "@utils/types";
@@ -91,7 +92,7 @@ function RemindersModal({ rootProps }: { rootProps: RenderModalProps; }) {
     }
 
     return (
-        <ModalRoot {...rootProps} size={ModalSize.MEDIUM}>
+        <ModalRoot {...rootProps} className={ENDCORD_THEME} size={ModalSize.MEDIUM}>
             <ModalHeader>
                 <Flex style={{ alignItems: "center", width: "100%" }}>
                     <Text variant="heading-lg/semibold" style={{ flexGrow: 1 }}>{t("Reminders (")}{list.length})</Text>
@@ -99,6 +100,7 @@ function RemindersModal({ rootProps }: { rootProps: RenderModalProps; }) {
                 </Flex>
             </ModalHeader>
             <ModalContent>
+                <div className="ec-modal-marker" hidden />
                 {list.length === 0
                     ? <Text variant="text-md/normal" style={{ padding: "16px 0" }}>{t("No reminders yet. Right-click a message and choose Remind me.")}</Text>
                     : list.map(r => (

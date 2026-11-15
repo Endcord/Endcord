@@ -1,8 +1,3 @@
-.vc-decor-danger-btn {
-    color: var(--control-critical-primary-text-default);
-    background-color: var(--control-critical-primary-background-default);
-}
-
 .vc-decor-change-decoration-modal-content {
     position: relative;
     display: flex;
@@ -21,10 +16,6 @@
 .vc-decor-change-decoration-modal-decoration {
     width: 80px;
     height: 80px;
-}
-
-.vc-decor-change-decoration-modal-footer {
-    justify-content: space-between;
 }
 
 .vc-decor-create-decoration-modal-content {

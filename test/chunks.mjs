@@ -126,7 +126,7 @@ mkdirSync(OUT, { recursive: true });
 await esbuild.build({
     entryPoints: [join(ROOT, "src", "pluginChunkLoader.ts")],
     bundle: true, platform: "node", format: "cjs", outfile: join(OUT, "loader.cjs"), logLevel: "error", tsconfig: join(ROOT, "tsconfig.json"),
-    define: { IS_DISCORD_DESKTOP: "true", IS_VESKTOP: "false" },
+    define: { IS_DISCORD_DESKTOP: "true", IS_ENDCORD_DESKTOP: "false" },
     plugins: [{
         name: "stub-electron",
         setup(b) {
@@ -208,6 +208,28 @@ L.loadPluginChunks(["c0"]);
 check("a plugin's code is read on demand", ran().length === 2);
 L.loadPluginChunks(["c99999", 5, null, "x1"]);
 check("ids that aren't chunks do nothing", ran().length === 2);
+
+// An update replaces renderer.js while Discord keeps running. The updater keeps the one that's running in previous/,
+// so turning a plugin on still works; with neither left, nothing from another build may run
+const someIds = (from, to) => Array.from({ length: to - from }, (_, i) => `c${from + i}`);
+mkdirSync(join(OUT, "previous"), { recursive: true });
+copyFileSync(rendererPath, join(OUT, "previous", "renderer.js"));
+writeFileSync(rendererPath, "// a newer build\nrun();\n");
+L.loadPluginChunks(someIds(1, 60));
+check("after an update, a plugin's code comes from the copy kept in previous/", ran().length === 3);
+rmSync(join(OUT, "previous"), { recursive: true, force: true });
+L.loadPluginChunks(someIds(60, 120));
+check("with the running renderer.js gone, no code from another build runs", ran().length === 3);
+mkdirSync(join(OUT, "previous"), { recursive: true });
+copyFileSync(join(ROOT, "dist", "renderer.js"), join(OUT, "previous", "renderer.js"));
+L.loadPluginChunks(someIds(120, 180));
+check("once found gone, the files aren't opened again for each plugin right after", ran().length === 3);
+const realNow = Date.now;
+Date.now = () => realNow() + 6_000;
+L.loadPluginChunks(someIds(120, 180));
+Date.now = realNow;
+check("a moment later they're looked at again", ran().length === 4);
+rmSync(join(OUT, "previous"), { recursive: true, force: true });
 
 writeFileSync(rendererPath, "// old\nrun();\n/*endcord-locales\ntr.dict {\"a\":\"b\"}\n*/\n");
 rmSync(startupPath, { force: true });

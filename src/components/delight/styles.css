@@ -78,6 +78,78 @@
     }
 }
 
+/* The panda's visits (plugins/pandaVisits): flips along the bottom edge, over everything but out of the way of clicks */
+.ec-delight-rollers {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 10000;
+    height: 0;
+    pointer-events: none;
+}
+
+.ec-delight-roller {
+    position: absolute;
+    bottom: 6px;
+    left: 0;
+    will-change: translate, transform;
+}
+
+.ec-delight-roller-body {
+    display: block;
+    padding: 0;
+    line-height: 0;
+    background: none;
+    border: 0;
+}
+
+button.ec-delight-roller-body {
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+/* Squashes from the feet; the frame it flips in sits over the standing one */
+.ec-delight-squash {
+    position: relative;
+    display: block;
+    transform-origin: 50% 100%;
+}
+
+.ec-delight-pose {
+    display: block;
+}
+
+.ec-delight-tuck {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+}
+
+/* Curled up, the ball is two rows above the frame's middle: centred on what it turns around, and down on the ground */
+.ec-delight-curled .ec-delight-roller-body,
+.ec-delight-curled .ec-delight-squash {
+    translate: 0 8%;
+}
+
+.ec-delight-hi {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    width: max-content;
+    text-align: center;
+    translate: -50% 0;
+}
+
+/* The Plugins tab's sleeping panda (plugins/pandaVisits) */
+.ec-delight-sleepy {
+    padding: 0;
+    line-height: 0;
+    background: none;
+    border: 0;
+    cursor: pointer;
+}
+
 /* "do a barrel roll" */
 .ec-delight-roll {
     animation: ec-delight-roll 1s var(--ec-ease-out);

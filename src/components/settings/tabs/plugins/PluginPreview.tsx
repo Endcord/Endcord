@@ -11,8 +11,8 @@ import { useState } from "@webpack/common";
 
 import { cl } from ".";
 
-// Pictures of plugins at work, kept in the repository's previews folder (see previews/README.md). A new one shows up
-// as soon as it's pushed, with no Endcord update in between
+// Preview videos live in the repo's previews folder (see previews/README.md) and are fetched from GitHub, so new
+// ones show up as soon as they're pushed, without an Endcord update
 const PREVIEWS_URL = "https://raw.githubusercontent.com/Endcord/Endcord/main/previews/";
 const FILE_NAME = /^[\w.+-]+\.(?:webp|png|gif|webm|mp4)$/;
 
@@ -37,7 +37,7 @@ function readManifest(raw: unknown) {
     return previews;
 }
 
-/** Fetched once a session, the first time someone opens a plugin */
+/** Fetched once per session, when the first plugin modal opens */
 const getManifest = () => manifest ??= fetch(`${PREVIEWS_URL}index.json`)
     .then(res => res.ok ? res.json() : null)
     .then(readManifest)

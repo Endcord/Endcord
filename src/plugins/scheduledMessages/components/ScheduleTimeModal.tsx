@@ -5,6 +5,7 @@
  */
 
 import { Button } from "@components/Button";
+import { EndcordModal } from "@components/EndcordModal";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Heading } from "@components/Heading";
 import { RenderModalProps } from "@endcord/discord-types";
@@ -13,7 +14,7 @@ import { addScheduledMessage, getChannelDisplayInfo } from "@plugins/scheduledMe
 import { classNameFactory } from "@utils/css";
 import { t } from "@utils/i18n";
 import { findByPropsLazy } from "@webpack";
-import { ChannelStore, closeModal, DraftType, Modal, openModal, showToast, TextInput, Toasts, UploadManager, useState } from "@webpack/common";
+import { ChannelStore, closeModal, DraftType, openModal, showToast, TextInput, Toasts, UploadManager, useState } from "@webpack/common";
 
 import { ErrorIcon } from "./Icons";
 
@@ -70,7 +71,7 @@ function ScheduleTimeModalInner({ channelId, content, attachments, rootProps, cl
     };
 
     return (
-        <Modal
+        <EndcordModal
             {...rootProps}
             size="sm"
             title={t("Schedule Message")}
@@ -139,7 +140,7 @@ function ScheduleTimeModalInner({ channelId, content, attachments, rootProps, cl
                     <span>{error}</span>
                 </div>
             )}
-        </Modal>
+        </EndcordModal>
     );
 }
 

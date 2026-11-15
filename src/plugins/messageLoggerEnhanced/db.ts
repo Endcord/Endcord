@@ -81,32 +81,12 @@ export async function initIDB() {
 }
 initIDB();
 
-export async function hasMessageIDB(message_id: string) {
-    return cachedMessages.has(message_id) || (await db.count("messages", message_id)) > 0;
-}
-
 export async function countMessagesIDB() {
     return db.count("messages");
 }
 
 export async function countMessagesByStatusIDB(status: DBMessageStatus) {
     return db.countFromIndex("messages", "by_status", status);
-}
-
-export async function getAllMessagesIDB() {
-    return cacheRecords(await db.getAll("messages"));
-}
-
-export async function getMessagesForChannelIDB(channel_id: string) {
-    return cacheRecords(await db.getAllFromIndex("messages", "by_channel_id", channel_id));
-}
-
-export async function getMessageIDB(message_id: string) {
-    return cacheRecord(await db.get("messages", message_id));
-}
-
-export async function getMessagesByStatusIDB(status: DBMessageStatus) {
-    return cacheRecords(await db.getAllFromIndex("messages", "by_status", status));
 }
 
 export async function getOldestMessagesIDB(limit: number) {

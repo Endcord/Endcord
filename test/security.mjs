@@ -163,7 +163,7 @@ await esbuild.build({
     stdin: { contents: entry, resolveDir: ROOT, loader: "ts" },
     bundle: true, platform: "node", format: "cjs", outfile: join(OUT, "bundle.cjs"), tsconfig: join(ROOT, "tsconfig.json"), logLevel: "error",
     plugins: [stubPlugin],
-    define: { IS_DISCORD_DESKTOP: "true", IS_VESKTOP: "false", IS_DEV: "false", IS_STANDALONE: "true", IS_WEB: "false", BUILD_TIMESTAMP: "1000", VERSION: '"0"' }
+    define: { IS_DISCORD_DESKTOP: "true", IS_ENDCORD_DESKTOP: "false", IS_DEV: "false", IS_STANDALONE: "true", IS_WEB: "false", BUILD_TIMESTAMP: "1000", VERSION: '"0"' }
 });
 
 globalThis.__plain = { plugins: { Secret: { key: "LOCAL-SECRET", plain: 1 } } };
@@ -210,12 +210,18 @@ check("edited version refused", await offers({ ...good, version: "10" }) === fal
 check("edited installer hash refused", await offers({ ...good, installerSha256: hex("evil") }) === false);
 check("correctly signed manifest with a missing field refused", await offers(manifest({ installerSha256: undefined })) === false);
 check("correctly signed manifest with a text timestamp refused", await offers(manifest({ updatedAt: "9000" })) === false);
+// The signed text is the fields joined by newlines, so a line can sit in another field and the signature still matches
+const withoutPatcher = good.assets.filter(a => a.name !== "patcher.js");
+check("a file's line moved into the installer hash is refused, though the signature matches",
+    await offers({ ...good, installerSha256: `${good.installerSha256}\npatcher.js ${hex("p")}`, assets: withoutPatcher }) === false);
+check("correctly signed release with a file missing refused", await offers(manifest({ assets: withoutPatcher })) === false);
+check("correctly signed release with a line break in its version refused", await offers(manifest({ version: "9\nx" })) === false);
 const stranger = generateKeyPairSync("ec", { namedCurve: "P-256" }).privateKey;
 check("attacker's own key refused", await offers(manifest({}, stranger)) === false);
 const evilHost = { ...good, assets: good.assets.map(a => ({ ...a, url: `https://evil.example/${a.name}` })) };
 check("evil download host refused", await offers(evilHost) === false);
 check("plain http refused", await offers(manifest({ assets: good.assets.map(a => ({ ...a, url: a.url.replace("https:", "http:") })) })) === false);
-check("non-https endcord.com refused, https allowed", await offers(manifest({ assets: good.assets.map(a => ({ ...a, url: `https://endcord.com/dist/${a.name}` })) })) === true);
+check("files only come from GitHub, not the site", await offers(manifest({ assets: good.assets.map(a => ({ ...a, url: `https://endcord.com/dist/${a.name}` })) })) === false);
 await offers(manifest());
 writeFileSync(join(OUT, "renderer.js"), "older");
 bodies = { ...FILES, "renderer.js": "evil" };
@@ -236,6 +242,8 @@ await installBad("broken-release");
 check("an update installs before it's proven", readFileSync(inOut("renderer.js"), "utf8") === "r" && existsSync(inOut("update-state.json")));
 check("one failed load proves nothing", m.rollback.recordUnconfirmedLoad() === false);
 check("two failed loads prove nothing", m.rollback.recordUnconfirmedLoad() === false);
+m.rollback.forgiveUnconfirmedLoad();
+check("a load that ended on the login page isn't held against the update", m.rollback.recordUnconfirmedLoad() === false);
 check("the third puts the old version back", m.rollback.recordUnconfirmedLoad() === true && readFileSync(inOut("renderer.js"), "utf8") === "good");
 check("nothing is left pending after that", !existsSync(inOut("update-state.json")) && m.rollback.recordUnconfirmedLoad() === false);
 check("the release that failed isn't offered again", await offers(manifest({ hash: "broken-release" })) === false);
@@ -365,7 +373,7 @@ await esbuild.build({
     stdin: { contents: 'export { Logger } from "./src/utils/Logger";', resolveDir: ROOT, loader: "ts" },
     bundle: true, platform: "node", format: "cjs", outfile: join(OUT, "logger.cjs"), tsconfig: join(ROOT, "tsconfig.json"), logLevel: "error",
     plugins: mutation ? [{ name: "mutation", setup: stubPlugin.setup }] : [],
-    define: { IS_REPORTER: "false", IS_WEB: "false", IS_VESKTOP: "false" }
+    define: { IS_REPORTER: "false", IS_WEB: "false", IS_ENDCORD_DESKTOP: "false" }
 });
 {
     const { Logger } = require(join(OUT, "logger.cjs"));
@@ -396,7 +404,7 @@ for (const url of ["steam://run/730//-console", "steam://rungameid/730//+exec", 
     check(`refused ${url}`, m.isSafeExternalUrl(url) === false);
 
 // ---- fetchFile --------------------------------------------------------------------------------------
-for (const url of ["http://127.0.0.1:9333/json", "http://localhost:9333/json", "http://[::1]:9333/", "http://[::ffff:127.0.0.1]/", "http://[::ffff:7f00:1]/", "http://[64:ff9b::7f00:1]/", "http://[2002:7f00:1::]/", "http://[2001:0:7f00:1::]/", "http://[fec0::1]/", "http://2130706433/", "http://0x7f.0.0.1/", "http://0177.0.0.1/", "http://127.1/", "http://192.168.1.1/", "http://10.0.0.1/", "http://169.254.169.254/latest/meta-data", "file:///c:/windows/win.ini", "ftp://example.com/"]) {
+for (const url of ["http://127.0.0.1:9333/json", "http://localhost:9333/json", "http://[::1]:9333/", "http://[::ffff:127.0.0.1]/", "http://[::ffff:7f00:1]/", "http://[64:ff9b::7f00:1]/", "http://[::7f00:1]/", "http://[::ffff:0:7f00:1]/", "http://[64:ff9b:1::7f00:1]/", "http://[2002:7f00:1::]/", "http://[2001:0:7f00:1::]/", "http://[fec0::1]/", "http://2130706433/", "http://0x7f.0.0.1/", "http://0177.0.0.1/", "http://127.1/", "http://192.168.1.1/", "http://10.0.0.1/", "http://169.254.169.254/latest/meta-data", "file:///c:/windows/win.ini", "ftp://example.com/"]) {
     const r = await m.uploader.fetchFile(null, url);
     check(`fetchFile refuses ${url}`, r.success === false && r.error === "Disallowed URL", r);
 }
@@ -413,6 +421,14 @@ const looped = await m.uploader.fetchFile(null, "http://redirector.test/x");
 check("fetchFile stops a redirect loop", looped.success === false && looped.error === "Too many redirects" && globalThis.__redirects === 6, { looped, hops: globalThis.__redirects });
 
 check("fetches ask for an uncompressed body", globalThis.__sentHeaders?.["Accept-Encoding"] === "identity", globalThis.__sentHeaders);
+globalThis.__redirectTo = "https://put.test/next";
+globalThis.__put = undefined;
+await m.uploader.sendRequest(null, "http://redirector.test/x", "GET", { Authorization: "KEY" }, null);
+check("the host a request names gets the caller's headers", globalThis.__sentHeaders?.Authorization === "KEY", globalThis.__sentHeaders);
+check("a host it redirects to doesn't", globalThis.__put?.method === "GET" && !Object.keys(globalThis.__put.headers).some(name => name.toLowerCase() === "authorization"), globalThis.__put);
+globalThis.__put = undefined;
+const forwarded = await m.uploader.sendRequest(null, "http://redirector.test/x", "PUT", { Authorization: "KEY" }, new TextEncoder().encode("file")).then(() => "SENT", e => e.message);
+check("an upload isn't passed on to another host", forwarded === "Disallowed URL" && globalThis.__put === undefined, { forwarded, put: globalThis.__put });
 
 // Size limits that don't depend on what the server claims
 const streamed = (chunkSize, chunks, headers) => {
@@ -621,9 +637,11 @@ resetLocal({ key: "" });
 got = await imported("cloud");
 check("cloud can't set them on an empty device", got.plugins.Secret.key === "" && got.plugins.Secret.url === undefined, got);
 
+// Exports never carry these, so a file that does was made by hand: on a device with nothing set, a stranger's
+// file would otherwise choose where its uploads go and who may act for its user
 resetLocal({ url: "https://default.example" });
 got = await imported("file");
-check("a real backup restores onto a fresh device", got.plugins.Secret.key === "EVIL-KEY" && got.plugins.Secret.url === "https://evil.example", got);
+check("a file can't set them on a fresh device either", got.plugins.Secret.key === undefined && got.plugins.Secret.url === "https://default.example", got);
 
 resetLocal({ key: "LOCAL-SECRET" });
 got = await imported("file");
@@ -784,12 +802,12 @@ const refused = await new Promise(resolve => resolve(globalThis.__rawHandlers[UP
 globalThis.fetch = realFetch;
 check("a registered handler refuses a foreign page before it runs", refused === `Refused ${UPDATE}`, refused);
 
-// Endcord Desktop's build (IS_VESKTOP) once trusted every sender. Its window only shows Discord, but the check holds there too
+// Endcord Desktop's build (IS_ENDCORD_DESKTOP) once trusted every sender. Its window only shows Discord, but the check holds there too
 await esbuild.build({
     stdin: { contents: 'export { isTrustedSender } from "./src/main/utils/ipc";', resolveDir: ROOT, loader: "ts" },
     bundle: true, platform: "node", format: "cjs", outfile: join(OUT, "desktop-ipc.cjs"), tsconfig: join(ROOT, "tsconfig.json"), logLevel: "error",
     plugins: [stubPlugin],
-    define: { IS_DISCORD_DESKTOP: "false", IS_VESKTOP: "true" }
+    define: { IS_DISCORD_DESKTOP: "false", IS_ENDCORD_DESKTOP: "true" }
 });
 const desktopIpc = require(join(OUT, "desktop-ipc.cjs"));
 check("Endcord Desktop's IPC accepts Discord", desktopIpc.isTrustedSender(frame("https://discord.com/app", "https://discord.com"), SET_SETTINGS) === true);
@@ -799,7 +817,7 @@ await esbuild.build({
     stdin: { contents: 'import "./src/preload";', resolveDir: ROOT, loader: "ts" },
     bundle: true, platform: "node", format: "cjs", outfile: join(OUT, "preload.cjs"), tsconfig: join(ROOT, "tsconfig.json"), logLevel: "error",
     plugins: [stubPlugin],
-    define: { IS_DISCORD_DESKTOP: "true", IS_VESKTOP: "false", IS_DEV: "false" }
+    define: { IS_DISCORD_DESKTOP: "true", IS_ENDCORD_DESKTOP: "false", IS_DEV: "false" }
 });
 writeFileSync(join(OUT, "discordPreload.cjs"), "globalThis.__discordPreloadRuns++;");
 process.env.DISCORD_PRELOAD = join(OUT, "discordPreload.cjs");
@@ -833,10 +851,10 @@ await esbuild.build({
     stdin: { contents: 'import "./src/main/updater/http";', resolveDir: ROOT, loader: "ts" },
     bundle: true, platform: "node", format: "cjs", outfile: join(OUT, "desktop", "updater.cjs"), tsconfig: join(ROOT, "tsconfig.json"), logLevel: "error",
     plugins: [stubPlugin],
-    define: { IS_DISCORD_DESKTOP: "false", IS_VESKTOP: "true", IS_DEV: "false", IS_STANDALONE: "true", IS_WEB: "false", BUILD_TIMESTAMP: "1000", VERSION: '"0"' }
+    define: { IS_DISCORD_DESKTOP: "false", IS_ENDCORD_DESKTOP: "true", IS_DEV: "false", IS_STANDALONE: "true", IS_WEB: "false", BUILD_TIMESTAMP: "1000", VERSION: '"0"' }
 });
 const DESKTOP_FILES = { "endcordDesktopMain.js": "m", "endcordDesktopPreload.js": "p", "endcordDesktopRenderer.js": "r", "endcordDesktopRenderer.css": "c", "main.js": "a", "preload.js": "b" };
-const desktopManifest = over => manifest({ assets: Object.entries(DESKTOP_FILES).map(([name, c]) => ({ name, url: `https://raw.githubusercontent.com/Endcord/Endcord/main/desktop/${name}`, sha256: hex(c) })), ...over });
+const desktopManifest = over => manifest({ assets: Object.entries(DESKTOP_FILES).map(([name, c]) => ({ name, url: `https://raw.githubusercontent.com/Endcord/EndcordDesktop/main/dist/${name}`, sha256: hex(c) })), ...over });
 const requested = [];
 globalThis.fetch = async url => (requested.push(String(url)), String(url).includes("version.json") ? Response.json(served) : new Response(bodies[String(url).split("/").pop()]));
 require(join(OUT, "desktop", "updater.cjs"));
@@ -845,7 +863,7 @@ const desktopOffers = async mf => { served = mf; return (await globalThis.__hand
 const { electron } = process.versions;
 Object.defineProperty(process.versions, "electron", { value: "45.1.0", configurable: true });
 check("Endcord Desktop takes a signed release of its six files", await desktopOffers(desktopManifest({ version: "1.1.0+electron45.1.0" })) === true);
-check("from its own manifest", requested.some(url => url.startsWith("https://raw.githubusercontent.com/Endcord/Endcord/main/desktop/version.json")), requested);
+check("from its own manifest", requested.some(url => url.startsWith("https://raw.githubusercontent.com/Endcord/EndcordDesktop/main/version.json")), requested);
 check("and never the mod's files", await desktopOffers(manifest()) === false);
 globalThis.__notices = [];
 check("a release built on another Electron isn't swapped in", await desktopOffers(desktopManifest({ hash: "new-electron", version: "2.0.0+electron46.0.0" })) === false);

@@ -478,7 +478,7 @@ namespace EndcordInstaller.UI
             Closed += (s, e) => { _runningPoll.Stop(); Loc.LanguageChanged -= OnLanguageChanged; };
         }
 
-        // ═════════════════════════════ CHROME ═════════════════════════════
+        // ---- Window chrome ----
 
         Border MakeChromeButton(UIElement content, double width, Action onClick, bool danger)
         {
@@ -657,7 +657,7 @@ namespace EndcordInstaller.UI
             if (_screen != WizardScreen.Installing) ShowScreen(_screen, 0, true);
         }
 
-        // ═════════════════════════════ NAVIGATION ═════════════════════════════
+        // ---- Navigation ----
 
         void NavigateTo(WizardScreen target, int direction)
         {
@@ -720,9 +720,9 @@ namespace EndcordInstaller.UI
             }
         }
 
-        // ═════════════════════════════ SCREENS ═════════════════════════════
+        // ---- Screens ----
 
-        // The logo resolves from a handful of big pixels into the full picture.
+        // The logo starts as a few big pixels and sharpens into the full picture.
         FrameworkElement BuildSplash()
         {
             var g = new Grid { Margin = new Thickness(0, -58, 0, 0) };
@@ -1020,8 +1020,9 @@ namespace EndcordInstaller.UI
                 UpdateCta(cta);
                 g.Children.Add(Footer(cta));
 
+                var bottom = new StackPanel();
+                Grid.SetRow(bottom, 3);
                 var opts = new DockPanel { Margin = new Thickness(0, 10, 0, 0), LastChildFill = false };
-                Grid.SetRow(opts, 3);
                 var relaunch = CheckRow(Loc.T("chk.relaunch"), _prefs.Relaunch, v => { _prefs.Relaunch = v; _prefs.Save(); });
                 DockPanel.SetDock(relaunch, Dock.Left);
                 opts.Children.Add(relaunch);
@@ -1032,7 +1033,17 @@ namespace EndcordInstaller.UI
                 add.Margin = new Thickness(0, 0, 18, 0);
                 DockPanel.SetDock(add, Dock.Right);
                 opts.Children.Add(add);
-                body.Children.Add(opts);
+                bottom.Children.Add(opts);
+                bottom.Children.Add(new TextBlock
+                {
+                    Text = Loc.T("privacy.note"),
+                    FontFamily = Ink.Body,
+                    FontSize = 11.5,
+                    Foreground = Ink.Frozen(Ink.Dim),
+                    TextWrapping = TextWrapping.Wrap,
+                    Margin = new Thickness(0, 10, 0, 0)
+                });
+                body.Children.Add(bottom);
             }
 
             tabs.Changed += idx =>
@@ -1147,7 +1158,7 @@ namespace EndcordInstaller.UI
             cta.Enabled = targets.Count > 0;
         }
 
-        // The one big moment: speed lines stream into the logo, pixel blocks fill in, the panda keeps sleeping.
+        // Install animation: speed lines run into the logo while the blocks fill; the panda stays asleep.
         FrameworkElement BuildInstalling()
         {
             var g = new Grid();
@@ -1166,7 +1177,7 @@ namespace EndcordInstaller.UI
                 stageArea.Children.Add(img);
                 if (!Motion.Disabled)
                 {
-                    // Slow breathing, as if the panda is asleep on the letters.
+                    // Slow breathing, so the panda looks asleep on the letters.
                     var st = new ScaleTransform(1, 1);
                     img.RenderTransformOrigin = new Point(0.5, 0.55);
                     img.RenderTransform = st;
@@ -1278,7 +1289,7 @@ namespace EndcordInstaller.UI
 
             if (ok)
             {
-                // The panda hops: a quick squash, up, a soft landing, then pixels fly.
+                // Panda hop: squash, jump, land, then a burst of pixels.
                 var tt = new TranslateTransform();
                 var st = new ScaleTransform(1, 1);
                 var grp = new TransformGroup();
@@ -1309,7 +1320,7 @@ namespace EndcordInstaller.UI
             }
             else
             {
-                // A short shake says this did not work, without more words.
+                // Shake on failure.
                 var tt = new TranslateTransform();
                 hero.RenderTransform = tt;
                 var shake = new DoubleAnimationUsingKeyFrames { BeginTime = TimeSpan.FromMilliseconds(200) };
@@ -1319,7 +1330,7 @@ namespace EndcordInstaller.UI
                 tt.BeginAnimation(TranslateTransform.XProperty, shake);
             }
 
-            // Text arrives after the logo has had its moment.
+            // Text comes in once the logo animation is done.
             var it = new TranslateTransform(0, 10);
             info.RenderTransform = it;
             info.Opacity = 0;
@@ -1328,7 +1339,7 @@ namespace EndcordInstaller.UI
             return g;
         }
 
-        // ═════════════════════════════ CONFLICT DIALOG ═════════════════════════════
+        // ---- Conflict dialog ----
 
         void ShowConflictDialog(string mods, string targets)
         {
@@ -1375,7 +1386,7 @@ namespace EndcordInstaller.UI
             Motion.To(st, ScaleTransform.ScaleYProperty, 1, 420, Motion.Pop);
         }
 
-        // ═════════════════════════════ BUILDING BLOCKS ═════════════════════════════
+        // ---- Building blocks ----
 
         static Grid ScreenGrid()
         {
@@ -1545,7 +1556,7 @@ namespace EndcordInstaller.UI
             return b;
         }
 
-        static FrameworkElement MakePixelGrid()
+        internal static FrameworkElement MakePixelGrid()
         {
             var brush = new DrawingBrush
             {
@@ -1620,7 +1631,7 @@ namespace EndcordInstaller.UI
             CompositionTarget.Rendering += tick;
         }
 
-        // ═════════════════════════════ WORKFLOW ═════════════════════════════
+        // ---- Workflow ----
 
         List<DetectedClient> GetMigrationSources()
         {
@@ -1869,7 +1880,9 @@ namespace EndcordInstaller.UI
                     : (o.Operation == InstallOperationKind.Repair
                         ? Loc.T("status.repairComplete")
                         : (o.WasUpdate ? Loc.T("status.updateComplete") : Loc.T("status.installComplete")));
-                body = Loc.F("done.banner.installed", o.AffectedInstalls.Count);
+                body = o.KeptVersion != null
+                    ? Loc.F("done.banner.keptNewer", o.KeptVersion, o.PayloadVersion, o.AffectedInstalls.Count)
+                    : Loc.F("done.banner.installed", o.AffectedInstalls.Count);
                 return;
             }
             switch (o.FailureKind)
@@ -1882,9 +1895,9 @@ namespace EndcordInstaller.UI
             }
         }
 
-        // ═════════════════════════════ IMAGES ═════════════════════════════
+        // ---- Images ----
 
-        static BitmapSource LoadLogo()
+        internal static BitmapSource LoadLogo()
         {
             try
             {
@@ -1929,7 +1942,7 @@ namespace EndcordInstaller.UI
             return scaled;
         }
 
-        // ═════════════════════════════ PREVIEWS ═════════════════════════════
+        // ---- Previews ----
 
         public static void RenderPreviewSuite(string outDir)
         {

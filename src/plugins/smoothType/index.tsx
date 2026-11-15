@@ -262,7 +262,7 @@ function removeCSS() {
 export default definePlugin({
     name: "SmoothType",
     description: "Fully customize the cursor caret — transition delay, easing, and color — for a smooth typing animation.",
-    authors: [Devs.ewlle],
+    authors: [Devs.rootpoi],
     settings,
 
     start() {

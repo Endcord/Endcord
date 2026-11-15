@@ -1,0 +1,46 @@
+{
+  "date": "2026-11-15T12:01:56.175Z",
+  "os": "Microsoft Windows 10 Home 10.0.19045",
+  "cpu": "12th Gen Intel(R) Core(TM) i5-12400F",
+  "cpuCores": "6",
+  "cpuThreads": 12,
+  "ramGB": 32,
+  "gpu": "NVIDIA GeForce RTX 3080",
+  "storage": "SSD",
+  "powerPlan": "Dengeli",
+  "discord": null,
+  "desktop": {
+    "electron": "45.2.2",
+    "app": "1.0.0"
+  },
+  "node": "v22.14.0",
+  "bundles": {
+    "desktop": {
+      "renderer.js": {
+        "bytes": 5511934,
+        "sha256": "d1a9b49c3454210b"
+      },
+      "renderer.css": {
+        "bytes": 48284,
+        "sha256": "a16f277c2e0c9cc2"
+      },
+      "patcher.js": {
+        "bytes": 96226,
+        "sha256": "43ed777f535fe3b3"
+      },
+      "preload.js": {
+        "bytes": 11167,
+        "sha256": "a6fec2a2cfa4bdfb"
+      }
+    }
+  },
+  "method": {
+    "rounds": 6,
+    "durationSec": 120,
+    "idleWindowSec": [
+      60,
+      120
+    ],
+    "settings": "defaults (a profile with nothing but the sign-in)"
+  }
+}

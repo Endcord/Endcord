@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { EndcordModal } from "@components/EndcordModal";
 import * as t from "@endcord/discord-types";
 import { Auth } from "@plugins/reviewDB/auth";
 import { ReviewType } from "@plugins/reviewDB/entities";
@@ -12,7 +13,7 @@ import { cl } from "@plugins/reviewDB/utils";
 import { t as translateText } from "@utils/i18n";
 import { useForceUpdater } from "@utils/react";
 import { DefaultExtractAndLoadChunksRegex, extractAndLoadChunksLazy, findComponentByCodeLazy } from "@webpack";
-import { Modal,openModalLazy, Text, useRef, useState } from "@webpack/common";
+import { openModalLazy, Text, useRef, useState } from "@webpack/common";
 import { ComponentProps } from "react";
 
 import ReviewComponent from "./ReviewComponent";
@@ -33,7 +34,7 @@ function ReviewsModal({ modalProps, modalKey, discordId, name, type }: { modalPr
     const ownReview = data?.reviews.find(r => r.sender.discordID === Auth.user?.discordID);
 
     return (
-        <Modal
+        <EndcordModal
             {...modalProps}
             size="lg"
             title={
@@ -85,7 +86,7 @@ function ReviewsModal({ modalProps, modalKey, discordId, name, type }: { modalPr
                     type={type}
                 />
             </div>
-        </Modal>
+        </EndcordModal>
     );
 }
 

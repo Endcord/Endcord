@@ -74,8 +74,6 @@ export const setUserDecoration = async (decoration: Decoration | NewDecoration |
     );
 };
 
-export const getDecoration = async (hash: string): Promise<Decoration> => fetch(`${API_URL}/decorations/${hash}`).then(c => c.json());
-
 export const deleteDecoration = async (hash: string): Promise<void> => {
     await fetchApi(`${API_URL}/decorations/${hash}`, { method: "DELETE" });
 };

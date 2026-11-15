@@ -10,6 +10,7 @@ import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
 import { useForceUpdater } from "@utils/react";
 import definePlugin, { OptionType } from "@utils/types";
+import { Unwrap, wrapMethod } from "@utils/wrapMethod";
 import { ChannelStore, FluxDispatcher, useEffect } from "@webpack/common";
 
 const logger = new Logger("SurfaceTranslate");
@@ -35,17 +36,10 @@ const abortControllers = new Set<AbortController>();
 const searchResultListeners = new Map<string, Set<() => void>>();
 
 let generation = 0;
-let originalGetChannel: typeof ChannelStore.getChannel | undefined;
-let originalGetBasicChannel: typeof ChannelStore.getBasicChannel | undefined;
-let originalGetDMChannelFromUserId: typeof ChannelStore.getDMChannelFromUserId | undefined;
-let originalGetMutableBasicGuildChannelsForGuild: typeof ChannelStore.getMutableBasicGuildChannelsForGuild | undefined;
-let originalGetMutableGuildChannelsForGuild: typeof ChannelStore.getMutableGuildChannelsForGuild | undefined;
-let originalGetMutablePrivateChannels: typeof ChannelStore.getMutablePrivateChannels | undefined;
-let originalGetInitialOverlayState: typeof ChannelStore.getInitialOverlayState | undefined;
-let originalGetAllThreadsForGuild: typeof ChannelStore.getAllThreadsForGuild | undefined;
-let originalGetAllThreadsForParent: typeof ChannelStore.getAllThreadsForParent | undefined;
-let originalGetSortedLinkedChannelsForGuild: typeof ChannelStore.getSortedLinkedChannelsForGuild | undefined;
-let originalGetSortedPrivateChannels: typeof ChannelStore.getSortedPrivateChannels | undefined;
+// Through wrapMethod: FakeFriends wraps some of the same methods, and putting them back by hand on stop brought back
+// its wrappers in the wrong order, or wrapped one of ours twice so it called itself
+const unwrapChannelStore: Unwrap<any>[] = [];
+let realGetChannel: ((channelId: string) => Channel | undefined) | undefined;
 
 function resetTranslations() {
     generation++;
@@ -181,8 +175,7 @@ async function fetchTranslation(text: string, signal: AbortSignal): Promise<stri
 }
 
 function dispatchChannelRefresh(channelId: string) {
-    const getChannel = originalGetChannel;
-    const channel = getChannel?.call(ChannelStore, channelId);
+    const channel = realGetChannel?.(channelId);
     if (!channel) return;
 
     FluxDispatcher.dispatch({
@@ -267,94 +260,35 @@ function translateSearchMessage(message: MessageWithContent): MessageWithContent
 }
 
 function patchChannelStore() {
-    const { getChannel } = ChannelStore;
-    const { getBasicChannel } = ChannelStore;
-    const { getDMChannelFromUserId } = ChannelStore;
-    const { getMutableBasicGuildChannelsForGuild } = ChannelStore;
-    const { getMutableGuildChannelsForGuild } = ChannelStore;
-    const { getMutablePrivateChannels } = ChannelStore;
-    const { getInitialOverlayState } = ChannelStore;
-    const { getAllThreadsForGuild } = ChannelStore;
-    const { getAllThreadsForParent } = ChannelStore;
-    const { getSortedLinkedChannelsForGuild } = ChannelStore;
-    const { getSortedPrivateChannels } = ChannelStore;
+    if (unwrapChannelStore.length) return;
 
-    originalGetChannel = getChannel;
-    originalGetBasicChannel = getBasicChannel;
-    originalGetDMChannelFromUserId = getDMChannelFromUserId;
-    originalGetMutableBasicGuildChannelsForGuild = getMutableBasicGuildChannelsForGuild;
-    originalGetMutableGuildChannelsForGuild = getMutableGuildChannelsForGuild;
-    originalGetMutablePrivateChannels = getMutablePrivateChannels;
-    originalGetInitialOverlayState = getInitialOverlayState;
-    originalGetAllThreadsForGuild = getAllThreadsForGuild;
-    originalGetAllThreadsForParent = getAllThreadsForParent;
-    originalGetSortedLinkedChannelsForGuild = getSortedLinkedChannelsForGuild;
-    originalGetSortedPrivateChannels = getSortedPrivateChannels;
+    // Discord calls these constantly, so the wrappers call through directly rather than building anything per call
+    const wrap = (key: keyof typeof ChannelStore, wrapper: (this: unknown, original: any, ...args: any[]) => unknown) => {
+        if (typeof ChannelStore[key] !== "function") return undefined;
+        const unwrap = wrapMethod(ChannelStore as any, key, wrapper);
+        unwrapChannelStore.push(unwrap);
+        return unwrap;
+    };
 
-    ChannelStore.getChannel = function (this: typeof ChannelStore, channelId: string) {
-        const channel = getChannel.call(this, channelId);
+    realGetChannel = wrap("getChannel", function (original, channelId: string) {
+        const channel = original.call(this, channelId);
         return channel ? translateChannel(channel) : channel;
-    };
-    ChannelStore.getBasicChannel = function (this: typeof ChannelStore, channelId: string) {
-        return translateOptionalChannel(getBasicChannel.call(this, channelId));
-    };
-    ChannelStore.getDMChannelFromUserId = function (this: typeof ChannelStore, userId: string) {
-        return translateOptionalChannel(getDMChannelFromUserId.call(this, userId));
-    };
-    ChannelStore.getMutableBasicGuildChannelsForGuild = function (this: typeof ChannelStore, guildId: string) {
-        return translateChannelRecord(getMutableBasicGuildChannelsForGuild.call(this, guildId));
-    };
-    ChannelStore.getMutableGuildChannelsForGuild = function (this: typeof ChannelStore, guildId: string) {
-        return translateChannelRecord(getMutableGuildChannelsForGuild.call(this, guildId));
-    };
-    ChannelStore.getMutablePrivateChannels = function (this: typeof ChannelStore) {
-        return translateChannelRecord(getMutablePrivateChannels.call(this));
-    };
-    ChannelStore.getInitialOverlayState = function (this: typeof ChannelStore) {
-        return translateChannelRecord(getInitialOverlayState.call(this));
-    };
-    ChannelStore.getAllThreadsForGuild = function (this: typeof ChannelStore, guildId: string) {
-        return translateChannelArray(getAllThreadsForGuild.call(this, guildId));
-    };
-    ChannelStore.getAllThreadsForParent = function (this: typeof ChannelStore, parentChannelId: string) {
-        return translateChannelArray(getAllThreadsForParent.call(this, parentChannelId));
-    };
-    if (typeof getSortedLinkedChannelsForGuild === "function") {
-        ChannelStore.getSortedLinkedChannelsForGuild = function (this: typeof ChannelStore, guildId: string) {
-            return translateChannelArray(getSortedLinkedChannelsForGuild.call(this, guildId));
-        };
-    }
-    if (typeof getSortedPrivateChannels === "function") {
-        ChannelStore.getSortedPrivateChannels = function (this: typeof ChannelStore) {
-            return translateChannelArray(getSortedPrivateChannels.call(this));
-        };
-    }
+    })?.original;
+    wrap("getBasicChannel", function (original, channelId: string) { return translateOptionalChannel(original.call(this, channelId)); });
+    wrap("getDMChannelFromUserId", function (original, userId: string) { return translateOptionalChannel(original.call(this, userId)); });
+    wrap("getMutableBasicGuildChannelsForGuild", function (original, guildId: string) { return translateChannelRecord(original.call(this, guildId)); });
+    wrap("getMutableGuildChannelsForGuild", function (original, guildId: string) { return translateChannelRecord(original.call(this, guildId)); });
+    wrap("getMutablePrivateChannels", function (original) { return translateChannelRecord(original.call(this)); });
+    wrap("getInitialOverlayState", function (original) { return translateChannelRecord(original.call(this)); });
+    wrap("getAllThreadsForGuild", function (original, guildId: string) { return translateChannelArray(original.call(this, guildId)); });
+    wrap("getAllThreadsForParent", function (original, parentChannelId: string) { return translateChannelArray(original.call(this, parentChannelId)); });
+    wrap("getSortedLinkedChannelsForGuild", function (original, guildId: string) { return translateChannelArray(original.call(this, guildId)); });
+    wrap("getSortedPrivateChannels", function (original) { return translateChannelArray(original.call(this)); });
 }
 
 function restoreChannelStore() {
-    if (originalGetChannel) ChannelStore.getChannel = originalGetChannel;
-    if (originalGetBasicChannel) ChannelStore.getBasicChannel = originalGetBasicChannel;
-    if (originalGetDMChannelFromUserId) ChannelStore.getDMChannelFromUserId = originalGetDMChannelFromUserId;
-    if (originalGetMutableBasicGuildChannelsForGuild) ChannelStore.getMutableBasicGuildChannelsForGuild = originalGetMutableBasicGuildChannelsForGuild;
-    if (originalGetMutableGuildChannelsForGuild) ChannelStore.getMutableGuildChannelsForGuild = originalGetMutableGuildChannelsForGuild;
-    if (originalGetMutablePrivateChannels) ChannelStore.getMutablePrivateChannels = originalGetMutablePrivateChannels;
-    if (originalGetInitialOverlayState) ChannelStore.getInitialOverlayState = originalGetInitialOverlayState;
-    if (originalGetAllThreadsForGuild) ChannelStore.getAllThreadsForGuild = originalGetAllThreadsForGuild;
-    if (originalGetAllThreadsForParent) ChannelStore.getAllThreadsForParent = originalGetAllThreadsForParent;
-    if (originalGetSortedLinkedChannelsForGuild) ChannelStore.getSortedLinkedChannelsForGuild = originalGetSortedLinkedChannelsForGuild;
-    if (originalGetSortedPrivateChannels) ChannelStore.getSortedPrivateChannels = originalGetSortedPrivateChannels;
-
-    originalGetChannel = undefined;
-    originalGetBasicChannel = undefined;
-    originalGetDMChannelFromUserId = undefined;
-    originalGetMutableBasicGuildChannelsForGuild = undefined;
-    originalGetMutableGuildChannelsForGuild = undefined;
-    originalGetMutablePrivateChannels = undefined;
-    originalGetInitialOverlayState = undefined;
-    originalGetAllThreadsForGuild = undefined;
-    originalGetAllThreadsForParent = undefined;
-    originalGetSortedLinkedChannelsForGuild = undefined;
-    originalGetSortedPrivateChannels = undefined;
+    for (const unwrap of unwrapChannelStore.splice(0)) unwrap();
+    realGetChannel = undefined;
 }
 
 export default definePlugin({
@@ -376,7 +310,6 @@ export default definePlugin({
     ],
 
     start() {
-        if (originalGetChannel) return;
         patchChannelStore();
     },
 

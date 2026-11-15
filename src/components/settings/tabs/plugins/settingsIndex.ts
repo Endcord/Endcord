@@ -4,8 +4,11 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { showNotice } from "@api/Notices";
 import { isSettingHidden } from "@api/PluginManager";
 import { getCurrentLang, t } from "@utils/i18n";
+import { Logger } from "@utils/Logger";
+import { relaunch } from "@utils/native";
 import { wordsFromCamel, wordsToTitle } from "@utils/text";
 import { OptionType, Plugin } from "@utils/types";
 
@@ -21,6 +24,7 @@ export interface SettingEntry {
 }
 
 let index: { lang: string; entries: SettingEntry[]; } | undefined;
+let restartAsked = false;
 
 /** Every plugin's settings by name and description. Builds once per language, and loads every plugin to do it */
 export function getSettingEntries() {
@@ -28,7 +32,16 @@ export function getSettingEntries() {
     if (index?.lang === lang) return index.entries;
 
     const entries: SettingEntry[] = [];
-    for (const plugin of Object.values(Plugins)) {
+    for (const name of Object.keys(Plugins)) {
+        let plugin: Plugin;
+        try {
+            plugin = Plugins[name];
+        } catch (e) {
+            // needsRestart: its code is gone with a renderer.js replaced while Discord runs. The rest is still searched
+            if ((e as { needsRestart?: boolean; } | null)?.needsRestart) askForRestart();
+            else new Logger("PluginSearch").error(`Couldn't load ${name}`, e);
+            continue;
+        }
         const { settings } = plugin;
         if (!settings?.def || plugin.hidden) continue;
 
@@ -58,6 +71,12 @@ export function getSettingEntries() {
 
     index = { lang, entries };
     return entries;
+}
+
+function askForRestart() {
+    if (restartAsked) return;
+    restartAsked = true;
+    showNotice(t("Endcord was updated. Restart Discord to search every plugin's settings."), t("Restart now"), relaunch);
 }
 
 export function searchSettings(query: string) {

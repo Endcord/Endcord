@@ -16,7 +16,7 @@ import { BasicChannelTabsProps, ChannelTabsProps, PersistedTabs } from "./types"
 
 const cl = classNameFactory("vc-channeltabs-");
 
-// Navigation context tracking system
+// Remembers which navigations we started ourselves
 interface NavigationContext {
     guildId: string;
     channelId: string;
@@ -75,7 +75,7 @@ export function isNavigationFromSource(guildId: string | null | undefined, chann
     return matches;
 }
 
-// Clean up old contexts (safety mechanism)
+// Drop stale contexts, in case one never got cleared
 export function clearStaleNavigationContext() {
     if (lastNavigationContext && Date.now() - lastNavigationContext.timestamp > 2000) {
         lastNavigationContext = null;
@@ -262,20 +262,20 @@ export function handleChannelSwitch(ch: BasicChannelTabsProps) {
 
     const tab = openTabs.find(c => c.id === currentlyOpenTab);
 
-    // Normalize guildId for DMs/Group Chats to ensure consistent comparison
+    // DMs and group DMs have no guildId; normalize it so the comparison works
     const normalizedGuildId = ch.guildId || "@me";
     const existingTab = openTabs.find(tab => {
         const tabGuildId = tab.guildId || "@me";
         return tab.channelId === ch.channelId && tabGuildId === normalizedGuildId;
     });
 
-    // First check: switch to existing tab if setting enabled and tab exists
+    // Switch to an existing tab if that setting is on and there is one
     if (settings.store.switchToExistingTab && existingTab) {
         moveToTab(existingTab.id);
         return;
     }
 
-    // Second check: create new tab if setting enabled
+    // Otherwise open a new tab if that setting is on
     if (settings.store.createNewTabIfNotExists) {
         // Apply rapid navigation logic when creating new tabs
         const now = Date.now();
@@ -343,7 +343,7 @@ export function moveToTab(id: number) {
 
     setOpenTab(id);
 
-    // SET FLAG: We're initiating navigation
+    // Mark this navigation as ours
     clearTimeout(navigationTimeoutId);
     isNavigatingViaTabFlag = true;
 

@@ -21,6 +21,10 @@ import { getAvailableUpdate, openUpdater, startUpdateChecker, stopUpdateChecker,
 
 const HeaderBarIcon = findComponentByCodeLazy(".HEADER_BAR_BADGE_BOTTOM,", 'position:"bottom"');
 
+// Same as the closing animation (--ec-motion-fast)
+const CLOSE_TIME = 140;
+const lessMotion = () => document.documentElement.classList.contains("reduce-motion") || matchMedia("(prefers-reduced-motion: reduce)").matches;
+
 export const settings = definePluginSettings({
     showPluginMenu: {
         type: OptionType.BOOLEAN,
@@ -32,16 +36,44 @@ export const settings = definePluginSettings({
 function EndcordPopoutButton() {
     const buttonRef = useRef(null);
     const [show, setShow] = useState(false);
+    // Stays mounted briefly after closing so the exit animation can play
+    const [closing, setClosing] = useState(false);
+    const closeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
     const [, forceUpdate] = useState(0);
 
     useEffect(() => {
-        return onHiddenChange(() => forceUpdate(n => n + 1));
+        const stopWatching = onHiddenChange(() => forceUpdate(n => n + 1));
+        return () => {
+            stopWatching();
+            clearTimeout(closeTimer.current);
+        };
     }, []);
 
     if (getIsEndcordHidden()) return null;
 
+    const open = () => {
+        clearTimeout(closeTimer.current);
+        setClosing(false);
+        setShow(true);
+    };
+
+    const close = (now = false) => {
+        clearTimeout(closeTimer.current);
+        if (now || lessMotion()) {
+            setClosing(false);
+            setShow(false);
+            return;
+        }
+
+        setClosing(true);
+        closeTimer.current = setTimeout(() => {
+            setClosing(false);
+            setShow(false);
+        }, CLOSE_TIME);
+    };
+
     const openFullMenu = (event: MouseEvent) => {
-        setShow(false);
+        close(true);
         ContextMenuApi.openContextMenu(event, () => <ToolboxMenu onClose={ContextMenuApi.closeContextMenu} />);
     };
 
@@ -51,16 +83,17 @@ function EndcordPopoutButton() {
             align="right"
             animation={Popout.Animation.NONE}
             shouldShow={show}
-            onRequestClose={() => setShow(false)}
+            onRequestClose={() => close()}
             targetElementRef={buttonRef}
             renderPopout={() => (
                 <ErrorBoundary noop>
                     <ControlCenter
-                        onClose={() => setShow(false)}
+                        closing={closing}
+                        onClose={() => close()}
                         onMoreActions={openFullMenu}
                         availableUpdate={getAvailableUpdate()}
                         onUpdate={() => {
-                            setShow(false);
+                            close();
                             openUpdater();
                         }}
                     />
@@ -71,7 +104,7 @@ function EndcordPopoutButton() {
                 <HeaderBarIcon
                     ref={buttonRef}
                     className="vc-toolbox-btn"
-                    onClick={() => setShow(v => !v)}
+                    onClick={() => show && !closing ? close() : open()}
                     onContextMenu={openFullMenu}
                     tooltip={isShown ? null : "Endcord"}
                     icon={() => <EndcordMark className="vc-toolbox-icon" asleep={!isShown} />}

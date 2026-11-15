@@ -92,7 +92,6 @@ export const MemberListDecorators = $MemberListDecorators;
 export const Settings = $Settings;
 /**
  * An API allowing you to dynamically load styles
- * a
  */
 export const Styles = $Styles;
 /**

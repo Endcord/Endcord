@@ -5,11 +5,12 @@
  */
 
 import { BaseText } from "@components/BaseText";
+import { EndcordModal } from "@components/EndcordModal";
 import { Flex } from "@components/Flex";
 import { RenderModalProps } from "@endcord/discord-types";
 import { LANGUAGES } from "@plugins/voiceMessageTranscriber.desktop/utils/languages";
 import { t } from "@utils/i18n";
-import { Modal, openModal, SearchableSelect, useState } from "@webpack/common";
+import { openModal, SearchableSelect, useState } from "@webpack/common";
 
 import { TranscriptionModal } from "./TranscriptionModal";
 
@@ -46,7 +47,7 @@ export function LanguageSelectionModal(props: { modalProps: RenderModalProps, sr
     };
 
     return (
-        <Modal
+        <EndcordModal
             {...modalProps}
             size="md"
             title={t("Transcription Options")}
@@ -85,6 +86,6 @@ export function LanguageSelectionModal(props: { modalProps: RenderModalProps, sr
                     />
                 </div>
             </Flex>
-        </Modal>
+        </EndcordModal>
     );
 }

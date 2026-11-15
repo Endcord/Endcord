@@ -4,35 +4,13 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { openNotificationLogModal } from "@api/Notifications/notificationLog";
 import { useSettings } from "@api/Settings";
 import { EndcordModal } from "@components/EndcordModal";
 import { ErrorCard } from "@components/ErrorCard";
-import { Flex } from "@components/Flex";
 import { t, useI18n } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import { identity } from "@utils/misc";
-import { Button, Forms, openModal, Select, Slider } from "@webpack/common";
-
-export function NotificationSection() {
-    const { t } = useI18n();
-    return (
-        <section className={Margins.top16}>
-            <Forms.FormTitle tag="h5">{t("Notifications")}</Forms.FormTitle>
-            <Forms.FormText className={Margins.bottom8}>
-                {t("Settings for Notifications sent by Endcord. This does NOT include Discord notifications (messages, etc)")}
-            </Forms.FormText>
-            <Flex>
-                <Button onClick={openNotificationSettingsModal}>
-                    {t("Notification Settings")}
-                </Button>
-                <Button onClick={openNotificationLogModal}>
-                    {t("View Notification Log")}
-                </Button>
-            </Flex>
-        </section>
-    );
-}
+import { Forms, openModal, Select, Slider } from "@webpack/common";
 
 export function openNotificationSettingsModal() {
     openModal(props => (

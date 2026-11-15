@@ -32,7 +32,6 @@ export interface DisplayNameStyles {
     font_id: number;
 }
 
-/** Collectible item data. */
 export interface CollectibleItem {
     asset: string;
     expires_at: string | null;
@@ -158,7 +157,6 @@ export class Channel extends DiscordRecord {
     defaultThreadRateLimitPerUser: number | undefined;
     /** Internal, use flags getter. */
     flags_: ChannelFlags;
-    /** Guild ID. */
     guild_id: string;
     /** User ID who purchased HD streaming. */
     hdStreamingBuyerId: string | undefined;

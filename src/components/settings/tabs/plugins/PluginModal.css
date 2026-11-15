@@ -16,7 +16,7 @@
     margin-top: 8px;
 }
 
-/* The setting someone searched for, pointed out for a moment */
+/* Briefly highlights the setting that matched the search */
 .ec-setting-found {
     margin: -8px;
     padding: 8px;

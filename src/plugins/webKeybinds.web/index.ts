@@ -13,7 +13,7 @@ const KeyBinds = findByPropsLazy("JUMP_TO_GUILD", "SERVER_NEXT");
 
 export default definePlugin({
     name: "WebKeybinds",
-    description: "Re-adds keybinds missing in the web version of Discord: ctrl+t, ctrl+shift+t, ctrl+tab, ctrl+shift+tab, ctrl+1-9, ctrl+,. Only works fully on Vesktop/Legcord, not inside your browser",
+    description: "Re-adds keybinds missing in the web version of Discord: ctrl+t, ctrl+shift+t, ctrl+tab, ctrl+shift+tab, ctrl+1-9, ctrl+,. Only works fully in Endcord Desktop, not inside your browser",
     tags: ["Shortcuts"],
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     enabledByDefault: true,
@@ -24,7 +24,7 @@ export default definePlugin({
         if (hasCtrl) switch (e.key) {
             case "t":
             case "T":
-                if (!IS_VESKTOP) return;
+                if (!IS_ENDCORD_DESKTOP) return;
                 e.preventDefault();
                 if (e.shiftKey) {
                     if (SelectedGuildStore.getGuildId()) NavigationRouter.transitionToGuild("@me");
@@ -38,7 +38,7 @@ export default definePlugin({
                 }
                 break;
             case "Tab":
-                if (!IS_VESKTOP) return;
+                if (!IS_ENDCORD_DESKTOP) return;
                 const handler = e.shiftKey ? KeyBinds.SERVER_PREV : KeyBinds.SERVER_NEXT;
                 handler.action(e);
                 break;

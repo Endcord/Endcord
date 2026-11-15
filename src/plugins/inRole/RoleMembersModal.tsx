@@ -4,19 +4,20 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { EndcordModal } from "@components/EndcordModal";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Paragraph } from "@components/Paragraph";
 import { GuildMember, RenderModalProps } from "@endcord/discord-types";
 import { classNameFactory } from "@utils/css";
 import { t } from "@utils/i18n";
-import { Modal,openModal, Parser, React } from "@webpack/common";
+import { openModal, Parser, React } from "@webpack/common";
 
 const cl = classNameFactory("vc-inrole-");
 
 export function showInRoleModal(members: GuildMember[], roleId: string, channelId: string) {
     openModal((props: RenderModalProps) =>
         <ErrorBoundary>
-            <Modal
+            <EndcordModal
                 {...props}
                 size="md"
                 title={
@@ -36,7 +37,7 @@ export function showInRoleModal(members: GuildMember[], roleId: string, channelI
                         ) : <Paragraph>{t("Looks like no online cached members with that role were found. Try scrolling down on your member list to cache more users!")}</Paragraph>
                     }
                 </div>
-            </Modal>
+            </EndcordModal>
         </ErrorBoundary>
     );
 }

@@ -13,11 +13,6 @@ export function setStyle(css: string, id: string) {
     styles.set(id, style);
 }
 
-export function removeStyle(id: string) {
-    styles.get(id)?.remove();
-    return styles.delete(id);
-}
-
 export const clearStyles = () => {
     styles.forEach(style => style.remove());
     styles.clear();

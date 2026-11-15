@@ -143,7 +143,7 @@ namespace EndcordInstaller.Localization
                 fr[key] = vFr;
             };
 
-            // ── Intro & Language Selection Screen ────────────────────────────
+            // Intro and language screen
             Add("app.title",
                 "Endcord Installer",
                 "Endcord Kurulumu",
@@ -179,7 +179,7 @@ namespace EndcordInstaller.Localization
                 "¡Vamos!",
                 "C'est parti");
 
-            // ── Migration Screen (Matching Reference Card) ───────────────────
+            // Migration screen
             Add("mig.welcomeTitle",
                 "Oh, a familiar face!",
                 "Aa, tanıdık bir yüz!",
@@ -250,7 +250,7 @@ namespace EndcordInstaller.Localization
                 "Empezar de cero",
                 "Repartir à zéro");
 
-            // ── Main Client Selection & Mode Screen ──────────────────────────
+            // Client choice and install mode
             Add("main.title",
                 "Where should Endcord live?",
                 "Endcord nereye yerleşsin?",
@@ -264,6 +264,14 @@ namespace EndcordInstaller.Localization
                 "Выберите, в какие Discord установить Endcord.",
                 "Elige en qué Discord quieres Endcord.",
                 "Choisissez les Discord qui auront Endcord.");
+
+            // Under the install list and on Endcord Desktop's setup: what goes over the network (endcord.com/code-signing-policy)
+            Add("privacy.note",
+                "Endcord sends nothing to us. It checks GitHub for updates (Settings > Updater decides whether they install on their own), and plugins you turn on may use their own services.",
+                "Endcord bize hiçbir şey göndermez. Güncellemeler için GitHub'a bakar (kendiliğinden kurulup kurulmayacaklarını Ayarlar > Updater'dan seçersin) ve açtığın eklentiler kendi servislerini kullanabilir.",
+                "Endcord ничего нам не отправляет. Он проверяет обновления на GitHub (ставятся ли они сами, решается в Настройках > Updater), а включённые вами плагины могут обращаться к своим сервисам.",
+                "Endcord no nos envía nada. Busca actualizaciones en GitHub (en Ajustes > Updater decides si se instalan solas) y los plugins que actives pueden usar sus propios servicios.",
+                "Endcord ne nous envoie rien. Il cherche les mises à jour sur GitHub (Paramètres > Updater décide si elles s'installent toutes seules), et les plugins que vous activez peuvent utiliser leurs propres services.");
 
             Add("tab.install",
                 "Install",
@@ -349,7 +357,7 @@ namespace EndcordInstaller.Localization
                 "Cancelar",
                 "Annuler");
 
-            // ── Badges & Card States ─────────────────────────────────────────
+            // Badges and card states
             Add("card.running", "Running", "Çalışıyor", "Запущен", "Abierto", "En cours");
             Add("card.closed", "Closed", "Kapalı", "Закрыт", "Cerrado", "Fermé");
             Add("card.status.endcord",
@@ -386,7 +394,7 @@ namespace EndcordInstaller.Localization
                 "Si está en otro sitio, muéstraselo al panda con '+ Otra ruta'.",
                 "S'il est ailleurs, montrez-le au panda avec « + Autre chemin ».");
 
-            // ── Progress & Completion Screens ────────────────────────────────
+            // Progress and done screens
             Add("prog.installingTitle",
                 "Installing Endcord",
                 "Endcord Kuruluyor",
@@ -446,6 +454,18 @@ namespace EndcordInstaller.Localization
                 "Возвращаем всё как было...",
                 "Dejando todo como estaba...",
                 "On remet tout comme avant...");
+            Add("status.checkingRelease",
+                "Checking the installed Endcord {0} against the current release...",
+                "Kurulu Endcord {0} güncel sürümle karşılaştırılıyor...",
+                "Сверяем установленный Endcord {0} с текущим выпуском...",
+                "Comprobando el Endcord {0} instalado con la versión actual...",
+                "Vérification de l'Endcord {0} installé avec la version actuelle...");
+            Add("status.keepingNewer",
+                "Keeping Endcord {0}, newer than this installer's {1}...",
+                "Endcord {0} korunuyor, bu installer'daki {1} sürümünden yeni...",
+                "Оставляем Endcord {0}: он новее, чем {1} в установщике...",
+                "Conservando Endcord {0}, más nuevo que el {1} de este instalador...",
+                "On garde Endcord {0}, plus récent que la {1} de cet installateur...");
             Add("status.waitingLockedFile", "Waiting for locked file: {0}", "Kilitli dosya bekleniyor: {0}", "Ожидание файла: {0}", "Esperando archivo: {0}", "Attente du fichier : {0}");
 
             Add("status.installComplete",
@@ -480,6 +500,13 @@ namespace EndcordInstaller.Localization
                 "Endcord está en {0} Discord. ¡Abre Discord y saluda!",
                 "Endcord est sur {0} Discord. Ouvrez Discord et dites bonjour !");
 
+            Add("done.banner.keptNewer",
+                "Your Endcord {0} is newer than this installer ({1}), so it stayed. Discord is hooked up again on {2} install(s).",
+                "Endcord {0} bu installer'dan ({1}) daha yeni, o yüzden korundu. Discord {2} kurulumda yeniden bağlandı.",
+                "Ваш Endcord {0} новее этого установщика ({1}), поэтому он оставлен. Discord снова подключён ({2}).",
+                "Tu Endcord {0} es más nuevo que este instalador ({1}), así que se quedó. Discord está conectado de nuevo en {2}.",
+                "Votre Endcord {0} est plus récent que cet installateur ({1}), il a donc été gardé. Discord est reconnecté sur {2}.");
+
             Add("done.banner.migrated",
                 "Brought over {0} plugins, {1} preferences and {2} themes from {3}.",
                 "{3} içinden {0} eklenti, {1} tercih ve {2} tema taşındı.",
@@ -508,7 +535,7 @@ namespace EndcordInstaller.Localization
                 "¡Listo, nos vemos!",
                 "Fini, à plus !");
 
-            // ── Conflict & Error Messages ────────────────────────────────────
+            // Conflicts and errors
             Add("conflict.title",
                 "Swap out {0}?",
                 "{0} yerine geçelim mi?",
@@ -596,7 +623,7 @@ namespace EndcordInstaller.Localization
                 "Algo salió mal",
                 "Quelque chose a coincé");
 
-            // ── Compatibility & Backup Reasons ───────────────────────────────
+            // Compatibility and backup reasons
             Add("mig.reason.compatibleCore", "Compatible preference", "Uyumlu tercih", "Совместимая настройка", "Preferencia compatible", "Préférence compatible");
             Add("mig.reason.compatiblePlugin", "Supported plugin", "Desteklenen eklenti", "Поддерживаемый плагин", "Plugin compatible", "Plugin pris en charge");
             Add("mig.reason.compatibleCss", "QuickCSS stylesheet", "QuickCSS stil dosyası", "Стили QuickCSS", "Hoja QuickCSS", "Feuille QuickCSS");
@@ -620,6 +647,38 @@ namespace EndcordInstaller.Localization
                 "Копий пока нет. Она создаётся автоматически перед переносом настроек.",
                 "Aún no hay copias. Se guarda una automáticamente antes de mover ajustes.",
                 "Pas encore de copie. Une est faite automatiquement avant tout transfert.");
+
+            // Endcord Desktop's setup (UI/DesktopSetupWindow.cs)
+            Add("desktop.tagline", "Discord in Endcord's own window: lighter than Discord's app, with all of Endcord's plugins and themes.", "Discord, Endcord'un kendi penceresinde: Discord uygulamasından hafif, Endcord'un tüm eklentileri ve temalarıyla.", "Discord в собственном окне Endcord: легче приложения Discord, со всеми плагинами и темами Endcord.", "Discord en la ventana propia de Endcord: más ligero que la app de Discord, con todos los plugins y temas de Endcord.", "Discord dans la fenêtre d'Endcord : plus léger que l'appli Discord, avec tous les plugins et thèmes d'Endcord.");
+            Add("desktop.note", "Windows 10 and 11, 64-bit. A 140 MB download. Your Endcord settings come along.", "Windows 10 ve 11, 64 bit. 140 MB'lık bir indirme. Endcord ayarların da gelir.", "Windows 10 и 11, 64 бит. Загрузка 140 МБ. Настройки Endcord переносятся.", "Windows 10 y 11, 64 bits. Una descarga de 140 MB. Tus ajustes de Endcord vienen contigo.", "Windows 10 et 11, 64 bits. Un téléchargement de 140 Mo. Vos réglages Endcord suivent.");
+            Add("desktop.btn.install", "Install Endcord Desktop", "Endcord Desktop'ı kur", "Установить Endcord Desktop", "Instalar Endcord Desktop", "Installer Endcord Desktop");
+            Add("desktop.btn.update", "Update Endcord Desktop", "Endcord Desktop'ı güncelle", "Обновить Endcord Desktop", "Actualizar Endcord Desktop", "Mettre à jour Endcord Desktop");
+            Add("desktop.btn.remove", "Remove Endcord Desktop", "Endcord Desktop'ı kaldır", "Удалить Endcord Desktop", "Quitar Endcord Desktop", "Supprimer Endcord Desktop");
+            Add("desktop.btn.open", "Open Endcord Desktop", "Endcord Desktop'ı aç", "Открыть Endcord Desktop", "Abrir Endcord Desktop", "Ouvrir Endcord Desktop");
+            Add("desktop.btn.close", "Close", "Kapat", "Закрыть", "Cerrar", "Fermer");
+            Add("desktop.btn.retry", "Try again", "Tekrar dene", "Повторить", "Reintentar", "Réessayer");
+            Add("desktop.btn.cancel", "Cancel", "Vazgeç", "Отмена", "Cancelar", "Annuler");
+            Add("desktop.done.title", "Endcord Desktop is ready", "Endcord Desktop hazır", "Endcord Desktop готов", "Endcord Desktop está listo", "Endcord Desktop est prêt");
+            Add("desktop.done.body", "It's in the Start menu and updates itself from now on.", "Başlat menüsünde. Bundan sonra kendini kendisi günceller.", "Он в меню «Пуск» и дальше обновляется сам.", "Está en el menú Inicio y a partir de ahora se actualiza solo.", "Il est dans le menu Démarrer et se met à jour tout seul désormais.");
+            Add("desktop.remove.title", "Remove Endcord Desktop?", "Endcord Desktop kaldırılsın mı?", "Удалить Endcord Desktop?", "¿Quitar Endcord Desktop?", "Supprimer Endcord Desktop ?");
+            Add("desktop.remove.body", "The app and its shortcuts go. Endcord in Discord's own app stays as it is.", "Uygulama ve kısayolları silinir. Discord uygulamasındaki Endcord olduğu gibi kalır.", "Приложение и его ярлыки будут удалены. Endcord в приложении Discord останется как есть.", "Se borran la app y sus accesos directos. Endcord en la app de Discord se queda como está.", "L'appli et ses raccourcis sont supprimés. Endcord dans l'appli Discord reste tel quel.");
+            Add("desktop.remove.data", "Also delete its sign-in, settings and themes", "Oturumunu, ayarlarını ve temalarını da sil", "Удалить также вход, настройки и темы", "Borrar también la sesión, los ajustes y los temas", "Supprimer aussi la connexion, les réglages et les thèmes");
+            Add("desktop.removed.title", "Endcord Desktop was removed", "Endcord Desktop kaldırıldı", "Endcord Desktop удалён", "Endcord Desktop se ha quitado", "Endcord Desktop a été supprimé");
+            Add("desktop.err.title", "Couldn't finish", "Tamamlanamadı", "Не удалось завершить", "No se pudo terminar", "Impossible de terminer");
+            Add("desktop.status.checking", "Checking the release…", "Sürüm denetleniyor…", "Проверка выпуска…", "Comprobando la versión…", "Vérification de la version…");
+            Add("desktop.status.downloading", "Downloading Endcord Desktop…", "Endcord Desktop indiriliyor…", "Загрузка Endcord Desktop…", "Descargando Endcord Desktop…", "Téléchargement d'Endcord Desktop…");
+            Add("desktop.status.unpacking", "Unpacking…", "Dosyalar çıkarılıyor…", "Распаковка…", "Descomprimiendo…", "Décompression…");
+            Add("desktop.status.files", "Getting the newest Endcord…", "En yeni Endcord alınıyor…", "Получение новейшего Endcord…", "Obteniendo el Endcord más reciente…", "Récupération du dernier Endcord…");
+            Add("desktop.status.closing", "Closing Endcord Desktop…", "Endcord Desktop kapatılıyor…", "Закрытие Endcord Desktop…", "Cerrando Endcord Desktop…", "Fermeture d'Endcord Desktop…");
+            Add("desktop.status.installing", "Installing…", "Kuruluyor…", "Установка…", "Instalando…", "Installation…");
+            Add("desktop.status.shortcuts", "Adding it to the Start menu…", "Başlat menüsüne ekleniyor…", "Добавление в меню «Пуск»…", "Añadiéndolo al menú Inicio…", "Ajout au menu Démarrer…");
+            Add("desktop.status.done", "Done", "Bitti", "Готово", "Listo", "Terminé");
+            Add("desktop.status.removing", "Removing…", "Kaldırılıyor…", "Удаление…", "Quitando…", "Suppression…");
+            Add("desktop.status.removed", "Removed", "Kaldırıldı", "Удалено", "Quitado", "Supprimé");
+            Add("desktop.err.offline", "Couldn't reach GitHub, where Endcord Desktop is downloaded from. Check your connection and try again.", "Endcord Desktop'ın indirildiği GitHub'a ulaşılamadı. Bağlantını kontrol edip tekrar dene.", "Не удалось связаться с GitHub, откуда загружается Endcord Desktop. Проверьте подключение и повторите.", "No se pudo conectar con GitHub, desde donde se descarga Endcord Desktop. Revisa la conexión y reintenta.", "Impossible de joindre GitHub, d'où Endcord Desktop est téléchargé. Vérifiez la connexion et réessayez.");
+            Add("desktop.err.unsigned", "The release on GitHub isn't signed with Endcord's key, so nothing was installed.", "GitHub'daki sürüm Endcord'un anahtarıyla imzalı değil, bu yüzden hiçbir şey kurulmadı.", "Выпуск на GitHub не подписан ключом Endcord, поэтому ничего не установлено.", "La versión de GitHub no está firmada con la clave de Endcord, así que no se instaló nada.", "La version sur GitHub n'est pas signée avec la clé d'Endcord, rien n'a été installé.");
+            Add("desktop.err.badDownload", "The download doesn't match the signed release, so nothing was installed. Try again.", "İndirilen dosya imzalı sürümle eşleşmiyor, bu yüzden hiçbir şey kurulmadı. Tekrar dene.", "Загруженный файл не совпадает с подписанным выпуском, поэтому ничего не установлено. Повторите.", "La descarga no coincide con la versión firmada, así que no se instaló nada. Reintenta.", "Le téléchargement ne correspond pas à la version signée, rien n'a été installé. Réessayez.");
+            Add("desktop.err.failed", "Something went wrong: {0}", "Bir sorun çıktı: {0}", "Что-то пошло не так: {0}", "Algo salió mal: {0}", "Un problème est survenu : {0}");
 
             root["en"] = en;
             root["tr"] = tr;

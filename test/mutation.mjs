@@ -7,6 +7,7 @@
 // Tests the tests. Each entry switches off one security check, and test/security.mjs has to notice.
 // A survivor means that protection could be deleted tomorrow with every test still green.
 import { spawn } from "child_process";
+import { readFileSync } from "fs";
 import { cpus } from "os";
 import { join } from "path";
 
@@ -39,13 +40,13 @@ const MUTATIONS = [
     ["A failed update is offered again", "src/main/updater/http.ts", "if (isRejectedUpdate(apiData.hash)) return false;", ""],
     ["A broken update is never undone", "src/main/updater/rollback.ts", "if (++state.loads < MAX_UNCONFIRMED_LOADS) {", "if (true) {"],
     ["A half-done swap isn't recovered", "src/main/updater/rollback.ts", "if (!state?.swapping) return false;", "return false;"],
-    ["Rollback doesn't restore the files", "src/main/updater/rollback.ts", "if (existsSync(previous)) copyFileSync(previous, join(__dirname, name));", ""],
+    ["Rollback doesn't restore the files", "src/main/updater/rollback.ts", "for (const name of kept) copyFileSync(join(PREVIOUS_DIR, name), join(__dirname, name));", ""],
     ["Damaged settings aren't recovered", "src/main/utils/durableFile.ts", "return JSON.parse(readFileSync(backupOf(path), \"utf-8\"));", "return null;"],
     ["Writes keep no backup", "src/main/utils/durableFile.ts", "if (existsSync(path)) copyFileSync(path, backupOf(path));", ""],
     ["Logger prints arguments unchanged", "src/utils/Logger.ts", "const args = rawArgs.map(scrub);", "const args = rawArgs;"],
     ["Tokens reach the logs", "src/shared/redact.ts", String.raw`[/\b[\w-]{20,}\.[\w-]{6}\.[\w-]{27,}\b/g, REDACTED],`, ""],
-    ["Secrets go out with exports", "src/api/SettingsSync/offline.ts", "for (const key of getSensitiveKeys(plugin)) delete settings.plugins[pluginName]?.[key];", ""],
-    ["Cloud sync can set secrets", "src/api/SettingsSync/offline.ts", "keepLocalSettings(parsed.settings, source);", ""],
+    ["Secrets go out with exports", "src/api/SettingsSync/offline.ts", "for (const key of sensitiveKeysOf(pluginName)) delete settings.plugins[pluginName]?.[key];", ""],
+    ["Imports can set secrets", "src/api/SettingsSync/offline.ts", "keepLocalSettings(parsed.settings);", ""],
     ["Imports allow prototype pollution", "src/api/SettingsSync/offline.ts", "if (!isSafeObject(parsed))", "if (false)"],
     ["Permission prompts show raw names", "src/main/csp/manager.ts", "String(callerName ?? \"\").replace(/\\s+/g, \" \").trim().slice(0, 40)", "String(callerName ?? \"\")"],
     ["Recordings can be any file type", "src/plugins/callrecorder/native.ts", "|| !/^[\\w.-]+\\.ogg$/.test(filename)", ""],
@@ -60,8 +61,18 @@ const MUTATIONS = [
     ["Custom uploads skip the address check", "src/plugins/fileUpload/native.ts", "const response = await fetchPublicUrl(url, { method, headers: { ...headers }, body: body ?? undefined });", "const response = await fetch(url, { method, headers, body });"]
 ];
 
-const only = process.argv[2]?.toLowerCase();
+const args = process.argv.slice(2);
+const only = args.find(arg => !arg.startsWith("--"))?.toLowerCase();
 const queue = MUTATIONS.filter(([name]) => !only || name.toLowerCase().includes(only));
+
+// `--check` only confirms that each entry still matches one place in its file. The regular test run does this, so a
+// rewritten line shows up with the change that rewrote it, not at the weekly run
+if (args.includes("--check")) {
+    const stale = queue.filter(([, file, from]) => readFileSync(join(ROOT, file), "utf8").split(from).length !== 2);
+    for (const [name, file] of stale) console.log(`STALE  ${name}  (${file})`);
+    console.log(stale.length ? `${stale.length} of ${queue.length} no longer match one place in the source: update them` : `${queue.length} mutations match the source`);
+    process.exit(stale.length ? 1 : 0);
+}
 
 function run([name, file, from, to]) {
     return new Promise(resolve => {

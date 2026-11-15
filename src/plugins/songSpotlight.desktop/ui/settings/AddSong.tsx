@@ -5,6 +5,7 @@
  */
 
 import { BaseText } from "@components/BaseText";
+import { EndcordModal } from "@components/EndcordModal";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
 import { PlusIcon } from "@components/Icons";
@@ -14,7 +15,7 @@ import { Native } from "@plugins/songSpotlight.desktop/service";
 import { parsers } from "@song-spotlight/api/handlers";
 import { Song } from "@song-spotlight/api/structs";
 import { t } from "@utils/i18n";
-import { Clickable, closeModal, Modal, openModal, TextInput, useState } from "@webpack/common";
+import { Clickable, closeModal, openModal, TextInput, useState } from "@webpack/common";
 
 interface AddSongModalProps {
     modalProps: RenderModalProps;
@@ -29,7 +30,7 @@ function AddSongModal({ modalProps, close, onAdd }: AddSongModalProps) {
 
     return (
         <ErrorBoundary>
-            <Modal
+            <EndcordModal
                 {...modalProps}
                 size="md"
                 title={t("Add a new song")}
@@ -82,7 +83,7 @@ function AddSongModal({ modalProps, close, onAdd }: AddSongModalProps) {
                         }}
                     />
                 </Flex>
-            </Modal>
+            </EndcordModal>
         </ErrorBoundary>
     );
 }

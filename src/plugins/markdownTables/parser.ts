@@ -14,11 +14,6 @@ export interface MarkdownTable {
     endLine: number;
 }
 
-export interface MarkdownTableBlock {
-    raw: string;
-    table: MarkdownTable;
-}
-
 export interface MarkdownTableMatch {
     raw: string;
     leadingMarkdown: string;
@@ -359,18 +354,6 @@ function rawTableBlock(lines: Array<{ raw: string; }>, nextLineIndex: number) {
         .join("");
 }
 
-export function parseMarkdownTableBlock(markdown: string): MarkdownTableBlock | null {
-    const lines = sourceLines(markdown);
-    const parsed = parseTableAtLine(lines.map(line => line.text), 0);
-
-    if (!parsed) return null;
-
-    return {
-        raw: rawTableBlock(lines, parsed.nextLineIndex),
-        table: parsed.table,
-    };
-}
-
 export function parseMarkdownTableMatch(markdown: string): MarkdownTableMatch | null {
     const lines = sourceLines(markdown);
     const textLines = lines.map(line => line.text);
@@ -397,18 +380,3 @@ export function parseMarkdownTableMatch(markdown: string): MarkdownTableMatch | 
     return null;
 }
 
-export function parseMarkdownTables(markdown: string): MarkdownTable[] {
-    const lines = markdown.replace(/\r\n?/g, "\n").split("\n");
-    const fenced = getFenceMask(lines);
-    const tables: MarkdownTable[] = [];
-
-    for (let lineIndex = 0; lineIndex < lines.length - 1; lineIndex++) {
-        const parsed = parseTableAtLine(lines, lineIndex, fenced);
-        if (!parsed) continue;
-
-        tables.push(parsed.table);
-        lineIndex = parsed.nextLineIndex - 1;
-    }
-
-    return tables;
-}

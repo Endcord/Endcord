@@ -36,8 +36,40 @@
     margin: 3px;
     position: absolute;
     width: 28px;
-    transition: transform var(--ec-motion-base) var(--ec-ease-out);
+
+    /* Knob overshoots a little, then settles */
+    transition: transform calc(var(--ec-motion-base) * 1.4) var(--ec-ease-spring);
     overflow: visible;
+}
+
+/* While pressed, the knob stretches toward the side it's about to move to */
+.vc-switch-slider rect {
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: transform var(--ec-motion-base) var(--ec-ease-spring);
+}
+
+.vc-switch-container:not(.vc-switch-disabled):active .vc-switch-slider rect {
+    transform: translateX(2px) scaleX(1.2);
+}
+
+.vc-switch-checked:not(.vc-switch-disabled):active .vc-switch-slider rect {
+    transform: translateX(-2px) scaleX(1.2);
+}
+
+/*
+ * The icon turns 90° with the knob (clockwise when switching on). A cross looks the same rotated by 90°, so the
+ * rotation only shows while it moves
+ */
+.vc-switch-slider path {
+    transform: rotate(-90deg);
+    transform-box: view-box;
+    transform-origin: 50% 50%;
+    transition: transform calc(var(--ec-motion-base) * 1.4) var(--ec-ease-spring);
+}
+
+.vc-switch-checked .vc-switch-slider path {
+    transform: none;
 }
 
 .vc-switch-input {

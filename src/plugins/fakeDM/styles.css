@@ -1,9 +1,8 @@
 /* Community stylesheet: its class names (BEM "--modifier") and rule order are kept as written. */
 /* stylelint-disable selector-class-pattern, no-duplicate-selectors, no-descending-specificity */
 
-/* ── FakeDM styles ── */
 
-/* Fond semi-transparent */
+/* Semi-transparent backdrop */
 .fdm-backdrop {
     position: fixed;
     inset: 0;
@@ -17,11 +16,11 @@
     to   { opacity: 1; }
 }
 
-/* Panneau principal — position calculée par JS près du bouton */
+/* Main panel, positioned next to the button from JS */
 .fdm-panel {
     position: fixed;
 
-    /* left et top injectés inline par React */
+    /* left and top are set inline by React */
     z-index: 9998;
     background: #2b2d31;
     border: 1px solid rgb(255 255 255 / 10%);
@@ -78,7 +77,7 @@
 }
 .fdm-close:hover { color: #fff; }
 
-/* Sélecteur expéditeur */
+/* Sender picker */
 .fdm-sender-row {
     display: flex;
     gap: 6px;
@@ -96,7 +95,7 @@
     border: 1.5px solid rgb(255 255 255 / 6%);
     background: rgb(255 255 255 / 3%);
     cursor: pointer;
-    transition: all .1s;
+    transition: background-color var(--ec-motion-fast) ease, border-color var(--ec-motion-fast) ease;
     font-size: 13px;
     font-weight: 500;
     color: rgb(255 255 255 / 60%) !important;
@@ -196,7 +195,7 @@
     color: #fff !important;
 }
 
-/* Zone message */
+/* Message field */
 .fdm-input-row {
     display: flex;
     align-items: flex-end;
@@ -224,7 +223,7 @@
 .fdm-textarea:focus { border-color: rgb(255 255 255 / 18%); }
 .fdm-textarea::placeholder { color: rgb(255 255 255 / 28%) !important; }
 
-/* Boutons */
+/* Buttons */
 .fdm-actions {
     display: flex;
     flex-direction: column;
@@ -256,7 +255,7 @@
     background: rgb(237 66 69 / 10%);
     border: none;
     border-radius: 7px;
-    color: #ed4245 !important;
+    color: var(--status-danger) !important;
     padding: 5px 10px;
     font-size: 11px;
     font-weight: 700;
@@ -276,5 +275,5 @@
     min-height: 20px;
     transition: color .2s;
 }
-.fdm-status--ok  { color: #3ba55c !important; }
-.fdm-status--err { color: #ed4245 !important; }
+.fdm-status--ok  { color: var(--status-positive) !important; }
+.fdm-status--err { color: var(--status-danger) !important; }

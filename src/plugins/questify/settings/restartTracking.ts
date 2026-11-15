@@ -47,10 +47,6 @@ export function disposeRestartTracking(): void {
     didAttachRestartListeners = false;
 }
 
-export function isRestartDirty(): boolean {
-    return restartDirty;
-}
-
 export function setRestartDirty(dirty: boolean): void {
     restartDirty = dirty;
 }

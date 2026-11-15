@@ -17,8 +17,9 @@ export async function exists(filename: string) {
 }
 
 export async function ensureDirectoryExists(cacheDir: string) {
+    // Recursive: the image folder sits inside the data folder, which a first start may not have made yet
     if (!await exists(cacheDir))
-        await mkdir(cacheDir);
+        await mkdir(cacheDir, { recursive: true });
 }
 
 export function getAttachmentIdFromFilename(filename: string) {

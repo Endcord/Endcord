@@ -7,6 +7,7 @@
 import { get as dsGet, set as dsSet } from "@api/DataStore";
 import { UserAreaButton, UserAreaRenderProps } from "@api/UserArea";
 import { Devs } from "@utils/constants";
+import { ENDCORD_THEME } from "@utils/css";
 import { t } from "@utils/i18n";
 import { ModalCloseButton as ModalCloseButton_, ModalContent as ModalContent_, ModalFooter as ModalFooter_, ModalHeader as ModalHeader_, ModalRoot as ModalRoot_ } from "@utils/modal";
 import definePlugin, { IconComponent } from "@utils/types";
@@ -20,7 +21,7 @@ const ModalCloseButton = ModalCloseButton_;
 
 const DS_KEY = "FakeNitroAge_months";
 
-// ── State ─────────────────────────────────────────────────────────────────────
+// ---- State ----
 
 let fakeMonths: number | null = null;
 let originalGetCurrentUser: (() => ReturnType<typeof UserStore.getCurrentUser>) | null = null;
@@ -72,7 +73,7 @@ function notifyUpdate() {
     } catch { }
 }
 
-// ── Modal ─────────────────────────────────────────────────────────────────────
+// ---- Modal ----
 
 const PRESETS = [
     { label: "1 month", months: 1 },
@@ -108,12 +109,13 @@ function NitroAgeModal({ modalProps }: { modalProps: any; }) {
     const customValid = !isNaN(inputMonths) && inputMonths >= 1 && inputMonths <= 999;
 
     return (
-        <ModalRoot {...modalProps} size="small">
+        <ModalRoot {...modalProps} className={ENDCORD_THEME} size="small">
             <ModalHeader>
                 <span style={{ fontWeight: 700, fontSize: 16, flexGrow: 1 }}>{t("Fake Nitro Age")}</span>
                 <ModalCloseButton onClick={modalProps.onClose} />
             </ModalHeader>
             <ModalContent style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 8 }}>
+                <div className="ec-modal-marker" hidden />
                 <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 4 }}>
                     {t("Sets how long your client shows you've had Nitro. Client-side only.")}</div>
 
@@ -207,7 +209,7 @@ function NitroAgeModal({ modalProps }: { modalProps: any; }) {
     );
 }
 
-// ── User area button ──────────────────────────────────────────────────────────
+// ---- User area button ----
 
 const NitroIcon: IconComponent = props => {
     return (
@@ -228,7 +230,7 @@ function NitroAgeButton({ iconForeground, nameplate }: UserAreaRenderProps) {
     );
 }
 
-// ── Plugin ────────────────────────────────────────────────────────────────────
+// ---- Plugin ----
 
 export default definePlugin({
     name: "FakeNitroAge",

@@ -8,11 +8,11 @@ function removeFirst(arr, predicate) {
     if (idx !== -1) arr.splice(idx, 1);
 }
 
-/** discord.com or one of its subdomains, never a page that only mentions it */
+/** Discord's own three apps. Its other subdomains (support, status...) are other sites and keep their headers */
 function isDiscordPage(url) {
     try {
         const { protocol, hostname } = new URL(url);
-        return protocol === "https:" && (hostname === "discord.com" || hostname.endsWith(".discord.com"));
+        return protocol === "https:" && ["discord.com", "ptb.discord.com", "canary.discord.com"].includes(hostname);
     } catch {
         return false;
     }
@@ -37,6 +37,6 @@ chrome.webRequest.onHeadersReceived.addListener(
         }
         return { responseHeaders };
     },
-    { urls: ["https://raw.githubusercontent.com/*", "*://*.discord.com/*"], types: ["main_frame", "stylesheet"] },
+    { urls: ["https://raw.githubusercontent.com/*", "https://discord.com/*", "https://ptb.discord.com/*", "https://canary.discord.com/*"], types: ["main_frame", "stylesheet"] },
     ["blocking", "responseHeaders"]
 );

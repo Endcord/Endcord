@@ -9,6 +9,7 @@ import "./style.css";
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { definePluginSettings } from "@api/Settings";
 import { CodeBlock } from "@components/CodeBlock";
+import { EndcordModal } from "@components/EndcordModal";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { HeadingSecondary } from "@components/Heading";
 import { Margins } from "@components/margins";
@@ -18,7 +19,7 @@ import { copyWithToast, getCurrentGuild, getIntlMessage } from "@utils/discord";
 import { isTruthy } from "@utils/guards";
 import { t } from "@utils/i18n";
 import definePlugin, { IconComponent, OptionType } from "@utils/types";
-import { ChannelStore, GuildRoleStore, Menu, Modal, openModal, UserProfileStore } from "@webpack/common";
+import { ChannelStore, GuildRoleStore, Menu, openModal, UserProfileStore } from "@webpack/common";
 import { MouseEventHandler } from "react";
 
 
@@ -64,7 +65,7 @@ function cleanMessage(msg: Message) {
 function openViewRawModal(json: string, type: string, msgContent?: string) {
     openModal(props => (
         <ErrorBoundary>
-            <Modal
+            <EndcordModal
                 {...props}
                 title={`Raw ${type} Data`}
                 size="xl"
@@ -89,7 +90,7 @@ function openViewRawModal(json: string, type: string, msgContent?: string) {
                     </>
                 )}
                 <CodeBlock className="vc-viewRaw-codeBlock" content={json} lang="json" />
-            </Modal>
+            </EndcordModal>
         </ErrorBoundary >
     ));
 }

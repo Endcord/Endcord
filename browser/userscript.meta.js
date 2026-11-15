@@ -2,12 +2,14 @@
 // @name            Endcord
 // @description     Endcord for Discord in your browser: plugins, themes and a settings panel right inside Discord
 // @version         %version%
-// @author          rootpoii (https://github.com/rootpoii)
+// @author          rootpoi (https://github.com/rootpoii)
 // @namespace       https://github.com/Endcord/Endcord
 // @supportURL      https://github.com/Endcord/Endcord/issues
 // @icon            https://raw.githubusercontent.com/Endcord/Endcord/refs/heads/main/browser/icon.png
 // @license         GPL-3.0
-// @match           *://*.discord.com/*
+// @match           https://discord.com/*
+// @match           https://ptb.discord.com/*
+// @match           https://canary.discord.com/*
 // @grant           GM_xmlhttpRequest
 // @grant           unsafeWindow
 // @run-at          document-start

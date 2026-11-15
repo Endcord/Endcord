@@ -6,18 +6,20 @@
 
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { definePluginSettings } from "@api/Settings";
+import { EndcordModal } from "@components/EndcordModal";
+import { RenderModalProps } from "@endcord/discord-types";
 import { isSafeMediaUrl, isSnowflake } from "@shared/hosts";
 import { Devs } from "@utils/constants";
 import { sendMessage } from "@utils/discord";
 import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 import { findByPropsLazy } from "@webpack";
-import { ChannelStore, Menu, React, RelationshipStore, SelectedChannelStore, showToast, Toasts, UserStore } from "@webpack/common";
+import { ChannelStore, Menu, openModal, React, RelationshipStore, SelectedChannelStore, showToast, Text, TextInput, Toasts, UserStore, useState } from "@webpack/common";
 
 const MessageActions = findByPropsLazy("deleteMessage");
 const SYNC_PREFIX = "\u200b\u200c\u200bNC_WP:";
 
-// ── Settings ───────────────────────────────────────────────────────────────────
+// ---- Settings ----
 
 const settings = definePluginSettings({
     wallpapers: {
@@ -66,7 +68,7 @@ const settings = definePluginSettings({
         sensitive: true,
         type: OptionType.STRING,
         description: "Password for the sync server.",
-        default: "nightcord",
+        default: "endcord",
         restartNeeded: true,
     },
 });
@@ -83,7 +85,7 @@ function isSyncableUrl(url: string) {
     }
 }
 
-// ── Wallpaper storage helpers ──────────────────────────────────────────────────
+// ---- Wallpaper storage ----
 
 // Only channel ids and addresses are kept, so a stored or synced value can't reach the object's prototype
 function getWallpapers(): Record<string, string> {
@@ -111,7 +113,7 @@ function saveWallpaper(channelId: string, url: string, skipSync = false) {
     if (!skipSync) {
         const channel = ChannelStore.getChannel(channelId);
         if (channel?.type === 1) { // 1 = DM
-            // VPS Sync (Primary if configured)
+            // The sync server first, if one is set
             if (settings.store.vpsUrl && vpsSocket?.readyState === WebSocket.OPEN) {
                 vpsSocket.send(JSON.stringify({
                     type: "SET",
@@ -120,7 +122,7 @@ function saveWallpaper(channelId: string, url: string, skipSync = false) {
                     password: settings.store.vpsPassword
                 }));
             } else {
-                // Ghost Message Sync (Fallback)
+                // Otherwise ghost message sync
                 const otherUserId = channel.recipients[0];
                 if (RelationshipStore.isFriend(otherUserId)) {
                     const payload = url || "DELETE";
@@ -143,6 +145,25 @@ function saveLocalWallpaperOnly(channelId: string, url: string) {
     }
 }
 
+/**
+ * Takes a friend's (or your own) sync message, if it is one. Wallpapers are only synced in DMs, so it counts only in
+ * the DM between you and its sender: in a server channel any friend could otherwise change what you see there
+ */
+function takeSyncMessage(channelId: string, message: any) {
+    if (!message?.content?.startsWith(SYNC_PREFIX)) return false;
+    const authorId = message.author?.id;
+    const isFromMe = authorId === UserStore.getCurrentUser()?.id;
+    const channel = ChannelStore.getChannel(channelId);
+    if (channel?.type !== 1) return false;
+    if (!isFromMe && !(channel.recipients?.[0] === authorId && RelationshipStore.isFriend(authorId))) return false;
+
+    const payload = message.content.slice(SYNC_PREFIX.length);
+    saveLocalWallpaperOnly(channelId, payload === "DELETE" ? "" : payload);
+    // Only the sender can delete it; asking for a friend's message just earns a 403 each time
+    if (isFromMe) MessageActions?.deleteMessage?.(channelId, message.id);
+    return true;
+}
+
 function getWallpaper(channelId: string): string {
     const wp = getWallpapers();
     return wp[channelId] || settings.store.defaultWallpaper || "";
@@ -153,7 +174,7 @@ function hasWallpaper(channelId: string): boolean {
     return !!wp[channelId];
 }
 
-// ── File picker (browser input fallback) ───────────────────────────────────────
+// ---- File picker (browser input fallback) ----
 
 async function uploadToImgur(file: File): Promise<string | null> {
     const formData = new FormData();
@@ -186,14 +207,50 @@ function pickFileRaw(): Promise<File | null> {
     });
 }
 
+// Discord's desktop app has no prompt(): it returns nothing there, so the address is asked for in a window of our own
+function WallpaperUrlModal({ modalProps, onApply }: { modalProps: RenderModalProps; onApply(url: string): void; }) {
+    const [url, setUrl] = useState("");
+    const [tried, setTried] = useState(false);
+    const address = url.trim();
+    const valid = /^https?:\/\//i.test(address) && isSafeMediaUrl(address);
+
+    const apply = () => {
+        setTried(true);
+        if (!valid) return;
+        onApply(address);
+        modalProps.onClose();
+    };
+
+    return (
+        <EndcordModal
+            {...modalProps}
+            size="sm"
+            title={t("Wallpaper from a URL")}
+            subtitle={t("A link to an image, a GIF or a video. In a DM, links from Discord or Imgur reach your friend too.")}
+            actions={[
+                { text: t("Cancel"), variant: "secondary", onClick: modalProps.onClose },
+                { text: t("Apply"), variant: "primary", onClick: apply }
+            ]}
+        >
+            <TextInput autoFocus value={url} placeholder="https://" onChange={(value: string) => setUrl(value)} onKeyDown={(e: React.KeyboardEvent) => { if (e.key === "Enter") apply(); }} />
+            {tried && !valid && <Text variant="text-sm/normal" color="text-feedback-critical" style={{ marginTop: 8 }}>{t("That isn't a link to an image or a video.")}</Text>}
+        </EndcordModal>
+    );
+}
+
 function promptUrl(): Promise<string | null> {
     return new Promise(resolve => {
-        const url = prompt("Enter the URL for the image, gif, or video:");
-        resolve(url?.trim() || null);
+        let answered = false;
+        openModal(props => (
+            <WallpaperUrlModal
+                modalProps={{ ...props, onClose: () => { props.onClose(); if (!answered) resolve(null); } }}
+                onApply={url => { answered = true; resolve(url); }}
+            />
+        ));
     });
 }
 
-// ── CSS Injection ──────────────────────────────────────────────────────────────
+// ---- CSS ----
 
 const STYLE_ID = "channel-wallpaper-style";
 const CONTAINER_ID = "channel-wallpaper-container";
@@ -219,7 +276,7 @@ function applyWallpaper(channelId?: string) {
     if (!document.getElementById(STYLE_ID)) {
         const style = document.createElement("style");
         style.id = STYLE_ID;
-        // Cover both old AND new Discord class names (changes frequently)
+        // Old and new Discord class names, they change often
         style.textContent = `
 /* Messages area: make the background transparent to let the wallpaper show through */
 [class*="messagesWrapper"],
@@ -275,7 +332,7 @@ function applyWallpaper(channelId?: string) {
     }
 
     const tryInject = () => {
-        // Search with both old AND new Discord class names (changes frequently)
+        // Old and new Discord class names, they change often
         const target =
             document.querySelector('[class*="messagesWrapper"]') ||
             document.querySelector('[class*="chat-messages"]') ||
@@ -283,7 +340,7 @@ function applyWallpaper(channelId?: string) {
             document.querySelector('[class*="content_"][class*="chat"]');
 
         if (target && target instanceof HTMLElement) {
-            // Ensure the element is in the main area (not in a popup)
+            // Only the main chat area, not a popup
             if (!target.closest('[class*="popout"]') && !target.closest('[class*="modal"]')) {
                 if (!target.querySelector(`#${CONTAINER_ID}`)) {
                     (target).style.position = "relative";
@@ -311,25 +368,25 @@ function applyWallpaper(channelId?: string) {
     }
 }
 
-// ── Context menu actions ───────────────────────────────────────────────────────
+// ---- Context menu actions ----
 
 async function setWallpaperFromFile(channelId: string) {
     const file = await pickFileRaw();
     if (!file) return;
 
-    showToast("Uploading wallpaper to Imgur for sync...", Toasts.Type.MESSAGE);
+    showToast(t("Uploading the wallpaper to Imgur…"), Toasts.Type.MESSAGE);
     const imgurUrl = await uploadToImgur(file);
 
     if (imgurUrl) {
         saveWallpaper(channelId, imgurUrl, false);
-        showToast("Wallpaper uploaded and synced!", Toasts.Type.SUCCESS);
+        showToast(t("Wallpaper set"), Toasts.Type.SUCCESS);
     } else {
         // Local fallback if upload fails
         const reader = new FileReader();
         reader.onload = () => {
             const dataUrl = reader.result as string;
             saveWallpaper(channelId, dataUrl, true);
-            showToast("Imgur upload failed. Wallpaper applied locally only.", Toasts.Type.FAILURE);
+            showToast(t("Imgur didn't take the file, so the wallpaper is only on this PC"), Toasts.Type.FAILURE);
         };
         reader.readAsDataURL(file);
     }
@@ -339,16 +396,16 @@ async function setWallpaperFromUrl(channelId: string) {
     const url = await promptUrl();
     if (url) {
         saveWallpaper(channelId, url, false);
-        showToast("Wallpaper applied and synced!", Toasts.Type.SUCCESS);
+        showToast(t("Wallpaper set"), Toasts.Type.SUCCESS);
     }
 }
 
 function removeWallpaper(channelId: string) {
     saveWallpaper(channelId, "");
-    showToast("Wallpaper deleted", Toasts.Type.SUCCESS);
+    showToast(t("Wallpaper removed"), Toasts.Type.SUCCESS);
 }
 
-// ── Context Menu Patches ───────────────────────────────────────────────────────
+// ---- Context menu patches ----
 
 function WallpaperIcon() {
     return (
@@ -384,7 +441,7 @@ function buildWallpaperMenu(channelId: string): React.ReactElement {
                     <Menu.MenuSeparator />
                     <Menu.MenuItem
                         id="wallpaper-remove"
-                        label={isDM ? "🗑️ Delete for both" : "🗑️ Delete wallpaper"}
+                        label={isDM ? t("Remove for both of you") : t("Remove wallpaper")}
                         color="danger"
                         action={() => removeWallpaper(channelId)}
                     />
@@ -394,7 +451,7 @@ function buildWallpaperMenu(channelId: string): React.ReactElement {
     );
 }
 
-// ── VPS Sync logic ─────────────────────────────────────────────────────────────
+// ---- Sync server ----
 
 let vpsSocket: WebSocket | null = null;
 let vpsReconnectTimer: ReturnType<typeof setTimeout> | null = null;
@@ -444,10 +501,10 @@ function initVPSSync() {
     }
 }
 
-// Right click on a user → find the DM channel with that specific user
+// User context menu: use the DM with that user
 const userContextMenuPatch: NavContextMenuPatchCallback = (children, { user }: any) => {
     if (!user?.id) return;
-    // Resolve the DM channel with this user (not the current channel!)
+    // The DM with this user, not the channel that's open
     const channelId = (ChannelStore as any).getDMFromUserId?.(user.id);
     if (!channelId) return;
 
@@ -456,7 +513,7 @@ const userContextMenuPatch: NavContextMenuPatchCallback = (children, { user }: a
     );
 };
 
-// Right click on a channel
+// Channel context menu
 const channelContextMenuPatch: NavContextMenuPatchCallback = (children, { channel }: any) => {
     if (!channel?.id) return;
     children.push(
@@ -464,7 +521,7 @@ const channelContextMenuPatch: NavContextMenuPatchCallback = (children, { channe
     );
 };
 
-// ── Plugin ─────────────────────────────────────────────────────────────────────
+// ---- Plugin ----
 
 export default definePlugin({
     name: "ChannelWallpaper",
@@ -492,39 +549,13 @@ export default definePlugin({
         },
         MESSAGE_CREATE(data: { channelId: string, message: any; }) {
             if (!settings.store.syncWithFriends) return;
-            const { message, channelId } = data;
-
-            if (message.content?.startsWith(SYNC_PREFIX)) {
-                const isFromMe = message.author.id === UserStore.getCurrentUser().id;
-                const isFromFriend = RelationshipStore.isFriend(message.author.id);
-
-                if (isFromFriend || isFromMe) {
-                    const payload = message.content.slice(SYNC_PREFIX.length);
-                    const wpUrl = payload === "DELETE" ? "" : payload;
-                    saveLocalWallpaperOnly(channelId, wpUrl);
-                    if (MessageActions?.deleteMessage) {
-                        MessageActions.deleteMessage(channelId, message.id);
-                    }
-                }
-            }
+            takeSyncMessage(data.channelId, data.message);
         },
         LOAD_MESSAGES_SUCCESS(d: any) {
             if (!settings.store.syncWithFriends) return;
-            const msgs = d.messages || [];
             let changed = false;
-            for (const msg of msgs) {
-                if (msg.content?.startsWith(SYNC_PREFIX)) {
-                    const isFromMe = msg.author.id === UserStore.getCurrentUser().id;
-                    const isFromFriend = RelationshipStore.isFriend(msg.author.id);
-                    if (isFromFriend || isFromMe) {
-                        const payload = msg.content.slice(SYNC_PREFIX.length);
-                        saveLocalWallpaperOnly(d.channelId, payload === "DELETE" ? "" : payload);
-                        if (MessageActions?.deleteMessage) {
-                            MessageActions.deleteMessage(d.channelId, msg.id);
-                        }
-                        changed = true;
-                    }
-                }
+            for (const msg of d.messages || []) {
+                if (takeSyncMessage(d.channelId, msg)) changed = true;
             }
             if (changed) {
                 trackedTimeout(() => applyWallpaper(d.channelId), 100);

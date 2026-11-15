@@ -288,18 +288,7 @@ export default definePlugin({
                 return !settings.store.ignoredActivities.some(activity => activity.id === exePath);
             }
 
-
         return true;
-    },
-
-    renderToggleGameActivityButton(props: { id?: string; name: string, exePath: string; }, nowPlaying: boolean) {
-        return (
-            <ErrorBoundary noop>
-                <div style={{ marginLeft: 12, zIndex: 0 }}>
-                    {ToggleActivityComponent({ id: props.id ?? props.exePath, name: props.name, type: ActivitiesTypes.Game }, nowPlaying)}
-                </div>
-            </ErrorBoundary>
-        );
     },
 
     renderToggleActivityButton(props: { id: string; name: string; }) {

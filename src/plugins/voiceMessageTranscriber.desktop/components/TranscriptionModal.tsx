@@ -5,6 +5,7 @@
  */
 
 import { BaseText } from "@components/BaseText";
+import { EndcordModal } from "@components/EndcordModal";
 import { Flex } from "@components/Flex";
 import { Heading } from "@components/Heading";
 import { RenderModalProps } from "@endcord/discord-types";
@@ -14,7 +15,7 @@ import { cl, formatTranscript } from "@plugins/voiceMessageTranscriber.desktop/u
 import { TranscriptionJob, TranscriptionResult } from "@plugins/voiceMessageTranscriber.desktop/utils/worker";
 import { copyToClipboard } from "@utils/clipboard";
 import { t } from "@utils/i18n";
-import { Modal, useEffect, useRef, useState } from "@webpack/common";
+import { useEffect, useRef, useState } from "@webpack/common";
 
 export function TranscriptionModal(props: { modalProps: RenderModalProps, src: string, options: { language: string, task: string; }; }) {
     const { modalProps, src, options } = props;
@@ -95,7 +96,7 @@ export function TranscriptionModal(props: { modalProps: RenderModalProps, src: s
     };
 
     return (
-        <Modal
+        <EndcordModal
             {...modalProps}
             size="md"
             title={options.task === "translate" ? "Voice Message Translation" : "Voice Message Transcription"}
@@ -142,6 +143,6 @@ export function TranscriptionModal(props: { modalProps: RenderModalProps, src: s
                     </Flex>
                 )}
             </div>
-        </Modal>
+        </EndcordModal>
     );
 }

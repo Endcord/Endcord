@@ -28,7 +28,7 @@ export interface StarterPack {
     recommended?: boolean;
 }
 
-/** The plugins people turn on most, in that order. The Plugins tab marks them, and the Popular pack holds them, but for the ones below */
+/** Most-enabled plugins, in order. Marked in the Plugins tab and used for the Popular pack, minus the ones below */
 export const POPULAR_PLUGIN_ORDER: readonly string[] = [
     "CustomProfile",
     "MessageLogger",
@@ -52,19 +52,19 @@ export const POPULAR_PLUGIN_ORDER: readonly string[] = [
 const POPULAR_BY_CHOICE: readonly string[] = ["SpotifyLyricsStatus"];
 
 /**
- * Playful plugins: pets, sparkles and effects. A new user's Discord starts out looking serious, so these never come
- * with a pack picked for them and wait in their own pack, for whoever wants them
+ * Fun plugins (pets, sparkles, effects). Never part of a preselected pack, so a fresh install stays clean; they
+ * get a pack of their own instead
  */
 export const FUN_PLUGINS: readonly string[] = ["oneko", "ClickSparkles", "NeonGlow", "WigglyText", "petpet"];
 
-// Each one adds to what's already on. Plugins that aren't in this build, like desktop-only ones on the web, drop out
+// Packs add to what's already enabled. Plugins missing from this build (desktop-only ones on web) are skipped
 const PACKS: StarterPack[] = [
     {
         id: "popular",
         name: "Popular",
         description: "What Endcord users turn on most: your own profile look, deleted messages kept, Nitro emoji and silent typing.",
         Icon: HeartIcon,
-        // A pack picked for you never turns on something Discord can suspend you for, or something just for fun
+        // Preselected packs never include plugins that break Discord's ToS or are just for fun
         plugins: POPULAR_PLUGIN_ORDER.filter(name => !BAN_RISK[name] && !FUN_PLUGINS.includes(name) && !POPULAR_BY_CHOICE.includes(name)),
         recommended: true
     },
@@ -144,7 +144,7 @@ function turnOn(name: string, result: ApplyResult) {
     if (restartNeeded || pluginRequiresRestart(plugin)) {
         result.restartNeeded = true;
     } else if (!startPlugin(plugin)) {
-        // It'll get its chance on the next start
+        // Starts on the next launch
         result.restartNeeded = true;
     }
 }
@@ -162,14 +162,14 @@ function turnOff(name: string, result: ApplyResult) {
 }
 
 /**
- * Turns these plugins on. With exact, every other plugin a person chose is turned off, which is what switching
- * to a profile means; without it, nothing is turned off, which is what adding a starter pack means
+ * Enables these plugins. With `exact`, every other plugin the user enabled gets disabled (switching profiles);
+ * without it nothing is disabled (adding a starter pack)
  */
 export function applyPluginSet(names: Iterable<string>, { exact }: { exact: boolean; }): ApplyResult {
     const wanted = new Set([...names].filter(isChoosablePlugin));
     const result: ApplyResult = { restartNeeded: false, turnedOn: 0, turnedOff: 0 };
 
-    // Off first, so a helper one of the wanted plugins needs is turned back on by it
+    // Disable first, so dependencies of the wanted plugins get re-enabled by them
     if (exact) {
         for (const name of getChosenPlugins()) {
             if (!wanted.has(name)) turnOff(name, result);
@@ -230,8 +230,8 @@ export const getPackAdditions = (packs: readonly StarterPack[]) =>
 const nextFrame = () => new Promise<void>(resolve => requestAnimationFrame(() => setTimeout(resolve)));
 
 /**
- * Adds packs one plugin at a time and lets the page draw in between, so a screen showing the progress keeps moving
- * instead of freezing while two dozen plugins start
+ * Adds packs one plugin at a time and yields in between, so the progress UI keeps animating instead of freezing
+ * while a couple dozen plugins start
  */
 export async function addStarterPacksGradually(packs: StarterPack[], onProgress: (done: number, total: number) => void) {
     await takeSnapshot("welcome", packs.map(pack => pack.name).join(", "));
@@ -241,13 +241,13 @@ export async function addStarterPacksGradually(packs: StarterPack[], onProgress:
     onProgress(0, names.length);
     for (const [index, name] of names.entries()) {
         await nextFrame();
-        // A plugin earlier in the list may have turned this one on as its helper
+        // May already be on as a dependency of an earlier plugin
         if (!Settings.plugins[name]?.enabled) {
             try {
                 turnOn(name, result);
             } catch (err) {
                 logger.error(`Couldn't turn ${name} on`, err);
-                // It's on in the settings and gets its chance on the next start
+                // Enabled in settings, starts on the next launch
                 result.restartNeeded = true;
             }
         }

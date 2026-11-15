@@ -16,7 +16,8 @@ import {
     BackupChannel,
     BackupRole,
     COPYABLE_CHANNEL_TYPES,
-    GuildBackup
+    GuildBackup,
+    OLD_BACKUP_FORMAT
 } from "./types";
 
 interface RawRole {
@@ -228,7 +229,7 @@ export function parseBackup(text: string): GuildBackup {
         throw new Error("The selected file is not valid JSON.");
     }
 
-    if (!data || typeof data !== "object" || data.format !== BACKUP_FORMAT) {
+    if (!data || typeof data !== "object" || (data.format !== BACKUP_FORMAT && data.format !== OLD_BACKUP_FORMAT)) {
         throw new Error("This file is not a ServerBackup backup.");
     }
 

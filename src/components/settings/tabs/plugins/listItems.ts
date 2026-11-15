@@ -5,20 +5,36 @@
  */
 
 import { hasAnyVisibleSettings, plugins } from "@api/PluginManager";
+import { t } from "@utils/i18n";
 import { Plugin } from "@utils/types";
 
 import { getPluginFlag, getPluginListInfo } from "~plugins";
 
-// The desktop build keeps the code of most plugins outside its script and runs it only when needed. Listing every
-// plugin would load all of it, so the list shows plugins whose code isn't loaded from what the build read of their
-// source instead, and only gets the real plugin to turn it on or off or open its settings.
+// On desktop most plugin code lives outside the main script and only runs when needed. Rendering the list shouldn't
+// load all of it, so plugins that aren't loaded are listed from the metadata the build extracted, and the real
+// plugin is only loaded to toggle it or open its settings.
 
 const IS_LIST_ITEM = Symbol("Endcord.PluginListItem");
 
-/** A plugin as the list shows it: the plugin itself if its code is loaded, else what was read of it when building */
+/** The loaded plugin, or its build-time metadata if its code isn't loaded */
 export function listItem(name: string): Plugin {
     const info = getPluginListInfo(name);
-    if (!info) return plugins[name];
+    if (!info) {
+        try {
+            return plugins[name];
+        } catch (e) {
+            if (!(e as { needsRestart?: boolean; } | null)?.needsRestart) throw e;
+            // Its code is gone with a renderer.js replaced while Discord runs. Listed with that instead of breaking
+            // the list; switching it on asks for the restart (see PluginCard)
+            return {
+                name,
+                description: t("Endcord was updated. Restart Discord to load {name}.", { name }),
+                hidden: false,
+                required: !!getPluginFlag(name, "required"),
+                [IS_LIST_ITEM]: true
+            } as unknown as Plugin;
+        }
+    }
 
     return {
         name,
@@ -34,7 +50,7 @@ export function listItem(name: string): Plugin {
     } as unknown as Plugin;
 }
 
-/** The plugin behind a list item, loading its code if it isn't yet */
+/** Resolves a list item to the real plugin, loading its code if needed */
 export const realPlugin = (plugin: Plugin) => IS_LIST_ITEM in plugin ? plugins[plugin.name] : plugin;
 
 /** Whether the plugin's card shows the settings wheel rather than the info button */

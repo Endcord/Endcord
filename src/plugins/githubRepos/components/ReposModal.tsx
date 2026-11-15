@@ -4,10 +4,11 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { EndcordModal } from "@components/EndcordModal";
 import { RenderModalProps } from "@endcord/discord-types";
 import { RepoGroup, RepoSortMode } from "@plugins/githubRepos/types";
 import { PERSONAL_GROUP_KEY, sortGroups } from "@plugins/githubRepos/utils";
-import { Modal, React, useState } from "@webpack/common";
+import { React, useState } from "@webpack/common";
 
 import { cl, settings } from "..";
 import { RepoCard } from "./RepoCard";
@@ -28,7 +29,7 @@ export function ReposModal({ groups, initialActiveKey, username, rootProps }: Re
     const activeGroup = sortedGroups.find(g => g.key === activeKey) ?? sortedGroups[0];
 
     return (
-        <Modal
+        <EndcordModal
             {...rootProps}
             className={cl("modal")}
             size="lg"
@@ -66,6 +67,6 @@ export function ReposModal({ groups, initialActiveKey, username, rootProps }: Re
                     ))}
                 </div>
             </div>
-        </Modal>
+        </EndcordModal>
     );
 }

@@ -132,7 +132,8 @@ export default definePlugin({
         {
             find: ";usedtx=",
             replacement: {
-                match: /;usedtx=\$\{(\i)\?"0":"1"\}/,
+                // Discord's next update writes the test as !1===x
+                match: /;usedtx=\$\{(?:!1===)?\i\?"0":"1"\}/,
                 replace: '$&${$self.settings.store.forceStereo?";stereo=1;sprop-stereo=1":""}',
             },
             noWarn: true,

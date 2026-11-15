@@ -18,9 +18,9 @@ import { IS_VANILLA, THEMES_DIR } from "./utils/constants";
 import { ensureSafePath } from "./utils/ensureSafePath";
 import { installExt } from "./utils/extensions";
 
-if (IS_VESKTOP) preOpenRenderer();
+if (IS_ENDCORD_DESKTOP) preOpenRenderer();
 
-if (IS_VESKTOP || !IS_VANILLA) {
+if (IS_ENDCORD_DESKTOP || !IS_VANILLA) {
     app.whenReady().then(() => {
         protocol.handle("endcord", ({ url: unsafeUrl }) => {
             let url = decodeURI(unsafeUrl).slice("endcord://".length).replace(/\?v=\d+$/, "");

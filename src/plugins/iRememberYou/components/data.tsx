@@ -126,7 +126,7 @@ export class Data {
         const now = Date.now();
         const LIMIT = 1_000;
 
-        const clientId = UserStore.getCurrentUser().id;
+        const clientId = UserStore.getCurrentUser()?.id;
         if (!clientId) {
             return;
         }

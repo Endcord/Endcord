@@ -9,6 +9,11 @@ import { GuildMemberStore, IconUtils } from "@webpack/common";
 
 import { Devs, DevsById } from "./constants";
 
+/** A CSS url() for a link, quoted and escaped, so nothing in the link can end the url() or add to the declaration */
+export function cssUrl(url: string) {
+    return `url("${url.replace(/["\\\n\r]/g, c => `\\${c.charCodeAt(0).toString(16)} `)}")`;
+}
+
 /**
  * Calls .join(" ") on the arguments
  * classes("one", "two") => "one two"
@@ -64,7 +69,7 @@ export const checkIntersecting = (el: Element) => {
 
 export const isPluginDev = (id: string) => Object.hasOwn(DevsById, id);
 
-/** The people who make Endcord, out of everyone who has helped build it */
+/** Endcord's developers, a subset of the contributors */
 export const EndcordDeveloperIds: readonly string[] = [String(Devs.rootpoi.id), String(Devs.ewlle.id)];
 export const isEndcordDeveloper = (id: string) => EndcordDeveloperIds.includes(id);
 

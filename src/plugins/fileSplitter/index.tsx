@@ -8,6 +8,7 @@ import "./style.css";
 
 import { definePluginSettings, migratePluginSettings } from "@api/Settings";
 import { BaseText } from "@components/BaseText";
+import { EndcordModal } from "@components/EndcordModal";
 import { Flex } from "@components/Flex";
 import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
@@ -18,12 +19,7 @@ import {
     openModal,
 } from "@utils/modal";
 import definePlugin, { OptionType } from "@utils/types";
-import {
-    Button,
-    Modal,
-    React,
-    useState,
-} from "@webpack/common";
+import { Button, React, useState } from "@webpack/common";
 
 const settings = definePluginSettings({
     chunkSize: {
@@ -31,11 +27,6 @@ const settings = definePluginSettings({
         description: "Chunk size in MB (1-100)",
         default: 10,
         isValid: (value: number) => value >= 1 && value <= 100,
-    },
-    autoRejoin: {
-        type: OptionType.BOOLEAN,
-        description: "Automatically join files after download",
-        default: true,
     },
     showProgress: {
         type: OptionType.BOOLEAN,
@@ -112,7 +103,7 @@ function FileSplitterModal({ modalProps }: { modalProps: ModalProps; }) {
                 `✅ File Splitter: Successfully split ${file.name} into ${totalChunks} chunks`
             );
         } catch (error) {
-            console.error("❌ File Splitter: Error splitting file:", error);
+            console.error("[FileSplitter] Couldn't split the file:", error);
         } finally {
             setIsProcessing(false);
         }
@@ -161,7 +152,7 @@ pause`;
     };
 
     return (
-        <Modal {...modalProps} size="lg" title={t("🔪 File Splitter")}>
+        <EndcordModal {...modalProps} size="lg" title={t("🔪 File Splitter")}>
             <ModalContent>
                 <div style={{ padding: "16px" }}>
                     <BaseText size="md" style={{ marginBottom: "16px" }}>
@@ -287,7 +278,7 @@ pause`;
                         {t("Close")}</Button>
                 </Flex>
             </ModalFooter>
-        </Modal>
+        </EndcordModal>
     );
 }
 

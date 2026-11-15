@@ -46,7 +46,6 @@ export class Mutex {
         const rv = this.current.then(() => _resolve);
         // Don't allow the next request until the new promise is done
         this.current = p;
-        // Return the new promise
         return rv;
     }
 }

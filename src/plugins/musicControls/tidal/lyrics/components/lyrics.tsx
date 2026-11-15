@@ -38,7 +38,7 @@ function LyricsDisplay({ scroll = true }: { scroll?: boolean; }) {
 
     if (!currentLyrics) {
         return showMusicNoteOnNoLyrics ? (
-            <div className="eq-tidal-lyrics"
+            <div className="ec-tidal-lyrics"
                 onContextMenu={e => ContextMenuApi.openContextMenu(e, () => <LyricsContextMenu />)}
             >
                 <TooltipContainer text={t("No lyrics found")}>
@@ -50,7 +50,7 @@ function LyricsDisplay({ scroll = true }: { scroll?: boolean; }) {
 
     return (
         <div
-            className="eq-tidal-lyrics"
+            className="ec-tidal-lyrics"
             onClick={() => openModal(props => <LyricsModal rootProps={props} />)}
             onContextMenu={e => ContextMenuApi.openContextMenu(e, () => <LyricsContextMenu />)}
         >

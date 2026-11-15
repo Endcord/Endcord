@@ -7,26 +7,20 @@
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 
-interface Choice {
-    key: number;
-    value: any;
-    label: string;
-}
-
 export default definePlugin({
     name: "DefaultStatusForever",
     description: "Make statuses default to last forever",
     tags: ["Activity", "Utility"],
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
-    patches: [],
-
-    patchChoices(choices: Choice[]) {
-        const nullChoice = choices.find(choice => choice.value === null);
-        if (nullChoice) {
-            choices.splice(choices.indexOf(nullChoice), 1);
-            choices.unshift(nullChoice);
+    patches: [
+        {
+            // The custom status window starts "Clear after" at Today when no status is set
+            find: '"CLEAR_AFTER"',
+            replacement: {
+                match: /(?<=""===\i\.expiresAtMs\)return \i\.\i\.)TODAY/,
+                replace: "DONT_CLEAR"
+            }
         }
-        return choices;
-    }
+    ]
 });

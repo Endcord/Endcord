@@ -148,14 +148,14 @@ function GoogleFontSearch({ onSelect }: { onSelect: (font: GoogleFontMetadata) =
             />
 
             {results.length > 0 && (
-                <div className={classes(Margins.top8, "eq-googlefonts-results")}>
+                <div className={classes(Margins.top8, "ec-googlefonts-results")}>
                     {results.map(font => (
                         <Card
                             key={font.family}
-                            className={classes("eq-googlefonts-card", Margins.bottom8)}
+                            className={classes("ec-googlefonts-card", Margins.bottom8)}
                             onClick={() => onSelect(font)}
                         >
-                            <div className="eq-googlefonts-preview" style={{ fontFamily: font.family }}>
+                            <div className="ec-googlefonts-preview" style={{ fontFamily: font.family }}>
                                 <HeadingTertiary>{font.displayName}</HeadingTertiary>
                                 <Paragraph>{t("The quick brown fox jumps over the lazy dog")}</Paragraph>
                             </div>

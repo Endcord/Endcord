@@ -6,11 +6,12 @@
 
 import "./style.css";
 
+import { EndcordModal } from "@components/EndcordModal";
 import { RenderModalProps } from "@endcord/discord-types";
 import { ButtonAction } from "@plugins/keyboardNavigation/commands";
 import { classNameFactory } from "@utils/css";
 import { t } from "@utils/i18n";
-import { closeAllModals, Modal,openModal, React, TextInput, useEffect, useState } from "@webpack/common";
+import { closeAllModals, openModal, React, TextInput, useEffect, useState } from "@webpack/common";
 
 import { settings } from "..";
 
@@ -100,7 +101,7 @@ export function MultipleChoice({ modalProps, onSelect, choices }: MultipleChoice
     }, [queryEh]);
 
     return (
-        <Modal {...modalProps} size="md" title={t("Multiple Choice")}>
+        <EndcordModal {...modalProps} size="md" title={t("Multiple Choice")}>
             <div className={cl("root")} onKeyDown={handleKeyDown} onWheel={handleWheel}>
                 <TextInput
                     value={queryEh}
@@ -123,7 +124,7 @@ export function MultipleChoice({ modalProps, onSelect, choices }: MultipleChoice
                     ))}
                 </div>
             </div>
-        </Modal>
+        </EndcordModal>
     );
 }
 

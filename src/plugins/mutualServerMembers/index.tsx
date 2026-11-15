@@ -6,6 +6,7 @@
 
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { Devs } from "@utils/constants";
+import { ENDCORD_THEME } from "@utils/css";
 import { t } from "@utils/i18n";
 import { ModalContent, ModalFooter, ModalHeader, ModalRoot, openModal } from "@utils/modal";
 import definePlugin from "@utils/types";
@@ -22,7 +23,7 @@ import {
     useState,
 } from "@webpack/common";
 
-// ─── Utility ──────────────────────────────────────────────────────────────────
+// ---- Utility ----
 
 function getMutualMembers(guildAId: string, guildBId: string): string[] {
     const membersA = new Set(
@@ -32,7 +33,7 @@ function getMutualMembers(guildAId: string, guildBId: string): string[] {
     return membersB.filter(id => membersA.has(id));
 }
 
-// ─── Modal ────────────────────────────────────────────────────────────────────
+// ---- Modal ----
 
 function MutualMembersModal({ guildAId, guildBId, modalProps }: { guildAId: string; guildBId: string; modalProps: any; }) {
     const guildA = GuildStore.getGuild(guildAId);
@@ -170,7 +171,7 @@ function MutualMembersModal({ guildAId, guildBId, modalProps }: { guildAId: stri
     };
 
     return (
-        <ModalRoot {...modalProps} size="small">
+        <ModalRoot {...modalProps} className={ENDCORD_THEME} size="small">
             <ModalHeader>
                 <div style={styles.header}>
                     <span style={styles.title}>
@@ -182,6 +183,7 @@ function MutualMembersModal({ guildAId, guildBId, modalProps }: { guildAId: stri
                 </div>
             </ModalHeader>
             <ModalContent>
+                <div className="ec-modal-marker" hidden />
                 <div style={styles.controls}>
                     <input
                         style={styles.searchInput}
@@ -227,7 +229,7 @@ function MutualMembersModal({ guildAId, guildBId, modalProps }: { guildAId: stri
     );
 }
 
-// ─── Guild Picker Modal ───────────────────────────────────────────────────────
+// ---- Server picker ----
 
 function GuildPickerModal({ fixedGuildId, modalProps }: { fixedGuildId?: string; modalProps: any; }) {
     const allGuilds = Object.values(GuildStore.getGuilds()) as any[];
@@ -322,11 +324,12 @@ function GuildPickerModal({ fixedGuildId, modalProps }: { fixedGuildId?: string;
     }
 
     return (
-        <ModalRoot {...modalProps} size="small">
+        <ModalRoot {...modalProps} className={ENDCORD_THEME} size="small">
             <ModalHeader>
                 <span style={s.title}>{t("Compare Servers")}</span>
             </ModalHeader>
             <ModalContent>
+                <div className="ec-modal-marker" hidden />
                 <div style={s.root}>
                     <button style={s.toggle} onClick={() => setUseManual(v => !v)}>
                         {useManual ? "← Use dropdowns" : "Enter server IDs manually →"}
@@ -369,7 +372,7 @@ function GuildPickerModal({ fixedGuildId, modalProps }: { fixedGuildId?: string;
     );
 }
 
-// ─── Context menu patch ───────────────────────────────────────────────────────
+// ---- Context menu ----
 
 const ctxMenuPatch: NavContextMenuPatchCallback = (children, props) => {
     if (!props.guild) return;
@@ -385,7 +388,7 @@ const ctxMenuPatch: NavContextMenuPatchCallback = (children, props) => {
     );
 };
 
-// ─── Plugin ───────────────────────────────────────────────────────────────────
+// ---- Plugin ----
 
 export default definePlugin({
     name: "MutualServerMembers",

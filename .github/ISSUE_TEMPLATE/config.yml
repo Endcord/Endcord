@@ -1,11 +1,14 @@
 blank_issues_enabled: false
 contact_links:
-  - name: 💬 Discord Community
-    url: https://discord.gg/D9uwnFnqmd
-    about: For plugin requests, support questions, and general help - join our Discord server
+  - name: 💬 Endcord Discord server
+    url: https://discord.gg/endcord
+    about: For plugin requests, support questions, and general help - join the Endcord server
   - name: 🔌 Plugin Requests
-    url: https://discord.gg/D9uwnFnqmd
-    about: Want a new plugin? Request it in our Discord community, not here
-  - name: ❓ Support & Questions
-    url: https://discord.gg/D9uwnFnqmd
-    about: Need help? Ask in our Discord server for faster responses
+    url: https://discord.gg/endcord
+    about: Want a new plugin? Request it on the Endcord server, not here
+  - name: ⬇️ Download the latest Endcord
+    url: https://endcord.com/download
+    about: Discord grey or not starting? Get the newest installer first and click Update
+  - name: 🖥️ Endcord Desktop app problems
+    url: https://github.com/Endcord/EndcordDesktop/issues
+    about: The window, tray, taskbar, screen sharing, setup or updates of Endcord Desktop. Plugin bugs stay here

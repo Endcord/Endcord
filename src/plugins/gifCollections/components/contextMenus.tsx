@@ -183,31 +183,6 @@ export function RemoveItemContextMenuItems({ type, nameOrId }: { type: "collecti
     );
 }
 
-export function GifPickerContextMenu({ gif }: { gif: Gif; }) {
-    return (
-        <Menu.Menu
-            navId="gif-collection-id"
-            onClose={() => FluxDispatcher.dispatch({ type: "CONTEXT_MENU_CLOSE" })}
-            aria-label="Gif Collections"
-        >
-            {settings.store.showCopyImageLink && (
-                <Menu.MenuItem
-                    label={t("Copy Image Link")}
-                    key="copy-image-link"
-                    id="copy-image-link"
-                    icon={LinkIcon}
-                    leadingAccessory={{ type: "icon", icon: LinkIcon }}
-                    action={() => {
-                        copyToClipboard(gif.url);
-                        showToast("Image link copied to clipboard", Toasts.Type.SUCCESS);
-                    }}
-                />
-            )}
-            {AddToCollectionMenu(gif)}
-        </Menu.Menu>
-    );
-}
-
 export function getGifPickerContextMenuItems(src: string, url: string, height: number, width: number) {
     const gif: Gif = { id: uuidv4(settings.store.itemPrefix), src, url, height, width };
     return (

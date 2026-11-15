@@ -17,7 +17,7 @@ export const PREVIEW_IMAGE_KEY = "CustomStreamPreview_image";
 
 /** Resend the preview every 5 minutes while the stream is live. */
 const RESEND_INTERVAL_MS = 300_000;
-/** Discord allows a preview update at most once per 60s; add a 10s safety buffer. */
+/** Discord takes one preview per 60s, plus 10s of margin */
 const RATE_LIMIT_MS = 70_000;
 
 // Discord voice-channel type -> stream key prefix.
@@ -28,28 +28,24 @@ const ChannelTypeToStreamPrefix: Record<number, "call" | "guild"> = {
     13: "guild" // Stage voice
 };
 
-// Module-level timers + flags. This deliberately avoids a custom Flux store:
-// a couple of mutable refs are enough to drive the resend loop.
+// Plain module state. A Flux store would be overkill for one resend loop
 let resendIntervalId: ReturnType<typeof setInterval> | null = null;
 let pendingTimeoutId: ReturnType<typeof setTimeout> | null = null;
 let lastSentAt = 0;
 
-// ── Streaming state (read straight from Discord's store) ──────────────────────
-/** True while the current user is actively streaming (screen sharing). */
+// ---- Streaming state ----
+/** Whether we're streaming right now */
 export const getStreamingState = (): boolean =>
     Boolean(ApplicationStreamingStore.getCurrentUserActiveStream());
 
-// ── Saved preview image (DataStore) ───────────────────────────────────────────
+// ---- Saved preview image ----
 export const getSavedPreview = async (): Promise<string | null> =>
     (await DataStore.get<string>(PREVIEW_IMAGE_KEY)) ?? null;
 
 export const savePreview = (image: string): Promise<void> =>
     DataStore.set(PREVIEW_IMAGE_KEY, image);
 
-export const clearSavedPreview = (): Promise<void> =>
-    DataStore.del(PREVIEW_IMAGE_KEY);
-
-// ── Stream key handling ───────────────────────────────────────────────────────
+// ---- Stream key ----
 export const parseStreamKey = (streamKey: string): ParsedStreamKey | null => {
     const [type, ...rest] = streamKey.split(":");
 
@@ -84,7 +80,7 @@ const buildCurrentStreamKey = (): string | null => {
     return `call:${channelId}:${userId}`;
 };
 
-// ── Upload ────────────────────────────────────────────────────────────────────
+// ---- Upload ----
 const uploadPreviewOnce = async (image: string): Promise<void> => {
     const streamKey = buildCurrentStreamKey();
     if (!streamKey) {
@@ -93,8 +89,7 @@ const uploadPreviewOnce = async (image: string): Promise<void> => {
     }
 
     try {
-        // RestAPI injects the auth token + super-properties headers for us, so we
-        // never touch the token manually. The colons in the key are URL-encoded.
+        // RestAPI adds the auth headers itself. The colons in the key are URL-encoded
         await RestAPI.post({
             url: `/streams/${encodeURIComponent(streamKey)}/preview`,
             body: { thumbnail: image }
@@ -106,10 +101,7 @@ const uploadPreviewOnce = async (image: string): Promise<void> => {
     }
 };
 
-/**
- * Start sending the given preview for the current stream: one upload now
- * (respecting Discord's ~60s rate limit), then every 5 minutes until stopped.
- */
+/** Sends the preview for the current stream now (or once the rate limit allows), then every 5 minutes until stopped */
 export const startSendingPreview = (image: string): void => {
     stopSendingPreview();
 
@@ -121,7 +113,7 @@ export const startSendingPreview = (image: string): void => {
     }, wait);
 };
 
-/** Stop the resend interval and cancel any pending (rate-limited) upload. */
+/** Stops resending and cancels an upload that's waiting on the rate limit */
 export const stopSendingPreview = (): void => {
     if (pendingTimeoutId !== null) {
         clearTimeout(pendingTimeoutId);
@@ -133,17 +125,14 @@ export const stopSendingPreview = (): void => {
     }
 };
 
-/** True while a preview sender (pending or running) is active. */
+/** Whether a preview is being sent, or waiting to be */
 export const isSendingPreview = (): boolean =>
     resendIntervalId !== null || pendingTimeoutId !== null;
 
-// ── Image conversion (Discord's screen-share preview format) ──────────────────
+// ---- Image conversion ----
 /**
- * Converts an image file to a base64-encoded JPEG string following Discord's
- * screen-share preview format:
- *   - resized/cropped to 454x256 (16:9),
- *   - JPEG quality reduced to 10%,
- *   - encoded as a base64 image/jpeg data URI.
+ * Converts an image to what Discord uses for stream previews: cropped to 454x256, JPEG at 10% quality, as a data
+ * URI
  */
 export const imageFileToStreamPreview = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {

@@ -128,7 +128,7 @@ function stopRecording() {
 
 export default definePlugin({
     name: "RecordUrMic",
-    description: "Records your microphone in voice channels, i coudnt make it record others' voices too, so im leaving it for whoever wants to hear what they were saying in vc.",
+    description: "Records your own microphone in voice channels, so you can play back what you said.",
     tags: ["Voice", "Utility"],
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     native: true,

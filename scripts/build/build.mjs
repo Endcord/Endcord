@@ -70,7 +70,7 @@ const sourcemap = watch ? "inline" : "external";
 /**
  * The native.ts of every plugin this kind of build includes. Plugins left out of it (a .dev plugin in a release, a
  * .web one on desktop) don't bring their native code either
- * @type {(kind: "discordDesktop" | "vesktop") => import("esbuild").Plugin}
+ * @type {(kind: "discordDesktop" | "endcordDesktop") => import("esbuild").Plugin}
  */
 const globNativesPlugin = kind => ({
     name: "glob-natives-plugin",
@@ -132,7 +132,7 @@ const globNativesPlugin = kind => ({
  * The methods each plugin's native.ts exports, for the preload: the main process registers one IPC channel per method
  * under a fixed name (src/main/ipcPlugins.ts), so the preload can build its callers from this list instead of asking
  * the main process for it with a synchronous call while Discord is starting
- * @type {(kind: "discordDesktop" | "vesktop") => import("esbuild").Plugin}
+ * @type {(kind: "discordDesktop" | "endcordDesktop") => import("esbuild").Plugin}
  */
 const nativeMethodsPlugin = kind => ({
     name: "native-methods",
@@ -198,7 +198,7 @@ const discordRendererPlugins = chunks => [
 /** Endcord Desktop keeps its plugin code and translations the same way (see desktop/) */
 /** @param {import("./common.mjs").PluginChunkState} [chunks] */
 const desktopRendererPlugins = chunks => [
-    globPlugins("vesktop", chunks),
+    globPlugins("endcordDesktop", chunks),
     externalLocalesPlugin,
     ...commonRendererPlugins
 ];
@@ -220,7 +220,7 @@ const buildConfigs = ([
         define: {
             ...defines,
             IS_DISCORD_DESKTOP: "true",
-            IS_VESKTOP: "false"
+            IS_ENDCORD_DESKTOP: "false"
         }
     },
     {
@@ -237,7 +237,7 @@ const buildConfigs = ([
         define: {
             ...defines,
             IS_DISCORD_DESKTOP: "true",
-            IS_VESKTOP: "false"
+            IS_ENDCORD_DESKTOP: "false"
         }
     },
     {
@@ -254,7 +254,7 @@ const buildConfigs = ([
         define: {
             ...defines,
             IS_DISCORD_DESKTOP: "true",
-            IS_VESKTOP: "false"
+            IS_ENDCORD_DESKTOP: "false"
         }
     },
 
@@ -267,12 +267,12 @@ const buildConfigs = ([
         sourcemap,
         plugins: [
             ...nodeCommonOpts.plugins,
-            globNativesPlugin("vesktop")
+            globNativesPlugin("endcordDesktop")
         ],
         define: {
             ...defines,
             IS_DISCORD_DESKTOP: "false",
-            IS_VESKTOP: "true"
+            IS_ENDCORD_DESKTOP: "true"
         }
     },
     {
@@ -289,7 +289,7 @@ const buildConfigs = ([
         define: {
             ...defines,
             IS_DISCORD_DESKTOP: "false",
-            IS_VESKTOP: "true"
+            IS_ENDCORD_DESKTOP: "true"
         }
     },
     {
@@ -301,12 +301,12 @@ const buildConfigs = ([
         plugins: [
             // @ts-ignore this is never undefined
             ...nodeCommonOpts.plugins,
-            nativeMethodsPlugin("vesktop")
+            nativeMethodsPlugin("endcordDesktop")
         ],
         define: {
             ...defines,
             IS_DISCORD_DESKTOP: "false",
-            IS_VESKTOP: "true"
+            IS_ENDCORD_DESKTOP: "true"
         }
     }
 ]);

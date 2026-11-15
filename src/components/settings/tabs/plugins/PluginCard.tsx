@@ -15,10 +15,11 @@ import { CogWheel, InfoIcon } from "@components/Icons";
 import { AddonCard } from "@components/settings/AddonCard";
 import { BAN_RISK } from "@utils/banRisk";
 import { useI18n } from "@utils/i18n";
+import { relaunch } from "@utils/native";
 import { Plugin } from "@utils/types";
-import { openModal, React, showToast, Toasts, useState } from "@webpack/common";
+import { openModal, React, showToast, Toasts, useRef, useState } from "@webpack/common";
 
-import { cl, logger } from ".";
+import { cl, holdInPlace, logger } from ".";
 import { hasSettingsToShow, realPlugin } from "./listItems";
 import { openPluginModal } from "./PluginModal";
 import type { SettingEntry } from "./settingsIndex";
@@ -29,18 +30,18 @@ interface PluginCardProps extends React.HTMLProps<HTMLDivElement> {
     onRestartNeeded(name: string, key: string): void;
     isNew?: boolean;
     isPopular?: boolean;
-    /** Settings of this plugin that match the search, each a way straight to it */
+    /** Settings of this plugin that match the search; each one links straight to the setting */
     matchedSettings?: SettingEntry[];
 }
 
-/** How long the switch takes to slide, from the motion setting Endcord's screens share */
+/** Switch slide duration, from the shared motion setting */
 function slideTime() {
     const value = getComputedStyle(document.documentElement).getPropertyValue("--ec-motion-base");
     return document.querySelector(".reduce-motion") ? 0 : parseFloat(value) || 0;
 }
 
-// Memoised, and listening to its own plugin only: turning one plugin on otherwise drew all five hundred cards again.
-// React isn't there yet when this file loads, so the memoised card is made the first time a card is drawn
+// Memoised and subscribed to its own plugin only; before, toggling one plugin re-rendered all ~500 cards.
+// React isn't available yet when this file loads, so React.memo runs on the first render
 let MemoisedCard: React.ComponentType<PluginCardProps> | undefined;
 export function PluginCard(props: PluginCardProps) {
     MemoisedCard ??= React.memo(Card);
@@ -51,15 +52,16 @@ function Card({ plugin, disabled, onRestartNeeded, onMouseEnter, onMouseLeave, i
     const { t, tPluginDesc } = useI18n();
     useSettings([`plugins.${plugin.name}.enabled` as any]);
     const settings = Settings.plugins[plugin.name];
-    // What the switch shows while it slides, before the plugin has actually been turned on or off
+    // Optimistic switch state while it animates, before the plugin is actually toggled
     const [sliding, setSliding] = useState<boolean | null>(null);
+    const cardRef = useRef<HTMLDivElement>(null);
 
     // Nothing runs in safe mode, so the switch shows and changes what the next normal start does
     const isEnabled = () => IS_SAFE_MODE ? !!settings.enabled : isPluginEnabled(plugin.name);
 
     function turnOff(name: string) {
         const other = plugins[name];
-        // One that stops on the spot needs no restart; one whose patches are in Discord's code does
+        // Plugins with patches need a restart, the rest can stop right away
         const needsRestart = pluginRequiresRestart(other) || (other.started && !stopPlugin(other));
         Settings.plugins[name].enabled = false;
         if (needsRestart) onRestartNeeded(name, "enabled");
@@ -107,14 +109,32 @@ function Card({ plugin, disabled, onRestartNeeded, onMouseEnter, onMouseLeave, i
         ));
     }
 
-    // The switch slides first. Loading a plugin's code and starting it can take a moment, and doing that on the click
-    // froze the slide halfway or skipped it, so the work waits until the switch is there
+    // Loading a plugin's code throws with needsRestart when Endcord's files were replaced since Discord started (see
+    // pluginChunkRuntime.js), and only a restart brings the plugin back. The switch used to just slide back
+    function explain(e: unknown): never {
+        if ((e as { needsRestart?: boolean; } | null)?.needsRestart) showNotice(t("Endcord was updated. Restart Discord to load {name}.", { name: plugin.name }), t("Restart now"), relaunch);
+        throw e;
+    }
+
+    function openSettings(setting?: string) {
+        try {
+            openPluginModal(realPlugin(plugin), onRestartNeeded, setting);
+        } catch (e) {
+            explain(e);
+        }
+    }
+
+    // Let the switch animation finish first. Loading and starting the plugin inside the click handler made it stutter
+    // or skip
     function onSwitch() {
         if (sliding !== null) return;
         setSliding(!isEnabled());
         setTimeout(() => {
             try {
+                holdInPlace(cardRef.current);
                 toggleEnabled();
+            } catch (e) {
+                explain(e);
             } finally {
                 setSliding(null);
             }
@@ -122,7 +142,7 @@ function Card({ plugin, disabled, onRestartNeeded, onMouseEnter, onMouseLeave, i
     }
 
     function applyToggle() {
-        // The list may show the plugin without its code loaded (see ./listItems); acting on it loads it
+        // The list item may only be metadata (see ./listItems), so load the plugin first
         const target = realPlugin(plugin);
         const wasEnabled = isEnabled();
 
@@ -171,7 +191,7 @@ function Card({ plugin, disabled, onRestartNeeded, onMouseEnter, onMouseLeave, i
             return;
         }
 
-        // Started or stopped on the spot, so there's nothing for a restart to do
+        // Already started or stopped, no restart needed
         settings.enabled = !wasEnabled;
     }
 
@@ -186,12 +206,13 @@ function Card({ plugin, disabled, onRestartNeeded, onMouseEnter, onMouseLeave, i
             enabled={sliding ?? isEnabled()}
             setEnabled={onSwitch}
             disabled={disabled}
+            cardRef={cardRef}
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
             footer={!!matchedSettings?.length && (
                 <div className={cl("setting-hits")}>
                     {matchedSettings.slice(0, 3).map(({ key, title }) => (
-                        <button key={key} className={cl("setting-hit")} onClick={() => openPluginModal(realPlugin(plugin), onRestartNeeded, key)}>
+                        <button key={key} className={cl("setting-hit")} onClick={() => openSettings(key)}>
                             {title}
                         </button>
                     ))}
@@ -201,7 +222,7 @@ function Card({ plugin, disabled, onRestartNeeded, onMouseEnter, onMouseLeave, i
             infoButton={
                 <button
                     role="switch"
-                    onClick={() => openPluginModal(realPlugin(plugin), onRestartNeeded)}
+                    onClick={() => openSettings()}
                     className={cl("info-button")}
                 >
                     {hasSettingsToShow(plugin)

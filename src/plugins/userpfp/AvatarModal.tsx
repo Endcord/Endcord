@@ -5,12 +5,13 @@
  */
 
 import { set } from "@api/DataStore";
+import { EndcordModal } from "@components/EndcordModal";
 import { Heading } from "@components/Heading";
 import { Margins } from "@components/margins";
 import { RenderModalProps } from "@endcord/discord-types";
 import { classNameFactory } from "@utils/css";
 import { t } from "@utils/i18n";
-import { IconUtils, Modal, React, TextInput, Toasts, UserStore, useState } from "@webpack/common";
+import { IconUtils, React, TextInput, Toasts, UserStore, useState } from "@webpack/common";
 
 import { data, KEY_DATASTORE } from ".";
 
@@ -94,7 +95,7 @@ export function SetAvatarModal({ userId, modalProps }: { userId: string; modalPr
     }
 
     return (
-        <Modal
+        <EndcordModal
             {...modalProps}
             size="sm"
             title={t("Custom Avatar")}
@@ -156,6 +157,6 @@ export function SetAvatarModal({ userId, modalProps }: { userId: string; modalPr
                     />
                 </div>
             </div>
-        </Modal>
+        </EndcordModal>
     );
 }

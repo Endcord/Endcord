@@ -69,13 +69,11 @@ export default definePlugin({
         DataStore.del("KeepCurrentChannel_previousData");
         noteCrash(errorState?.error);
 
-        if (IS_DEV) {
-            try {
-                if (errorState?.info && "componentStack" in errorState.info) {
-                    console.error("Component Stack:", errorState.info.componentStack);
-                }
-            } catch { }
-        }
+        // Discord's log file (renderer_js.log) keeps only the first line of an error, so the stacks go in as text
+        try {
+            const { error, info } = errorState ?? {};
+            console.error(`[Endcord] Discord crashed: ${error?.stack ?? error}\nComponent stack:${info?.componentStack ?? " none"}`);
+        } catch { }
         _this.setState(errorState);
 
         // Already recovering, prevent error which happens more than once too fast to trigger another recover

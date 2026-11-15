@@ -8,10 +8,4 @@ import { Icon } from "@endcord/discord-types";
 
 export type IconsDef = Record<string, Icon>;
 
-export interface CssColorData {
-    name: string;
-    css: string;
-    key: string;
-}
-
 export type IconSize = "xxs" | "xs" | "sm" | "md" | "lg";

@@ -26,14 +26,6 @@
     place-content: center space-between;
 }
 
-.vc-st-modal-title {
-    margin: 0;
-}
-
-.vc-st-modal-close-button {
-    padding: 0;
-}
-
 .vc-st-preview-text {
     margin-bottom: 1em;
 }

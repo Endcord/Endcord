@@ -18,7 +18,6 @@
 
 import {
     createStore,
-    del,
     get,
     keys,
     set,
@@ -72,16 +71,6 @@ export async function downloadAttachment(attachemnt: LoggedAttachment): Promise<
     }
 
     return path;
-}
-
-export async function deleteImage(attachmentId: string): Promise<void> {
-    const idbPath = idbSavedImages.get(attachmentId)?.path;
-    if (idbPath)
-        return await del(idbPath, ImageStore);
-
-    if (IS_WEB) return;
-
-    await Native.deleteFileNative(attachmentId);
 }
 
 async function downloadAttachmentWeb(attachemnt: LoggedAttachment, attempts = 0) {

@@ -407,7 +407,7 @@
     background-color: var(--background-primary);
     padding: 8px;
     transform: translate(-5%, 10%);
-    transition: all 0.15s ease-out;
+    transition: border-radius var(--ec-motion-base) var(--ec-ease-out), background-color var(--ec-motion-fast) ease, transform var(--ec-motion-base) var(--ec-ease-out);
 }
 
 .vc-more-stickers-picker-settings-cog-active {

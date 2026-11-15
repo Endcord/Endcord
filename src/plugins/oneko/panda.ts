@@ -6,7 +6,7 @@
 
 import type { Pet } from "./pet";
 
-// The Endcord panda, the one asleep on the logo. It follows the puppy, and falls asleep sooner than anyone
+// The panda from the Endcord logo. Follows the puppy, and falls asleep first
 
 const PALETTE: Record<string, string> = {
     o: "#0e1220", // outline

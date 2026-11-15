@@ -39,6 +39,8 @@ export const settings = definePluginSettings({
 });
 
 let pausedAnimations: Animation[] = [];
+// Discord's web app sees no games, so Endcord Desktop reports them itself (desktop/src/games.ts)
+let desktopGames: string[] = [];
 let trimTimer: ReturnType<typeof setTimeout> | undefined;
 let trimmedThisGame = false;
 
@@ -57,7 +59,7 @@ function pauseScriptAnimations(pause: boolean) {
 }
 
 function update() {
-    const isGameRunning = RunningGameStore.getVisibleRunningGames().length > 0;
+    const isGameRunning = RunningGameStore.getVisibleRunningGames().length > 0 || desktopGames.length > 0;
     const isActive = !document.hasFocus() && (isGameRunning || settings.store.activeWhen === "background");
 
     document.documentElement.toggleAttribute(ACTIVE_ATTRIBUTE, isActive);
@@ -89,6 +91,10 @@ export default definePlugin({
     start() {
         window.addEventListener("focus", update);
         window.addEventListener("blur", update);
+        if (IS_ENDCORD_DESKTOP) EndcordDesktopNative.games?.watch((games: string[]) => {
+            desktopGames = games;
+            update();
+        });
         update();
     },
 
@@ -96,6 +102,8 @@ export default definePlugin({
         window.removeEventListener("focus", update);
         window.removeEventListener("blur", update);
         clearTimeout(trimTimer);
+        if (IS_ENDCORD_DESKTOP) EndcordDesktopNative.games?.unwatch();
+        desktopGames = [];
 
         document.documentElement.removeAttribute(ACTIVE_ATTRIBUTE);
         setFrameRate(0);

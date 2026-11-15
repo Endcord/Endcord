@@ -10,12 +10,12 @@ import { gitHashShort } from "@shared/endcordUserAgent";
 import { React } from "@webpack/common";
 import { JSX } from "react";
 
-import { ChromiumIcon, ClientIcon, DevBannerIcon, DiscordIcon, ElectronIcon, EquicordIcon, names, settings } from ".";
+import { ChromiumIcon, ClientIcon, DevBannerIcon, DiscordIcon, ElectronIcon, EndcordIcon, names, settings } from ".";
 
 function getPlatformLabel() {
     if (IS_DEV) return "Dev";
     if (IS_WEB) return "Web";
-    if (IS_VESKTOP) return "Vesktop";
+    if (IS_ENDCORD_DESKTOP) return "Endcord Desktop";
     if (IS_STANDALONE) return "Standalone";
     return "Desktop";
 }
@@ -51,8 +51,9 @@ function renderDevBanner(state?: string): string | JSX.Element {
         .replace(/{chromiumVersion}/g, chromiumVersion ?? "")
         .replace(/{clientName}/g, clientInfo.name)
         .replace(/{clientVersion}/g, `v${clientInfo?.version ?? "0.0.0"}`)
-        .replace(/{equibopHash}/g, clientInfo.shortHash ?? "Not Supported")
-        .replace(/{equibopPlatform}/g, `v${clientInfo?.dev ? "Dev Build" : "Standalone"}`)
+        // The equicord and equibop names are what formats saved by older versions use
+        .replace(/{desktopHash}|{equibopHash}/g, clientInfo.shortHash ?? "Not Supported")
+        .replace(/{desktopPlatform}|{equibopPlatform}/g, `v${clientInfo?.dev ? "Dev Build" : "Standalone"}`)
         .replace(/\\n|{newline}/g, "__NEWLINE__");
 
     if (!replaced.includes("__NEWLINE__") && !/{.*Icon}/.test(baseFormat)) {
@@ -65,7 +66,7 @@ function renderDevBanner(state?: string): string | JSX.Element {
                 return <span key={`icon-discord-${i}`} className="vc-discord-dev-banner-icons"><DiscordIcon /></span>;
             case "{endcordIcon}":
             case "{equicordIcon}":
-                return <span key={`icon-endcord-${i}`} className="vc-discord-dev-banner-icons"><EquicordIcon /></span>;
+                return <span key={`icon-endcord-${i}`} className="vc-discord-dev-banner-icons"><EndcordIcon /></span>;
             case "{electronIcon}":
                 return <span key={`icon-electron-${i}`} className="vc-discord-dev-banner-icons"><ElectronIcon /></span>;
             case "{chromiumIcon}":

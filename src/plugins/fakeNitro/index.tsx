@@ -15,9 +15,9 @@ import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType } from "@utils/types";
 import { findByCodeLazy, findByPropsLazy, proxyLazyWebpack } from "@webpack";
-import { ChannelStore, ConfirmModal, DraftType, EmojiStore, FluxDispatcher, Forms, GuildMemberStore, IconUtils, lodash, openModal, Parser, PermissionsBits, PermissionStore, StickersStore, UploadHandler, UserSettingsActionCreators, UserSettingsProtoStore, UserStore } from "@webpack/common";
+import { ChannelStore, ConfirmModal, DraftType, EmojiStore, FluxDispatcher, Forms, GuildMemberStore, IconUtils, openModal, PermissionsBits, PermissionStore, StickersStore, UploadHandler, UserSettingsActionCreators, UserSettingsProtoStore, UserStore } from "@webpack/common";
 import { applyPalette, GIFEncoder, quantize } from "gifenc";
-import type { ReactElement, ReactNode } from "react";
+import type { ReactNode } from "react";
 
 const BINARY_READ_OPTIONS = findByPropsLazy("readerFactory");
 
@@ -171,7 +171,7 @@ function showCannotEmbedNotice() {
 
 export default definePlugin({
     name: "FakeNitro",
-    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
+    authors: [Devs.rootpoi],
     description: "Allows you to send fake emojis/stickers, use nitro themes, and stream in nitro quality",
     tags: ["Emotes", "Appearance", "Customisation", "Chat"],
     dependencies: ["MessageEventsAPI"],
@@ -180,31 +180,38 @@ export default definePlugin({
 
     patches: [
         {
-            find: "canUseCustomStickersEverywhere:",
+            // Nitro's perk checks, matched by the perk each one tests: Discord keeps them inline in its permissions
+            // object on Stable and as separate functions in its product catalog on Canary
+            find: ".STREAM_HIGH_QUALITY,",
             replacement: [
                 {
-                    match: /(?<=canUseCustomStickersEverywhere:function\(\i\)\{)/,
+                    match: /(?<=\{)(?=return \i\(\i\.\i\.STICKERS_EVERYWHERE,\i\)\})/,
                     replace: "return true;",
                     predicate: () => settings.store.enableStickerBypass
                 },
                 {
-                    match: /(?<=canUseHighVideoUploadQuality:function\(\i\)\{)/,
+                    match: /(?<=\{)(?=return \i\(\i\.\i\.INCREASED_VIDEO_UPLOAD_QUALITY,\i\)\})/,
                     replace: "return true;",
                     predicate: () => settings.store.enableStreamQualityBypass
                 },
                 {
-                    match: /(?<=canStreamQuality:function\(\i,\i\)\{)/,
+                    match: /(?<=\{)(?=return"high"===\i\?\i\(\i\.\i\.STREAM_HIGH_QUALITY,\i\))/,
                     replace: "return true;",
                     predicate: () => settings.store.enableStreamQualityBypass
                 },
                 {
-                    match: /(?<=canUseClientThemes:function\(\i\)\{)/,
+                    match: /(?<=\{)(?=return \i\(\i\.\i\.CLIENT_THEMES,\i\)\})/,
                     replace: "return true;"
                 },
                 {
-                    match: /(?<=canUsePremiumAppIcons:function\(\i\)\{)/,
+                    match: /(?<=\{)(?=return \i\(\i\.\i\.APP_ICONS,\i\)\})/,
                     replace: "return true;"
-                },
+                }
+            ]
+        },
+        {
+            find: "canUseCustomStickersEverywhere:",
+            replacement: [
                 // Unlock profile effects, decorations, nameplates, frames, animated avatars
                 {
                     match: /(?<=canUseProfileEffects:function\(\i\)\{)/,
@@ -454,9 +461,8 @@ export default definePlugin({
                 const protoStoreAppearenceSettings = UserSettingsProtoStore.settings.appearance;
                 if (!protoStoreAppearenceSettings) return;
 
-                // Copy ALL local appearance fields onto the incoming proto appearance
-                // This preserves usernameStyle, fontSize, theme, clientThemeSettings, etc.
-                // so they don't get overwritten by the server-side proto (which lacks Nitro fields)
+                // Copy every local appearance field (usernameStyle, fontSize, theme, clientThemeSettings...) onto the incoming
+                // proto, so the server's copy, which lacks the Nitro fields, doesn't overwrite them
                 const fieldsToPreserve = [
                     "theme",
                     "clientThemeSettings",
@@ -513,138 +519,6 @@ export default definePlugin({
                 proto
             }
         });
-    },
-
-    trimContent(content: Array<any>) {
-        const firstContent = content[0];
-        if (typeof firstContent === "string") {
-            content[0] = firstContent.trimStart();
-            content[0] || content.shift();
-        } else if (typeof firstContent?.props?.children === "string") {
-            firstContent.props.children = firstContent.props.children.trimStart();
-            firstContent.props.children || content.shift();
-        }
-
-        const lastIndex = content.length - 1;
-        const lastContent = content[lastIndex];
-        if (typeof lastContent === "string") {
-            content[lastIndex] = lastContent.trimEnd();
-            content[lastIndex] || content.pop();
-        } else if (typeof lastContent?.props?.children === "string") {
-            lastContent.props.children = lastContent.props.children.trimEnd();
-            lastContent.props.children || content.pop();
-        }
-    },
-
-    clearEmptyArrayItems(array: Array<any>) {
-        return array.filter(item => item != null);
-    },
-
-    ensureChildrenIsArray(child: ReactElement<any>) {
-        if (!Array.isArray(child.props.children)) child.props.children = [child.props.children];
-    },
-
-    patchFakeNitroEmojisOrRemoveStickersLinks(content: Array<any>, inline: boolean) {
-        // If content has more than one child or it's a single ReactElement like a header, list or span
-        if ((content.length > 1 || typeof content[0]?.type === "string") && !settings.store.transformCompoundSentence) return content;
-
-        let nextIndex = content.length;
-
-        const transformLinkChild = (child: ReactElement<any>) => {
-            if (settings.store.transformEmojis) {
-                const fakeNitroMatch = child.props.href.match(fakeNitroEmojiRegex);
-                if (fakeNitroMatch) {
-                    let url: URL | null = null;
-                    try {
-                        url = new URL(child.props.href);
-                    } catch { }
-
-                    const emojiName = EmojiStore.getCustomEmojiById(fakeNitroMatch[1])?.name ?? url?.searchParams.get("name") ?? "FakeNitroEmoji";
-                    const isAnimated = fakeNitroMatch[2] === "gif" || url?.searchParams.get("animated") === "true";
-
-                    return Parser.defaultRules.customEmoji.react({
-                        jumboable: !inline && content.length === 1 && typeof content[0].type !== "string",
-                        animated: isAnimated,
-                        emojiId: fakeNitroMatch[1],
-                        name: emojiName,
-                        fake: true
-                    }, void 0, { key: String(nextIndex++) });
-                }
-            }
-
-            if (settings.store.transformStickers) {
-                if (fakeNitroStickerRegex.test(child.props.href)) return null;
-
-                const gifMatch = child.props.href.match(fakeNitroGifStickerRegex);
-                if (gifMatch) {
-                    // There is no way to differentiate a regular gif attachment from a fake nitro animated sticker, so we check if the StickersStore contains the id of the fake sticker
-                    if (StickersStore.getStickerById(gifMatch[1])) return null;
-                }
-            }
-
-            return child;
-        };
-
-        const transformChild = (child: ReactElement<any>) => {
-            if (child?.props?.trusted != null) return transformLinkChild(child);
-            if (child?.props?.children != null) {
-                if (!Array.isArray(child.props.children)) {
-                    child.props.children = modifyChild(child.props.children);
-                    return child;
-                }
-
-                child.props.children = modifyChildren(child.props.children);
-                if (child.props.children.length === 0) return null;
-                return child;
-            }
-
-            return child;
-        };
-
-        const modifyChild = (child: ReactElement<any>) => {
-            const newChild = transformChild(child);
-
-            if (newChild?.type === "ul" || newChild?.type === "ol") {
-                this.ensureChildrenIsArray(newChild);
-                if (newChild.props.children.length === 0) return null;
-
-                let listHasAnItem = false;
-                for (const [index, child] of newChild.props.children.entries()) {
-                    if (child == null) {
-                        delete newChild.props.children[index];
-                        continue;
-                    }
-
-                    this.ensureChildrenIsArray(child);
-                    if (child.props.children.length > 0) listHasAnItem = true;
-                    else delete newChild.props.children[index];
-                }
-
-                if (!listHasAnItem) return null;
-
-                newChild.props.children = this.clearEmptyArrayItems(newChild.props.children);
-            }
-
-            return newChild;
-        };
-
-        const modifyChildren = (children: Array<ReactElement<any>>) => {
-            for (const [index, child] of children.entries()) children[index] = modifyChild(child);
-
-            children = this.clearEmptyArrayItems(children);
-
-            return children;
-        };
-
-        try {
-            const newContent = modifyChildren(lodash.cloneDeep(content));
-            this.trimContent(newContent);
-
-            return newContent;
-        } catch (err) {
-            new Logger("FakeNitro").error(err);
-            return content;
-        }
     },
 
     patchFakeNitroStickers(stickers: Array<any>, message: Message) {
@@ -798,10 +672,6 @@ export default definePlugin({
         }
 
         return ast;
-    },
-
-    shouldKeepEmojiLink(link: any) {
-        return link.target && fakeNitroEmojiRegex.test(link.target);
     },
 
     addFakeNotice(type: FakeNoticeType, node: Array<ReactNode>, fake: boolean) {

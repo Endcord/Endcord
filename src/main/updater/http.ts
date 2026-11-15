@@ -20,10 +20,10 @@ import { join } from "path";
 import gitHash from "~git-hash";
 
 import { ENDCORD_FILES, MANIFEST_URL, serializeErrors, UpdateTrust } from "./common";
-import { confirmUpdate, finishSwap, getRollbackStatus, initUpdateRollback, isRejectedUpdate, keepPreviousVersion, takeRollbackNotice } from "./rollback";
+import { confirmUpdate, finishSwap, getRollbackStatus, initUpdateRollback, isRejectedUpdate, keepPreviousVersion, SIGNED_OUT_PAGE, takeRollbackNotice } from "./rollback";
 
 const API_BASE = "https://api.github.com/repos/Endcord/Endcord";
-const ASSET_HOSTS = ["raw.githubusercontent.com", "endcord.com"];
+const ASSET_HOSTS = ["raw.githubusercontent.com"];
 
 interface PendingAsset {
     name: string;
@@ -78,8 +78,16 @@ function isAllowedAssetUrl(url: string) {
 
 // The checksums only prove a download is intact, this proves the release is ours.
 // Keep the payload in sync with signManifest in scripts/uploadRelease.mjs
+const SHA256 = /^[a-f0-9]{64}$/i;
+
 function isSignedManifest({ version, hash, updatedAt, installerSha256, assets, signature }: any) {
-    if (![version, hash, installerSha256, signature].every(field => typeof field === "string") || typeof updatedAt !== "number") return false;
+    if (![version, hash, installerSha256, signature].every(field => typeof field === "string") || !Number.isSafeInteger(updatedAt)) return false;
+    // The signed text is these fields joined by line breaks. Each must keep to its own line, or a file's line could sit
+    // inside the installer hash and the signature would still match a release with that file left out
+    if (!/^[\w.+-]{1,64}$/.test(version) || !/^[\w.-]{1,64}$/.test(hash) || !SHA256.test(installerSha256)) return false;
+    // This build's own files, all of them, once each: another product's release or half of one isn't what was signed
+    if (!Array.isArray(assets) || assets.length !== ENDCORD_FILES.length) return false;
+    if (!ENDCORD_FILES.every(name => assets.some(a => a?.name === name && SHA256.test(a.sha256 ?? "")))) return false;
 
     const payload = [version, hash, updatedAt, installerSha256, ...assets.map(a => `${a.name} ${a.sha256.toLowerCase()}`).sort()].join("\n");
     try {
@@ -109,7 +117,7 @@ function needsNewApp(version: string, hash: string) {
         announcedApp = hash;
         const [title, body] = NEW_APP_WORDS[app.getLocale().slice(0, 2)] ?? NEW_APP_WORDS.en;
         const notice = new Notification({ title, body });
-        notice.on("click", () => openExternally("https://endcord.com/download"));
+        notice.on("click", () => openExternally("https://endcord.com/download#endcord-desktop"));
         notice.show();
     }
     return true;
@@ -222,8 +230,6 @@ initUpdateRollback();
 // page once Discord is up, so it never comes. The main process keeps running either way: when a Discord page still
 // hasn't come up a few minutes after loading, it looks for a newer release itself, installs it and loads the page again
 const STUCK_AFTER = 3 * 60_000;
-// Signed out, Discord waits on its login page and Endcord never reports in, but nothing is wrong
-const SIGNED_OUT_PAGE = /^\/(?:login|register|reset|verify|authorize|oauth2|invite)/;
 
 const HEALED_WORDS: Record<string, [title: string, body: string]> = {
     en: ["Endcord fixed itself", "Discord didn't finish starting, so Endcord installed its newest version and is loading it."],

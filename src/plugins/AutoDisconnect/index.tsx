@@ -140,6 +140,8 @@ interface VoiceState {
 
 export const settings = definePluginSettings({
     targetUserId: {
+        // Names who gets disconnected or moved with this account's rights, so no import picks them
+        sensitive: true,
         type: OptionType.STRING,
         description: "Target User ID for auto actions",
         restartNeeded: false,
@@ -260,7 +262,6 @@ function performDisconnect() {
     const { targetUserId } = settings.store;
     if (!targetUserId) return;
 
-    // Rate limiting check
     const now = Date.now();
     if (now - lastDisconnectTime < MIN_ACTION_INTERVAL) {
         return;
@@ -276,7 +277,7 @@ function performDisconnect() {
         const channel = ChannelStore.getChannel(targetChannelId);
         if (channel && channel.guild_id) {
             try {
-                // Gerçek disconnect API çağrısı
+                // Disconnecting someone else needs Move Members
                 RestAPI.patch({
                     url: `/guilds/${channel.guild_id}/members/${targetUserId}`,
                     body: {
@@ -309,7 +310,6 @@ function performMute() {
     const { targetUserId } = settings.store;
     if (!targetUserId) return;
 
-    // Rate limiting check
     const now = Date.now();
     if (now - lastMuteTime < MIN_ACTION_INTERVAL) {
         return;
@@ -325,7 +325,7 @@ function performMute() {
         const channel = ChannelStore.getChannel(targetChannelId);
         if (channel && channel.guild_id) {
             try {
-                // Gerçek server-side mute API çağrısı
+                // Server mute, needs Mute Members
                 RestAPI.patch({
                     url: `/guilds/${channel.guild_id}/members/${targetUserId}`,
                     body: {
@@ -352,7 +352,7 @@ function performMute() {
             }
         }
     } else {
-        // Fallback: Lokal mute
+        // No permission: mute them locally instead
         try {
             if (!MediaEngineStore.isLocalMute(targetUserId)) VoiceActions.toggleLocalMute(targetUserId);
             if (settings.store.showToasts) {
@@ -371,7 +371,6 @@ function performDeafen() {
     const { targetUserId } = settings.store;
     if (!targetUserId) return;
 
-    // Rate limiting check
     const now = Date.now();
     if (now - lastDeafenTime < MIN_ACTION_INTERVAL) {
         return;
@@ -387,7 +386,7 @@ function performDeafen() {
         const channel = ChannelStore.getChannel(targetChannelId);
         if (channel && channel.guild_id) {
             try {
-                // Gerçek server-side deafen API çağrısı
+                // Server deafen, needs Deafen Members
                 RestAPI.patch({
                     url: `/guilds/${channel.guild_id}/members/${targetUserId}`,
                     body: {
@@ -421,7 +420,7 @@ function startAutoDisconnect() {
         clearInterval(disconnectIntervalId);
     }
 
-    // İlk işlemi hemen yap
+    // Run once right away
     performDisconnect();
 
     disconnectIntervalId = setInterval(() => {
@@ -455,7 +454,7 @@ function startAutoMute() {
         clearInterval(muteIntervalId);
     }
 
-    // İlk işlemi hemen yap
+    // Run once right away
     performMute();
 
     muteIntervalId = setInterval(() => {
@@ -489,7 +488,7 @@ function startAutoDeafen() {
         clearInterval(deafenIntervalId);
     }
 
-    // İlk işlemi hemen yap
+    // Run once right away
     performDeafen();
 
     deafenIntervalId = setInterval(() => {
@@ -518,7 +517,7 @@ function stopAutoDeafen() {
     }
 }
 
-// Yeni state için ayrı ayarlar
+// Whether each auto action is running
 let isAutoDisconnectActive = false;
 let isAutoMuteActive = false;
 let isAutoDeafenActive = false;
@@ -529,7 +528,7 @@ function toggleAutoDisconnect(userId: string) {
         settings.store.targetUserId = "";
         stopAutoDisconnect();
     } else {
-        // Sessizce diğer aksiyonları durdur
+        // Stop the other actions, without a toast
         if (muteIntervalId) {
             clearInterval(muteIntervalId);
             muteIntervalId = null;
@@ -553,7 +552,7 @@ function toggleAutoMute(userId: string) {
         settings.store.targetUserId = "";
         stopAutoMute();
     } else {
-        // Sessizce diğer aksiyonları durdur
+        // Stop the other actions, without a toast
         if (disconnectIntervalId) {
             clearInterval(disconnectIntervalId);
             disconnectIntervalId = null;
@@ -577,7 +576,7 @@ function toggleAutoDeafen(userId: string) {
         settings.store.targetUserId = "";
         stopAutoDeafen();
     } else {
-        // Sessizce diğer aksiyonları durdur
+        // Stop the other actions, without a toast
         if (disconnectIntervalId) {
             clearInterval(disconnectIntervalId);
             disconnectIntervalId = null;
@@ -621,7 +620,7 @@ const UserContext: NavContextMenuPatchCallback = (children, { user }: UserContex
 
     const menuItems: ReactNode[] = [];
 
-    // Sadece enabled olanları göster
+    // Only the enabled ones
     if (settings.store.autoDisconnectEnabled) {
         menuItems.push(
             <Menu.MenuItem
@@ -670,7 +669,7 @@ const UserContext: NavContextMenuPatchCallback = (children, { user }: UserContex
         );
     }
 
-    // Sadece menu item'lar varsa grup oluştur
+    // Only add the group if it has items
     if (menuItems.length > 0) {
         children.splice(-1, 0, (
             <Menu.MenuGroup>
@@ -765,7 +764,7 @@ export default definePlugin({
     },
 
     start() {
-        // Plugin start'ta hiçbir şey yapmıyoruz - manuel olarak başlatılacak
+        // Nothing to do on start: the actions are started from the context menu
     },
 
     stop() {

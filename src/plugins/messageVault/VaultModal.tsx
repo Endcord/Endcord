@@ -4,11 +4,12 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { EndcordModal } from "@components/EndcordModal";
 import { Message, RenderModalProps } from "@endcord/discord-types";
 import { classNameFactory } from "@utils/css";
 import { t, useI18n } from "@utils/i18n";
 import { identity } from "@utils/misc";
-import { ChannelStore, ConfirmModal, GuildStore, Modal, NavigationRouter, openModal, React, Select, SelectedChannelStore, SelectedGuildStore, showToast, Toasts, useEffect, useMemo, UserStore, useState } from "@webpack/common";
+import { ChannelStore, ConfirmModal, GuildStore, NavigationRouter, openModal, React, Select, SelectedChannelStore, SelectedGuildStore, showToast, Toasts, useEffect, useMemo, UserStore, useState } from "@webpack/common";
 
 import { clearMessages, countMessages, countReplies, getSaved, IndexedMessage, removeSaved, SavedMessage, saveMessage, search, SearchQuery } from "./db";
 
@@ -259,14 +260,14 @@ export function VaultModal({ modalProps, initial }: { modalProps: RenderModalPro
     const { t } = useI18n();
     const [tab, setTab] = useState<"search" | "saved">("search");
     return (
-        <Modal {...modalProps} size="lg" title={t("Message Vault")} subtitle={t("Search what you have read and keep what matters. Everything stays on this device.")}>
+        <EndcordModal {...modalProps} size="lg" title={t("Message Vault")} subtitle={t("Search what you have read and keep what matters. Everything stays on this device.")}>
             <div className={cl("tabs")} role="tablist">
                 <button role="tab" aria-selected={tab === "search"} className={cl("tab-button", tab === "search" && "tab-on")} onClick={() => setTab("search")}>{t("Search")}</button>
                 <button role="tab" aria-selected={tab === "saved"} className={cl("tab-button", tab === "saved" && "tab-on")} onClick={() => setTab("saved")}>{t("Saved")}</button>
             </div>
             {tab === "search" ? <SearchTab initial={initial} onClose={modalProps.onClose} /> : <SavedTab onClose={modalProps.onClose} />}
             <Footer />
-        </Modal>
+        </EndcordModal>
     );
 }
 
@@ -323,8 +324,8 @@ export function openSaveModal(source: Message | IndexedMessage | SavedMessage, o
     };
     const existing = "collection" in source ? source : undefined;
     openModal(props => (
-        <Modal {...props} size="sm" title={existing ? t("Edit saved message") : t("Save message")} subtitle={record.c.slice(0, 120) || t("Attachment only")}>
+        <EndcordModal {...props} size="sm" title={existing ? t("Edit saved message") : t("Save message")} subtitle={record.c.slice(0, 120) || t("Attachment only")}>
             <SaveForm message={record} existing={existing} onDone={() => { props.onClose(); onSaved?.(); }} />
-        </Modal>
+        </EndcordModal>
     ));
 }

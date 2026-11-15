@@ -114,8 +114,6 @@ export default definePlugin({
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     required: true,
 
-    patches: [],
-
     start() {
         // Report any errors from the previous session
         try {

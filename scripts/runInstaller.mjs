@@ -30,7 +30,7 @@ const run = (command, args) => execFileSync(command, args, { cwd: BASE_DIR, stdi
 
 try {
     if (process.platform === "win32") {
-        run("powershell", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "scripts/buildInstaller.ps1", "-NoSite"]);
+        run("powershell", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "scripts/buildInstaller.ps1"]);
         console.log(`Opening the installer. Choose ${uninstall ? "Uninstall" : "Install"} there.`);
         run(join(BASE_DIR, "EndcordInstaller.exe"), []);
     } else {

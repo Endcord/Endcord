@@ -6,7 +6,7 @@
     transition-property: height;
 }
 
-.eq-tdl-button-row {
+.ec-tdl-button-row {
     height: 0;
     opacity: 0;
     pointer-events: none;
@@ -14,7 +14,7 @@
     transition-property: height;
 }
 
-#eq-tdl-player:hover .eq-tdl-button-row,
+#ec-tdl-player:hover .ec-tdl-button-row,
 #vc-spotify-player:hover .vc-spotify-button-row {
     opacity: 1;
     height: 32px;

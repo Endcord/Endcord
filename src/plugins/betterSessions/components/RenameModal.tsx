@@ -5,11 +5,12 @@
  */
 
 import { TextButton } from "@components/Button";
+import { EndcordModal } from "@components/EndcordModal";
 import { RenderModalProps } from "@endcord/discord-types";
 import { SessionInfo } from "@plugins/betterSessions/types";
 import { getDefaultName, savedSessionsCache, saveSessionsToDataStore } from "@plugins/betterSessions/utils";
 import { t } from "@utils/i18n";
-import { Forms, Modal,React, TextInput } from "@webpack/common";
+import { Forms, React, TextInput } from "@webpack/common";
 import { KeyboardEvent } from "react";
 
 export function RenameModal({ props, session, state }: { props: RenderModalProps, session: SessionInfo["session"], state: [string, React.Dispatch<React.SetStateAction<string>>]; }) {
@@ -29,7 +30,7 @@ export function RenameModal({ props, session, state }: { props: RenderModalProps
     }
 
     return (
-        <Modal
+        <EndcordModal
             {...props}
             title={t("Rename")}
             actions={[
@@ -67,6 +68,6 @@ export function RenameModal({ props, session, state }: { props: RenderModalProps
                 >
                     {t("Reset Name")}</TextButton>
             </div>
-        </Modal>
+        </EndcordModal>
     );
 }

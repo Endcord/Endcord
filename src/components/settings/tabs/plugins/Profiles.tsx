@@ -209,7 +209,7 @@ export function openStarterPacksModal(onRestartNeeded: () => void) {
     openModal(props => <StarterPacksModal {...props} onRestartNeeded={onRestartNeeded} />);
 }
 
-/** The profiles above the plugin list, with ways to make one or add a starter pack */
+/** Profile bar above the plugin list: switch profiles, create one, or add a starter pack */
 export function ProfilesBar({ onRestartNeeded }: { onRestartNeeded(): void; }) {
     const { t } = useI18n();
     const { pluginProfiles } = useSettings(["pluginProfiles", "plugins.*"]);

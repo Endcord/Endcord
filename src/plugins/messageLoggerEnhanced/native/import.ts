@@ -33,6 +33,8 @@ export async function readNativeLogChunk(_event: IpcMainInvokeEvent, fileId: str
     const fileHandle = activeFiles.get(fileId);
     if (!fileHandle) return null;
 
+    // The size comes from the renderer: without a ceiling one call could ask the main process for gigabytes
+    size = Math.min(Math.max(Math.trunc(size) || 0, 1), 1024 * 1024);
     const buffer = Buffer.alloc(size);
     const { bytesRead } = await fileHandle.read(buffer, 0, size);
 

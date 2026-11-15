@@ -170,10 +170,6 @@ export function inspectDragEvent(event: DragEvent, context: InspectionContext): 
     return inspectElements(collectEventElements(event), context);
 }
 
-export function inspectElement(target: HTMLElement | null, context: InspectionContext): ResolvedDragTarget {
-    return inspectElements(target ? [target] : [], context);
-}
-
 function inspectElements(elements: HTMLElement[], context: InspectionContext): ResolvedDragTarget {
     const resolved: ResolvedDragTarget = {
         hasAttachment: false,

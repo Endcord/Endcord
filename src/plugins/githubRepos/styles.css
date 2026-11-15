@@ -33,18 +33,6 @@
         );
 }
 
-.vc-github-repos-show-more {
-    color: var(--text-muted);
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-}
-
-.vc-github-repos-show-more:hover {
-    color: var(--text-default);
-    text-decoration: underline;
-}
-
 /* Sub-tabs */
 
 .vc-github-repos-subtabs {
@@ -257,22 +245,6 @@
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: var(--scrollbar-thin-thumb) var(--scrollbar-thin-track);
-}
-
-.vc-github-repos-modal-footer-close {
-    margin-right: 5px;
-}
-
-.vc-github-repos-modal-footer-close,
-.vc-github-repos-modal-footer-github {
-    color: var(--text-default);
-    background-color: color-mix(in srgb, var(--background-base-low) 90%, white);
-    border: 0;
-}
-
-.vc-github-repos-modal-footer-close:hover,
-.vc-github-repos-modal-footer-github:hover {
-    background-color: color-mix(in srgb, var(--background-base-low) 75%, white);
 }
 
 .vc-github-repos-modal-footer {

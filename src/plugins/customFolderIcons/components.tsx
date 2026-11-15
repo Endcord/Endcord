@@ -4,8 +4,9 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { EndcordModal } from "@components/EndcordModal";
 import { t } from "@utils/i18n";
-import { Button, closeModal, Menu, Modal,openModalLazy, Slider, TextInput, useState } from "@webpack/common";
+import { Button, closeModal, Menu, openModalLazy, Slider, TextInput, useState } from "@webpack/common";
 
 import { folderIconsData, settings } from "./settings";
 import { folderProp, int2rgba, setFolderData } from "./util";
@@ -93,7 +94,7 @@ export function makeContextItem(a: folderProp) {
             action={() => {
                 openModalLazy(async () => {
                     return props => (
-                        <Modal
+                        <EndcordModal
                             {...props}
                             size="sm"
                             title={t("Set a New Icon.")}
@@ -105,7 +106,7 @@ export function makeContextItem(a: folderProp) {
                                 marginTop: "1%"
                             }}>
                                 {t("You might have to hover the folder after setting in order for it to refresh.")}</div>
-                        </Modal>
+                        </EndcordModal>
                     );
                 },
                     {

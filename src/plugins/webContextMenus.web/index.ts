@@ -34,12 +34,12 @@ const settings = definePluginSettings({
         default: false,
         restartNeeded: true,
         // Web slate menu has proper spellcheck suggestions and image context menu is also pretty good,
-        // so disable this by default. Vesktop just doesn't, so we force enable it there
-        hidden: IS_VESKTOP,
+        // so disable this by default. Endcord Desktop has none of its own, so it's always on there
+        hidden: IS_ENDCORD_DESKTOP,
     }
 });
 
-const shouldAddBackMenus = () => IS_VESKTOP || settings.store.addBack;
+const shouldAddBackMenus = () => IS_ENDCORD_DESKTOP || settings.store.addBack;
 
 const MEDIA_PROXY_URL = "https://media.discordapp.net";
 const CDN_URL = "cdn.discordapp.com";
@@ -69,7 +69,7 @@ export default definePlugin({
     tags: ["Utility"],
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     enabledByDefault: true,
-    required: IS_VESKTOP,
+    required: IS_ENDCORD_DESKTOP,
 
     settings,
 
@@ -259,8 +259,8 @@ export default definePlugin({
             });
         }
 
-        if (IS_VESKTOP && VesktopNative.clipboard) {
-            VesktopNative.clipboard.copyImage(await imageData.arrayBuffer(), url);
+        if (IS_ENDCORD_DESKTOP && EndcordDesktopNative.clipboard) {
+            EndcordDesktopNative.clipboard.copyImage(await imageData.arrayBuffer(), url);
 
         } else {
             navigator.clipboard.write([

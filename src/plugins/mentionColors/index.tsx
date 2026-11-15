@@ -100,7 +100,7 @@ function updateBadges() {
         const numberBadges = document.querySelectorAll<HTMLElement>('[class*="numberBadge"]');
 
         for (const badge of numberBadges) {
-            // 1. Server list in left sidebar
+            // Server list
             const listItem = badge.closest('[class*="listItem"]') ?? badge.parentElement?.parentElement;
             const guildNav = listItem?.querySelector('[data-list-item-id^="guildsnav___"]');
 
@@ -123,37 +123,33 @@ function updateBadges() {
                     isDirect = directMentionGuilds.has(rawId);
                 }
 
-                if (isDirect) {
-                    badge.setAttribute("data-direct-mention", "true");
-                    badge.style.setProperty("background-color", directColor, "important");
-                    badge.style.setProperty("color", "#ffffff", "important");
-                } else {
-                    badge.removeAttribute("data-direct-mention");
-                    badge.style.setProperty("background-color", "var(--status-danger, #f23f43)", "important");
-                    badge.style.setProperty("color", "#ffffff", "important");
-                }
+                paintBadge(badge, settings.store.includeGuilds ? isDirect : null, directColor);
                 continue;
             }
 
-            // 2. Channel list
+            // Channel list
             const channelNav = badge.closest('[data-list-item-id^="channels___"]') ?? badge.closest('li, [class*="containerDefault"]')?.querySelector('[data-list-item-id^="channels___"]');
 
             if (channelNav) {
                 const channelId = channelNav.getAttribute("data-list-item-id")?.replace("channels___", "");
                 const isDirect = Boolean(channelId && isChannelOrThreadDirectlyMentioned(channelId));
-
-                if (isDirect) {
-                    badge.setAttribute("data-direct-mention", "true");
-                    badge.style.setProperty("background-color", directColor, "important");
-                    badge.style.setProperty("color", "#ffffff", "important");
-                } else {
-                    badge.removeAttribute("data-direct-mention");
-                    badge.style.setProperty("background-color", "var(--status-danger, #f23f43)", "important");
-                    badge.style.setProperty("color", "#ffffff", "important");
-                }
+                paintBadge(badge, settings.store.includeChannels ? isDirect : null, directColor);
             }
         }
     } catch { }
+}
+
+/** Colors a mention badge green (direct) or red (broadcast). null gives it back to Discord */
+function paintBadge(badge: HTMLElement, direct: boolean | null, directColor = "") {
+    if (direct === null) {
+        badge.removeAttribute("data-direct-mention");
+        badge.style.removeProperty("background-color");
+        badge.style.removeProperty("color");
+        return;
+    }
+    badge.setAttribute("data-direct-mention", String(direct));
+    badge.style.setProperty("background-color", direct ? directColor : "var(--status-danger, #f23f43)", "important");
+    badge.style.setProperty("color", "#ffffff", "important");
 }
 
 function scheduleUpdate() {
@@ -276,11 +272,7 @@ export default definePlugin({
         directMentionChannels.clear();
         directMentionGuilds.clear();
 
-        const markedElements = document.querySelectorAll<HTMLElement>("[data-direct-mention]");
-        for (const el of markedElements) {
-            el.removeAttribute("data-direct-mention");
-            el.style.setProperty("background-color", "var(--status-danger, #f23f43)");
-        }
+        for (const el of document.querySelectorAll<HTMLElement>("[data-direct-mention]")) paintBadge(el, null);
         document.documentElement.style.removeProperty("--mention-direct-color");
     }
 });

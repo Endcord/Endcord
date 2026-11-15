@@ -65,8 +65,8 @@ async function syncCat() {
         (0, eval)(script);
         document.getElementById("oneko")?.setAttribute("data-ec-oneko", "");
     } catch (err) {
-        // Offline, or the file changed: no cat this time, but the panda and the puppy still come. Turning the cat off
-        // and on again tries once more
+        // Offline, or the file changed: no cat this time, but the panda and the puppy still show. Toggling the cat
+        // tries again
         logger.error("Couldn't load the cat:", err);
     } finally {
         catLoading = false;
@@ -74,7 +74,7 @@ async function syncCat() {
 }
 
 const settings = definePluginSettings({
-    // Only the panda comes at first. The cat and the puppy are for turning on by hand
+    // Only the panda is on by default; the cat and the puppy are opt-in
     cat: {
         type: OptionType.BOOLEAN,
         description: "The cat follows your mouse",
@@ -101,7 +101,7 @@ export default definePlugin({
     settings,
     tags: ["Fun", "Appearance"],
     // Listing adryd here because this literally just evals her script
-    authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
+    authors: [Devs.rootpoi],
 
     async start() {
         running = true;

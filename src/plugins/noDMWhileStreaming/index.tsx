@@ -94,7 +94,7 @@ export default definePlugin({
         }
     ],
 
-    // Flux events — intercept MESSAGE_CREATE to auto-ack DMs/Groups during stream
+    // While streaming, DMs and group DMs are acked as their messages arrive
     flux: {
         MESSAGE_CREATE(event: any) {
             if (!isStreaming()) return;
@@ -111,7 +111,7 @@ export default definePlugin({
 
             if (!isDM && !isGroup) return;
 
-            // Suppress desktop notification & alert sound at the Flux event level!
+            // Silence the notification and the sound at the Flux event level
             event.isPushNotification = false;
             event.optimistic = false;
             event.silent = true;
@@ -127,8 +127,8 @@ export default definePlugin({
                 console.debug(`[NoDMWhileStreaming] [ACK] Auto-ack message from ${message.author?.username} in channel ${message.channel_id}`);
             }
 
-            // Mark the channel as read. Must be in a queueMicrotask to prevent Flux dispatch collision synchronously
-            // but process it before the browser repaints the next frame (instant clean)!
+            // Ack in a microtask: dispatching synchronously would collide with the dispatch in progress, and a microtask
+            // still runs before the next paint
             queueMicrotask(() => {
                 try {
                     FluxDispatcher.dispatch({
@@ -136,7 +136,7 @@ export default definePlugin({
                         context: "APP",
                         channels: [{
                             channelId: channel.id,
-                            messageId: message.id, // Use the new message ID directly to clear it instantly
+                            messageId: message.id, // Ack up to the new message right away
                             readStateType: 0
                         }]
                     });
@@ -163,7 +163,7 @@ export default definePlugin({
     filterChannels(ids: string[]) {
         const streaming = isStreaming();
         if (settings.store.debugMode) {
-            console.debug(`[NoDMWhileStreaming] [DEBUG] 🎨 filterChannels called. IDs count: ${ids?.length}, Streaming: ${streaming}`);
+            console.debug(`[NoDMWhileStreaming] filterChannels called. IDs count: ${ids?.length}, Streaming: ${streaming}`);
         }
         if (!streaming) return ids;
 
@@ -175,12 +175,12 @@ export default definePlugin({
         });
 
         if (settings.store.debugMode) {
-            console.debug(`[NoDMWhileStreaming] [DEBUG] 🎨 filterChannels filtered. Remaining: ${filtered.length}`);
+            console.debug(`[NoDMWhileStreaming] filterChannels filtered. Remaining: ${filtered.length}`);
         }
 
         // If streaming and filtered is empty, but we had original DMs,
         // return [ids[0]] so that privateChannelIds is non-empty.
-        // This keeps the "Direct Messages" header rendering, and our CSS hides this single item!
+        // That keeps the "Direct Messages" header rendering; the CSS hides the one item
         if (filtered.length === 0 && ids.length > 0) {
             return [ids[0]];
         }

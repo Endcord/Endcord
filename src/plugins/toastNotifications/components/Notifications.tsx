@@ -77,10 +77,9 @@ export async function showNotification(notification: NotificationData) {
             />
         );
 
-        // Push this notification into the stack.
         NotificationQueue.push(ToastNotification);
 
-        // If the queue exceeds the maximum number of notifications, remove the oldest one.
+        // Over the limit: drop the oldest
         if (NotificationQueue.length > PluginSettings.store.maxNotifications) NotificationQueue.shift();
 
         root.render(<>{NotificationQueue}</>);

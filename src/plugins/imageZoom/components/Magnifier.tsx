@@ -129,6 +129,7 @@ export const Magnifier = ErrorBoundary.wrap<MagnifierProps>(({ instance, size: i
         document.addEventListener("wheel", onWheel);
 
         return () => {
+            originalVideoElementRef.current?.removeEventListener("timeupdate", syncVideos);
             document.removeEventListener("keydown", onKeyDown);
             document.removeEventListener("keyup", onKeyUp);
             document.removeEventListener("mousemove", updateMousePosition);

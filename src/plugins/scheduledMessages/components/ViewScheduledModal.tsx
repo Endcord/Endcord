@@ -5,12 +5,13 @@
  */
 
 import { Button } from "@components/Button";
+import { EndcordModal } from "@components/EndcordModal";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { RenderModalProps } from "@endcord/discord-types";
 import { clearAllScheduledMessages, getChannelDisplayInfo, getScheduledMessages, removeScheduledMessage } from "@plugins/scheduledMessages/utils";
 import { classNameFactory } from "@utils/css";
 import { t } from "@utils/i18n";
-import { ChannelStore, closeModal, Modal, openModal, showToast, Toasts, useState } from "@webpack/common";
+import { ChannelStore, closeModal, openModal, showToast, Toasts, useState } from "@webpack/common";
 
 import { CalendarIcon, TimerIcon } from "./Icons";
 
@@ -53,7 +54,7 @@ function ViewScheduledModalInner({ rootProps, close }: ViewScheduledModalProps) 
     }
 
     return (
-        <Modal
+        <EndcordModal
             {...rootProps}
             size="md"
             title={t("Scheduled Messages")}
@@ -102,7 +103,7 @@ function ViewScheduledModalInner({ rootProps, close }: ViewScheduledModalProps) 
                     })}
                 </div>
             )}
-        </Modal>
+        </EndcordModal>
     );
 }
 

@@ -41,7 +41,7 @@ const parseKeys = (combo: unknown) => (Array.isArray(combo) ? combo : String(com
 
 const pluginSetting = (plugin: string, key: string) => PlainSettings.plugins[plugin]?.[key];
 
-/** Only what's on right now, read from settings, so listing them loads no plugin */
+/** Shortcuts of the enabled plugins, read from settings so no plugin code gets loaded */
 function collectShortcuts(): ShortcutGroup[] {
     const endcord: Shortcut[] = [
         { keys: [MOD, "Shift", "/"], label: t("Show this list") }

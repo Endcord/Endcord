@@ -7,8 +7,8 @@
 export function relaunch() {
     if (IS_DISCORD_DESKTOP)
         window.DiscordNative.app.relaunch();
-    else if (IS_VESKTOP)
-        window.VesktopNative.app.relaunch();
+    else if (IS_ENDCORD_DESKTOP)
+        window.EndcordDesktopNative.app.relaunch();
     else
         location.reload();
 }

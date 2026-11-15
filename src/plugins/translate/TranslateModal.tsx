@@ -5,11 +5,12 @@
  */
 
 import { Divider } from "@components/Divider";
+import { EndcordModal } from "@components/EndcordModal";
 import { FormSwitch } from "@components/FormSwitch";
 import { RenderModalProps } from "@endcord/discord-types";
 import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
-import { Forms, Modal,openModal, SearchableSelect, useMemo } from "@webpack/common";
+import { Forms, openModal, SearchableSelect, useMemo } from "@webpack/common";
 
 import { settings } from "./settings";
 import { getLanguages } from "./utils";
@@ -64,7 +65,7 @@ function AutoTranslateToggle() {
 
 function TranslateModal({ rootProps }: { rootProps: RenderModalProps; }) {
     return (
-        <Modal
+        <EndcordModal
             {...rootProps}
             title={t("Translate")}
         >
@@ -79,7 +80,7 @@ function TranslateModal({ rootProps }: { rootProps: RenderModalProps; }) {
             <Divider className={Margins.bottom16} />
 
             <AutoTranslateToggle />
-        </Modal>
+        </EndcordModal>
     );
 }
 

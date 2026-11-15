@@ -273,44 +273,6 @@ export const settings = definePluginSettings({
     },
 });
 
-export const defaultValues = {
-    showTextBadge: true,
-    showVoiceBadge: true,
-    showCategoryBadge: true,
-    showAnnouncementBadge: true,
-    showAnnouncementThreadBadge: true,
-    showPublicThreadBadge: true,
-    showPrivateThreadBadge: true,
-    showStageBadge: true,
-    showDirectoryBadge: true,
-    showForumBadge: true,
-    showMediaBadge: true,
-    showNSFWBadge: true,
-    showLockedBadge: true,
-    showRulesBadge: true,
-    showUnknownBadge: true,
-
-    channelBadges: {
-        text: "Text",
-        voice: "Voice",
-        category: "Category",
-        announcement: "News",
-        announcement_thread: "News Thread",
-        public_thread: "Thread",
-        private_thread: "Private Thread",
-        stage: "Stage",
-        directory: "Directory",
-        forum: "Forum",
-        media: "Media",
-        nsfw: "NSFW",
-        locked: "Locked",
-        rules: "Rules",
-        unknown: "Unknown"
-    },
-    lockedBadgeTooltip: "This channel is locked.",
-    nsfwBadgeTooltip: "This channel is marked as NSFW.",
-};
-
 export function isEnabled(type: number) {
     const fromValues = settings.store;
 

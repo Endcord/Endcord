@@ -117,8 +117,10 @@ export default definePlugin({
             find: "#{intl::GUEST_NAME_SUFFIX})]",
             replacement: [
                 {
-                    match: /#{intl::GUEST_NAME_SUFFIX}.{0,50}?""\](?<=guildId:(\i),.+?user:(\i).+?)/,
-                    replace: "$&,style:$self.getColorStyle($2.id,$1),"
+                    // Before the name's children rather than after them: VoiceFakeDetector adds a child at their end.
+                    // The lookahead goes first, so the costly lookbehind only runs where it matched
+                    match: /(?=children:\[\i\?\?\i\.\i\.getName\(\i\))(?<=guildId:(\i),.+?user:(\i).+?)/,
+                    replace: "style:$self.getColorStyle($2.id,$1),"
                 }
             ],
             predicate: () => settings.store.voiceUsers

@@ -10,26 +10,38 @@
 //
 // 1. Checks the code (tsc) and that the version in InstallerGUI.cs and package.json match.
 // 2. Builds the desktop files, the browser extension, and the self-tested EndcordInstaller.exe.
-// 3. Writes and signs version.json, with a SHA-256 for each of the four update files.
-// 4. Copies the installer, install.sh, the update files and version.json into the local site folder.
-//    Nothing is deployed: uploading that folder to endcord.com stays a manual step.
-// 5. Commits dist/ and version.json in the local public repo clone. Only with --push is it pushed to
-//    GitHub; that push is the update: every Endcord checks version.json there and asks to restart.
+// 3. Writes and signs version.json, with a SHA-256 for each of the four update files, and puts the downloads (the
+//    installers, the extension, the update files' archive and SHA256SUMS) in dist/release.
+// 4. Copies install.sh, the update files' archive and version.json into the local site folder. The site serves no
+//    executables: its download links go to the GitHub release (scripts/githubRelease.mjs). Nothing is deployed:
+//    uploading that folder to endcord.com stays a manual step.
+// 5. Commits dist/ and version.json in the local public repo clone, on top of the source commit
+//    `node scripts/syncPublicRepo.mjs --commit` made there first. Only with --push is it pushed to
+//    GitHub; that push is the update: every Endcord checks version.json there and asks to restart. Then the
+//    downloads go up as the GitHub release v<version>, which becomes the latest one the site links to.
 //
 // --dry-run   steps 1-3 only; nothing outside this folder (and the Desktop installer copy) changes
 // --site-only steps 1-4: refresh the local site folder, leave the public repo alone
 // --push      also push the release commit to GitHub (without it, nothing leaves this PC)
-// --desktop   also release Endcord Desktop (desktop/): its zip goes to the site, its six update files and its own
-//             signed desktop/version.json to the public repo. Its version is in desktop/app.json
+// --desktop   also release Endcord Desktop, from its own repository Endcord/EndcordDesktop. Its six update files
+//             (dist/) and its signed version.json are committed to the local clone of that repository with a copy of
+//             the app's code (scripts/syncDesktopRepo.mjs). A new runtime (Electron as Endcord Desktop, 140 MB) goes up
+//             with EndcordDesktopSetup.exe as the GitHub release desktop-<version>-electron<electron> there; a release
+//             whose version and Electron are already up there keeps that zip and only pushes the clone. Its version is in
+//             desktop/app.json. With --push the files are uploaded first and the clone pushed before the release is
+//             published, so the manifest never names a zip that isn't there
 
 import { execFileSync } from "child_process";
 import { createHash, createPrivateKey, createPublicKey, sign, verify } from "crypto";
-import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "fs";
 import { homedir } from "os";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+import { DESKTOP_RELEASE_DIR, DESKTOP_RELEASE_REPO, DESKTOP_SETUP, publishDesktopRelease, publishEndcordRelease, RELEASE_DIR, RELEASE_FILES } from "./githubRelease.mjs";
+import { changedThere, DESKTOP_REPO, syncDesktopRepo } from "./syncDesktopRepo.mjs";
+
+const ROOT =join(dirname(fileURLToPath(import.meta.url)), "..");
 const DIST = join(ROOT, "dist");
 const NODE_DIR = dirname(process.execPath);
 // The site folder and the public clone sit next to this repo
@@ -52,6 +64,9 @@ const push = args.includes("--push");
 const desktop = args.includes("--desktop");
 // What Endcord Desktop's updater swaps in (ENDCORD_FILES in src/main/updater/common.ts for that build)
 const DESKTOP_FILES = ["endcordDesktopMain.js", "endcordDesktopPreload.js", "endcordDesktopRenderer.js", "endcordDesktopRenderer.css", "main.js", "preload.js"];
+// Where they are served from: the repository's dist/, with version.json at its root. Kept in step with MANIFEST_URL in
+// src/main/updater/common.ts, and FileBase and DesktopUrl in the installer
+const DESKTOP_RAW = "https://raw.githubusercontent.com/Endcord/EndcordDesktop/main";
 const setVersion = args.includes("--set-version") ? args[args.indexOf("--set-version") + 1] : null;
 
 const step = msg => console.log(`\n== ${msg}`);
@@ -129,7 +144,7 @@ step("Building the macOS installer app");
 run(process.execPath, ["scripts/buildMacInstaller.mjs"]);
 
 step("Building and testing EndcordInstaller.exe");
-run("powershell", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "scripts/buildInstaller.ps1", ...(dryRun ? ["-NoSite"] : [])]);
+run("powershell", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "scripts/buildInstaller.ps1"]);
 
 if (desktop) {
     step("Building Endcord Desktop");
@@ -158,7 +173,7 @@ const versionData = {
     date: new Date(releasedAt).toISOString(),
     downloadUrl: "https://endcord.com/download",
     bundle: `https://endcord.com/${BUNDLE}`,
-    // The installer isn't code-signed, so this is what people can check their download against
+    // What people can check their download against, on the site's /trust page
     installerSha256,
     signature: signManifest({ version, hash: buildHash, updatedAt: releasedAt, installerSha256, assets }, signingKey),
     assets
@@ -172,27 +187,90 @@ console.log(versionJson);
 // older Electron downloads the new zip instead of taking files that may not run on it (needsNewApp in the updater)
 let desktopBuild = null;
 let desktopJson = "";
+// The runtime zip setup downloads (installer/Core/DesktopEngine.cs) is on the GitHub release the signed version names,
+// desktop-<version>-electron<electron>. A release on the same version and Electron keeps the zip that's up there, and
+// the SHA-256 the published manifest has for it; anything else uploads a new zip. Decided from GitHub, not from a
+// local record, so a run without --push leaves the next run nothing to trust
+// Kept in step with ReleaseBase in installer/Core/DesktopEngine.cs
+const RUNTIME_REPO = DESKTOP_RELEASE_REPO;
+async function publishedRuntime(/** @type {string} */ version, /** @type {string} */ url) {
+    if (!existsSync(join(DESKTOP_REPO, ".git"))) fail(`${DESKTOP_REPO} is not a git clone; set ENDCORD_DESKTOP_REPO`);
+    try {
+        git(DESKTOP_REPO, "fetch", "-q", "origin", "main");
+        if (!git(DESKTOP_REPO, "ls-tree", "--name-only", "origin/main", "version.json")) return null;
+        const manifest = JSON.parse(git(DESKTOP_REPO, "show", "origin/main:version.json"));
+        if (manifest.version !== version) return null;
+        // A draft's files don't download, and setup needs this one
+        const res = await fetch(url, { method: "HEAD", redirect: "follow" });
+        return res.ok ? manifest.installerSha256 : null;
+    } catch (e) {
+        if (!dryRun) fail(`couldn't read what Endcord/EndcordDesktop has published: ${e instanceof Error ? e.message : e}`);
+        console.warn("Couldn't read what Endcord/EndcordDesktop has published, so this dry run counts the runtime as new.");
+        return null;
+    }
+}
+let runtime = null;
+let newRuntime = false;
 if (desktop) {
     desktopBuild = JSON.parse(readFileSync(join(DIST, "desktop-build.json"), "utf8"));
     const appDir = join(DIST, desktopBuild.folder, "resources", "app");
-    const desktopAssets = DESKTOP_FILES.map(name => ({ name, url: `${RAW_BASE}/desktop/${name}`, sha256: sha256(join(appDir, name)) }));
+    const desktopAssets = DESKTOP_FILES.map(name => ({ name, url: `${DESKTOP_RAW}/dist/${name}`, sha256: sha256(join(appDir, name)) }));
     const desktopVersion = `${desktopBuild.version}+electron${desktopBuild.electron}`;
+    const tag = `desktop-${desktopBuild.version}-electron${desktopBuild.electron}`;
+    const url = `https://github.com/${RUNTIME_REPO}/releases/download/${tag}/${desktopBuild.zip}`;
+    const keptSha256 = await publishedRuntime(desktopVersion, url);
+    // A pull request merged there since the last release has to be in this tree first, or the release's copy undoes it
+    let conflicts = [];
+    try {
+        conflicts = changedThere("origin/main");
+    } catch (e) {
+        if (!dryRun) fail(`couldn't compare with Endcord/EndcordDesktop: ${e instanceof Error ? e.message : e}`);
+    }
+    if (conflicts.length) fail(`Endcord/EndcordDesktop changed files since its last release that this tree has differently:\n  ${conflicts.join("\n  ")}\nBring those changes into this tree first (git -C "${DESKTOP_REPO}" log -p origin/main -- <file>).`);
+    newRuntime = !keptSha256;
+    runtime = { tag, url, sha256: keptSha256 ?? desktopBuild.zipSha256 };
     const desktopData = {
         version: desktopVersion,
         hash: buildHash,
         updatedAt: releasedAt,
         date: new Date(releasedAt).toISOString(),
         downloadUrl: "https://endcord.com/download",
-        // The zip isn't code-signed either: this is what people can check their download against
-        installerSha256: desktopBuild.zipSha256,
-        signature: signManifest({ version: desktopVersion, hash: buildHash, updatedAt: releasedAt, installerSha256: desktopBuild.zipSha256, assets: desktopAssets }, signingKey),
+        // Setup checks the runtime zip against this before unpacking it
+        installerSha256: runtime.sha256,
+        signature: signManifest({ version: desktopVersion, hash: buildHash, updatedAt: releasedAt, installerSha256: runtime.sha256, assets: desktopAssets }, signingKey),
         assets: desktopAssets
     };
     desktopJson = `${JSON.stringify(desktopData, null, 2)}\n`;
     writeFileSync(join(DIST, "desktop-version.json"), desktopJson);
-    step("desktop/version.json");
+    step("Endcord Desktop's version.json");
     console.log(desktopJson);
+
+    rmSync(DESKTOP_RELEASE_DIR, { recursive: true, force: true });
+    if (newRuntime) {
+        mkdirSync(DESKTOP_RELEASE_DIR, { recursive: true });
+        copyFileSync(join(DIST, desktopBuild.zip), join(DESKTOP_RELEASE_DIR, desktopBuild.zip));
+        // The installer under the name that makes it Endcord Desktop's setup (installer/InstallerGUI.cs)
+        copyFileSync(join(ROOT, "EndcordInstaller.exe"), join(DESKTOP_RELEASE_DIR, DESKTOP_SETUP));
+        const desktopSums = [desktopBuild.zip, DESKTOP_SETUP].map(name => `${sha256(join(DESKTOP_RELEASE_DIR, name))}  ${name}`);
+        writeFileSync(join(DESKTOP_RELEASE_DIR, "SHA256SUMS"), `${desktopSums.join("\n")}\n`);
+    }
+    console.log(newRuntime
+        ? `New runtime: ${DESKTOP_RELEASE_DIR} goes up as the GitHub release "${runtime.tag}" on ${RUNTIME_REPO} with --push.`
+        : `Runtime unchanged: setup keeps downloading ${runtime.url}.`);
 }
+
+// The downloads, as they go up to the GitHub release
+step(`Downloads in ${RELEASE_DIR}`);
+rmSync(RELEASE_DIR, { recursive: true, force: true });
+mkdirSync(RELEASE_DIR, { recursive: true });
+copyFileSync(join(ROOT, "EndcordInstaller.exe"), join(RELEASE_DIR, "EndcordInstaller.exe"));
+copyFileSync(join(DIST, "Installer", "EndcordInstaller.zip"), join(RELEASE_DIR, "EndcordInstaller.zip"));
+copyFileSync(join(DIST, "EndcordInstaller-macOS.zip"), join(RELEASE_DIR, "EndcordInstaller-macOS.zip"));
+copyFileSync(join(DIST, "extension-chrome.zip"), join(RELEASE_DIR, "EndcordWeb.zip"));
+copyFileSync(join(DIST, BUNDLE), join(RELEASE_DIR, BUNDLE));
+const sums = RELEASE_FILES.filter(name => name !== "SHA256SUMS").map(name => `${sha256(join(RELEASE_DIR, name))}  ${name}`);
+writeFileSync(join(RELEASE_DIR, "SHA256SUMS"), `${sums.join("\n")}\n`);
+console.log(sums.join("\n"));
 
 if (dryRun) {
     console.log("Dry run finished. Nothing was copied to the site or the public repo.");
@@ -203,25 +281,18 @@ if (dryRun) {
 
 step(`Copying the release into ${SITE_DIR}`);
 if (!existsSync(SITE_DIR)) fail(`${SITE_DIR} doesn't exist; set ENDCORD_SITE_DIR`);
-mkdirSync(join(SITE_DIR, "dist"), { recursive: true });
-for (const name of UPDATE_FILES) copyFileSync(join(DIST, name), join(SITE_DIR, "dist", name));
+// The four files go to the site only inside the archive: Cloudflare's warning on endcord.com holds some single .js
+// files back, so a dist folder there never worked as a mirror
 copyFileSync(join(DIST, BUNDLE), join(SITE_DIR, BUNDLE));
 copyFileSync(join(ROOT, "install.sh"), join(SITE_DIR, "install.sh"));
 mkdirSync(join(SITE_DIR, "linux"), { recursive: true });
 copyFileSync(join(ROOT, "linux", "gui.py"), join(SITE_DIR, "linux", "gui.py"));
 // Old download links and docs point at this name; it was always the shell installer
 copyFileSync(join(ROOT, "install.sh"), join(SITE_DIR, "EndcordInstallerCli-linux"));
-copyFileSync(join(DIST, "extension-chrome.zip"), join(SITE_DIR, "EndcordWeb.zip"));
-copyFileSync(join(DIST, "EndcordInstaller-macOS.zip"), join(SITE_DIR, "EndcordInstaller-macOS.zip"));
 writeFileSync(join(SITE_DIR, "version.json"), versionJson);
-// The hash the download page should show next to the installer: the same one the signed manifest carries
+// The installer's hash, as text: the file itself is on the GitHub release
 writeFileSync(join(SITE_DIR, "EndcordInstaller.exe.sha256"), `${installerSha256}  EndcordInstaller.exe\n`);
-if (desktopBuild) {
-    copyFileSync(join(DIST, desktopBuild.zip), join(SITE_DIR, desktopBuild.zip));
-    copyFileSync(join(DIST, `${desktopBuild.zip}.sha256`), join(SITE_DIR, `${desktopBuild.zip}.sha256`));
-    console.log(`Copied ${desktopBuild.zip} and its checksum.`);
-}
-console.log(`Copied the update files, ${BUNDLE}, install.sh, EndcordWeb.zip, EndcordInstaller-macOS.zip, version.json and EndcordInstaller.exe.sha256 (the Windows installer was copied by its build).`);
+console.log(`Copied ${BUNDLE}, install.sh, version.json and the installers' checksums.`);
 
 if (siteOnly) {
     console.log(`\nSite folder refreshed; the public repo was not touched. Upload ${SITE_DIR} to endcord.com when you're ready.`);
@@ -240,26 +311,57 @@ const releasePaths = [...UPDATE_FILES.map(name => `dist/${name}`), "version.json
 mkdirSync(join(PUBLIC_REPO, "dist"), { recursive: true });
 for (const name of UPDATE_FILES) copyFileSync(join(DIST, name), join(PUBLIC_REPO, "dist", name));
 writeFileSync(join(PUBLIC_REPO, "version.json"), versionJson);
-if (desktopBuild) {
-    const appDir = join(DIST, desktopBuild.folder, "resources", "app");
-    mkdirSync(join(PUBLIC_REPO, "desktop"), { recursive: true });
-    for (const name of DESKTOP_FILES) copyFileSync(join(appDir, name), join(PUBLIC_REPO, "desktop", name));
-    writeFileSync(join(PUBLIC_REPO, "desktop", "version.json"), desktopJson);
-    releasePaths.push(...DESKTOP_FILES.map(name => `desktop/${name}`), "desktop/version.json");
-}
 // dist/ is gitignored in the public repo, so the update files are added explicitly
 git(PUBLIC_REPO, "add", "-f", "--", ...releasePaths);
 // Only the release files go into this commit, even if other changes are staged
 git(PUBLIC_REPO, "commit", "-m", `Release ${version}`, "--", ...releasePaths);
 console.log(git(PUBLIC_REPO, "log", "--oneline", "-1"));
 
+// Endcord Desktop's release in its own repository: the six files and the manifest, with a copy of the app's code
+let desktopCommit = null;
+if (desktopBuild) {
+    step(`Committing Endcord Desktop ${desktopBuild.version} in ${DESKTOP_REPO}`);
+    git(DESKTOP_REPO, "pull", "--ff-only");
+    const appDir = join(DIST, desktopBuild.folder, "resources", "app");
+    mkdirSync(join(DESKTOP_REPO, "dist"), { recursive: true });
+    for (const name of DESKTOP_FILES) copyFileSync(join(appDir, name), join(DESKTOP_REPO, "dist", name));
+    writeFileSync(join(DESKTOP_REPO, "version.json"), desktopJson);
+    desktopCommit = syncDesktopRepo({
+        commit: true,
+        include: ["dist", "version.json", "CHANGELOG.md", "README.md", "CONTRIBUTING.md", ".github"],
+        message: `Endcord Desktop ${desktopBuild.version}`
+    }).commit;
+    console.log(desktopCommit ?? "Already up to date.");
+}
+
 if (!push) {
     console.log(`\nNot pushed. Users get the update once you push it: git -C "${PUBLIC_REPO}" push (or rerun with --push)`);
+    console.log(`After the push, put the downloads up: node scripts/githubRelease.mjs ${version}`);
+    if (desktopCommit) console.log(`Endcord Desktop is committed in ${DESKTOP_REPO}; rerun with --push to upload its release and push it.`);
 } else {
     step("Pushing");
     run("git", ["push"], { cwd: PUBLIC_REPO });
     console.log("\nPushed. Every Endcord picks the update up within 15 minutes (or on its next start) and asks to restart.");
+
+    step(`Publishing the downloads as the GitHub release v${version}`);
+    try {
+        console.log(await publishEndcordRelease(version, git(PUBLIC_REPO, "rev-parse", "HEAD")));
+    } catch (e) {
+        // The update is out either way; until this is done the site's download links still give the previous release
+        console.error(`\nThe downloads aren't up: ${e instanceof Error ? e.message : e}\nRetry with: node scripts/githubRelease.mjs ${version}`);
+        process.exitCode = 1;
+    }
+
+    if (desktopBuild) {
+        step(newRuntime ? `Publishing Endcord Desktop as the GitHub release ${runtime.tag}` : `Pushing Endcord Desktop ${desktopBuild.version}`);
+        try {
+            if (newRuntime) console.log(await publishDesktopRelease({ tag: runtime.tag, version: desktopBuild.version, zip: desktopBuild.zip, desktopRepo: DESKTOP_REPO }));
+            else run("git", ["push"], { cwd: DESKTOP_REPO });
+        } catch (e) {
+            console.error(`\nEndcord Desktop isn't released: ${e instanceof Error ? e.message : e}\nIts commit is in ${DESKTOP_REPO}; retry with ${newRuntime ? "node scripts/githubRelease.mjs --desktop" : `git -C "${DESKTOP_REPO}" push`}.`);
+            process.exitCode = 1;
+        }
+    }
 }
 
-console.log(`\nLast step: upload ${SITE_DIR} to endcord.com so new downloads get EndcordInstaller.exe ${version} and the new install.sh.`);
-console.log(`Until that upload, the installer on the site doesn't match the installerSha256 in the version.json clients now read (${installerSha256}).`);
+console.log(`\nLast step: upload ${SITE_DIR} to endcord.com for the new version.json, install.sh and ${BUNDLE}. Its download links go to the latest GitHub release, so they need no change.`);

@@ -5,12 +5,13 @@
  */
 
 import { set } from "@api/DataStore";
+import { EndcordModal } from "@components/EndcordModal";
 import { HeadingSecondary } from "@components/Heading";
 import { RenderModalProps } from "@endcord/discord-types";
 import { classNameFactory } from "@utils/css";
 import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
-import { ColorPicker, Modal, React, useState } from "@webpack/common";
+import { ColorPicker, React, useState } from "@webpack/common";
 
 import { colors, DATASTORE_KEY } from "./index";
 
@@ -45,7 +46,7 @@ export function SetColorModal({ id, modalProps }: { id: string, modalProps: Rend
     }
 
     return (
-        <Modal
+        <EndcordModal
             {...modalProps}
             size="sm"
             title={t("Custom Color")}
@@ -73,6 +74,6 @@ export function SetColorModal({ id, modalProps }: { id: string, modalProps: Rend
                     />
                 </section>
             </div>
-        </Modal>
+        </EndcordModal>
     );
 }

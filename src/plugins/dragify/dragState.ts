@@ -91,10 +91,6 @@ export function isUserDragActive() {
     return state.activeUserId !== null || state.activeEntity?.kind === "user";
 }
 
-export function getActiveEntity() {
-    return state.activeEntity;
-}
-
 export function startDragWatchdog(onExpire: () => void) {
     if (state.watchdogTimer !== null) return;
     state.watchdogTimer = window.setInterval(() => {

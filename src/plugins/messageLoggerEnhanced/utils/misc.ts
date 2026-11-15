@@ -23,7 +23,6 @@ import { findByCodeLazy, findLazy } from "@webpack";
 import { ChannelStore, moment, UserStore } from "@webpack/common";
 
 import { DEFAULT_ATTACHMENT_FILE_EXTENSIONS, DEFAULT_IMAGE_CACHE_DIR } from "./constants";
-import { DISCORD_EPOCH } from "./index";
 import { memoize } from "./memoize";
 
 const MessageClass: any = findLazy(m => m?.prototype?.isEdited);
@@ -52,24 +51,6 @@ export const getMessageStatus = (message: LoggedMessageJSON) => {
     if (message.editHistory?.length) return DBMessageStatus.EDITED;
 
     throw new Error("Unknown message status");
-};
-
-export const discordIdToDate = (id: string) => new Date((parseInt(id) / 4194304) + DISCORD_EPOCH);
-
-export const sortMessagesByDate = (timestampA: string, timestampB: string) => {
-    // very expensive
-    // const timestampA = discordIdToDate(a).getTime();
-    // const timestampB = discordIdToDate(b).getTime();
-    // return timestampB - timestampA;
-
-    // newest first
-    if (timestampA < timestampB) {
-        return 1;
-    } else if (timestampA > timestampB) {
-        return -1;
-    }
-        return 0;
-
 };
 
 // stolen from mlv2
@@ -125,11 +106,6 @@ export const messageJsonToMessageClass = memoize((log: { message: LoggedMessageJ
     return message;
 });
 
-export async function doesBlobUrlExist(url: string) {
-    const res = await fetch(url);
-    return res.ok;
-}
-
 export function getNative(): PluginNative<typeof import("../native")> {
     if (IS_WEB) {
         const Native = {
@@ -138,7 +114,6 @@ export function getNative(): PluginNative<typeof import("../native")> {
             getDefaultNativeDataDir: async () => "",
             getDefaultAttachmentFileExtensions: async () => DEFAULT_ATTACHMENT_FILE_EXTENSIONS,
             updateAllowedExtensions: async () => { },
-            deleteFileNative: async () => { },
             chooseDir: async (x: string) => "",
             getSettings: async () => ({ imageCacheDir: DEFAULT_IMAGE_CACHE_DIR, logsDir: "", attachmentFileExtensions: DEFAULT_ATTACHMENT_FILE_EXTENSIONS }),
             init: async () => { },

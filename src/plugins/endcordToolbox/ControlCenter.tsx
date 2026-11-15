@@ -22,18 +22,85 @@ import { useI18n } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import type { IconProps } from "@utils/types";
 import { SettingsRouter, useEffect, useMemo, useRef, useState } from "@webpack/common";
-import type { ComponentType, MouseEvent, ReactNode } from "react";
+import type { ComponentType, MouseEvent, PointerEvent, ReactNode } from "react";
 
 const cl = classNameFactory("ec-control-");
 
 const MEMORY_REFRESH = 3_000;
 const AWAKE_TIME = 2_400;
-// Below this a cleanup is routine. The panda only gets excited about a proper meal
+// Below this, freeing memory is routine; the panda only reacts to bigger cleanups
 const GOOD_CLEANUP = 50;
 const NIGHT_ENDS_AT = 5;
+const COUNT_TIME = 700;
 
-/** One line with a switch. The whole line is the switch's label, so it can be clicked anywhere */
-// Discord's own icons, so the panel reads as part of the app. Discord has none for pixels, so this one is drawn the same way
+const lessMotion = () => document.documentElement.classList.contains("reduce-motion") || matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/** Animated counter. Starts from 0 on the first render */
+function useCountTo(target: number): number;
+function useCountTo(target: number | undefined): number | undefined;
+function useCountTo(target: number | undefined) {
+    const [shown, setShown] = useState(() => lessMotion() ? target : 0);
+    const from = useRef(0);
+
+    useEffect(() => {
+        if (target === undefined) return;
+        if (lessMotion() || from.current === target) {
+            from.current = target;
+            setShown(target);
+            return;
+        }
+
+        const start = from.current;
+        const began = performance.now();
+        let frame = requestAnimationFrame(function step(now) {
+            const done = Math.min(1, (now - began) / COUNT_TIME);
+            from.current = Math.round(start + (target - start) * (1 - (1 - done) ** 3));
+            setShown(from.current);
+            if (done < 1) frame = requestAnimationFrame(step);
+        });
+
+        return () => cancelAnimationFrame(frame);
+    }, [target]);
+
+    return target === undefined ? undefined : shown;
+}
+
+/**
+ * List with a single hover highlight that slides to the row under the pointer. Coming in from outside it appears
+ * at the pointer; leaving, it fades out in place
+ */
+function GlideGroup({ nav, children }: { nav?: boolean; children: ReactNode; }) {
+    const glide = useRef<HTMLSpanElement>(null);
+    const Tag = nav ? "nav" : "div";
+
+    function follow(event: PointerEvent<HTMLElement>) {
+        const row = (event.target as Element).closest<HTMLElement>(`.${cl("row")}, .${cl("switch-row")}`);
+        const light = glide.current;
+        if (!row || !light) return;
+
+        const shown = light.classList.contains(cl("glide-shown"));
+        if (!shown) light.style.transition = "none";
+        light.style.transform = `translateY(${row.offsetTop}px)`;
+        light.style.height = `${row.offsetHeight}px`;
+
+        if (!shown) {
+            // Jump there without sliding, then fade in
+            void light.offsetHeight;
+            light.style.transition = "";
+            light.classList.add(cl("glide-shown"));
+        }
+    }
+
+    return (
+        <Tag className={cl("group")} onPointerOver={follow} onPointerLeave={() => glide.current?.classList.remove(cl("glide-shown"))}>
+            <span ref={glide} className={cl("glide")} aria-hidden="true" />
+            {children}
+        </Tag>
+    );
+}
+
+/** Row with a switch. The whole row is the label, so clicking anywhere toggles it */
+// Discord's own icons, so the panel fits in. Discord has no pixel icon, so that one is drawn in the same style
 function PixelGridIcon({ className }: IconProps) {
     return (
         <svg className={className} width={24} height={24} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -45,11 +112,20 @@ function PixelGridIcon({ className }: IconProps) {
 const ChevronRight = ({ className }: IconProps) => <ChevronSmallDownIcon className={classes(className, "ec-control-chevron")} width={16} height={16} />;
 
 function SwitchRow({ Icon, label, on, onChange }: { Icon: ComponentType<IconProps>; label: string; on: boolean; onChange(on: boolean): void; }) {
+    // Hop animation when switched on, but not for rows that were already on when the panel opened
+    const [touched, setTouched] = useState(false);
+
     return (
-        <label className={cl("switch-row", { on })}>
+        <label className={cl("switch-row", { on, touched })}>
             <span className={cl("row-tile")}><Icon className={cl("tile-icon")} /></span>
             <span className={cl("row-label")}>{label}</span>
-            <Switch checked={on} onChange={onChange} />
+            <Switch
+                checked={on}
+                onChange={value => {
+                    setTouched(true);
+                    onChange(value);
+                }}
+            />
         </label>
     );
 }
@@ -93,7 +169,7 @@ function Brand({ onSettings }: { onSettings(): void; }) {
                 <button className={cl("version")} onClick={tapVersion}>{VERSION}</button>
             </div>
             <button className={cl("icon-button")} aria-label={t("Endcord Settings")} title={t("Endcord Settings")} onClick={onSettings}>
-                <CogWheel width={20} height={20} />
+                <CogWheel className={cl("cog")} width={20} height={20} />
             </button>
         </header>
     );
@@ -104,6 +180,7 @@ function Memory() {
     const [usedMb, setUsedMb] = useState<number>();
     const [freed, setFreed] = useState<number>();
     const [freeing, setFreeing] = useState(false);
+    const shownMb = useCountTo(usedMb);
 
     const refresh = () => EndcordNative.native.getMemoryStats().then(stats => setUsedMb(stats.usedMb));
 
@@ -125,13 +202,13 @@ function Memory() {
     }
 
     return (
-        <div className={cl("memory")}>
+        <div className={cl("memory", { busy: freeing })}>
             <span className={cl("row-label")}>{t("Memory")}</span>
             {freed !== undefined && !freeing && (
                 <span className={cl("memory-result")}>{freed > 0 ? `−${freed} MB` : t("Nothing to free")}</span>
             )}
             <span className={cl("memory-value")}>
-                {usedMb === undefined ? "–" : usedMb.toLocaleString()} MB
+                {shownMb === undefined ? "–" : shownMb.toLocaleString()} MB
             </span>
             <button className={cl("text-button")} disabled={freeing} onClick={free}>
                 {freeing ? t("Freeing...") : t("Free up")}
@@ -143,6 +220,8 @@ function Memory() {
 function Looks({ onCustomize }: { onCustomize(): void; }) {
     const { t } = useI18n();
     const { design } = studioSettings.use(["design"]);
+    // Pop animation for a newly picked theme, not the one that was active when the panel opened
+    const [picked, setPicked] = useState(false);
 
     return (
         <section className={cl("section")}>
@@ -150,14 +229,17 @@ function Looks({ onCustomize }: { onCustomize(): void; }) {
                 <span className={cl("label")}>{t("Look")}</span>
                 <button className={cl("text-button")} onClick={onCustomize}>{t("Customize")}</button>
             </div>
-            <div className={cl("looks")}>
+            <div className={cl("looks", { picked })}>
                 {PRESETS.map(({ name, design: preset }) => (
                     <button
                         key={name}
                         className={cl("look", { selected: isSameDesign(preset, design) })}
                         aria-label={t(name)}
                         title={t(name)}
-                        onClick={() => saveDesign(preset)}
+                        onClick={() => {
+                            setPicked(true);
+                            saveDesign(preset);
+                        }}
                     >
                         <LookPreview design={preset} />
                     </button>
@@ -201,22 +283,26 @@ function Profiles({ onClose }: { onClose(): void; }) {
 }
 
 interface ControlCenterProps {
+    /** Closing animation is running; unmounts when it ends */
+    closing?: boolean;
     onClose(): void;
     onMoreActions(event: MouseEvent): void;
     availableUpdate?: string;
     onUpdate(): void;
 }
 
-export function ControlCenter({ onClose, onMoreActions, availableUpdate, onUpdate }: ControlCenterProps) {
+export function ControlCenter({ closing, onClose, onMoreActions, availableUpdate, onUpdate }: ControlCenterProps) {
     const { t } = useI18n();
     const [gameMode, setGameMode] = useState(() => isPluginEnabled("GameMode"));
     const [shield, setShield] = useState(() => isPluginEnabled("StreamerShield"));
     const settings = useSettings(["enabledThemes", "themeLinks", "pixelStyle"]);
 
-    // By name, so counting doesn't load every plugin that's off
+    // Count by name, so disabled lazy plugins don't get loaded
     const enabledPlugins = useMemo(() => Object.keys(plugins).filter(isPluginEnabled).length, []);
     const brokenPlugins = useMemo(() => getBrokenPlugins().length, []);
     const activeThemes = settings.enabledThemes.length + settings.themeLinks.length;
+    const shownPlugins = useCountTo(enabledPlugins);
+    const shownThemes = useCountTo(activeThemes);
     const isNight = new Date().getHours() < NIGHT_ENDS_AT;
 
     const openSettings = (panel: string) => {
@@ -225,7 +311,7 @@ export function ControlCenter({ onClose, onMoreActions, availableUpdate, onUpdat
     };
 
     return (
-        <div className={classes(cl("root"), ENDCORD_THEME)} role="dialog" aria-label={t("Endcord Control Center")}>
+        <div className={classes(cl("root", { closing }), ENDCORD_THEME)} role="dialog" aria-label={t("Endcord Control Center")}>
             <div className={cl("panel")}>
                 <div className={cl("content")}>
                     <Brand onSettings={() => openSettings("endcord_main_panel")} />
@@ -237,8 +323,8 @@ export function ControlCenter({ onClose, onMoreActions, availableUpdate, onUpdat
                         </button>
                     )}
 
-                    <div className={cl("group")}>
-                        {IS_DISCORD_DESKTOP && (
+                    <GlideGroup>
+                        {(IS_DISCORD_DESKTOP || IS_ENDCORD_DESKTOP) && (
                             <SwitchRow
                                 Icon={GameControllerIcon}
                                 label={t("Game Mode")}
@@ -266,7 +352,7 @@ export function ControlCenter({ onClose, onMoreActions, availableUpdate, onUpdat
                                 settings.pixelStyle = on;
                             }}
                         />
-                    </div>
+                    </GlideGroup>
 
                     <Profiles onClose={onClose} />
 
@@ -274,9 +360,9 @@ export function ControlCenter({ onClose, onMoreActions, availableUpdate, onUpdat
 
                     {IS_DISCORD_DESKTOP && <Memory />}
 
-                    <nav className={cl("group")}>
-                        <NavRow Icon={PluginsIcon} label={t("Plugins")} detail={t("{count} on", { count: enabledPlugins })} onClick={() => openSettings("endcord_plugins_panel")} />
-                        <NavRow Icon={ColorPaletteIcon} label={t("Themes")} detail={activeThemes > 0 ? t("{count} on", { count: activeThemes }) : undefined} onClick={() => openSettings("endcord_themes_panel")} />
+                    <GlideGroup nav>
+                        <NavRow Icon={PluginsIcon} label={t("Plugins")} detail={t("{count} on", { count: shownPlugins })} onClick={() => openSettings("endcord_plugins_panel")} />
+                        <NavRow Icon={ColorPaletteIcon} label={t("Themes")} detail={activeThemes > 0 ? t("{count} on", { count: shownThemes }) : undefined} onClick={() => openSettings("endcord_themes_panel")} />
                         <NavRow
                             Icon={LogsIcon}
                             label={t("Diagnostics")}
@@ -291,7 +377,7 @@ export function ControlCenter({ onClose, onMoreActions, availableUpdate, onUpdat
                                 openWhatsNewModal();
                             }}
                         />
-                    </nav>
+                    </GlideGroup>
                 </div>
 
                 <footer className={cl("footer")}>

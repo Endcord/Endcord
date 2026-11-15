@@ -53,18 +53,6 @@
     height: 32px;
 }
 
-/* Modal */
-.vc-ic-modal-header {
-    position: relative;
-    padding: 16px 16px 16px 24px;
-}
-
-.vc-ic-modal-header-trailing {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-}
-
 .vc-ic-modal-main {
     gap: 24px;
     align-items: center;
@@ -97,10 +85,6 @@
 
 .vc-ic-color-label {
     cursor: help;
-}
-
-.vc-ic-modal-footer {
-    flex-direction: row-reverse;
 }
 
 .vc-ic-use-as {

@@ -88,8 +88,6 @@ const SENTENCE_TYPES = new Set<number>([1, 12, 13, 15]);
 // Discord marks these as still in beta
 const BETA_TYPES = new Set<number>([18, 19, 20, 21]);
 
-export const TENURE_MONTHS = [1, 3, 6, 12, 24, 36, 60, 72];
-
 // Discord's own table, with each Nitro level's rarity. The copy below stands in if it moves
 const TenureBadges = findByPropsLazy("premium_tenure_72_month_v2", "premium_tenure_1_month_v2");
 const TENURE_FALLBACK: Record<number, [name: string, nitroName: string, rarity: BadgeRarity]> = {
@@ -110,7 +108,6 @@ const TenureArt = mapMangledModuleLazy('ambientLarge:"https://cdn.discordapp.com
 const BadgeDirectoryStore = findStoreLazy("BadgeDirectoryStore");
 // Discord's own mapping from a profile badge id to its type
 const typeOfProfileId = findByCodeLazy('"number"==typeof', ".toUpperCase()]") as (id: string) => number | undefined;
-const BadgeDirectory = findByPropsLazy("openBadgeDirectoryModal");
 // Discord's names for its settings pages, which its Manage Boosts button opens
 const SettingsSections = findByPropsLazy("PREMIUM_GUILD_SUBSCRIPTIONS_PANEL");
 
@@ -309,14 +306,6 @@ export function requestCatalog(userId: string | undefined) {
             if (e?.status === 403 || e?.status === 404) catalogUnavailable = true;
             else logger.debug("Couldn't read a badge catalog", e?.status);
         });
-}
-
-export function openDiscordBadgeDirectory() {
-    try {
-        BadgeDirectory.openBadgeDirectoryModal({ viewingCurrentUserBadges: true });
-    } catch (e) {
-        logger.error("Discord's badge directory isn't available", e);
-    }
 }
 
 // ---- Putting it together ---------------------------------------------------------------------------------------

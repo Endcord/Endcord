@@ -208,14 +208,14 @@ const EncryptButton: ChatBarButtonFactory = ({ type }) => {
     );
 };
 
-/* ── Inline decryption accessory (like translate) ── */
+/* Decrypted text under the message, like Translate's */
 const DecryptionSetters = new Map<string, (v: string | undefined) => void>();
 
 function DecryptionAccessory({ message }: { message: Message; }) {
     const [decrypted, setDecrypted] = useState<string>();
 
     useEffect(() => {
-        if ((message as any).vencordEmbeddedBy) return;
+        if ((message as any).endcordEmbeddedBy) return;
         DecryptionSetters.set(message.id, setDecrypted);
         return () => void DecryptionSetters.delete(message.id);
     }, []);
@@ -256,9 +256,9 @@ const messageContextPatch = (children: any, { message }: { message: any; }) => {
     try {
         if (!message?.content || !isEncrypted(message.content)) return;
         children.splice(-1, 0, (
-            <Menu.MenuGroup key="nc-encryption-group">
+            <Menu.MenuGroup key="ec-encryption-group">
                 <Menu.MenuItem
-                    id="nc-decrypt-message"
+                    id="ec-decrypt-message"
                     label={translateText("Decrypt message")}
                     action={() => {
                         const found = autoDecrypt(message.content);

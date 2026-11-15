@@ -12,12 +12,6 @@ export function fillCircle(x: number, y: number, radius: number, canvas = brushC
     canvas.fill();
 }
 
-export function strokeCircle(x: number, y: number, radius: number, canvas = brushCanvas) {
-    canvas.beginPath();
-    canvas.arc(x, y, radius, 0, Math.PI * 2);
-    canvas.stroke();
-}
-
 export function line(x1: number, y1: number, x2: number, y2: number, canvas = brushCanvas) {
     canvas.beginPath();
     canvas.moveTo(x1, y1);

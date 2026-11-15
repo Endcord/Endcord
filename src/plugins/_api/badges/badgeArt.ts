@@ -39,8 +39,8 @@ export const DEVELOPER_ICON = pixelArt([
     "......LLLLLLLL......"
 ], { L: "#9ccbff", K: "#1e2740", W: "#f8fafe", E: "#ffffff", P: "#ff9db3" });
 
-// The contributor badge: a stalk of bamboo, what keeps the panda going. Endcord's bamboo green, with a lighter edge
-// where the light catches it and darker rings at its joints, 18 by 18
+// Contributor badge: a bamboo stalk, 18x18, in Endcord's bamboo green with a lighter edge and darker rings at the
+// joints
 export const CONTRIBUTOR_ICON = pixelArt([
     "......OOOOOO....OO",
     "......OHFFFO...OLO",

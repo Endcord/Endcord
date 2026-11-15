@@ -4,16 +4,6 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-export enum BeatmapStatuses {
-    Unknown,
-    NotSubmitted = 1,
-    Pending = 2,
-    Ranked = 4,
-    Approved = 5,
-    Qualified = 6,
-    Loved = 7
-}
-
 export enum Modes {
     Osu = 0,
     Taiko = 1,
@@ -36,81 +26,6 @@ export enum BanchoStatusEnum {
     Lobby,
     Multiplaying,
     OsuDirect
-}
-
-export enum UserLoginStatus {
-    Reconnecting = 0,
-    Guest = 256,
-    Recieving_data = 257,
-    Disconnected = 65537,
-    Connected = 65793
-}
-
-export enum ReleaseStream {
-    CuttingEdge,
-    Stable,
-    Beta,
-    Fallback
-}
-
-export enum ScoreMeterType {
-    None,
-    Colour,
-    Error
-}
-
-export enum LeaderboardType {
-    Local,
-    Global,
-    Selectedmods,
-    Friends,
-    Country
-}
-
-export enum GroupType {
-    None,
-    Artist,
-    BPM,
-    Creator,
-    Date,
-    Difficulty,
-    Length,
-    Rank,
-    MyMaps,
-    Search = 12,
-    Show_All = 12,
-    Title,
-    LastPlayed,
-    OnlineFavourites,
-    ManiaKeys,
-    Mode,
-    Collection,
-    RankedStatus
-}
-
-export enum SortType {
-    Artist,
-    BPM,
-    Creator,
-    Date,
-    Difficulty,
-    Length,
-    Rank,
-    Title
-}
-
-export enum ChatStatus {
-    Hidden,
-    Visible,
-    VisibleWithFriendsList
-}
-
-export enum ProgressBarType {
-    Off,
-    Pie,
-    TopRight,
-    BottomRight,
-    Bottom
 }
 
 export enum GameState {
@@ -139,9 +54,6 @@ export enum GameState {
     Tourney,
     Charts
 }
-
-export type ApiAnswer = TosuApi | { error?: string; };
-export type ApiAnswerPrecise = TosuPreciseAnswer | { error?: string; };
 
 export interface TosuApi {
     state: NumberName;
@@ -475,31 +387,6 @@ export interface Hits2 {
 export interface Combo2 {
     current: number;
     max: number;
-}
-
-export interface TosuPreciseAnswer {
-    currentTime: number;
-    keys: KeyOverlay;
-    hitErrors: number[];
-    tourney: PreciseTourney[];
-}
-
-export interface PreciseTourney {
-    ipcId: number;
-    keys: KeyOverlay;
-    hitErrors: number[];
-}
-
-interface KeyOverlay {
-    k1: KeyOverlayButton;
-    k2: KeyOverlayButton;
-    m1: KeyOverlayButton;
-    m2: KeyOverlayButton;
-}
-
-interface KeyOverlayButton {
-    isPressed: boolean;
-    count: number;
 }
 
 export interface Performance {

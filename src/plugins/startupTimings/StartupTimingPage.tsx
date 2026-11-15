@@ -65,7 +65,7 @@ function TimingSection({ title, logs, traceEnd }: TimingSectionProps) {
 
     let lastTimestamp = startTime;
     const timings = logs.map(log => {
-        // Get last log entry with valid timestamp
+        // Last log entry that has a timestamp
         const timestamp = log.timestamp ?? lastTimestamp;
 
         const sinceStart = (timestamp - startTime) / 1000;

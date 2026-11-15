@@ -18,14 +18,9 @@ const imageContextMenuPatch: NavContextMenuPatchCallback = (children, props: { s
     const url = media ?? props?.href ?? props?.itemHref;
     if (!url) return;
 
-    // "copy-link" must not be targeted here. It is the message menu's copy group
-    // (reverseImageSearch uses it for "message-context") and it is only present in the
-    // image menu at all when Developer Mode is on. That is the one case where it resolves:
-    // the item then lands inside Discord's own dev-mode copy group, where it renders but its
-    // action is never invoked, so the click did nothing. The item showed up either way,
-    // which is what made it look like a clipboard problem - copyWithToast always toasts, so
-    // no toast at all means the handler never ran. "copy-native-link" is the group the image
-    // menu actually has, and what every other image-context patch targets.
+    // Not "copy-link": that's the message menu's copy group, and the image menu only has it with Developer Mode on,
+    // where the item renders but its action never runs. "copy-native-link" is the group the image menu really has,
+    // and what the other image context menu patches use.
     const group = findGroupChildrenByChildId("copy-native-link", children)
         ?? findGroupChildrenByChildId("open-native-link", children)
         ?? children;

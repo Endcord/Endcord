@@ -25,6 +25,9 @@ jobs:
 
         steps:
             - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+              with:
+                  # The publishing steps below get their tokens by name; nothing else in the build can read one
+                  persist-credentials: false
 
             - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6, installs pnpm using packageManager key in package.json
 
@@ -58,9 +61,10 @@ jobs:
             - name: Upload DevBuild as release
               if: github.repository == 'Endcord/Endcord'
               run: |
-                  gh release create devbuild --title "DevBuild" --notes "Automated build of the latest commit. Not a release: these files are unsigned and the updater never installs them. Install Endcord from https://endcord.com/download" || true
+                  gh release create devbuild --prerelease --title "DevBuild" --notes "Automated build of the latest commit. Not a release: these files are unsigned and the updater never installs them. Install Endcord from https://endcord.com/download" || true
                   gh release upload devbuild --clobber dist/*
-                  gh release edit devbuild --title "DevBuild $RELEASE_TAG"
+                  # A prerelease is never "latest", which the site's download links follow to the real release
+                  gh release edit devbuild --prerelease --title "DevBuild $RELEASE_TAG"
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   RELEASE_TAG: ${{ env.release_tag }}

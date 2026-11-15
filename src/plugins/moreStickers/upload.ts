@@ -40,30 +40,25 @@ async function resizeImage(url: string) {
     const ctx = canvas.getContext("2d");
     if (!ctx) throw new Error("Could not get canvas context");
 
-    // Determine the target size of the processed image (160x160)
+    // Stickers are 160x160
     const targetSize = 160;
 
-    // Calculate the scale factor to resize the image
     const scaleFactor = Math.min(targetSize / originalImage.width, targetSize / originalImage.height);
 
-    // Calculate the dimensions for resizing the image while maintaining aspect ratio
+    // Fit inside it, keeping the aspect ratio
     const resizedWidth = originalImage.width * scaleFactor;
     const resizedHeight = originalImage.height * scaleFactor;
 
-    // Set the canvas size to the target dimensions
     canvas.width = targetSize;
     canvas.height = targetSize;
 
-    // Draw the resized image onto the canvas
     ctx.drawImage(originalImage, 0, 0, resizedWidth, resizedHeight);
 
-    // Convert the image data to a Blob
     const blob: Blob | null = await new Promise(resolve => {
         canvas.toBlob(resolve, "image/png");
     });
     if (!blob) throw new Error("Could not convert canvas to blob");
 
-    // return the object URL representing the Blob
     return blob;
 }
 

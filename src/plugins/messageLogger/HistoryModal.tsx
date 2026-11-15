@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { EndcordModal } from "@components/EndcordModal";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { TooltipContainer } from "@components/TooltipContainer";
 import { RenderModalProps } from "@endcord/discord-types";
@@ -12,7 +13,7 @@ import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import { classes } from "@utils/misc";
 import { findCssClassesLazy } from "@webpack";
-import { Modal,openModal, TabBar, Timestamp, useState } from "@webpack/common";
+import { openModal, TabBar, Timestamp, useState } from "@webpack/common";
 
 import { parseEditContent } from ".";
 
@@ -38,7 +39,7 @@ export function HistoryModal({ modalProps, message }: { modalProps: RenderModalP
     const contents = [...message.editHistory.map(m => m.content), message.content];
 
     return (
-        <Modal
+        <EndcordModal
             {...modalProps}
             size="lg"
             title={t("Message Edit History")}
@@ -86,6 +87,6 @@ export function HistoryModal({ modalProps, message }: { modalProps: RenderModalP
             <div className={classes(CodeContainerClasses.markup, MiscClasses.messageContent, Margins.top20)}>
                 {parseEditContent(contents[currentTab], message)}
             </div>
-        </Modal>
+        </EndcordModal>
     );
 }

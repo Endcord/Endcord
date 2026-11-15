@@ -337,15 +337,6 @@ export default definePlugin({
             DataStore.set(KEYWORD_LOG_KEY, log.map(e => JSON.stringify(e)));
         });
     },
-    discardMessage(id: string) {
-        DataStore.get(KEYWORD_LOG_KEY).then((log: string[]) => {
-            let parsed_logs: Message[] = log ? log.map(e => JSON.parse(e)) : [];
-
-            parsed_logs = parsed_logs.filter(msg => msg.id !== id);
-
-            DataStore.set(KEYWORD_LOG_KEY, parsed_logs.map(e => JSON.stringify(e)));
-        });
-    },
     addToLog(m: Message) {
         if (m == null || keywordLog.some(e => e.id === m.id))
             return;

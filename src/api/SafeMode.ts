@@ -43,7 +43,7 @@ export function getChosenPlugins() {
         .map(([name]) => name);
 }
 
-/** Turned on since the last start that came up, the likeliest cause when the crash itself named nobody */
+/** Enabled since the last good start: the main suspects when the crash doesn't point at a plugin */
 export function getPluginsChangedSinceGoodStart() {
     if (!bootState.lastGood.length) return [];
 
@@ -82,7 +82,7 @@ export function findSuspects(error: unknown) {
     return [...suspects];
 }
 
-/** Discord's crash screen came up. The start isn't a good one unless Discord gets back up and stays there */
+/** Called when Discord's crash screen shows. The start only counts as good if Discord recovers and stays up */
 export function noteCrash(error: unknown) {
     if (IS_REPORTER) return;
 

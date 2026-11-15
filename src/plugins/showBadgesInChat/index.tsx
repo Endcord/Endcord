@@ -53,8 +53,8 @@ function CheckBadge({ badge, author }: { badge: string; author: User; }): JSX.El
                     ))}
                 </span>
             );
-        case "EndcordContributer": {
-            // Chat has room for one: a developer shows the panda, everyone else who helped the bamboo
+        case "EndcordContributor": {
+            // Only one fits in chat: the panda for developers, the bamboo for contributors
             if (!isPluginDev(author.id) && !isEndcordDeveloper(author.id)) return null;
             const developer = isEndcordDeveloper(author.id);
             return (
@@ -68,20 +68,6 @@ function CheckBadge({ badge, author }: { badge: string; author: User; }): JSX.El
                 </span>
             );
         }
-        case "VencordDonor":
-            // Same list as EndcordDonor above; rendering it twice would duplicate every donor badge
-            return null;
-        case "VencordContributer":
-            return isPluginDev(author.id) ? (
-                <span style={{ order: settings.store.VencordContributorPosition }}>
-                    <RoleIconComponent
-                        className={roleIcon}
-                        name="Endcord Contributor"
-                        size={20}
-                        src={"https://cdn.discordapp.com/emojis/1092089799109775453.png"}
-                    />
-                </span>
-            ) : null;
         case "DiscordProfile":
             const chatBadges = discordBadges
                 .filter(badge => (author.flags || author.publicFlags) & (1 << badge[0]))
@@ -124,9 +110,7 @@ function ChatBadges({ author }: { author: User; }) {
     return (
         <span className="vc-sbic-badge-row" style={{ margin: "2px" }}>
             {settings.store.showEndcordDonor && <CheckBadge badge={"EndcordDonor"} author={author} />}
-            {settings.store.showEndcordContributor && <CheckBadge badge={"EndcordContributer"} author={author} />}
-            {settings.store.showVencordDonor && <CheckBadge badge={"VencordDonor"} author={author} />}
-            {settings.store.showVencordContributor && <CheckBadge badge={"VencordContributer"} author={author} />}
+            {settings.store.showEndcordContributor && <CheckBadge badge={"EndcordContributor"} author={author} />}
             {settings.store.showDiscordProfile && <CheckBadge badge={"DiscordProfile"} author={author} />}
             {settings.store.showDiscordNitro && <CheckBadge badge={"DiscordNitro"} author={author} />}
         </span>

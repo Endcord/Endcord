@@ -514,7 +514,6 @@ export interface VideoCodecErrorInfo {
 export interface ConnectionCodec {
     /** codec name. */
     name: string;
-    /** payload type number. */
     payloadType: number;
     /** priority order. */
     priority: number;
@@ -534,13 +533,9 @@ export interface ConnectionTransportOptions {
     ssrc: number;
     /** available encryption modes. */
     modes: string[];
-    /** stream count. */
     streamCount?: number;
-    /** audio codecs. */
     audioCodec?: ConnectionCodec;
-    /** video codecs. */
     videoCodec?: ConnectionCodec;
-    /** rtx codecs. */
     rtxCodec?: ConnectionCodec;
     /** experiment flags. */
     experiments?: string[];
@@ -554,9 +549,7 @@ export interface InputModeOptions {
     vadThreshold?: number;
     /** whether to auto-adjust threshold. */
     vadAutoThreshold?: boolean;
-    /** whether to use krisp for VAD. */
     vadUseKrisp?: boolean;
-    /** krisp activation threshold. */
     vadKrispActivationThreshold?: number;
     /** frames before speech detection. */
     vadLeading?: number;
@@ -584,11 +577,9 @@ export interface GoLiveSourceOptions {
 export interface StreamParameter {
     /** simulcast rid. */
     rid: string;
-    /** max bitrate. */
     maxBitrate?: number;
     /** max framerate. */
     maxFrameRate?: number;
-    /** max resolution. */
     maxResolution?: { width: number; height: number; };
     /** quality percentage. */
     quality?: number;
@@ -632,7 +623,6 @@ export interface MediaEngineConnection {
     userId: string;
     /** user id for stream context, undefined in default context. */
     streamUserId: string | undefined;
-    /** current connection state. */
     connectionState: ConnectionState;
     /** whether self is muted. */
     selfMute: boolean;
@@ -658,7 +648,6 @@ export interface MediaEngineConnection {
     voiceBitrate: number;
     /** whether video is supported. */
     videoSupported: boolean;
-    /** video stream parameters. */
     videoStreamParameters: StreamParameter[];
     /** soundshare source id. */
     soundshareId: number | null;
@@ -674,7 +663,6 @@ export interface MediaEngineConnection {
     noiseCancellation: boolean;
     /** whether QoS is enabled. */
     qos: boolean;
-    /** current input mode. */
     inputMode: VoiceMode;
     /** VAD threshold in dB, default -60. */
     vadThreshold: number;
@@ -686,9 +674,7 @@ export interface MediaEngineConnection {
     keyframeInterval: number;
     /** attenuation factor 0-1, default 1 (no attenuation). */
     attenuationFactor: number;
-    /** whether to attenuate while self speaking. */
     attenuateWhileSpeakingSelf: boolean;
-    /** whether to attenuate while others speaking. */
     attenuateWhileSpeakingOthers: boolean;
 
     /**
@@ -710,22 +696,11 @@ export interface MediaEngineConnection {
      * @returns promise resolving to stats or null.
      */
     getStats(): Promise<object | null>;
-    /**
-     * Creates a remote user in the connection.
-     * @param userId user id.
-     * @param audioSSRC audio ssrc.
-     * @param videoSSRC video ssrc.
-     */
+    /** Creates a remote user in the connection. */
     createUser(userId: string, audioSSRC: number, videoSSRC: number): void;
-    /**
-     * Destroys a remote user from the connection.
-     * @param userId user id.
-     */
+    /** Destroys a remote user from the connection. */
     destroyUser(userId: string): void;
-    /**
-     * Sets self mute state.
-     * @param mute whether to mute.
-     */
+    /** Sets self mute state. */
     setSelfMute(mute: boolean): void;
     /**
      * Gets self mute state.
@@ -756,10 +731,7 @@ export interface MediaEngineConnection {
     setLocalMute(userId: string, muted: boolean): void;
     /** performs a fast UDP reconnect. */
     fastUdpReconnect(): void;
-    /**
-     * Gets number of fast UDP reconnects.
-     * @returns reconnect count or null if unsupported.
-     */
+    /** @returns reconnect count or null if unsupported. */
     getNumFastUdpReconnects(): number | null;
     /** checks if remote was disconnected. */
     wasRemoteDisconnected(): void;
@@ -769,21 +741,13 @@ export interface MediaEngineConnection {
      * @param disabled whether to disable.
      */
     setLocalVideoDisabled(userId: string, disabled: boolean): void;
-    /**
-     * Sets minimum jitter buffer level.
-     * @param level jitter buffer level.
-     */
+    /** @param level jitter buffer level. */
     setMinimumJitterBufferLevel(level: number): void;
-    /**
-     * Sets postpone decode level.
-     * @param level decode level.
-     */
+    /** @param level decode level. */
     setPostponeDecodeLevel(level: number): void;
     /**
      * Sets clip recording for a user.
-     * @param userId user id.
      * @param type clip type.
-     * @param enabled whether enabled.
      */
     setClipRecordUser(userId: string, type: string, enabled: boolean): void;
     /**
@@ -791,24 +755,12 @@ export interface MediaEngineConnection {
      * @param interval interval in ms.
      */
     setClipsKeyFrameInterval(interval: number): void;
-    /**
-     * Sets viewer side clip.
-     * @param enabled whether enabled.
-     */
     setViewerSideClip(enabled: boolean): void;
-    /**
-     * Sets remote audio history duration.
-     * @param durationMs duration in ms.
-     */
+    /** Sets remote audio history duration. */
     setRemoteAudioHistory(durationMs: number): void;
-    /**
-     * Sets quality decoupling.
-     * @param enabled whether enabled.
-     */
     setQualityDecoupling(enabled: boolean): void;
     /**
      * Gets local volume for a user.
-     * @param userId user id.
      * @returns volume level.
      */
     getLocalVolume(userId: string): number;
@@ -825,10 +777,7 @@ export interface MediaEngineConnection {
      * @param right right channel 0-1.
      */
     setLocalPan(userId: string, left: number, right: number): void;
-    /**
-     * Checks if currently attenuating.
-     * @returns true if attenuating.
-     */
+    /** Checks if currently attenuating. */
     isAttenuating(): boolean;
     /**
      * Sets attenuation settings.
@@ -837,11 +786,7 @@ export interface MediaEngineConnection {
      * @param whileSpeakingOthers attenuate while others speaking.
      */
     setAttenuation(factor: number, whileSpeakingSelf: boolean, whileSpeakingOthers: boolean): void;
-    /**
-     * Sets whether user can have priority speaker.
-     * @param userId user id.
-     * @param canHavePriority whether can have priority.
-     */
+    /** Sets whether user can have priority speaker. */
     setCanHavePriority(userId: string, canHavePriority: boolean): void;
     /**
      * Sets voice bitrate.
@@ -853,94 +798,38 @@ export interface MediaEngineConnection {
      * @param bitrate bitrate in bps.
      */
     setVoiceBitRate(bitrate: number): void;
-    /**
-     * Sets camera bitrate.
-     * @param maxBitrate max bitrate.
-     * @param minBitrate min bitrate.
-     * @param targetBitrate target bitrate.
-     */
+    /** Sets camera bitrate. */
     setCameraBitRate(maxBitrate: number, minBitrate: number | null, targetBitrate: number | null): void;
-    /**
-     * Sets echo cancellation.
-     * @param enabled whether enabled.
-     */
     setEchoCancellation(enabled: boolean): void;
-    /**
-     * Sets noise suppression.
-     * @param enabled whether enabled.
-     */
     setNoiseSuppression(enabled: boolean): void;
-    /**
-     * Sets automatic gain control.
-     * @param config AGC configuration.
-     */
+    /** @param config AGC configuration. */
     setAutomaticGainControl(config: AutomaticGainControlConfig): void;
-    /**
-     * Sets noise cancellation.
-     * @param enabled whether enabled.
-     */
     setNoiseCancellation(enabled: boolean): void;
-    /**
-     * Sets noise cancellation during processing.
-     * @param enabled whether enabled.
-     */
     setNoiseCancellationDuringProcessing(enabled: boolean): void;
-    /**
-     * Sets noise cancellation after processing.
-     * @param enabled whether enabled.
-     */
     setNoiseCancellationAfterProcessing(enabled: boolean): void;
-    /**
-     * Sets VAD after WebRTC.
-     * @param enabled whether enabled.
-     */
+    /** Sets VAD after WebRTC. */
     setVADAfterWebrtc(enabled: boolean): void;
     /**
      * Gets noise cancellation state.
      * @returns true if enabled.
      */
     getNoiseCancellation(): boolean;
-    /**
-     * Gets current voice filter id.
-     * @returns voice filter id or null.
-     */
+    /** @returns voice filter id or null. */
     getVoiceFilterId(): string | null;
-    /**
-     * Sets voice filter id.
-     * @param filterId filter id or null.
-     */
+    /** @param filterId filter id or null. */
     setVoiceFilterId(filterId: string | null): void;
-    /**
-     * Sets QoS enabled.
-     * @param enabled whether enabled.
-     */
+    /** Sets QoS enabled. */
     setQoS(enabled: boolean): void;
-    /**
-     * Sets soundshare discard rear channels.
-     * @param discard whether to discard.
-     */
     setSoundshareDiscardRearChannels(discard: boolean): void;
     /**
-     * Sets input mode.
      * @param mode input mode.
      * @param options mode options.
      */
     setInputMode(mode: string, options: InputModeOptions): void;
-    /**
-     * Sets silence threshold.
-     * @param threshold threshold value.
-     */
     setSilenceThreshold(threshold: number): void;
-    /**
-     * Sets force audio input.
-     * @param force whether to force.
-     * @param playTone whether to play tone.
-     * @param isSpeaking whether speaking.
-     */
     setForceAudioInput(force: boolean, playTone?: boolean, isSpeaking?: boolean): void;
     /**
      * Sets speaking flags for a user.
-     * @param userId user id.
      * @param flags speaking flags.
      */
     setSpeakingFlags(userId: string, flags: number): void;
@@ -949,94 +838,44 @@ export interface MediaEngineConnection {
     /**
      * Sets encryption mode.
      * @param mode encryption mode.
-     * @param secretKey secret key.
      */
     setEncryption(mode: string, secretKey: Uint8Array): void;
-    /**
-     * Sets reconnect interval.
-     * @param interval interval in ms.
-     */
+    /** @param interval interval in ms. */
     setReconnectInterval(interval: number): void;
-    /**
-     * Sets keyframe interval.
-     * @param interval interval in ms.
-     */
+    /** @param interval interval in ms. */
     setKeyframeInterval(interval: number): void;
-    /**
-     * Sets video quality measurement.
-     * @param enabled whether enabled.
-     */
     setVideoQualityMeasurement(enabled: boolean): void;
-    /**
-     * Sets video encoder experiments.
-     * @param experiments experiment config.
-     */
     setVideoEncoderExperiments(experiments: object): void;
-    /**
-     * Sets video broadcast state.
-     * @param broadcast whether broadcasting.
-     */
+    /** Sets video broadcast state. */
     setVideoBroadcast(broadcast: boolean): void;
-    /**
-     * Sets go live source.
-     * @param source source options.
-     */
+    /** @param source source options. */
     setGoLiveSource(source: GoLiveSourceOptions): void;
-    /** clears go live devices. */
     clearGoLiveDevices(): void;
     /** clears the desktop source from this connection. */
     clearDesktopSource(): void;
-    /**
-     * Sets desktop source status callback.
-     * @param callback callback function.
-     */
     setDesktopSourceStatusCallback(callback: (status: string) => void): void;
     /**
      * Checks if connection has a desktop source.
      * @returns true if streaming desktop.
      */
     hasDesktopSource(): boolean;
-    /**
-     * Sets desktop encoding options.
-     * @param width width.
-     * @param height height.
-     * @param framerate framerate.
-     */
     setDesktopEncodingOptions(width: number, height: number, framerate: number): void;
-    /**
-     * Sets SDP.
-     * @param sdp SDP string.
-     */
+    /** @param sdp SDP string. */
     setSDP(sdp: string): void;
-    /**
-     * Sets remote video sink wants.
-     * @param wants sink wants config.
-     */
+    /** @param wants sink wants config. */
     setRemoteVideoSinkWants(wants: object): void;
-    /**
-     * Sets local video sink wants.
-     * @param wants sink wants config.
-     */
+    /** @param wants sink wants config. */
     setLocalVideoSinkWants(wants: object): void;
     /**
-     * Starts samples local playback.
      * @param id playback id.
      * @param buffer audio buffer.
      * @param options playback options.
      * @param callback completion callback.
      */
     startSamplesLocalPlayback(id: string, buffer: AudioBuffer, options: object, callback: (error: number, message: string) => void): void;
-    /** stops all samples local playback. */
     stopAllSamplesLocalPlayback(): void;
-    /**
-     * Stops samples local playback.
-     * @param id playback id.
-     */
+    /** @param id playback id. */
     stopSamplesLocalPlayback(id: string): void;
-    /**
-     * Sets bandwidth estimation experiments.
-     * @param experiments experiment config.
-     */
     setBandwidthEstimationExperiments(experiments: object): void;
     /**
      * Updates video quality core.
@@ -1044,13 +883,8 @@ export interface MediaEngineConnection {
      * @param reason update reason.
      */
     updateVideoQualityCore(options: object, reason: string): void;
-    /**
-     * Sets stream parameters.
-     * @param params stream parameters.
-     * @returns promise.
-     */
+    /** @param params stream parameters. */
     setStreamParameters(params: StreamParameter[]): Promise<void>;
-    /** applies video transport options. */
     applyVideoTransportOptions(): void;
     /**
      * Chooses encryption mode.
@@ -1059,131 +893,63 @@ export interface MediaEngineConnection {
      * @returns chosen mode.
      */
     chooseEncryptionMode(preferred: string[], available: string[]): string;
-    /**
-     * Gets user options.
-     * @returns user options array.
-     */
     getUserOptions(): object[];
-    /**
-     * Creates input mode options.
-     * @returns input mode options.
-     */
+    /** Creates input mode options. */
     createInputModeOptions(): InputModeOptions;
-    /**
-     * Gets attenuation options.
-     * @returns attenuation options.
-     */
     getAttenuationOptions(): object;
     /**
-     * Gets codec params.
      * @param codec codec name.
      * @param isHardware whether hardware codec.
-     * @returns codec params.
      */
     getCodecParams(codec: string, isHardware: boolean): object;
-    /**
-     * Gets codec options.
-     * @param audioCodec audio codec.
-     * @param videoCodec video codec.
-     * @param rtxCodec rtx codec.
-     * @returns codec options.
-     */
     getCodecOptions(audioCodec: string, videoCodec: string, rtxCodec: string): object;
     /**
      * Gets keyframe interval.
      * @returns interval in ms.
      */
     getKeyFrameInterval(): number;
-    /**
-     * Gets connection transport options.
-     * @returns transport options.
-     */
     getConnectionTransportOptions(): object;
     /**
      * Sets stream (not implemented).
      * @param stream media stream.
      */
     setStream(stream: MediaStream): void;
-    /**
-     * Gets user id by ssrc.
-     * @param ssrc ssrc value.
-     */
     getUserIdBySsrc(ssrc: number): void;
-    /**
-     * Prepares secure frames transition.
-     * @param transitionId transition id.
-     * @param epoch epoch number.
-     * @param callback callback function.
-     */
+    /** Prepares secure frames transition. */
     prepareSecureFramesTransition(transitionId: number, epoch: number, callback: () => void): void;
     /**
      * Prepares secure frames epoch.
-     * @param epoch epoch number.
      * @param data epoch data.
-     * @param callback callback function.
      */
     prepareSecureFramesEpoch(epoch: number, data: Uint8Array, callback: () => void): void;
-    /**
-     * Executes secure frames transition.
-     * @param transitionId transition id.
-     */
+    /** Executes secure frames transition. */
     executeSecureFramesTransition(transitionId: number): void;
-    /**
-     * Gets MLS key package.
-     * @param callback callback receiving key package.
-     */
+    /** @param callback callback receiving key package. */
     getMLSKeyPackage(callback: (keyPackage: Uint8Array) => void): void;
     /**
      * Updates MLS external sender.
      * @param sender external sender data.
      */
     updateMLSExternalSender(sender: Uint8Array): void;
-    /**
-     * Processes MLS proposals.
-     * @param proposals proposals data.
-     * @param callback callback function.
-     */
+    /** Processes MLS proposals. */
     processMLSProposals(proposals: Uint8Array, callback: () => void): void;
-    /**
-     * Prepares MLS commit transition.
-     * @param transitionId transition id.
-     * @param commit commit data.
-     * @param callback callback function.
-     */
+    /** Prepares MLS commit transition. */
     prepareMLSCommitTransition(transitionId: number, commit: Uint8Array, callback: () => void): void;
-    /**
-     * Processes MLS welcome.
-     * @param transitionId transition id.
-     * @param welcome welcome data.
-     * @param callback callback function.
-     */
+    /** Processes MLS welcome. */
     processMLSWelcome(transitionId: number, welcome: Uint8Array, callback: () => void): void;
-    /**
-     * Gets MLS pairwise fingerprint.
-     * @param userId user id.
-     * @param version version.
-     * @param callback callback receiving fingerprint.
-     */
+    /** @param callback callback receiving fingerprint. */
     getMLSPairwiseFingerprint(userId: string, version: number, callback: (fingerprint: Uint8Array) => void): void;
-    /**
-     * Presents desktop source picker.
-     * @param options picker options.
-     */
+    /** @param options picker options. */
     presentDesktopSourcePicker(options: object): void;
     /**
      * Merges users.
      * @param users user merge data.
      */
     mergeUsers(users: object[]): void;
-    /**
-     * Gets whether there is an active video output sink.
-     * @param userId user id.
-     * @returns true if has active sink.
-     */
+    /** Gets whether there is an active video output sink. */
     getHasActiveVideoOutputSink(userId: string): boolean;
     /**
      * Sets whether there is an active video output sink.
-     * @param userId user id.
      * @param hasActiveSink whether sink is active.
      * @param reason reason for the change.
      */
@@ -1211,22 +977,14 @@ export interface MediaEngineConnection {
      * @returns promise resolving to stats or null.
      */
     emitStats(): Promise<object | null>;
-    /**
-     * Gets whether active output sink tracking is enabled.
-     * @returns true if enabled.
-     */
+    /** Gets whether active output sink tracking is enabled. */
     getActiveOutputSinkTrackingEnabled(): boolean;
     /**
      * Gets local mute state for a user.
-     * @param userId user id.
      * @returns true if muted.
      */
     getLocalMute(userId: string): boolean;
-    /**
-     * Gets local video disabled state for a user.
-     * @param userId user id.
-     * @returns true if disabled.
-     */
+    /** Gets local video disabled state for a user. */
     getLocalVideoDisabled(userId: string): boolean;
     /**
      * Gets local video quality want for a ssrc.
@@ -1234,45 +992,21 @@ export interface MediaEngineConnection {
      * @returns quality want object.
      */
     getLocalWant(ssrc?: number): object;
-    /**
-     * Gets remote video sink pixel count for a user.
-     * @param userId user id.
-     * @returns pixel count.
-     */
+    /** Gets remote video sink pixel count for a user. */
     getRemoteVideoSinkPixelCount(userId: string): number;
-    /**
-     * Gets remote video sink wants for a user.
-     * @param userId user id.
-     * @returns sink wants object.
-     */
+    /** Gets remote video sink wants for a user. */
     getRemoteVideoSinkWants(userId: string): object;
-    /**
-     * Gets current stream parameters.
-     * @returns array of stream parameters.
-     */
     getStreamParameters(): StreamParameter[];
     /**
      * Handles desktop source ended event.
      * @param reason end reason.
-     * @param errorCode error code.
      */
     handleDesktopSourceEnded(reason: string, errorCode: number): void;
-    /**
-     * Handles first frame received.
-     * @param userId user id.
-     * @param ssrc ssrc.
-     * @param stats stats object.
-     */
+    /** Handles first frame received. */
     handleFirstFrame(userId: string, ssrc: number, stats: object): void;
-    /**
-     * Handles first frame encrypted stats.
-     * @param stats stats object.
-     */
+    /** Handles first frame encrypted stats. */
     handleFirstFrameEncryptedStats(stats: object): void;
-    /**
-     * Handles first frame stats.
-     * @param stats stats object.
-     */
+    /** Handles first frame stats. */
     handleFirstFrameStats(stats: object): void;
     /**
      * Handles MLS failure.
@@ -1302,14 +1036,10 @@ export interface MediaEngineConnection {
     /**
      * Handles ping response.
      * @param latency latency in ms.
-     * @param hostname hostname.
-     * @param port port number.
      */
     handlePing(latency: number, hostname: string, port: number): void;
     /**
      * Handles ping timeout.
-     * @param hostname hostname.
-     * @param port port number.
      * @param attempts attempt count.
      * @param timeout timeout in ms.
      */
@@ -1320,52 +1050,31 @@ export interface MediaEngineConnection {
      * @param data message data.
      */
     handleRTCPMessage(type: string, data: string): void;
-    /**
-     * Handles soundshare attached.
-     * @param attached whether attached.
-     */
+    /** Handles soundshare attached. */
     handleSoundshare(attached: boolean): void;
     /**
      * Handles soundshare ended.
      */
     handleSoundshareEnded(): void;
-    /**
-     * Handles soundshare failed.
-     * @param failureCode failure code.
-     * @param failureReason failure reason.
-     * @param willRetry whether it will retry.
-     */
+    /** Handles soundshare failed. */
     handleSoundshareFailed(failureCode: number, failureReason: string, willRetry: boolean): void;
     /**
      * Handles speaking flags change.
-     * @param userId user id.
      * @param flags speaking flags.
-     * @param ssrc ssrc.
      */
     handleSpeakingFlags(userId: string, flags: number, ssrc: number): void;
     /**
      * Handles native speaking event.
-     * @param userId user id.
      * @param speaking speaking state or flags.
-     * @param ssrc ssrc.
      */
     handleSpeakingNative(userId: string, speaking: boolean | number, ssrc: number): void;
     /**
      * Handles speaking while muted event.
      */
     handleSpeakingWhileMuted(): void;
-    /**
-     * Handles stats received.
-     * @param stats stats object.
-     */
+    /** Handles stats received. */
     handleStats(stats: object): void;
-    /**
-     * Handles video stream update.
-     * @param userId user id.
-     * @param ssrc ssrc.
-     * @param active whether active.
-     * @param streams stream array.
-     */
+    /** Handles video stream update. */
     handleVideo(userId: string, ssrc: number, active: boolean, streams: object[]): void;
     /**
      * Handles video encoder fallback.
@@ -1377,33 +1086,14 @@ export interface MediaEngineConnection {
      * @param parameters initial parameters.
      */
     initializeStreamParameters(parameters: StreamParameter[]): void;
-    /**
-     * Callback when desktop encoding options are set.
-     * @param width width.
-     * @param height height.
-     * @param framerate framerate.
-     */
+    /** Callback when desktop encoding options are set. */
     onDesktopEncodingOptionsSet(width: number, height: number, framerate: number): void;
-    /**
-     * Overwrites quality for testing.
-     * @param quality quality value.
-     */
+    /** Overwrites quality for testing. */
     overwriteQualityForTesting(quality: number): void;
-    /**
-     * Sets the connection state.
-     * @param state new connection state.
-     */
+    /** @param state new connection state. */
     setConnectionState(state: ConnectionState): void;
-    /**
-     * Sets an experiment flag.
-     * @param flag flag name.
-     * @param enabled whether enabled.
-     */
+    /** @param flag flag name. */
     setExperimentFlag(flag: string, enabled: boolean): void;
-    /**
-     * Sets whether to use electron video.
-     * @param use whether to use.
-     */
     setUseElectronVideo(use: boolean): void;
     /**
      * Updates video quality settings.
@@ -1570,7 +1260,6 @@ export interface MediaEngine {
     /**
      * Gets the number of listeners for an event.
      * @param event event name.
-     * @returns listener count.
      */
     listenerCount(event: MediaEngineEvent): number;
 
@@ -1640,10 +1329,7 @@ export interface MediaEngine {
      * @returns promise resolving to device list.
      */
     getAudioOutputDevices(): Promise<AudioDevice[]>;
-    /**
-     * Gets the current audio subsystem.
-     * @returns active audio subsystem.
-     */
+    /** @returns active audio subsystem. */
     getAudioSubsystem(): AudioSubsystem;
     /**
      * Gets codec capabilities as JSON string.
@@ -1660,10 +1346,7 @@ export interface MediaEngine {
      * @returns true if enabled.
      */
     getDebugLogging(): boolean;
-    /**
-     * Gets the current desktop source.
-     * @returns promise that rejects with NO_STREAM error if not streaming.
-     */
+    /** @returns promise that rejects with NO_STREAM error if not streaming. */
     getDesktopSource(): Promise<DesktopSource>;
     /**
      * Gets whether loopback is active.
@@ -1672,8 +1355,6 @@ export interface MediaEngine {
     getLoopback(): boolean;
     /**
      * Gets MLS signing key for e2ee.
-     * @param userId user id.
-     * @param guildId guild id.
      * @returns promise resolving to key and signature.
      */
     getMLSSigningKey(userId: string, guildId: string): Promise<MLSSigningKey>;
@@ -1689,30 +1370,14 @@ export interface MediaEngine {
      * @returns promise resolving to preview list.
      */
     getScreenPreviews(width: number, height: number): Promise<ScreenPreview[]>;
-    /**
-     * Gets supported bandwidth estimation experiments.
-     * @param callback called with experiment list.
-     */
+    /** @param callback called with experiment list. */
     getSupportedBandwidthEstimationExperiments(callback: (experiments: string[]) => void): void;
-    /**
-     * Gets supported secure frames protocol version.
-     * @returns protocol version number.
-     */
     getSupportedSecureFramesProtocolVersion(): number;
-    /**
-     * Gets supported video codecs.
-     * @param callback called with codec name list.
-     */
+    /** @param callback called with codec name list. */
     getSupportedVideoCodecs(callback: (codecs: string[]) => void): void;
-    /**
-     * Gets system microphone mode.
-     * @returns promise resolving to mode string.
-     */
+    /** @returns promise resolving to mode string. */
     getSystemMicrophoneMode(): Promise<string>;
-    /**
-     * Gets current video input device id.
-     * @returns device id or "disabled".
-     */
+    /** @returns device id or "disabled". */
     getVideoInputDeviceId(): string;
     /**
      * Gets available video input devices.
@@ -1779,35 +1444,16 @@ export interface MediaEngine {
      * @param enabled whether to enable.
      */
     setAecDump(enabled: boolean): void;
-    /**
-     * Sets callback for async clips source deinit.
-     * @param callback callback function.
-     */
+    /** Sets callback for async clips source deinit. */
     setAsyncClipsSourceDeinit(callback: () => void): void;
-    /**
-     * Sets callback for async video input device init.
-     * @param callback callback function.
-     */
+    /** Sets callback for async video input device init. */
     setAsyncVideoInputDeviceInit(callback: () => void): void;
-    /**
-     * Sets whether to bypass system audio input processing.
-     * @param bypass whether to bypass.
-     */
     setAudioInputBypassSystemProcessing(bypass: boolean): void;
-    /**
-     * Sets the audio input device.
-     * @param deviceId device identifier.
-     */
+    /** @param deviceId device identifier. */
     setAudioInputDevice(deviceId: string): void;
-    /**
-     * Sets the audio output device.
-     * @param deviceId device identifier.
-     */
+    /** @param deviceId device identifier. */
     setAudioOutputDevice(deviceId: string): void;
-    /**
-     * Sets the audio subsystem.
-     * @param subsystem subsystem to use.
-     */
+    /** @param subsystem subsystem to use. */
     setAudioSubsystem(subsystem: AudioSubsystem): void;
     /**
      * Enables or disables AV1 codec.
@@ -1831,9 +1477,7 @@ export interface MediaEngine {
      */
     setClipsMLPipelineTypeEnabled(type: string, enabled: boolean): void;
     /**
-     * Sets clips quality settings.
      * @param resolution resolution height.
-     * @param frameRate frame rate.
      * @param hdr whether HDR is enabled.
      * @returns true if settings were applied.
      */
@@ -1869,10 +1513,6 @@ export interface MediaEngine {
      * @param has whether it has fullband performance.
      */
     setHasFullbandPerformance(has: boolean): void;
-    /**
-     * Sets input volume.
-     * @param volume volume 0-100.
-     */
     setInputVolume(volume: number): void;
     /**
      * Enables loopback for testing.
@@ -1880,15 +1520,9 @@ export interface MediaEngine {
      * @param options loopback audio options.
      */
     setLoopback(reason: string, options: LoopbackOptions): void;
-    /**
-     * Sets max sync delay override.
-     * @param delay delay in milliseconds.
-     */
+    /** @param delay delay in milliseconds. */
     setMaxSyncDelayOverride(delay: number): void;
-    /**
-     * Sets maybe preprocess mute state.
-     * @param mute whether to mute.
-     */
+    /** Sets maybe preprocess mute state. */
     setMaybePreprocessMute(mute: boolean): void;
     /**
      * Sets native desktop video source picker active state.
@@ -1900,62 +1534,36 @@ export interface MediaEngine {
      * @param enabled whether to enable.
      */
     setNoiseCancellationEnableStats(enabled: boolean): void;
-    /**
-     * Sets whether to offload ADM controls.
-     * @param offload whether to offload.
-     */
     setOffloadAdmControls(offload: boolean): void;
-    /**
-     * Sets callback for video container resize.
-     * @param callback callback function.
-     */
+    /** Sets callback for video container resize. */
     setOnVideoContainerResized(callback: () => void): void;
-    /**
-     * Sets output volume.
-     * @param volume volume 0-100.
-     */
     setOutputVolume(volume: number): void;
     /**
      * Enables or disables sidechain compression.
      * @param enabled whether to enable.
      */
     setSidechainCompression(enabled: boolean): void;
-    /**
-     * Sets sidechain compression strength.
-     * @param strength strength 0-100.
-     */
     setSidechainCompressionStrength(strength: number): void;
     /**
-     * Sets soundshare source.
      * @param soundshareId soundshare source id.
      * @param active whether to enable.
      * @param context context to apply to, defaults to "default".
      */
     setSoundshareSource(soundshareId: number, active: boolean, context?: MediaEngineContextType): void;
-    /**
-     * Sets the video input device.
-     * @param deviceId device identifier.
-     */
+    /** @param deviceId device identifier. */
     setVideoInputDevice(deviceId: string): Promise<void>;
 
     /**
      * Checks if a connection should broadcast video.
      * @param connection connection to check.
-     * @returns true if should broadcast.
      */
     shouldConnectionBroadcastVideo(connection: MediaEngineConnection): boolean;
-    /**
-     * Shows system capture configuration UI.
-     * @param options options including display id.
-     */
+    /** @param options options including display id. */
     showSystemCaptureConfigurationUI(options: { displayId?: string; }): void;
 
     /** starts AEC dump recording. */
     startAecDump(): void;
-    /**
-     * Starts local audio recording.
-     * @param options recording options.
-     */
+    /** @param options recording options. */
     startLocalAudioRecording(options: AudioRecordingOptions): Promise<void>;
     /**
      * Starts recording raw audio samples.
@@ -1964,23 +1572,16 @@ export interface MediaEngine {
     startRecordingRawSamples(options: RawSamplesOptions): void;
     /** stops AEC dump recording. */
     stopAecDump(): void;
-    /**
-     * Stops local audio recording.
-     * @param callback called with success and filepath.
-     */
+    /** @param callback called with success and filepath. */
     stopLocalAudioRecording(callback: (success: boolean, filepath: string) => void): void;
     /** stops recording raw audio samples. */
     stopRecordingRawSamples(): void;
 
-    /**
-     * Checks if media engine is supported.
-     * @returns true if supported.
-     */
+    /** Checks if media engine is supported. */
     supported(): boolean;
     /**
      * Checks if a feature is supported.
      * @param feature feature to check.
-     * @returns true if supported.
      */
     supports(feature: MediaEngineFeature): boolean;
     /**
@@ -2108,7 +1709,6 @@ export interface MediaEngineState {
     krispSuppressionLevel: number | undefined;
     /** current go live source or undefined. */
     goLiveSource: GoLiveSource | undefined;
-    /** context for go live. */
     goLiveContext: MediaEngineContextType;
 }
 
@@ -2130,10 +1730,6 @@ export interface Shortcut {
 export class MediaEngineStore extends FluxStore {
     /** fetches async resources like DAVE keys. */
     fetchAsyncResources(): void;
-    /**
-     * Gets the active input profile.
-     * @returns current input profile.
-     */
     getActiveInputProfile(): InputProfile;
     /**
      * Gets the active voice filter id.
@@ -2150,10 +1746,7 @@ export class MediaEngineStore extends FluxStore {
      * @returns true if enabled.
      */
     getAecDump(): boolean;
-    /**
-     * Gets whether to attenuate while others are speaking.
-     * @returns true if enabled.
-     */
+    /** @returns true if enabled. */
     getAttenuateWhileSpeakingOthers(): boolean;
     /**
      * Gets whether to attenuate while self is speaking.
@@ -2165,10 +1758,7 @@ export class MediaEngineStore extends FluxStore {
      * @returns attenuation 0-100, default 0.
      */
     getAttenuation(): number;
-    /**
-     * Gets the current audio subsystem.
-     * @returns active audio subsystem.
-     */
+    /** @returns active audio subsystem. */
     getAudioSubsystem(): AudioSubsystem;
     /**
      * Gets whether automatic gain control is enabled.
@@ -2210,25 +1800,15 @@ export class MediaEngineStore extends FluxStore {
      * @returns true if enabled.
      */
     getExperimentalSoundshare(): boolean;
-    /**
-     * Gets the go live context.
-     * @returns current go live context.
-     */
     getGoLiveContext(): MediaEngineContextType;
-    /**
-     * Gets the current go live source.
-     * @returns go live source or null if not streaming.
-     */
+    /** @returns go live source or null if not streaming. */
     getGoLiveSource(): GoLiveSource | null;
     /**
      * Gets the GPU brand name.
      * @returns GPU brand string.
      */
     getGpuBrand(): string;
-    /**
-     * Gets whether H265 is enabled.
-     * @returns true if enabled.
-     */
+    /** Gets whether H265 is enabled. */
     getH265Enabled(): boolean;
     /**
      * Gets whether hardware encoding is enabled.
@@ -2240,50 +1820,32 @@ export class MediaEngineStore extends FluxStore {
      * @returns true if detected, false if not, null if unknown.
      */
     getInputDetected(): boolean | null;
-    /**
-     * Gets the selected audio input device id.
-     * @returns device id.
-     */
+    /** Gets the selected audio input device id. */
     getInputDeviceId(): string;
     /**
      * Gets available audio input devices.
      * @returns devices keyed by device id.
      */
     getInputDevices(): { [deviceId: string]: AudioDevice; };
-    /**
-     * Gets the input volume.
-     * @returns volume 0-100, default 100.
-     */
+    /** @returns volume 0-100, default 100. */
     getInputVolume(): number;
     /**
      * Gets whether krisp stats are enabled.
      * @returns true if enabled.
      */
     getKrispEnableStats(): boolean;
-    /**
-     * Gets the krisp model override.
-     * @returns model name or undefined if not set.
-     */
+    /** @returns model name or undefined if not set. */
     getKrispModelOverride(): string | undefined;
     /**
      * Gets available krisp models.
      * @returns array of model names.
      */
     getKrispModels(): string[];
-    /**
-     * Gets the krisp suppression level.
-     * @returns suppression level 0-100, default 100.
-     */
+    /** @returns suppression level 0-100, default 100. */
     getKrispSuppressionLevel(): number;
-    /**
-     * Gets the krisp VAD activation threshold.
-     * @returns threshold 0-1, default 0.8.
-     */
+    /** @returns threshold 0-1, default 0.8. */
     getKrispVadActivationThreshold(): number;
-    /**
-     * Gets the timestamp of the last audio input device change.
-     * @returns timestamp in milliseconds.
-     */
+    /** @returns timestamp in milliseconds. */
     getLastAudioInputDeviceChangeTimestamp(): number;
     /**
      * Gets the stereo pan for a user.
@@ -2309,15 +1871,10 @@ export class MediaEngineStore extends FluxStore {
      * @returns set of reason strings.
      */
     getLoopbackReasons(): Set<string>;
-    /**
-     * Gets the media engine instance.
-     * @returns the media engine.
-     */
+    /** Gets the media engine instance. */
     getMediaEngine(): MediaEngine;
     /**
      * Gets MLS signing key for e2ee.
-     * @param userId user id.
-     * @param guildId guild id.
      * @returns promise resolving to key and signature.
      */
     getMLSSigningKey(userId: string, guildId: string): Promise<MLSSigningKey>;
@@ -2327,16 +1884,9 @@ export class MediaEngineStore extends FluxStore {
      * @returns current voice mode.
      */
     getMode(context?: MediaEngineContextType): VoiceMode;
-    /**
-     * Gets the mode options.
-     * @param context settings context, defaults to "default".
-     * @returns current mode options.
-     */
+    /** @param context settings context, defaults to "default". */
     getModeOptions(context?: MediaEngineContextType): ModeOptions;
-    /**
-     * Gets the most recently requested voice filter.
-     * @returns voice filter id or null if none.
-     */
+    /** @returns voice filter id or null if none. */
     getMostRecentlyRequestedVoiceFilter(): string | null;
     /**
      * Gets whether no input detected notice is shown.
@@ -2353,30 +1903,18 @@ export class MediaEngineStore extends FluxStore {
      * @returns true if enabled.
      */
     getNoiseSuppression(): boolean;
-    /**
-     * Gets the selected audio output device id.
-     * @returns device id.
-     */
+    /** Gets the selected audio output device id. */
     getOutputDeviceId(): string;
     /**
      * Gets available audio output devices.
      * @returns devices keyed by device id.
      */
     getOutputDevices(): { [deviceId: string]: AudioDevice; };
-    /**
-     * Gets the output volume.
-     * @returns volume 0-100, default 100.
-     */
+    /** @returns volume 0-100, default 100. */
     getOutputVolume(): number;
-    /**
-     * Gets the packet delay.
-     * @returns delay in milliseconds.
-     */
+    /** @returns delay in milliseconds. */
     getPacketDelay(): number;
-    /**
-     * Gets the previous voice filter.
-     * @returns voice filter id or null if none.
-     */
+    /** @returns voice filter id or null if none. */
     getPreviousVoiceFilter(): string | null;
     /**
      * Gets when the previous voice filter was applied.
@@ -2391,7 +1929,6 @@ export class MediaEngineStore extends FluxStore {
     /**
      * Gets the settings for a context.
      * @param context settings context, defaults to "default".
-     * @returns current settings.
      */
     getSettings(context?: MediaEngineContextType): MediaEngineSettings;
     /**
@@ -2404,30 +1941,14 @@ export class MediaEngineStore extends FluxStore {
      * @returns true if enabled.
      */
     getSidechainCompression(): boolean;
-    /**
-     * Gets the sidechain compression strength.
-     * @returns strength 0-100, default 50.
-     */
+    /** @returns strength 0-100, default 50. */
     getSidechainCompressionStrength(): number;
-    /**
-     * Gets whether currently speaking while muted.
-     * @returns true if speaking while muted.
-     */
+    /** Gets whether currently speaking while muted. */
     getSpeakingWhileMuted(): boolean;
-    /**
-     * Gets the complete store state.
-     * @returns current state.
-     */
+    /** Gets the complete store state. */
     getState(): MediaEngineState;
-    /**
-     * Gets supported secure frames protocol version.
-     * @returns protocol version number.
-     */
     getSupportedSecureFramesProtocolVersion(): number;
-    /**
-     * Gets the system microphone mode.
-     * @returns mode string or undefined if not available.
-     */
+    /** @returns mode string or undefined if not available. */
     getSystemMicrophoneMode(): string | undefined;
     /**
      * Gets whether gamescope capture is used.
@@ -2449,10 +1970,7 @@ export class MediaEngineStore extends FluxStore {
      * @returns react component for video display.
      */
     getVideoComponent(): React.ComponentType;
-    /**
-     * Gets the selected video device id.
-     * @returns device id.
-     */
+    /** Gets the selected video device id. */
     getVideoDeviceId(): string;
     /**
      * Gets available video devices.
@@ -2464,11 +1982,7 @@ export class MediaEngineStore extends FluxStore {
      * @returns true if enabled.
      */
     getVideoHook(): boolean;
-    /**
-     * Gets video stream parameters.
-     * @param context settings context, defaults to "default".
-     * @returns array of stream parameters.
-     */
+    /** @param context settings context, defaults to "default". */
     getVideoStreamParameters(context?: MediaEngineContextType): VideoStreamParameter[];
     /**
      * Gets the video toggle state for a user.
@@ -2477,27 +1991,15 @@ export class MediaEngineStore extends FluxStore {
      * @returns toggle state, NONE if not in map.
      */
     getVideoToggleState(userId: string, context?: MediaEngineContextType): VideoToggleState;
-    /**
-     * Gets whether voice filter playback is enabled.
-     * @returns true if enabled.
-     */
+    /** Gets whether voice filter playback is enabled. */
     getVoiceFilterPlaybackEnabled(): boolean;
 
-    /**
-     * Gets whether go live simulcast is enabled.
-     * @returns true if enabled.
-     */
+    /** Gets whether go live simulcast is enabled. */
     goLiveSimulcastEnabled(): boolean;
 
-    /**
-     * Checks if there is an active CallKit call.
-     * @returns true if active.
-     */
+    /** Checks if there is an active CallKit call. */
     hasActiveCallKitCall(): boolean;
-    /**
-     * Checks if there is a clips source.
-     * @returns true if has source.
-     */
+    /** Checks if there is a clips source. */
     hasClipsSource(): boolean;
     /**
      * Checks if a context exists.
@@ -2511,26 +2013,16 @@ export class MediaEngineStore extends FluxStore {
      */
     hasH265HardwareDecode(): boolean;
 
-    /**
-     * Checks if advanced voice activity is supported.
-     * @returns true if supported.
-     */
+    /** Checks if advanced voice activity is supported. */
     isAdvancedVoiceActivitySupported(): boolean;
-    /**
-     * Checks if AEC dump is supported.
-     * @returns true if supported.
-     */
+    /** Checks if AEC dump is supported. */
     isAecDumpSupported(): boolean;
     /**
      * Checks if any local video is auto disabled.
      * @param context settings context, defaults to "default".
-     * @returns true if any auto disabled.
      */
     isAnyLocalVideoAutoDisabled(context?: MediaEngineContextType): boolean;
-    /**
-     * Checks if automatic gain control is supported.
-     * @returns true if supported.
-     */
+    /** Checks if automatic gain control is supported. */
     isAutomaticGainControlSupported(): boolean;
     /**
      * Checks if self is deafened.
@@ -2542,10 +2034,7 @@ export class MediaEngineStore extends FluxStore {
      * @returns true if enabled.
      */
     isEnableHardwareMuteNotice(): boolean;
-    /**
-     * Checks if media engine is enabled.
-     * @returns true if enabled.
-     */
+    /** Checks if media engine is enabled. */
     isEnabled(): boolean;
     /**
      * Checks if hardware mute is active.
@@ -2553,15 +2042,9 @@ export class MediaEngineStore extends FluxStore {
      * @returns true if hardware muted.
      */
     isHardwareMute(context?: MediaEngineContextType): boolean;
-    /**
-     * Checks if input profile is custom.
-     * @returns true if custom.
-     */
+    /** Checks if input profile is custom. */
     isInputProfileCustom(): boolean;
-    /**
-     * Checks if user interaction is required.
-     * @returns true if required.
-     */
+    /** Checks if user interaction is required. */
     isInteractionRequired(): boolean;
     /**
      * Checks if a user is locally muted.
@@ -2574,50 +2057,35 @@ export class MediaEngineStore extends FluxStore {
      * Checks if a user's video is auto disabled.
      * @param userId user to check.
      * @param context settings context, defaults to "default".
-     * @returns true if auto disabled.
      */
     isLocalVideoAutoDisabled(userId: string, context?: MediaEngineContextType): boolean;
     /**
      * Checks if a user's video is disabled.
      * @param userId user to check.
      * @param context settings context, defaults to "default".
-     * @returns true if disabled.
      */
     isLocalVideoDisabled(userId: string, context?: MediaEngineContextType): boolean;
-    /**
-     * Checks if media filter settings are loading.
-     * @returns true if loading.
-     */
+    /** Checks if media filter settings are loading. */
     isMediaFilterSettingLoading(): boolean;
     /**
      * Checks if self is muted.
      * @returns true if muted.
      */
     isMute(): boolean;
-    /**
-     * Checks if native audio permission is ready.
-     * @returns true if ready.
-     */
+    /** Checks if native audio permission is ready. */
     isNativeAudioPermissionReady(): boolean;
     /**
      * Checks if there was a noise cancellation error.
      * @returns true if error occurred.
      */
     isNoiseCancellationError(): boolean;
-    /**
-     * Checks if noise cancellation is supported.
-     * @returns true if supported.
-     */
+    /** Checks if noise cancellation is supported. */
     isNoiseCancellationSupported(): boolean;
-    /**
-     * Checks if noise suppression is supported.
-     * @returns true if supported.
-     */
+    /** Checks if noise suppression is supported. */
     isNoiseSuppressionSupported(): boolean;
     /**
      * Checks if screen sharing is active.
      * @param context settings context, defaults to "default".
-     * @returns true if sharing.
      */
     isScreenSharing(context?: MediaEngineContextType): boolean;
     /**
@@ -2635,58 +2103,33 @@ export class MediaEngineStore extends FluxStore {
     /**
      * Checks if self is temporarily muted.
      * @param context settings context, defaults to "default".
-     * @returns true if temporarily muted.
      */
     isSelfMutedTemporarily(context?: MediaEngineContextType): boolean;
-    /**
-     * Checks if simulcast is supported.
-     * @returns true if supported.
-     */
+    /** Checks if simulcast is supported. */
     isSimulcastSupported(): boolean;
     /**
      * Checks if sound sharing is active.
      * @param context settings context, defaults to "default".
-     * @returns true if sharing.
      */
     isSoundSharing(context?: MediaEngineContextType): boolean;
-    /**
-     * Checks if media engine is supported.
-     * @returns true if supported.
-     */
+    /** Checks if media engine is supported. */
     isSupported(): boolean;
-    /**
-     * Checks if video is available.
-     * @returns true if available.
-     */
+    /** Checks if video is available. */
     isVideoAvailable(): boolean;
-    /**
-     * Checks if video is enabled.
-     * @returns true if enabled.
-     */
+    /** Checks if video is enabled. */
     isVideoEnabled(): boolean;
 
-    /** notifies that mute/unmute sound was skipped. */
     notifyMuteUnmuteSoundWasSkipped(): void;
     /**
      * Sets whether a user can have priority speaker.
      * @param userId user to set.
-     * @param canHavePriority whether can have priority.
      */
     setCanHavePriority(userId: string, canHavePriority: boolean): void;
-    /**
-     * Sets whether there is an active CallKit call.
-     * @param active whether active.
-     */
+    /** Sets whether there is an active CallKit call. */
     setHasActiveCallKitCall(active: boolean): void;
-    /**
-     * Checks if manual subsystem selection should be offered.
-     * @returns true if should offer.
-     */
+    /** Checks if manual subsystem selection should be offered. */
     shouldOfferManualSubsystemSelection(): boolean;
-    /**
-     * Checks if mute/unmute sound should be skipped.
-     * @returns true if should skip.
-     */
+    /** Checks if mute/unmute sound should be skipped. */
     shouldSkipMuteUnmuteSound(): boolean;
     /**
      * Checks if bypass system input processing should be shown.
@@ -2700,43 +2143,23 @@ export class MediaEngineStore extends FluxStore {
     /**
      * Checks if a feature is supported.
      * @param feature feature to check.
-     * @returns true if supported.
      */
     supports(feature: MediaEngineFeature): boolean;
-    /**
-     * Checks if disable local video is supported.
-     * @returns true if supported.
-     */
+    /** Checks if disable local video is supported. */
     supportsDisableLocalVideo(): boolean;
-    /**
-     * Checks if experimental soundshare is supported.
-     * @returns true if supported.
-     */
+    /** Checks if experimental soundshare is supported. */
     supportsExperimentalSoundshare(): boolean;
-    /**
-     * Checks if hook soundshare is supported.
-     * @returns true if supported.
-     */
+    /** Checks if hook soundshare is supported. */
     supportsHookSoundshare(): boolean;
     /**
      * Checks if in-app capture is supported for an app.
      * @param appName application name.
-     * @returns true if supported.
      */
     supportsInApp(appName: string): boolean;
-    /**
-     * Checks if screen soundshare is supported.
-     * @returns true if supported.
-     */
+    /** Checks if screen soundshare is supported. */
     supportsScreenSoundshare(): boolean;
-    /**
-     * Checks if system screenshare picker is supported.
-     * @returns true if supported.
-     */
+    /** Checks if system screenshare picker is supported. */
     supportsSystemScreensharePicker(): boolean;
-    /**
-     * Checks if video hook is supported.
-     * @returns true if supported.
-     */
+    /** Checks if video hook is supported. */
     supportsVideoHook(): boolean;
 }

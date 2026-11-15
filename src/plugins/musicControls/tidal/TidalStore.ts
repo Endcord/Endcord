@@ -171,10 +171,10 @@ export const TidalStore = proxyLazyWebpack(() => {
                     store.position = (apiData.currentTime || 0);
                     if (track.vibrantColor) {
                         if (this.playerElement) {
-                            this.playerElement.style.setProperty("--eq-tdl-slider-gradient", `linear-gradient(to right, ${track.vibrantColor} 80%, #E5E5E5 100%)`);
-                            this.playerElement.style.setProperty("--eq-tdl-slider-grabber", track.vibrantColor);
+                            this.playerElement.style.setProperty("--ec-tdl-slider-gradient", `linear-gradient(to right, ${track.vibrantColor} 80%, #E5E5E5 100%)`);
+                            this.playerElement.style.setProperty("--ec-tdl-slider-grabber", track.vibrantColor);
                         } else {
-                            this.playerElement = document.querySelector("#eq-tdl-player");
+                            this.playerElement = document.querySelector("#ec-tdl-player");
                             logger.info(this.playerElement ? "Player element found" : "Player element not found");
                         }
                     }

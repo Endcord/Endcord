@@ -95,6 +95,7 @@ export default definePlugin({
         },
         {
             find: ",setIsForceShowSharingPopout:",
+            predicate: () => settings.store.showPanel,
             replacement: {
                 match: /"div"(?=.{0,50}stream:\i,canGoLive:\i)/,
                 replace: "$self.WrapperComponent"

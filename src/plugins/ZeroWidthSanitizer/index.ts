@@ -33,7 +33,7 @@ const settings = definePluginSettings({
     }
 });
 
-// Tutti i caratteri invisibili usati per fingerprinting
+// Every invisible character used for fingerprinting
 const INVISIBLE_CHARS_REGEX = /[\u200B-\u200D\u200E\u200F\u202A-\u202E\u2060-\u2064\u206A-\u206F\uFEFF\u00AD]/g;
 
 function log(message: string) {
@@ -59,11 +59,11 @@ export default definePlugin({
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,
 
-    // Richiede l'API MessageEvents
+    // Needs the MessageEvents API
     dependencies: ["MessageEventsAPI"],
 
     start() {
-        // Listener per i messaggi in uscita
+        // Outgoing messages
         preSendListener = (channelId, messageObj) => {
             if (!settings.store.sanitizeOutgoing) return;
             if (typeof messageObj.content !== "string") return;
@@ -78,7 +78,7 @@ export default definePlugin({
             }
         };
 
-        // Listener per i messaggi modificati
+        // Edited messages
         preEditListener = (channelId, messageId, messageObj) => {
             if (!settings.store.sanitizeEdits) return;
             if (typeof messageObj.content !== "string") return;

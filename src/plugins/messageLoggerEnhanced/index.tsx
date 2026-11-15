@@ -13,6 +13,7 @@ import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
 import definePlugin from "@utils/types";
+import { Unwrap, wrapMethod } from "@utils/wrapMethod";
 import { findByPropsLazy } from "@webpack";
 import { FluxDispatcher, MessageStore, SelectedChannelStore, UserStore } from "@webpack/common";
 
@@ -47,6 +48,7 @@ export async function clearLogs(showToast = true) {
 }
 
 let oldGetMessage: typeof MessageStore.getMessage;
+let unwrapGetMessage: Unwrap<typeof MessageStore.getMessage> | undefined;
 
 const handledMessageIds = new Set();
 async function messageDeleteHandler(payload: MessageDeletePayload & { isBulk: boolean; }) {
@@ -110,6 +112,7 @@ async function messageDeleteBulkHandler({ channelId, guildId, ids }: MessageDele
         const msg = await messageDeleteHandler({ type: "MESSAGE_DELETE", channelId, guildId, id, isBulk: true });
         if (msg) messages.push(msg as LoggedMessageJSON);
     }
+    if (!settings.store.saveMessages) return;
 
     await idb.addMessagesBulkIDB(messages);
 
@@ -345,8 +348,6 @@ export default definePlugin({
         return messages;
     },
 
-    isDeletedMessage: (id: string) => cacheSentMessages.get(id)?.deleted ?? false,
-
     getDeleted(m1, m2) {
         const deleted = m2?.deleted;
         if (deleted == null && m1?.deleted != null) return m1.deleted;
@@ -368,26 +369,26 @@ export default definePlugin({
     },
 
     async start() {
-        this.oldGetMessage = oldGetMessage = MessageStore.getMessage;
-
-        // we have to do this because the original message logger fetches the message from the store now
-        MessageStore.getMessage = (channelId: string, messageId: string) => {
+        // we have to do this because the original message logger fetches the message from the store now.
+        // Through wrapMethod, so another plugin wrapping getMessage can stop in any order
+        unwrapGetMessage ??= wrapMethod(MessageStore, "getMessage", function (original, channelId, messageId) {
             const MLMessage = idb.cachedMessages.get(messageId);
             if (!MLMessage)
-                return this.oldGetMessage(channelId, messageId);
+                return original.call(this, channelId, messageId);
 
             if (MLMessage.deleted)
                 return messageJsonToMessageClass({ message: MLMessage });
 
             // update the edited message with the latest data
-            const latestMessage = this.oldGetMessage(channelId, messageId);
+            const latestMessage: any = original.call(this, channelId, messageId);
             return messageJsonToMessageClass({
                 message: {
                     ...MLMessage,
                     ...(latestMessage ?? {}),
                 }
             });
-        };
+        });
+        this.oldGetMessage = oldGetMessage = unwrapGetMessage.original;
 
         Native.init();
 
@@ -410,6 +411,7 @@ export default definePlugin({
 
     stop() {
         removeContextMenuBindings();
-        MessageStore.getMessage = this.oldGetMessage;
+        unwrapGetMessage?.();
+        unwrapGetMessage = undefined;
     }
 });

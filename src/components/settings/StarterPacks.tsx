@@ -35,7 +35,7 @@ export function StarterPackPicker({ packs, selected, onToggle }: StarterPackPick
                     <button
                         key={id}
                         className={cl("pack", { selected: isSelected, recommended })}
-                        // Its place, for screens that bring the packs in one after another
+                        // Index for the staggered entrance
                         style={{ "--ec-i": index } as CSSProperties}
                         aria-pressed={isSelected}
                         title={plugins.join(", ")}

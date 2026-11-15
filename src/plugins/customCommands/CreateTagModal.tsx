@@ -5,6 +5,7 @@
  */
 
 import { InlineCode } from "@components/CodeBlock";
+import { EndcordModal } from "@components/EndcordModal";
 import { ExpandableSection } from "@components/ExpandableCard";
 import { Flex } from "@components/Flex";
 import { HeadingSecondary } from "@components/Heading";
@@ -12,7 +13,7 @@ import { InfoIcon } from "@components/Icons";
 import { Paragraph } from "@components/Paragraph";
 import { RenderModalProps } from "@endcord/discord-types";
 import { t } from "@utils/i18n";
-import { Modal, openModal, TextArea, TextInput, useState } from "@webpack/common";
+import { openModal, TextArea, TextInput, useState } from "@webpack/common";
 
 import { parseTagArguments } from ".";
 import { addTag, getTag, removeTag, Tag } from "./settings";
@@ -42,7 +43,7 @@ function CreateTagDialog({ initialValue, modalProps }: { initialValue: Tag; moda
             : undefined;
 
     return (
-        <Modal
+        <EndcordModal
             {...modalProps}
             title={isEdit ? "Edit Tag" : "Create New Tag"}
             subtitle={isEdit ? "Edit your custom command." : "Create a new tag which will be registered as a slash command."}
@@ -118,6 +119,6 @@ function CreateTagDialog({ initialValue, modalProps }: { initialValue: Tag; moda
                         {t("View Arguments guide")}</Flex>
                 </ExpandableSection>
             </Flex>
-        </Modal>
+        </EndcordModal>
     );
 }

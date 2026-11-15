@@ -21,6 +21,19 @@ interface IMessageCreate {
 const COOLDOWN_MS = 60_000;
 let lastOpened = 0;
 
+/** The trigger, built once per setting rather than once per message. Null while the setting isn't a valid regex */
+let trigger: { source: string; regex: RegExp | null; } | undefined;
+function getTrigger(source: string) {
+    if (trigger?.source !== source) {
+        let regex: RegExp | null = null;
+        try {
+            regex = new RegExp(source, "i");
+        } catch { }
+        trigger = { source, regex };
+    }
+    return trigger.regex;
+}
+
 const settings = definePluginSettings({
     regex: {
         type: OptionType.STRING,
@@ -47,7 +60,8 @@ export default definePlugin({
             if (message.state === "SENDING") return;
             if (RelationshipStore.isBlocked(message.author?.id)) return;
             if (channelId !== SelectedChannelStore.getChannelId()) return;
-            if (!message.content?.match(new RegExp(settings.store.regex, "i"))) return;
+            const regex = getTrigger(settings.store.regex);
+            if (!regex || !message.content || !regex.test(message.content)) return;
             if (Date.now() - lastOpened < COOLDOWN_MS) return;
 
             lastOpened = Date.now();

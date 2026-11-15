@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { EndcordModal } from "@components/EndcordModal";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Link } from "@components/Link";
 import { Notice } from "@components/Notice";
@@ -16,7 +17,7 @@ import { openInviteModal } from "@utils/discord";
 import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import { findComponentByCodeLazy } from "@webpack";
-import { closeAllModals, FluxDispatcher, Forms, GuildStore, Modal, NavigationRouter, openModal, Text, TextInput, useEffect, useMemo, UserStore, useState } from "@webpack/common";
+import { closeAllModals, FluxDispatcher, Forms, GuildStore, NavigationRouter, openModal, Text, TextInput, useEffect, useMemo, UserStore, useState } from "@webpack/common";
 
 const FileUpload = findComponentByCodeLazy(".currentTarget.files", "lineClamp:1");
 
@@ -54,7 +55,7 @@ function CreateDecorationModal(props: RenderModalProps) {
 
     const decoration = useMemo(() => fileUrl ? { asset: fileUrl, skuId: RAW_SKU_ID } : null, [fileUrl]);
 
-    return <Modal
+    return <EndcordModal
         {...props}
         size="lg"
         title={t("Create Decoration")}
@@ -137,7 +138,7 @@ function CreateDecorationModal(props: RenderModalProps) {
                         {t("Decor's Discord server")}</Link>{" "}{t("and allow direct messages.")}</Notice.Info>
             </ErrorBoundary>
         </div>
-    </Modal>;
+    </EndcordModal>;
 }
 
 export const openCreateDecorationModal = () =>

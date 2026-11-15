@@ -9,8 +9,8 @@ import { PlainSettings } from "@api/Settings";
 import { exportSettings, importSettings } from "@api/SettingsSync/offline";
 import { Logger } from "@utils/Logger";
 
-// Copies of the settings to go back to: one a day while Discord runs fine, and one before anything that changes many
-// plugins at once. They stay on this device, without the keys and tokens a backup file leaves out too
+// Settings snapshots: one a day while Discord starts fine, and one before anything that toggles many plugins at
+// once. Local only, and without the keys and tokens a backup file leaves out too
 const STORE_KEY = "Endcord_settingsSnapshots";
 const MAX_SNAPSHOTS = 14;
 const MAX_DAILY = 7;
@@ -41,7 +41,7 @@ export async function takeSnapshot(kind: SnapshotKind, subject?: string) {
     try {
         const snapshot: Snapshot = { id: crypto.randomUUID(), at: Date.now(), kind, subject, pluginsOn: countPluginsOn(), data: await exportSettings({ minify: true }) };
 
-        // Newest first. Dailies make way for each other, so a week of them can't push out the one before a big change
+        // Newest first. Dailies only replace other dailies, so a week of them can't push out a pre-change snapshot
         let snapshots = [snapshot, ...await read()];
         const dailies = snapshots.filter(s => s.kind === "daily");
         if (dailies.length > MAX_DAILY) {
@@ -59,13 +59,13 @@ export async function listSnapshots(): Promise<SnapshotInfo[]> {
     return (await read()).map(({ data, ...info }) => info);
 }
 
-/** Called after a start that came up fine, so the daily one is a set of settings known to work */
+/** Called after a good start, so the daily snapshot is one that's known to work */
 export async function maybeTakeDailySnapshot() {
     const latest = (await read()).find(snapshot => snapshot.kind === "daily");
     if (!latest || Date.now() - latest.at > DAILY_EVERY) await takeSnapshot("daily");
 }
 
-/** Puts a snapshot's settings back, after saving the current ones so this can be undone too. Needs a restart */
+/** Restores a snapshot, saving the current settings first so it can be undone. Needs a restart */
 export async function restoreSnapshot(id: string) {
     const snapshot = (await read()).find(s => s.id === id);
     if (!snapshot) throw new Error("That snapshot is gone");

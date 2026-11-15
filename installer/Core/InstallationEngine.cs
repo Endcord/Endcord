@@ -71,6 +71,9 @@ namespace EndcordInstaller.Core
         public List<DiscordInstall> AffectedInstalls { get; private set; }
         public List<KnownMod> ReplacedMods { get; private set; }
         public bool WasUpdate { get; set; }
+        /// <summary>Set when the installed Endcord was newer than this installer's and was kept: its version, then this installer's</summary>
+        public string KeptVersion { get; set; }
+        public string PayloadVersion { get; set; }
 
         public OperationOutcome()
         {
@@ -212,8 +215,7 @@ namespace EndcordInstaller.Core
             }
             outcome.WasUpdate = allHadEndcord && !isRepair;
 
-            // Count exact real work steps:
-            // 1 (stage & verify 4 payload files) + 4payloads + per-target (close + patch each appDir + verify)
+            // One step to stage, one per payload file, then per target: closing it, patching each app folder, checking it
             int appDirCount = 0;
             foreach (var t in targets) appDirCount += Math.Max(1, t.AppDirs.Count);
             int totalSteps = 1 + PayloadFiles.Length + targets.Count + appDirCount + targets.Count + (relaunchAfter ? targets.Count : 0);
@@ -230,7 +232,7 @@ namespace EndcordInstaller.Core
                     isRepair ? "status.preparingRepair" : (outcome.WasUpdate ? "status.preparingUpdate" : "status.preparingInstall"),
                     null, null, false, false, false);
 
-                // Step 1: Close running target Discord processes
+                // Discord has to be closed before its files can be touched
                 foreach (var t in targets)
                 {
                     ct.ThrowIfCancellationRequested();
@@ -244,7 +246,7 @@ namespace EndcordInstaller.Core
                     step++;
                 }
 
-                // Step 2: Stage payload files and verify integrity before touching Dist
+                // The payload is staged and checked before anything in dist changes
                 if (Directory.Exists(paths.StagingDir))
                     FileOps.DeleteDirectory(paths.StagingDir, ct);
                 Directory.CreateDirectory(paths.StagingDir);
@@ -269,24 +271,52 @@ namespace EndcordInstaller.Core
                     step++;
                 }
 
-                // Swap staged payload into %APPDATA%\Endcord\dist with rollback backup
-                if (Directory.Exists(distBackup))
-                    FileOps.DeleteDirectory(distBackup, ct);
-                if (Directory.Exists(paths.Dist))
-                    FileOps.CopyDirectory(paths.Dist, distBackup, ct);
-
-                Directory.CreateDirectory(paths.Dist);
-                foreach (var file in PayloadFiles)
+                // Endcord updates itself, so an installer kept in Downloads can be older than the Endcord it finds.
+                // Installing its payload then would take Endcord back to a release that may no longer work on
+                // current Discord, so the newer files stay and only Discord is hooked again. But only when the
+                // current signed release says those files are Endcord's own: a file planted in the folder can claim
+                // any version, and reinstalling has to be able to put it right
+                Version payloadVersion = ReadPayloadVersion(Path.Combine(paths.StagingDir, "patcher.js"));
+                Version installedVersion = ReadPayloadVersion(Path.Combine(paths.Dist, "patcher.js"));
+                if (payloadVersion != null) outcome.PayloadVersion = payloadVersion.ToString();
+                bool keepInstalled = false;
+                if (payloadVersion != null && installedVersion != null && installedVersion > payloadVersion && InstalledPayloadComplete(paths))
                 {
-                    string src = Path.Combine(paths.StagingDir, file);
-                    string dst = Path.Combine(paths.Dist, file);
-                    FileOps.Retry(() => File.Copy(src, dst, true), dst, ct);
+                    Report(onProgress, InstallStage.ExtractingPayload, step, totalSteps,
+                        "status.checkingRelease", new object[] { installedVersion.ToString() },
+                        "Checking the installed Endcord " + installedVersion + " against the current signed release",
+                        false, false, false);
+                    keepInstalled = ReleaseManifest.MatchesInstalled(ReleaseManifest.Current(), paths.Dist);
+                }
+
+                if (keepInstalled)
+                {
+                    outcome.KeptVersion = installedVersion.ToString();
+                    Report(onProgress, InstallStage.ExtractingPayload, step, totalSteps,
+                        "status.keepingNewer", new object[] { installedVersion.ToString(), payloadVersion.ToString() },
+                        "Keeping Endcord " + installedVersion + ", which is newer than this installer's " + payloadVersion,
+                        true, false, false);
+                }
+                else
+                {
+                    // Swap staged payload into %APPDATA%\Endcord\dist with rollback backup
+                    if (Directory.Exists(distBackup))
+                        FileOps.DeleteDirectory(distBackup, ct);
+                    if (Directory.Exists(paths.Dist))
+                        FileOps.CopyDirectory(paths.Dist, distBackup, ct);
+
+                    Directory.CreateDirectory(paths.Dist);
+                    foreach (var file in PayloadFiles)
+                    {
+                        string src = Path.Combine(paths.StagingDir, file);
+                        string dst = Path.Combine(paths.Dist, file);
+                        FileOps.Retry(() => File.Copy(src, dst, true), dst, ct);
+                    }
                 }
                 FileOps.DeleteDirectory(paths.StagingDir, ct);
                 SyncClientLanguageSetting(paths, EndcordInstaller.Localization.Loc.CurrentLanguage);
                 step++;
 
-                // Step 3: Patch each target Discord installation
                 foreach (var t in targets)
                 {
                     ct.ThrowIfCancellationRequested();
@@ -317,7 +347,7 @@ namespace EndcordInstaller.Core
                         step++;
                     }
 
-                    // Step 4: Verify installation on disk
+                    // Read the install back instead of trusting the writes
                     ct.ThrowIfCancellationRequested();
                     Report(onProgress, InstallStage.Verifying, step, totalSteps,
                         "status.verifyingClient", new object[] { t.DisplayName },
@@ -331,12 +361,11 @@ namespace EndcordInstaller.Core
                     step++;
                 }
 
-                // Cleanup temporary rollback snapshots after full verification
+                // Everything checked out, so the rollback copies can go
                 foreach (var rb in patchedDirs) rb.Commit(ct);
                 if (Directory.Exists(distBackup))
                     FileOps.DeleteDirectory(distBackup, CancellationToken.None);
 
-                // Step 5: Relaunch if requested
                 if (relaunchAfter)
                 {
                     foreach (var t in outcome.AffectedInstalls)
@@ -510,8 +539,8 @@ namespace EndcordInstaller.Core
         }
 
         /// <summary>
-        /// Safely unhooks a previous client mod after explicit user confirmation.
-        /// Never deletes user settings/themes or standalone applications.
+        /// Unhooks a previous client mod once the user has confirmed it.
+        /// Its settings, themes and standalone apps are never deleted.
         /// </summary>
         public static void CleanupPreviousClient(
             InstallerPaths paths,
@@ -523,8 +552,8 @@ namespace EndcordInstaller.Core
             if (client == null || client.Mod == null || client.Mod.IsEndcord || client.IsStandalone)
                 return;
 
-            // 1. Clean remaining discord_desktop_core hooks for this mod, but only on installs that now run
-            //    Endcord. Other Discord flavours keep whatever the user put on them.
+            // Remove its discord_desktop_core hooks, but only on installs that now run Endcord.
+            // Other Discord flavours keep whatever the user put on them.
             if (installs != null)
             {
                 foreach (var inst in installs)
@@ -542,8 +571,8 @@ namespace EndcordInstaller.Core
                 }
             }
 
-            // 2. Optionally remove only the previous injector's dist binaries (never settings or themes!).
-            //    Skip it while any Discord install still loads them, or that install would fail to start.
+            // Then, if asked, its dist files (never settings or themes). Not while any Discord install
+            // still loads them, or that install would fail to start.
             if (removeInjectorBinaries && client.DistDir != null && !IsStillLoaded(client, installs))
             {
                 if (FileOps.IsStrictlyInside(client.DistDir, paths.Roaming))
@@ -633,7 +662,7 @@ namespace EndcordInstaller.Core
 
             var rb = new AppDirRollback { AppDir = appDir };
 
-            // 1. Clean any discord_desktop_core injections (e.g. BetterDiscord or legacy mods)
+            // Clear out discord_desktop_core injections (BetterDiscord, legacy mods)
             foreach (var coreIndex in DiscordLocator.FindDesktopCoreIndices(appDir.Path))
             {
                 if (File.Exists(coreIndex))
@@ -641,7 +670,7 @@ namespace EndcordInstaller.Core
                 CleanDesktopCoreFile(coreIndex, ct);
             }
 
-            // 2. Preserve existing resources/app for rollback if present
+            // Keep an existing resources/app around in case this has to be rolled back
             if (Directory.Exists(appDir.AppFolder))
             {
                 string prevApp = Path.Combine(appDir.ResourcesPath, "app.endcord-prev");
@@ -650,7 +679,7 @@ namespace EndcordInstaller.Core
                 rb.SavedAppFolder = prevApp;
             }
 
-            // 3. Handle app.asar (could be vanilla archive, foreign stub file, or foreign stub folder)
+            // app.asar can be Discord's real archive, another mod's stub file, or a stub folder
             if (Directory.Exists(appDir.AppAsar))
             {
                 string prevStub = Path.Combine(appDir.ResourcesPath, "app.asar.endcord-prev");
@@ -684,7 +713,7 @@ namespace EndcordInstaller.Core
                 }
             }
 
-            // 4. Write Endcord loader into resources/app
+            // Then Endcord's loader goes into resources/app
             FileOps.Retry(() => Directory.CreateDirectory(appDir.AppFolder), appDir.AppFolder, ct);
 
             string pkgJson = "{\n  \"name\": \"discord\",\n  \"main\": \"index.js\"\n}\n";
@@ -694,7 +723,7 @@ namespace EndcordInstaller.Core
             string loaderJs =
                 "// Endcord Loader\n" +
                 "const { join } = require('path');\n" +
-                "const appData = process.env.ENDCORD_INSTALLER_ROAMING || process.env.APPDATA || (process.platform === 'darwin' ? join(process.env.HOME, 'Library/Application Support') : join(process.env.HOME, '.config'));\n" +
+                "const appData = process.env.APPDATA || (process.platform === 'darwin' ? join(process.env.HOME, 'Library/Application Support') : join(process.env.HOME, '.config'));\n" +
                 "const patcherPath = join(appData, 'Endcord', 'dist', 'patcher.js');\n" +
                 "try {\n" +
                 "    require(patcherPath);\n" +
@@ -747,6 +776,37 @@ namespace EndcordInstaller.Core
             }
 
             FileOps.Retry(() => FileOps.WriteAllTextAtomic(indexJs, "module.exports = require('./core.asar');\r\n"), indexJs, ct);
+        }
+
+        /// <summary>The release a patcher.js was built for, from its "// Version: x.y.z" banner line; null for builds before 4.1.1, which have none</summary>
+        public static Version ReadPayloadVersion(string patcherPath)
+        {
+            try
+            {
+                if (!File.Exists(patcherPath)) return null;
+                using (var reader = new StreamReader(patcherPath))
+                {
+                    // The banner is the first few lines; the rest is one long minified line not worth reading
+                    for (int i = 0; i < 8; i++)
+                    {
+                        string line = reader.ReadLine();
+                        if (line == null || !line.StartsWith("//")) break;
+                        const string prefix = "// Version: ";
+                        Version v;
+                        if (line.StartsWith(prefix, StringComparison.Ordinal) && Version.TryParse(line.Substring(prefix.Length).Trim(), out v))
+                            return v;
+                    }
+                }
+            }
+            catch { }
+            return null;
+        }
+
+        static bool InstalledPayloadComplete(InstallerPaths paths)
+        {
+            foreach (var file in PayloadFiles)
+                if (FileOps.SizeOf(Path.Combine(paths.Dist, file)) <= 0) return false;
+            return true;
         }
 
         // SHA-256 of each payload file, written by scripts/buildInstaller.ps1 into the embedded payload.sha256.

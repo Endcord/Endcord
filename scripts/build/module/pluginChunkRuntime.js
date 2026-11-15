@@ -85,7 +85,8 @@ function $chunkRequire(id) {
 
     if (!$chunkFactories[id]) $fetchChunks([id]);
     const factory = $chunkFactories[id];
-    if (!factory) throw new Error(`Endcord couldn't load plugin code ${id}. Restart Discord to finish updating Endcord.`);
+    // needsRestart lets the plugin list ask for a restart instead of failing silently
+    if (!factory) throw Object.assign(new Error(`Plugin code ${id} isn't in this build: restart Discord`), { needsRestart: true });
     delete $chunkFactories[id];
 
     // Registered first so an import cycle gets the exports object, as it would between ES modules
@@ -104,13 +105,25 @@ function $chunk(id) {
  */
 export function getPluginListInfo(name) {
     if (isPluginLoaded(name) || !$manifestChunk) return undefined;
-    const info = $chunkRequire($manifestChunk)[name];
+    let manifest;
+    try {
+        manifest = $chunkRequire($manifestChunk);
+    } catch {
+        // Gone with a renderer.js replaced since the start (needsRestart): callers fall back to the plugin itself
+        return undefined;
+    }
+    const info = manifest[name];
     return info && !info.x ? info : undefined;
 }
 
 /** One of the core's own screen styles, kept with the plugin chunks until a screen draws (see enableScreenStyles) */
 export function getScreenStyle(key) {
-    return ($screenChunk && $chunkRequire($screenChunk)[key]) || "";
+    if (!$screenChunk) return "";
+    try {
+        return $chunkRequire($screenChunk)[key] || "";
+    } catch {
+        return "";
+    }
 }
 
 /** Defines the code of these lazy plugins in one round trip, before they're read one by one */

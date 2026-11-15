@@ -31,12 +31,6 @@ export interface ApplicationIcon {
     application?: Application;
 }
 
-export interface Executable {
-    os: string;
-    name: string;
-    is_launcher: boolean;
-}
-
 export interface ActivityListIcon {
     iconElement: JSX.Element;
     tooltip?: JSX.Element | string;

@@ -1,0 +1,69 @@
+name: Installer
+# Builds EndcordInstaller.exe from this repository on GitHub's Windows runner and runs its self-test, the way a release
+# builds it (scripts/buildInstaller.ps1), and keeps it as this run's artifact. Releases are built on the maintainer's PC
+# for now; signing with SignPath Foundation's certificate will happen here once the project is accepted (see
+# endcord.com/code-signing-policy), and releases will then ship the exe this workflow built and signed
+on:
+    push:
+        branches:
+            - main
+        paths:
+            - .github/workflows/installer.yml
+            - installer/**
+            - scripts/buildInstaller.ps1
+            - scripts/build/**
+            - src/**
+            - assets/app_icon.ico
+            - assets/app_logo.png
+            - package.json
+            - pnpm-lock.yaml
+    pull_request:
+        branches:
+            - main
+        paths:
+            - .github/workflows/installer.yml
+            - installer/**
+            - scripts/buildInstaller.ps1
+    workflow_dispatch:
+env:
+    FORCE_COLOR: true
+
+permissions:
+    contents: read
+
+jobs:
+    Installer:
+        runs-on: windows-latest
+
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+              with:
+                  persist-credentials: false
+
+            - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6, installs pnpm using packageManager key in package.json
+
+            - name: Use Node.js 24
+              uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+              with:
+                  node-version: 24
+                  cache: "pnpm"
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Build the files the installer carries
+              run: pnpm build --standalone
+              env:
+                  ENDCORD_REMOTE: Endcord/Endcord
+
+            # Compiles with the .NET Framework compiler every Windows has, then runs the exe's --self-test
+            - name: Build and test EndcordInstaller.exe
+              run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/buildInstaller.ps1
+
+            - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+              with:
+                  name: EndcordInstaller
+                  path: |
+                      dist/Installer/EndcordInstaller.exe
+                      dist/Installer/EndcordInstaller.zip
+                  if-no-files-found: error

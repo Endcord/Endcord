@@ -95,8 +95,7 @@ export async function unzipBlob(blob: Blob): Promise<{ entries: ZipEntry[]; read
         if (e.compression === 0) {
             return slice.buffer.slice(slice.byteOffset, slice.byteOffset + slice.byteLength);
         }
-        // deflate: use built-in CompressionStream if available
-        // deflate: prefer DecompressionStream for inflating raw deflate data
+        // Deflate: inflate with DecompressionStream
         if (typeof (DecompressionStream) !== "undefined") {
             const ds = new DecompressionStream("deflate-raw");
             const writer = ds.writable.getWriter();
@@ -119,12 +118,6 @@ export async function unzipBlob(blob: Blob): Promise<{ entries: ZipEntry[]; read
             let pos = 0;
             for (const c of chunks) { out.set(c, pos); pos += c.length; }
             return out.buffer;
-        }
-
-        // If DecompressionStream isn't available, try the older API name (some runtimes exposed 'CompressionStream' only for compress/decompress)
-        if (typeof CompressionStream !== "undefined" && typeof DecompressionStream === "undefined") {
-            // Some environments only provide CompressionStream; try using a hack: create a Response around a blob with 'deflate-raw' content, then use 'arrayBuffer'—but this is unreliable.
-            throw new Error("Deflate-compressed entries require DecompressionStream support in this environment");
         }
 
         throw new Error("Deflate-compressed entries require DecompressionStream support in this environment");

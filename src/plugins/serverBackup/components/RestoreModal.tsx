@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { EndcordModal } from "@components/EndcordModal";
 import { Flex } from "@components/Flex";
 import { FormSwitch } from "@components/FormSwitch";
 import { Heading } from "@components/Heading";
@@ -16,7 +17,7 @@ import { settings } from "@plugins/serverBackup/settings";
 import { ChannelTypes, GuildBackup, RestoreProgress, RestoreReport } from "@plugins/serverBackup/types";
 import { readClipboard } from "@utils/clipboard";
 import { t } from "@utils/i18n";
-import { Button, Modal, openModal, showToast, TextArea, useMemo, useState } from "@webpack/common";
+import { Button, openModal, showToast, TextArea, useMemo, useState } from "@webpack/common";
 
 const MAX_LOGS = 100;
 const MAX_SHOWN_ERRORS = 15;
@@ -110,7 +111,7 @@ function RestoreModal({ props, guild }: { props: RenderModalProps; guild: Guild;
         : 0;
 
     return (
-        <Modal
+        <EndcordModal
             {...props}
             size="md"
             title={t("Restore Server Backup")}
@@ -198,7 +199,7 @@ function RestoreModal({ props, guild }: { props: RenderModalProps; guild: Guild;
 
                 {report ? <RestoreResult report={report} /> : null}
             </Flex>
-        </Modal>
+        </EndcordModal>
     );
 }
 

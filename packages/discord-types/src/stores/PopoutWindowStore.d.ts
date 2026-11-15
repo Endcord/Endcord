@@ -163,7 +163,6 @@ export class PopoutWindowStore extends FluxStore {
      * - React root mounted
      * - Render function stored
      * @param key unique identifier for the popout window
-     * @returns true if window is fully initialized
      */
     isWindowFullyInitialized(key: string): boolean;
 

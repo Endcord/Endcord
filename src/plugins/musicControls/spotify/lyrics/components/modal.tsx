@@ -5,11 +5,12 @@
  */
 
 import { BaseText } from "@components/BaseText";
+import { EndcordModal } from "@components/EndcordModal";
 import { RenderModalProps } from "@endcord/discord-types";
 import { SpotifyStore, Track } from "@plugins/musicControls/spotify/SpotifyStore";
 import { openImageModal } from "@utils/discord";
 import { t } from "@utils/i18n";
-import { Modal,React } from "@webpack/common";
+import { React } from "@webpack/common";
 
 import { cl, NoteSvg, scrollClasses, useLyrics } from "./util";
 
@@ -54,7 +55,7 @@ export function LyricsModal({ props }: { props: RenderModalProps; }) {
     const currentLyrics = lyricsInfo?.lyricsVersions[lyricsInfo.useLyric];
 
     return (
-        <Modal {...props} size="md" title={getTitleNode(track)}>
+        <EndcordModal {...props} size="md" title={getTitleNode(track)}>
             <div className={`${cl("lyrics-modal-container")} ${scrollClasses.auto}`}>
                 {currentLyrics ? (
                     currentLyrics.map((line, i) => (
@@ -75,6 +76,6 @@ export function LyricsModal({ props }: { props: RenderModalProps; }) {
                         {t("No lyrics available :(")}</BaseText>
                 )}
             </div>
-        </Modal>
+        </EndcordModal>
     );
 }

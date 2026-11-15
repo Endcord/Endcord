@@ -5,7 +5,7 @@
  */
 
 import { Devs } from "@utils/constants";
-import { getUserAvatarUrl } from "@utils/misc";
+import { cssUrl, getUserAvatarUrl } from "@utils/misc";
 import definePlugin from "@utils/types";
 import { ChannelRTCStore, ChannelStore, UserStore, VoiceStateStore } from "@webpack/common";
 
@@ -40,8 +40,9 @@ export default definePlugin({
         const isSpeaking = ChannelRTCStore.getSpeakingParticipants(channelId).some(p => p.user.id === participantUserId && p.speaking);
         const avatarUrl = getUserAvatarUrl(user, guildId, isSpeaking, 1024);
 
+        // Quoted: plugins like CustomProfile and UserPFP put their own links here
         return {
-            "--full-res-avatar": `url(${avatarUrl})`
+            "--full-res-avatar": cssUrl(avatarUrl)
         };
     },
 });

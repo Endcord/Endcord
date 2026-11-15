@@ -26,6 +26,7 @@ await esbuild.build({
             export { isHostOf, isSafeMediaUrl, isSnowflake, isUrlOn } from "./src/shared/hosts";
             export { addSuspects, beginBoot, confirmBoot, readBootRecord } from "./src/shared/bootGuard";
             export { findLocaleTable, stripLocales } from "./src/shared/externalLocales";
+            export { ICON_BASE, parseSupporters } from "./src/plugins/_api/badges/supporterBadges";
         `,
         resolveDir: ROOT,
         loader: "ts"
@@ -244,6 +245,95 @@ let arrowMatches = 0;
 const pressArrow = m.createKeySequence(["ArrowUp", "ArrowUp", "ArrowDown"], () => arrowMatches++);
 ["ArrowUp", "ArrowUp", "ArrowUp", "ArrowDown"].forEach(pressArrow);
 check("an extra key at the start of a repeating sequence still matches", arrowMatches === 1, arrowMatches);
+
+// ---- Supporter badges ----------------------------------------------------------------------------------------
+// Only the list the bot in Endcord/badges writes counts, and only its well formed entries, with pictures from its
+// own icons folder
+const SUP = "170000000000000002";
+const supporters = m.parseSupporters({
+    version: 1,
+    supporters: {
+        [SUP]: [{ name: "  Panda Fan  ", icon: `${SUP}-0123456789ab.png` }, { name: "Second", icon: `${SUP}-abcdefabcdef.gif` }],
+        "170000000000000003": [{ name: "Elsewhere", icon: "https://evil.example/x.png" }],
+        "170000000000000004": [{ name: "Someone else's picture", icon: `${SUP}-0123456789ab.png` }],
+        "170000000000000005": [{ name: "A name far too long to fit on any badge at all", icon: "170000000000000005-0123456789ab.png" }],
+        "170000000000000006": [{ name: "Up/../../path", icon: "170000000000000006-0123456789ab.png/../../x" }],
+        "not-an-id": [{ name: "x", icon: "1-0123456789ab.png" }]
+    }
+});
+check("a supporter's badges are read, with the picture under the badges repository", supporters[SUP]?.length === 2 && supporters[SUP][0].name === "Panda Fan" && supporters[SUP][0].icon === `${m.ICON_BASE}${SUP}-0123456789ab.png`, supporters[SUP]);
+check("a picture from anywhere else is refused", !supporters["170000000000000003"]);
+check("one person's picture can't be used for another", !supporters["170000000000000004"]);
+check("an overlong name is refused", !supporters["170000000000000005"]);
+check("a picture name that isn't the bot's is refused", !supporters["170000000000000006"]);
+check("ids that aren't Discord's are refused", Object.keys(supporters).length === 1, Object.keys(supporters));
+check("a broken list is an empty one", Object.keys(m.parseSupporters(null)).length === 0 && Object.keys(m.parseSupporters({ supporters: [] })).length === 0);
+
+// ---- Plugins tab after Endcord's files were replaced while Discord runs ----------------------------------------
+// Reading a plugin whose code is gone throws needsRestart (scripts/build/module/pluginChunkRuntime.js). Searching
+// settings and listing plugins used to let that take the whole tab down
+const STALE_STUB = `
+    const gone = () => { throw Object.assign(new Error("Plugin code c43 isn't in this build: restart Discord"), { needsRestart: true }); };
+    const broken = () => { throw new Error("a bug in the plugin"); };
+    export const plugins = {};
+    Object.defineProperty(plugins, "Gone", { get: gone, enumerable: true });
+    Object.defineProperty(plugins, "Here", { get: () => ({ name: "Here", description: "", settings: { def: { volume: { type: 1, description: "How loud" } } } }), enumerable: true });
+    export const brokenPlugins = {};
+    Object.defineProperty(brokenPlugins, "Broken", { get: broken, enumerable: true });
+    export default plugins;
+    export const getPluginListInfo = () => undefined;
+    export const getPluginFlag = () => false;
+    export const isSettingHidden = () => false;
+    export const hasAnyVisibleSettings = () => false;
+    export const showNotice = (...args) => globalThis.__notices.push(args);
+    export const relaunch = () => {};
+    export const t = (text, vars) => text.replace(/\\{(\\w+)\\}/g, (all, key) => vars?.[key] ?? all);
+    export const getCurrentLang = () => "en";
+    export class Logger { error() {} }
+`;
+const STALE_OUT = mkdtempSync(join(tmpdir(), "endcord-stale-"));
+await esbuild.build({
+    stdin: {
+        contents: `
+            export { searchSettings } from "./src/components/settings/tabs/plugins/settingsIndex";
+            export { listItem } from "./src/components/settings/tabs/plugins/listItems";
+            export { brokenPlugins } from "~plugins";
+        `,
+        resolveDir: ROOT,
+        loader: "ts"
+    },
+    bundle: true, platform: "node", format: "cjs", outfile: join(STALE_OUT, "stale.cjs"), tsconfig: join(ROOT, "tsconfig.json"), logLevel: "error",
+    plugins: [{
+        name: "stub-app",
+        setup(b) {
+            b.onResolve({ filter: /^(~plugins|@api\/PluginManager|@api\/Notices|@utils\/native|@utils\/i18n|@utils\/Logger)$/ }, () => ({ path: "stub", namespace: "stale-stub" }));
+            b.onLoad({ filter: /.*/, namespace: "stale-stub" }, () => ({ contents: STALE_STUB, loader: "js" }));
+        }
+    }]
+});
+const stale = require(join(STALE_OUT, "stale.cjs"));
+rmSync(STALE_OUT, { recursive: true, force: true });
+
+globalThis.__notices = [];
+let staleHits;
+try {
+    staleHits = stale.searchSettings("how loud");
+} catch (e) {
+    staleHits = e;
+}
+check("searching settings skips a plugin whose code is gone", Array.isArray(staleHits) && staleHits.length === 1 && staleHits[0].plugin.name === "Here", String(staleHits));
+check("and asks for a restart, once", globalThis.__notices.length === 1 && /Restart Discord/.test(globalThis.__notices[0][0]), globalThis.__notices);
+stale.searchSettings("volume");
+check("searching again doesn't ask again", globalThis.__notices.length === 1);
+
+let staleItem;
+try {
+    staleItem = stale.listItem("Gone");
+} catch (e) {
+    staleItem = e;
+}
+check("the plugin list still lists it, saying to restart", staleItem?.name === "Gone" && /Restart Discord to load Gone/.test(staleItem.description), String(staleItem));
+check("a plugin that's there is listed as itself", stale.listItem("Here").name === "Here");
 
 console.log(failed ? `\n${failed} FAILED` : "\nALL PASSED");
 process.exit(failed ? 1 : 0);

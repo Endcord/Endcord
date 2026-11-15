@@ -19,7 +19,7 @@ import { ContextMenuApi, FluxDispatcher, Menu, React, useEffect, useState, useSt
 
 import { type PlayerState, type Repeat, TidalStore } from "./TidalStore";
 
-const cl = (className: string) => `eq-tdl-${className}`;
+const cl = (className: string) => `ec-tdl-${className}`;
 
 function msToHuman(ms: number) {
     const minutes = ms / 1000 / 60;
@@ -343,7 +343,7 @@ export function TidalPlayer() {
     if (!track || shouldHide) return;
 
     const exportTrackImageStyle = {
-        "--eq-tdl-track-image": `url(${track?.imageSrc || ""})`,
+        "--ec-tdl-track-image": `url(${track?.imageSrc || ""})`,
     } as React.CSSProperties;
 
     return (

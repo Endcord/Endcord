@@ -129,7 +129,7 @@ export default definePlugin({
             }
 
             if (settings.store.enableLogs) {
-                logger.info(`✓ ${name} patched successfully`);
+                logger.info(`Patched ${name}`);
             }
         }
 

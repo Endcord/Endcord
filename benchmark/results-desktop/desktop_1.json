@@ -1,0 +1,36 @@
+{
+  "mod": "desktop",
+  "detected": "Endcord",
+  "readyMs": 2555,
+  "pageStartMs": 133,
+  "inPageReadyMs": 2422,
+  "domContentLoadedMs": 490,
+  "cpuFirst30sMs": 14125,
+  "cpuFirst60sMs": 16516,
+  "idleCpuPct": 4.04,
+  "ramMB": 564,
+  "rendererRamMB": 307,
+  "jsHeapMB": 104.3,
+  "domNodes": 4672,
+  "eventListeners": 1443,
+  "cssRules": 20325,
+  "styleElements": 16,
+  "visibility": "visible",
+  "focused": true,
+  "viewport": "1920x1040",
+  "processes": {
+    "browser": {
+      "count": 1,
+      "memMB": 72
+    },
+    "gpu-process": {
+      "count": 2,
+      "memMB": 185
+    },
+    "renderer": {
+      "count": 1,
+      "memMB": 307
+    }
+  },
+  "round": 1
+}

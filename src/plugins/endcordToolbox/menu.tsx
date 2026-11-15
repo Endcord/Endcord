@@ -37,7 +37,9 @@ async function checkForUpdates(showToastIfNew = false) {
         const seenTs = Number(localStorage.getItem(LS_LAST_SEEN_UPDATE) ?? "0");
 
         _latestVersion = latestVersion;
-        _latestUrl = data.downloadUrl ?? "";
+        // The manifest's signature doesn't cover this link, so only one to Endcord's own site is ever opened
+        const downloadUrl = String(data.downloadUrl ?? "");
+        _latestUrl = downloadUrl.startsWith("https://endcord.com/") ? downloadUrl : "";
 
         const localTs: number = typeof BUILD_TIMESTAMP === "number" ? BUILD_TIMESTAMP : 0;
         if (latestTs > localTs && latestTs > seenTs) {

@@ -15,6 +15,10 @@
 //
 // Requirements: Discord Stable logged in, Node 22+ (global fetch/WebSocket), the mods installed in
 // their usual %APPDATA% folders. Close Discord before starting. Do not use the PC while it runs.
+//
+// Endcord Desktop is measured the same way, on its own: --mods desktop --desktop <app folder> --profile <data folder>.
+// The profile is an ENDCORD_DESKTOP_DATA_DIR you have signed in to once and started a few times, as in daily use. Only
+// processes of that app folder are started, counted and stopped; Discord and the mods' settings are left alone.
 
 import { execSync, spawn } from "child_process";
 import { createHash } from "crypto";
@@ -29,16 +33,21 @@ const DURATION_S = Number(args.duration ?? 120);
 const MODS = (args.mods ?? "endcord,vencord,equicord,vanilla").split(",");
 const OUT = args.out ?? join(dirname(new URL(import.meta.url).pathname.replace(/^\/(\w:)/, "$1")), "results");
 const PORT = 9333;
+const DESKTOP = args.desktop;
+const PROFILE = args.profile;
+const DISCORD_MODS = MODS.filter(m => m !== "desktop");
 
 const APPDATA = process.env.APPDATA;
 const DISCORD_ROOT = join(process.env.LOCALAPPDATA, "Discord");
-const APP_DIR = join(DISCORD_ROOT, readdirSync(DISCORD_ROOT).filter(d => d.startsWith("app-")).sort().pop());
-const RES = join(APP_DIR, "resources");
-const LOADER = join(RES, "app", "index.js");
+const APP_DIR = DISCORD_MODS.length ? join(DISCORD_ROOT, readdirSync(DISCORD_ROOT).filter(d => d.startsWith("app-")).sort().pop()) : null;
+const RES = APP_DIR && join(APP_DIR, "resources");
+const LOADER = RES && join(RES, "app", "index.js");
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const ps = cmd => execSync(`powershell -NoProfile -Command "${cmd.replace(/"/g, '\\"')}"`, { encoding: "utf8", maxBuffer: 1 << 26 }).trim();
+const ps = cmd => execSync(`powershell -NoProfile -Command "${cmd.replace(/"/g, '\\"')}"`, { encoding: "utf8", maxBuffer: 1 << 26, windowsHide: true }).trim();
 const killDiscord = () => { try { ps("Get-Process Discord -ErrorAction SilentlyContinue | Stop-Process -Force"); } catch { } };
+const killDesktop = () => { try { ps(`Get-Process EndcordDesktop -ErrorAction SilentlyContinue | Where-Object { $_.Path -like '${DESKTOP}\\*' } | Stop-Process -Force`); } catch { } };
+const kill = mod => mod === "desktop" ? killDesktop() : killDiscord();
 
 // Vencord and Equicord only pick _app.asar when they believe they were loaded from app.asar
 // (Endcord finds it on its own, so it gets the exact loader its installer writes)
@@ -47,7 +56,11 @@ const MOD_INFO = {
     endcord: { name: "Endcord", settings: join(APPDATA, "Endcord", "settings"), bundle: join(APPDATA, "Endcord", "dist"), loader: () => `require(${JSON.stringify(join(APPDATA, "Endcord", "dist", "patcher.js"))});` },
     vencord: { name: "Vencord", settings: join(APPDATA, "Vencord", "settings"), bundle: join(APPDATA, "Vencord", "dist"), loader: () => `${asarHint}require(${JSON.stringify(join(APPDATA, "Vencord", "dist", "patcher.js"))});` },
     equicord: { name: "Equicord", settings: join(APPDATA, "Equicord", "settings"), bundle: join(APPDATA, "Equicord", "equicord.asar"), loader: () => `${asarHint}require(${JSON.stringify(join(APPDATA, "Equicord", "equicord.asar"))});` },
-    vanilla: { name: "Vanilla Discord", loader: () => 'require(require("path").join(__dirname, "..", "_app.asar"));' }
+    vanilla: { name: "Vanilla Discord", loader: () => 'require(require("path").join(__dirname, "..", "_app.asar"));' },
+    desktop: {
+        name: "Endcord Desktop", bundle: DESKTOP && join(DESKTOP, "resources", "app"),
+        files: { "renderer.js": "endcordDesktopRenderer.js", "renderer.css": "endcordDesktopRenderer.css", "patcher.js": "endcordDesktopMain.js", "preload.js": "endcordDesktopPreload.js" }
+    }
 };
 
 // ---- bundle sizes (renderer.js is what the mod adds to Discord's page) ----
@@ -62,7 +75,7 @@ function readAsarFile(asarPath, file) {
 function bundleInfo(mod) {
     const info = MOD_INFO[mod];
     if (!info.bundle || !existsSync(info.bundle)) return null;
-    const read = f => info.bundle.endsWith(".asar") ? readAsarFile(info.bundle, f) : readFileSync(join(info.bundle, f));
+    const read = f => info.bundle.endsWith(".asar") ? readAsarFile(info.bundle, f) : readFileSync(join(info.bundle, info.files?.[f] ?? f));
     const out = {};
     for (const f of ["renderer.js", "renderer.css", "patcher.js", "preload.js"]) {
         try { const b = read(f); out[f] = { bytes: b.length, sha256: createHash("sha256").update(b).digest("hex").slice(0, 16) }; } catch { }
@@ -73,7 +86,7 @@ function bundleInfo(mod) {
 // ---- system description ----
 function systemInfo() {
     const q = c => { try { return ps(c); } catch { return null; } };
-    const buildInfo = JSON.parse(readFileSync(join(RES, "build_info.json"), "utf8"));
+    const buildInfo = RES && JSON.parse(readFileSync(join(RES, "build_info.json"), "utf8"));
     return {
         date: new Date().toISOString(),
         os: q("(Get-CimInstance Win32_OperatingSystem | ForEach-Object { $_.Caption + ' ' + $_.Version })"),
@@ -84,14 +97,16 @@ function systemInfo() {
         gpu: q("(Get-CimInstance Win32_VideoController | Where-Object { $_.AdapterRAM -gt 0 -or $_.Name } | Select-Object -ExpandProperty Name) -join ' / '"),
         storage: q("(Get-PhysicalDisk | Select-Object -ExpandProperty MediaType) -join ' / '"),
         powerPlan: q("(powercfg /getactivescheme) -replace '^.*\\((.*)\\).*$','$1'"),
-        discord: { channel: buildInfo.releaseChannel, version: buildInfo.version, appDir: APP_DIR.split(/[\\/]/).pop() },
+        discord: buildInfo && { channel: buildInfo.releaseChannel, version: buildInfo.version, appDir: APP_DIR.split(/[\\/]/).pop() },
+        desktop: DESKTOP ? { electron: readFileSync(join(DESKTOP, "version"), "utf8").trim(), app: JSON.parse(readFileSync(join(DESKTOP, "resources", "app", "package.json"), "utf8")).version } : undefined,
         node: process.version
     };
 }
 
 // ---- one measured launch ----
-function snap() {
-    const j = ps("Get-CimInstance Win32_Process -Filter \"Name='Discord.exe'\" | ForEach-Object { [pscustomobject]@{ c=$_.CommandLine; cpu=($_.KernelModeTime+$_.UserModeTime)/10000; mem=$_.PrivatePageCount } } | ConvertTo-Json -Compress");
+function snap(mod) {
+    const filter = mod === "desktop" ? `-Filter \"Name='EndcordDesktop.exe'\" | Where-Object { $_.ExecutablePath -like '${DESKTOP}\\*' }` : "-Filter \"Name='Discord.exe'\"";
+    const j = ps(`Get-CimInstance Win32_Process ${filter} | ForEach-Object { [pscustomobject]@{ c=$_.CommandLine; cpu=($_.KernelModeTime+$_.UserModeTime)/10000; mem=$_.PrivatePageCount } } | ConvertTo-Json -Compress`);
     const by = {};
     for (const p of [].concat(JSON.parse(j || "[]"))) {
         const m = /--type=([\w-]+)/.exec(p.c || "");
@@ -105,34 +120,58 @@ function snap() {
 const total = (s, k) => Object.values(s).reduce((a, b) => a + b[k], 0);
 
 async function connect() {
-    const list = await (await fetch(`http://127.0.0.1:${PORT}/json`)).json();
+    const list = await (await fetch(`http://127.0.0.1:${PORT}/json`, { signal: AbortSignal.timeout(3000) })).json();
     const page = list.find(t => t.type === "page" && /discord\.com\/(channels|app)/.test(t.url));
     if (!page) throw new Error("no page");
     const ws = new WebSocket(page.webSocketDebuggerUrl);
     let id = 0; const pending = {};
     ws.onmessage = e => { const m = JSON.parse(e.data); if (m.id && pending[m.id]) pending[m.id](m.result ?? m.error); };
     await new Promise((r, j) => { ws.onopen = r; ws.onerror = j; });
-    const send = (method, params = {}) => new Promise(r => { pending[++id] = r; ws.send(JSON.stringify({ id, method, params })); });
+    // Times out, so a page that dies mid-run fails that run instead of hanging the benchmark
+    const send = (method, params = {}) => new Promise((r, j) => {
+        const timer = setTimeout(() => j(new Error(`${method} timed out`)), 20000);
+        pending[++id] = result => { clearTimeout(timer); r(result); };
+        ws.send(JSON.stringify({ id, method, params }));
+    });
     const ev = async e => (await send("Runtime.evaluate", { expression: e, returnByValue: true, awaitPromise: true }))?.result?.value;
     return { ws, send, ev };
 }
 
+// A window started from a background process can open behind others, where Chromium stops drawing it. The window is
+// kept on top without taking the focus, so keys typed elsewhere never reach Discord. Runs alongside, so the launch
+// timing doesn't wait for it
+function keepInView(mod) {
+    const name = mod === "desktop" ? "EndcordDesktop" : "Discord";
+    const where = mod === "desktop" ? `$_.Path -like '${DESKTOP}\\*' -and ` : "";
+    const script = "Add-Type -Namespace B -Name W -MemberDefinition '"
+        + "[DllImport(\"user32.dll\")] public static extern bool SetWindowPos(IntPtr h, IntPtr after, int x, int y, int cx, int cy, uint flags);'; "
+        + `$h = (Get-Process ${name} -ErrorAction SilentlyContinue | Where-Object { ${where}$_.MainWindowHandle -ne 0 } | Select-Object -First 1).MainWindowHandle; `
+        // HWND_TOPMOST; SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE
+        + "if ($h) { [B.W]::SetWindowPos($h, [IntPtr](-1), 0, 0, 0, 0, 0x13) | Out-Null }";
+    spawn("powershell", ["-NoProfile", "-Command", script], { stdio: "ignore", windowsHide: true });
+}
+
 async function measure(mod) {
-    killDiscord();
+    kill(mod);
     await sleep(4000);
-    writeFileSync(LOADER, MOD_INFO[mod].loader());
+    if (mod !== "desktop") writeFileSync(LOADER, MOD_INFO[mod].loader());
     const t0 = Date.now();
-    spawn(join(APP_DIR, "Discord.exe"), [`--remote-debugging-port=${PORT}`], { detached: true, stdio: "ignore" }).unref();
+    if (mod === "desktop") spawn(join(DESKTOP, "EndcordDesktop.exe"), [`--remote-debugging-port=${PORT}`], { detached: true, stdio: "ignore", env: { ...process.env, ENDCORD_DESKTOP_DATA_DIR: PROFILE } }).unref();
+    else spawn(join(APP_DIR, "Discord.exe"), [`--remote-debugging-port=${PORT}`], { detached: true, stdio: "ignore" }).unref();
 
     let c, readyMs = null;
     while (Date.now() - t0 < 90000) {
         try {
-            c ??= await connect();
+            if (!c) {
+                c = await connect();
+                keepInView(mod);
+            }
             if (await c.ev("!!document.querySelector('nav[class*=guilds]') && !!document.querySelector('[class*=sidebar]')")) { readyMs = Date.now() - t0; break; }
         } catch { c = undefined; }
         await sleep(100);
     }
     if (readyMs == null) throw new Error(`${mod}: Discord did not become ready`);
+    keepInView(mod);
 
     let pageStartMs = null, dcl = null;
     try {
@@ -143,7 +182,7 @@ async function measure(mod) {
     const marks = {};
     for (const at of [30, 60, 90, 120, 180, 240, 300].filter(s => s <= DURATION_S)) {
         await sleep(Math.max(0, t0 + at * 1000 - Date.now()));
-        marks[at] = snap();
+        marks[at] = snap(mod);
     }
     const last = Math.max(...Object.keys(marks).map(Number));
 
@@ -155,6 +194,11 @@ async function measure(mod) {
         // Equicord exposes itself as window.Vencord too; its own core plugin gives it away
         mod: window.Endcord ? "Endcord" : window.Vencord ? (Object.keys(Vencord.Plugins.plugins).some(n => n.includes("Equicord")) ? "Equicord" : "Vencord") : "none",
         styleEls: document.querySelectorAll("style").length,
+        // Hidden means covered or minimized, where Chromium stops drawing and the run is not comparable
+        visibility: document.visibilityState,
+        focused: document.hasFocus(),
+        viewport: innerWidth + "x" + innerHeight,
+        discordBuild: window.GLOBAL_ENV?.BUILD_NUMBER ?? null,
         cssRules: [...document.styleSheets].reduce((a, s) => { try { return a + s.cssRules.length; } catch { return a; } }, 0)
     }))()`);
 
@@ -178,10 +222,11 @@ async function measure(mod) {
         jsHeapMB: +(m.JSHeapUsedSize / 2 ** 20).toFixed(1),
         domNodes: m.Nodes, eventListeners: m.JSEventListeners,
         cssRules: page.cssRules, styleElements: page.styleEls,
+        visibility: page.visibility, focused: page.focused, viewport: page.viewport, discordBuild: page.discordBuild,
         processes: proc
     };
     c.ws.close();
-    killDiscord();
+    kill(mod);
     await sleep(2000);
     return result;
 }
@@ -208,16 +253,21 @@ function restoreSettings() {
 
 // ---- main ----
 for (const mod of MODS) if (!MOD_INFO[mod]) throw new Error(`Unknown mod ${mod}`);
+if (MODS.includes("desktop") && !(DESKTOP && existsSync(join(DESKTOP, "EndcordDesktop.exe")) && PROFILE && existsSync(PROFILE)))
+    throw new Error("desktop needs --desktop <folder with EndcordDesktop.exe> and --profile <signed-in data folder>");
 mkdirSync(OUT, { recursive: true });
-const originalLoader = readFileSync(LOADER, "utf8");
+const originalLoader = DISCORD_MODS.length ? readFileSync(LOADER, "utf8") : null;
 const system = systemInfo();
 system.bundles = Object.fromEntries(MODS.map(m => [m, bundleInfo(m)]));
-system.method = { rounds: ROUNDS, durationSec: DURATION_S, idleWindowSec: [60, DURATION_S], settings: "defaults (fresh settings folder per mod)" };
+system.method = {
+    rounds: ROUNDS, durationSec: DURATION_S, idleWindowSec: [60, DURATION_S],
+    settings: DISCORD_MODS.length ? "defaults (fresh settings folder per mod)" : "defaults (a profile with nothing but the sign-in)"
+};
 writeFileSync(join(OUT, "system.json"), JSON.stringify(system, null, 2));
 console.log(JSON.stringify(system, null, 2));
 
-killDiscord();
-isolateSettings();
+for (const mod of MODS) kill(mod);
+if (DISCORD_MODS.length) isolateSettings();
 try {
     for (let round = 1; round <= ROUNDS; round++) {
         // Rotate the start so no mod always runs first after a cold boot
@@ -232,16 +282,18 @@ try {
                     break;
                 } catch (e) {
                     console.log(`round ${round} ${mod}: attempt ${attempt} failed (${e.message})`);
-                    killDiscord();
+                    kill(mod);
                     await sleep(3000);
                 }
             }
         }
     }
 } finally {
-    killDiscord();
+    for (const mod of MODS) kill(mod);
     await sleep(2000);
-    writeFileSync(LOADER, originalLoader);
-    restoreSettings();
+    if (DISCORD_MODS.length) {
+        writeFileSync(LOADER, originalLoader);
+        restoreSettings();
+    }
 }
 console.log("done");

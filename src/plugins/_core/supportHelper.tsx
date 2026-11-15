@@ -14,7 +14,7 @@ import ErrorBoundary from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
 import { openSettingsTabModal, UpdaterTab } from "@components/settings";
 import { Channel, RenderModalProps } from "@endcord/discord-types";
-import { Devs, ENDCORD_GUILD_ID, SUPPORT_CHANNEL_ID } from "@utils/constants";
+import { Devs, ENDCORD_GUILD_ID, REPO_URL, SUPPORT_CHANNEL_ID } from "@utils/constants";
 import { openInviteModal, sendMessage } from "@utils/discord";
 import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
@@ -40,7 +40,7 @@ const ShowCurrentGame = getUserSettingLazy<boolean>("status", "showCurrentGame")
 
 const isSupportAllowedChannel = (channel: Channel) => channel.id === SUPPORT_CHANNEL_ID;
 
-// Yetkili Owner Hesapları: the accounts that may tell every client to check for an update
+// Owner accounts: the only ones that can tell every client to check for an update
 const ENDCORD_OWNER_IDS = ["1390609041897554050", "1097880625513496586", "904384828143706164"];
 
 // These messages get an update button and a button that runs code in everyone's client, so only Endcord's owners,
@@ -62,8 +62,7 @@ async function generateDebugInfoMessage() {
 
     const client = (() => {
         if (IS_DISCORD_DESKTOP) return `Discord Desktop v${DiscordNative.app.getVersion()}`;
-        if (IS_VESKTOP) return `Endcord Desktop v${VesktopNative.app.getVersion()}`;
-        if ("legcord" in window) return `Legcord v${window.legcord.version}`;
+        if (IS_ENDCORD_DESKTOP) return `Endcord Desktop v${EndcordDesktopNative.app.getVersion()}`;
 
         // @ts-expect-error
         const name = typeof unsafeWindow !== "undefined" ? "UserScript" : "Web";
@@ -126,7 +125,6 @@ const settings = definePluginSettings({}).withPrivateSettings<{
 
 // Vanity invite, it doesn't expire
 const ENDCORD_INVITE_CODE = "endcord";
-const REPO_URL = "https://github.com/Endcord/Endcord";
 const STAR_PROMPT_DELAY = 7 * 24 * 60 * 60 * 1000;
 const UPDATE_COMMAND_COOLDOWN = 10 * 60 * 1000;
 
@@ -370,12 +368,12 @@ export function detectClient(): ClientData {
     if (typeof DiscordNative !== "undefined" && DiscordNative?.app?.getVersion) {
         return { name: t("Discord Desktop"), version: DiscordNative.app.getVersion() };
     }
-    if (IS_VESKTOP && VesktopNative?.app?.getVersion) {
-        const hash = tryOrElse(() => VesktopNative.app.getGitHash?.() ?? null, null);
+    if (IS_ENDCORD_DESKTOP && EndcordDesktopNative?.app?.getVersion) {
+        const hash = tryOrElse(() => EndcordDesktopNative.app.getGitHash?.() ?? null, null);
         return {
             name: "Endcord Desktop",
-            version: VesktopNative.app.getVersion(),
-            dev: tryOrElse(() => VesktopNative.app.isDevBuild?.() ?? false, false),
+            version: EndcordDesktopNative.app.getVersion(),
+            dev: tryOrElse(() => EndcordDesktopNative.app.isDevBuild?.() ?? false, false),
             hash,
             shortHash: hash?.slice(0, 7) ?? null
         };

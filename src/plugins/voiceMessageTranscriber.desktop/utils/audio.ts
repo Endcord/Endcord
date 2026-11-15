@@ -9,7 +9,7 @@ import { PluginNative } from "@utils/types";
 const Native = EndcordNative.pluginHelpers.VoiceMessageTranscriber as PluginNative<typeof import("../native")>;
 
 export async function fetchVoiceMessage(src: string): Promise<Blob> {
-    if (IS_DISCORD_DESKTOP || IS_VESKTOP) {
+    if (IS_DISCORD_DESKTOP || IS_ENDCORD_DESKTOP) {
         const data = await Native.fetchAudio(src);
         return new Blob([new Uint8Array(data)]);
     }

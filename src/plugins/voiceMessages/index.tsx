@@ -8,6 +8,7 @@ import "./styles.css";
 
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { Card } from "@components/Card";
+import { EndcordModal } from "@components/EndcordModal";
 import { Microphone } from "@components/Icons";
 import { Link } from "@components/Link";
 import { Paragraph } from "@components/Paragraph";
@@ -21,7 +22,7 @@ import { useAwaiter } from "@utils/react";
 import definePlugin from "@utils/types";
 import { chooseFile } from "@utils/web";
 import { findLazy } from "@webpack";
-import { Button, Constants, FluxDispatcher, Forms, lodash, Menu, MessageActions, Modal,openModal, PendingReplyStore, PermissionsBits, PermissionStore, RestAPI, SelectedChannelStore, showToast, SnowflakeUtils, Toasts, useEffect, useState } from "@webpack/common";
+import { Button, Constants, FluxDispatcher, Forms, lodash, Menu, MessageActions, openModal, PendingReplyStore, PermissionsBits, PermissionStore, RestAPI, SelectedChannelStore, showToast, SnowflakeUtils, Toasts, useEffect, useState } from "@webpack/common";
 import { ComponentType } from "react";
 
 import { VoiceRecorderDesktop } from "./DesktopRecorder";
@@ -197,7 +198,7 @@ function VoiceMessageModal({ modalProps }: { modalProps: RenderModalProps; }) {
     );
 
     return (
-        <Modal
+        <EndcordModal
             {...modalProps}
             title={t("Record Voice Message")}
             actions={[{
@@ -252,6 +253,6 @@ function VoiceMessageModal({ modalProps }: { modalProps: RenderModalProps; }) {
                     </Forms.FormText>
                 </Card>
             )}
-        </Modal>
+        </EndcordModal>
     );
 }

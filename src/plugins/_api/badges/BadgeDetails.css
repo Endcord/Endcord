@@ -192,7 +192,7 @@
     object-fit: contain;
 }
 
-/* Nitro's moving art has room around it, as in Discord */
+/* Padding around Nitro's animated art, as in Discord */
 .ec-badge-details-graphic-animated-nitro {
     height: 150px;
     margin: calc(var(--space-12, 12px) * -1);
@@ -556,7 +556,7 @@
     color: var(--badge-mythic-text);
 }
 
-/* Endcord's own rarity, above Mythic: the night sky, with a ring of light slowly going round */
+/* Celestial, Endcord's own rarity above Mythic: a night-sky fill with a slowly rotating ring */
 @property --ec-celestial-turn {
     syntax: "<angle>";
     inherits: false;

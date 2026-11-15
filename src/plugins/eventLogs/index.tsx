@@ -6,6 +6,7 @@
 
 import { addHeaderBarButton, HeaderBarButton, removeHeaderBarButton } from "@api/HeaderBar";
 import { Devs } from "@utils/constants";
+import { ENDCORD_THEME } from "@utils/css";
 import { t as translateText } from "@utils/i18n";
 import { localStorage } from "@utils/localStorage";
 import { ModalCloseButton,ModalContent, ModalHeader, ModalRoot, openModal } from "@utils/modal";
@@ -23,14 +24,14 @@ const GuildStore = findStoreLazy("GuildStore");
 const MessageStore = findStoreLazy("MessageStore");
 const SelectedChannelStore = findStoreLazy("SelectedChannelStore");
 
-// Stratégie de navigation alternative via Dispatcher
+// Navigate through the router, or the dispatcher if that isn't found
 const navigateTo = (path: string) => {
     try {
         const Router = findByPropsLazy("transitionTo") || findByPropsLazy("push");
         if (Router?.transitionTo) return Router.transitionTo(path);
         if (Router?.push) return Router.push(path);
 
-        // Dernier recours via le dispatcher
+        // Last resort
         Dispatcher.dispatch({
             type: "NAVIGATE_TO",
             path
@@ -80,9 +81,12 @@ const PERSISTENT_TYPES = new Set(["ping", "message_delete", "message_edit", "fri
 const NOTIF_TYPES = new Set(["ping", "friend_add", "friend_remove", "friend_request", "friend_request_cancel", "block"]);
 const unreadLogEntries = new Set<LogEntry>();
 
+const LOGS_KEY = "endcord_logs";
+
 function loadPersistLogs() {
     try {
-        const s = localStorage.getItem("nightcord_logs");
+        // Logs saved before the key was renamed are still read
+        const s = localStorage.getItem(LOGS_KEY) ?? localStorage.getItem("nightcord_logs");
         if (s) {
             const parsed = JSON.parse(s);
             if (Array.isArray(parsed)) {
@@ -96,26 +100,23 @@ function loadPersistLogs() {
 function savePersistLogs() {
     try {
         const toSave = logs.filter(l => PERSISTENT_TYPES.has(l.type));
-        localStorage.setItem("nightcord_logs", JSON.stringify(toSave));
+        localStorage.setItem(LOGS_KEY, JSON.stringify(toSave));
+        localStorage.removeItem("nightcord_logs");
     } catch { }
 }
 
-// Seul accountur de version — pas de snapshot, pas de copie
+// Only a version counter: no snapshot, no copy
 let globalVersion = 0;
 const updateListeners = new Set<() => void>();
 
 let flushTimer: ReturnType<typeof setTimeout> | null = null;
 function scheduleFlush() {
     if (flushTimer !== null) return;
-    // FIX CRASH DM SCROLL: debounce augmenté de 50ms → 500ms
-    // Un flush à 50ms pendant le scroll DM déclenchait un globalVersion++ à chaque
-    // batch LOAD_MESSAGES_SUCCESS, forçant un re-render React en plein milieu de la
-    // virtualisation DOM de Discord → removeChild crash (node not a child of this node).
-    // 500ms laisse le temps au scroll de se stabiliser avant de notifier les listeners.
+    // 500ms debounce, not 50ms: flushing while a DM scrolls bumped globalVersion on every LOAD_MESSAGES_SUCCESS
+    // batch and re-rendered in the middle of Discord's list virtualization, which crashed in removeChild.
     flushTimer = setTimeout(() => {
         flushTimer = null;
         globalVersion++;
-        // Notification immédiate pour les listeners
         for (const fn of updateListeners) {
             try { fn(); } catch { }
         }
@@ -162,22 +163,18 @@ function authorFrom(msg: any) {
     return { authorId: id, authorName: name, authorAvatar: av };
 }
 
-// FIX CRASH DM SCROLL: msgCache réduit de 8000 → 3000 entrées, purge de 1000 → 500
-// La purge brutale de 1000 entrées d'un coup pendant le scroll provoquait un pic de
-// travail synchrone qui bloquait le thread principal au moment critique du re-render.
-// Taille réduite + purge plus petite = moins d'impact pendant le scroll.
+// Capped at 3000 and trimmed 500 at a time. Trimming 1000 at once while scrolling blocked the main thread right
+// when Discord re-rendered.
 const MSG_CACHE_MAX = 3000;
 const MSG_CACHE_PURGE = 500;
 const msgCache = new Map<string, { content: string; authorId: string; authorName: string; authorAvatar: string | null; }>();
 
-// Flag pour bloquer les purges du cache pendant le scroll (LOAD_MESSAGES_SUCCESS actif)
+// Set while a LOAD_MESSAGES_SUCCESS batch is cached, so the cache isn't trimmed in the middle of it
 let isLoadingMessages = false;
 
 function cacheMsg(msg: any) {
     if (!msg?.id) return;
-    // FIX: Ne pas purger le cache pendant un chargement de messages (scroll DM)
-    // La purge en plein milieu d'un LOAD_MESSAGES_SUCCESS forçait un recalcul des
-    // globalPaths Node qui entrait en conflit avec la virtualisation Discord.
+    // Not while messages are loading (see isLoadingMessages)
     if (msgCache.size >= MSG_CACHE_MAX && !isLoadingMessages) {
         const keys = Array.from(msgCache.keys());
         for (let i = 0; i < MSG_CACHE_PURGE; i++) msgCache.delete(keys[i]);
@@ -187,25 +184,25 @@ function cacheMsg(msg: any) {
 }
 
 const CFG: Record<LogType, { label: string; color: string; }> = {
-    message_delete: { label: t("Deleted"), color: "#ed4245" },
-    message_edit: { label: t("Edited"), color: "#faa61a" },
-    voice_join: { label: t("Voice +"), color: "#3ba55c" },
+    message_delete: { label: t("Deleted"), color: "var(--status-danger)" },
+    message_edit: { label: t("Edited"), color: "var(--status-warning)" },
+    voice_join: { label: t("Voice +"), color: "var(--status-positive)" },
     voice_leave: { label: t("Voice -"), color: "#747f8d" },
-    voice_move: { label: t("Moved"), color: "#5865f2" },
-    voice_mute: { label: t("Mic"), color: "#faa61a" },
-    voice_deaf: { label: t("Deaf"), color: "#faa61a" },
-    voice_stream: { label: t("Stream"), color: "#5865f2" },
-    voice_mute_mod: { label: t("Muted"), color: "#ed4245" },
-    friend_add: { label: t("Friend +"), color: "#3ba55c" },
-    friend_remove: { label: t("Friend -"), color: "#ed4245" },
-    friend_request: { label: t("Request"), color: "#5865f2" },
+    voice_move: { label: t("Moved"), color: "var(--brand-500)" },
+    voice_mute: { label: t("Mic"), color: "var(--status-warning)" },
+    voice_deaf: { label: t("Deaf"), color: "var(--status-warning)" },
+    voice_stream: { label: t("Stream"), color: "var(--brand-500)" },
+    voice_mute_mod: { label: t("Muted"), color: "var(--status-danger)" },
+    friend_add: { label: t("Friend +"), color: "var(--status-positive)" },
+    friend_remove: { label: t("Friend -"), color: "var(--status-danger)" },
+    friend_request: { label: t("Request"), color: "var(--brand-500)" },
     friend_request_cancel: { label: t("Cancelled"), color: "#747f8d" },
-    block: { label: t("Blocked"), color: "#ed4245" },
-    guild_member_add: { label: t("Joined"), color: "#3ba55c" },
-    guild_member_remove: { label: t("Left server"), color: "#ed4245" },
-    guild_ban: { label: t("Banned"), color: "#ed4245" },
-    guild_timeout: { label: t("Timeout"), color: "#faa61a" },
-    guild_kick: { label: t("Kick"), color: "#ed4245" },
+    block: { label: t("Blocked"), color: "var(--status-danger)" },
+    guild_member_add: { label: t("Joined"), color: "var(--status-positive)" },
+    guild_member_remove: { label: t("Left server"), color: "var(--status-danger)" },
+    guild_ban: { label: t("Banned"), color: "var(--status-danger)" },
+    guild_timeout: { label: t("Timeout"), color: "var(--status-warning)" },
+    guild_kick: { label: t("Kick"), color: "var(--status-danger)" },
     user_disconnect: { label: t("Logged out"), color: "#747f8d" },
     ping: { label: t("Ping"), color: "#eb459f" },
 };
@@ -219,7 +216,7 @@ const avatarUrl = (userId: string, av?: string | null) =>
 
 function renderContent(text: string) {
     if (!text) return text;
-    // Remplace les pings <@ID> ou <@!ID> par @pseudo
+    // <@ID> and <@!ID> pings become @name
     return text.replace(/<@!?(\d+)>/g, (match, id) => {
         const u = getUser(id);
         return u ? `@${u.globalName || u.username}` : match;
@@ -233,7 +230,7 @@ function LogRow({ e }: { e: LogEntry; }) {
         if (!e.channelId) return;
 
         try {
-            // Pour le vocal
+            // Voice events
             if (e.type.startsWith("voice_")) {
                 if (VoiceStateActionCreators?.selectVoiceChannel) {
                     VoiceStateActionCreators.selectVoiceChannel(e.channelId);
@@ -243,7 +240,7 @@ function LogRow({ e }: { e: LogEntry; }) {
                 return;
             }
 
-            // Pour les messages
+            // Message events
             const guildId = e.guildId || "@me";
             const path = e.realId
                 ? `/channels/${guildId}/${e.channelId}/${e.realId}`
@@ -251,7 +248,7 @@ function LogRow({ e }: { e: LogEntry; }) {
 
             navigateTo(path);
         } catch (err) {
-            console.error("Nightcord Navigation Error:", err);
+            console.error("[EventLogs] Couldn't open the message:", err);
             showToast({ text: t("Navigation failed"), variant: "critical" });
         }
     };
@@ -418,7 +415,7 @@ function LogsModal({ rootProps }: { rootProps: any; }) {
     const [debouncedSearch, setDebouncedSearch] = useState("");
     const [page, setPage] = useState(0);
 
-    // Extraction des guildes uniques pour le select
+    // Unique servers, for the filter
     const guildOptions = useMemo(() => {
         const map = new Map<string, { label: string, guild: any; }>();
         for (const l of logs) {
@@ -442,7 +439,7 @@ function LogsModal({ rootProps }: { rootProps: any; }) {
         return () => { updateListeners.delete(fn); };
     }, []);
 
-    // Debounce search à 200ms
+    // 200ms search debounce
     useEffect(() => {
         const t = setTimeout(() => { setDebouncedSearch(search); setPage(0); }, 200);
         return () => clearTimeout(t);
@@ -494,7 +491,7 @@ function LogsModal({ rootProps }: { rootProps: any; }) {
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = `nightcord_logs_${new Date().toISOString().slice(0, 10)}.txt`;
+            a.download = `endcord_logs_${new Date().toISOString().slice(0, 10)}.txt`;
             a.click();
             URL.revokeObjectURL(url);
             showToast({ text: t("Logs saved!"), variant: "success" });
@@ -504,7 +501,7 @@ function LogsModal({ rootProps }: { rootProps: any; }) {
     }, [filtered, t]);
 
     return (
-        <ModalRoot {...rootProps} size="large">
+        <ModalRoot {...rootProps} className={ENDCORD_THEME} size="large">
             <ModalHeader separator={false}>
                 <Forms.FormTitle tag="h4" style={{ margin: 0, display: "flex", alignItems: "center", gap: 8, color: "#ffffff" }}>
                     {translateText("Logs")}{" "}<span className="el-count">{logs.length}</span>
@@ -512,6 +509,7 @@ function LogsModal({ rootProps }: { rootProps: any; }) {
                 <ModalCloseButton onClick={rootProps.onClose} />
             </ModalHeader>
             <ModalContent className="el-content">
+                <div className="ec-modal-marker" hidden />
                 <div className="el-toolbar">
                     <div className="el-filters">
                         {FILTERS.map(f => {
@@ -529,7 +527,7 @@ function LogsModal({ rootProps }: { rootProps: any; }) {
                                     {t(f.label)}
                                     {tbUnread > 0 && (
                                         <div style={{
-                                            position: "absolute", top: -4, right: -4, background: "#ed4245", color: "white",
+                                            position: "absolute", top: -4, right: -4, background: "var(--status-danger)", color: "white",
                                             fontSize: "9px", fontWeight: "bold", padding: "1px 4px", borderRadius: "8px", lineHeight: 1
                                         }}>{tbUnread}</div>
                                     )}
@@ -645,8 +643,6 @@ function subscribeToEvents() {
     });
     sub("LOAD_MESSAGES_SUCCESS", d => {
         if (!d) return;
-        // FIX CRASH DM SCROLL: isLoadingMessages bloque la purge du msgCache pendant
-        // le traitement du batch — évite un pic synchrone sur le thread principal.
         const msgs = [
             ...(Array.isArray(d.messages) ? d.messages : []),
             ...(Array.isArray(d.jump) ? d.jump : []),
@@ -655,12 +651,12 @@ function subscribeToEvents() {
         ];
         if (msgs.length === 0) return;
 
-        // requestIdleCallback est idéal pour le scan en arrière-plan sans lag
+        // Cache in idle time so scrolling doesn't stutter
         if (typeof requestIdleCallback !== "undefined") {
             requestIdleCallback(() => {
                 isLoadingMessages = true;
                 try { for (const m of msgs) cacheMsg(m); } finally { isLoadingMessages = false; }
-                // Purge différée si le cache dépasse la limite
+                // Trim afterwards if over the limit
                 if (msgCache.size >= MSG_CACHE_MAX) {
                     const keys = Array.from(msgCache.keys());
                     for (let i = 0; i < MSG_CACHE_PURGE; i++) msgCache.delete(keys[i]);
@@ -792,7 +788,7 @@ function subscribeToEvents() {
         if (changed) scheduleFlush();
     });
 
-    // Capture logout/disconnect (partiel car le plugin s'arrête si déco totale)
+    // Logout (only partly: the plugin stops on a full disconnect)
     sub("LOGOUT", () => { pushLog({ type: "user_disconnect", content: t("Logged out of the account"), authorName: "System" }); });
 }
 
@@ -809,11 +805,11 @@ export default definePlugin({
             if (vcId) myVoiceChannelId = vcId;
         } catch { }
         loadPersistLogs();
-        addHeaderBarButton("nightcord-event-logs", () => <LogsButton />, 7);
+        addHeaderBarButton("endcord-event-logs", () => <LogsButton />, 7);
         subscribeToEvents();
     },
     stop() {
-        removeHeaderBarButton("nightcord-event-logs");
+        removeHeaderBarButton("endcord-event-logs");
         unsubs.forEach(fn => fn()); unsubs = [];
         if (flushTimer !== null) { clearTimeout(flushTimer); flushTimer = null; }
         logs = []; msgCache.clear(); prevVS.clear(); updateListeners.clear();

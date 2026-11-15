@@ -6,6 +6,7 @@
 
 import { definePluginSettings } from "@api/Settings";
 import { BaseText } from "@components/BaseText";
+import { EndcordModal } from "@components/EndcordModal";
 import { Flex } from "@components/Flex";
 import { FormSwitch } from "@components/FormSwitch";
 import { Heading } from "@components/Heading";
@@ -15,7 +16,7 @@ import { t } from "@utils/i18n";
 import { makeLazy } from "@utils/lazy";
 import definePlugin, { OptionType } from "@utils/types";
 import { findByProps, wreq } from "@webpack";
-import { Button, Modal,openModal, Timestamp, useState } from "@webpack/common";
+import { Button, openModal, Timestamp, useState } from "@webpack/common";
 
 import TarFile from "./tar";
 import * as Webpack from "./webpack";
@@ -99,7 +100,7 @@ function TarModal({ modalProps }: { modalProps: RenderModalProps; }) {
     const { patched } = settings.use(["patched"]);
     const WEBPACK_CHUNK = "webpackChunkdiscord_app";
     return (
-        <Modal
+        <EndcordModal
             {...modalProps}
             size="md"
             title={t("Webpack Tarball")}
@@ -155,6 +156,6 @@ function TarModal({ modalProps }: { modalProps: RenderModalProps; }) {
                 title={settings.def.patched.description}
                 hideBorder
             />
-        </Modal>
+        </EndcordModal>
     );
 }

@@ -4,13 +4,13 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-/* Direct mention -> Green */
+/* Direct mentions: green */
 div[class*="numberBadge"][data-direct-mention="true"] {
     background-color: var(--mention-direct-color, #23a55a) !important;
     color: #fff !important;
 }
 
-/* Broadcast @everyone / @here -> Red */
+/* @everyone and @here: red */
 div[class*="numberBadge"]:not([data-direct-mention="true"]) {
     background-color: var(--status-danger, #f23f43) !important;
     color: #fff !important;

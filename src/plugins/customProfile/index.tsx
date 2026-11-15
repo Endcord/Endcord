@@ -11,8 +11,10 @@ import { DataStore } from "@api/index";
 import { definePluginSettings } from "@api/Settings";
 import BadgeAPIPlugin from "@plugins/_api/badges";
 import { Devs } from "@utils/constants";
+import { ENDCORD_THEME } from "@utils/css";
 import { openInviteModal } from "@utils/discord";
 import { t, useI18n } from "@utils/i18n";
+import { LazyComponent } from "@utils/lazyReact";
 import {
     ModalCloseButton as ModalCloseButton_,
     ModalContent as ModalContent_,
@@ -23,17 +25,18 @@ import {
 } from "@utils/modal";
 import { safeRecordMerge } from "@utils/safeRecordMerge";
 import definePlugin, { OptionType } from "@utils/types";
-import { Alerts, AuthenticationStore, Button, FluxDispatcher, IconUtils, React, Select, showToast, SnowflakeUtils, Toasts, UserProfileStore, UserStore } from "@webpack/common";
+import { Alerts, AuthenticationStore, Button, FluxDispatcher, IconUtils, React, showToast, SnowflakeUtils, Toasts, UserProfileStore, UserStore } from "@webpack/common";
 
 import { BADGES, BOOST_ICONS, BOOST_LABELS, BOOST_LABELS_RAW, BOOST_LEVELS, FLAG, GIFT_IDS, GIFT_LEVELS, GIFT_TIER_NAMES, NITRO_LEVEL_MONTHS, NITRO_LEVELS, OLD_NAME_BADGE_ICON, SPECIAL_BADGES, TIERED_BADGES } from "./badgeData";
 import { reloadBadgeLayout, setManagedBadges, startBadgeManagement, stopBadgeManagement } from "./badgeManagement";
 import {
-    AVATAR_DECORATIONS, CloseIcon, CollectibleType, DisplayNameEffects, DisplayNameFonts, DisplayNameStylePicker, enumEntries,
-    FramePreview, getDecorationUrl, ShopImage, useShopCollectibles
+    AVATAR_DECORATIONS, CloseIcon, CollectibleType, DisplayNameEffects, DisplayNameFonts, DisplayNameStylePicker, type DisplayNameStyles,
+    enumEntries, FramePreview, getDecorationUrl, ShopImage, useShopCollectibles
 } from "./collectibles";
 import { type CustomProfileData, hasAnyCustomData, hasCustomBadgesConfigured, type SavedPreset } from "./data";
 import { boostBadgeRef, flagBadgeRef, makeBadge, nitroBadgeRef, specialBadgeRef, tieredBadgeRef } from "./discordBadgeRefs";
 import { getSharedProfile, hasSharedProfiles, PROFILES_GUILD_ID, PROFILES_INVITE, publishProfile, sharingRetryAt, startSharing, stopSharing } from "./sharing";
+import { AccountPicker, Shelf } from "./shelves";
 
 const settings = definePluginSettings({
     showOthers: {
@@ -154,11 +157,11 @@ function wantsNitroLook(pd: CustomProfileData | null | undefined): boolean {
 }
 let _trueOriginalUser: any = null;
 let _dataVersion: number = 0;
-/** The plugin while it's running, which installs the hooks once there's a custom profile to show */
+/** The running plugin. Its hooks are only installed once there's a custom profile to show */
 let _hooksPlugin: { installHooks(): void; } | null = null;
 let _hooksInstalled = false;
 
-/** Whether any account has a custom profile turned on, which is what the hooks would show */
+/** Whether any account has a custom profile enabled, i.e. whether the hooks have anything to do */
 function needsHooks() {
     if (isEnabled && hasAnyCustomData(storedData)) return true;
     for (const id in allAccountsData) if (allAccountsEnabled[id] && hasAnyCustomData(allAccountsData[id])) return true;
@@ -171,14 +174,14 @@ function ensureHooks() {
     _hooksPlugin.installHooks();
 }
 
-/** Every change to a profile goes through here, so the first one puts the hooks in */
+/** All profile changes go through here; the first one installs the hooks */
 function bumpDataVersion() {
     _dataVersion++;
     ensureHooks();
 }
 let allAccountsData: Record<string, CustomProfileData> = {};
 let allAccountsEnabled: Record<string, boolean> = {};
-// presets: keyed by accountId → array of saved presets
+// Saved presets, by account id
 let allPresetsData: Record<string, SavedPreset[]> = {};
 
 const LS_PRESETS = "EndcordCP_presets";
@@ -242,51 +245,51 @@ function buildUserBadgesArray(data: CustomProfileData, enabled: boolean): any[] 
     const userBadges: any[] = [];
     const f = data.badgeFlags ?? 0;
 
-    // === Badge Order ===
-    // 1. Staff
+    // In Discord's badge order
+    // Staff
     pushBadge(userBadges, FLAG.STAFF, f);
 
-    // 2. Nitro Subscriber
+    // Nitro
     if (data.nitroLevel !== undefined && data.nitroLevel >= 0 && NITRO_LEVELS[data.nitroLevel]) {
         const nl = NITRO_LEVELS[data.nitroLevel];
         userBadges.push(makeBadge("nitro", nl.icon, nl.label, nitroBadgeRef(NITRO_LEVEL_MONTHS[data.nitroLevel])));
     }
 
-    // 3. Partner
+    // Partner
     pushBadge(userBadges, FLAG.PARTNER, f);
 
-    // 4. Moderator Programs Alumni
+    // Moderator Programs Alumni
     pushBadge(userBadges, FLAG.MOD_ALUMNI, f);
 
-    // 5. HypeSquad Events
+    // HypeSquad Events
     pushBadge(userBadges, FLAG.HYPESQUAD, f);
 
-    // 6. HypeSquad Houses (Bravery, Brilliance, Balance)
+    // HypeSquad houses (Bravery, Brilliance, Balance)
     pushBadge(userBadges, FLAG.BRAVERY, f);
     pushBadge(userBadges, FLAG.BRILLIANCE, f);
     pushBadge(userBadges, FLAG.BALANCE, f);
 
-    // 7. Early Supporter
+    // Early Supporter
     pushBadge(userBadges, FLAG.EARLY_SUPPORTER, f);
 
-    // 8. Server Booster
+    // Server Booster
     if (data.boostMonths !== undefined && data.boostMonths >= 0 && BOOST_ICONS[data.boostMonths]) {
         userBadges.push(makeBadge("boost", BOOST_ICONS[data.boostMonths], `Server Boost - ${BOOST_LABELS[data.boostMonths]}`, boostBadgeRef(data.boostMonths, BOOST_LABELS[data.boostMonths], BOOST_LEVELS)));
     }
 
-    // 9. Bug Hunter Gold (Level 2)
+    // Bug Hunter level 2 (gold)
     pushBadge(userBadges, FLAG.BUG_HUNTER_2, f);
 
-    // 10. Bug Hunter Normal (Level 1)
+    // Bug Hunter level 1
     pushBadge(userBadges, FLAG.BUG_HUNTER_1, f);
 
-    // 11. Early Verified Bot Developer
+    // Early Verified Bot Developer
     pushBadge(userBadges, FLAG.DEV_VERIFIED, f);
 
-    // 12. Active Developer
+    // Active Developer
     pushBadge(userBadges, FLAG.ACTIVE_DEVELOPER, f);
 
-    // === Special / Custom Badges ===
+    // Special and custom badges
     const specialOrder = [
         "oldname", "quest", "meadow", "orbs",
         "gift_patron", "gift_champion", "gift_luminary", "gift_icon", "gift_hero", "gift_legendary"
@@ -303,7 +306,7 @@ function buildUserBadgesArray(data: CustomProfileData, enabled: boolean): any[] 
                 if (giftShown) continue;
                 giftShown = true;
             }
-            const sb = SPECIAL_BADGES[cbId];
+            const sb = Object.hasOwn(SPECIAL_BADGES, cbId) ? SPECIAL_BADGES[cbId] : undefined; // own properties only: "constructor" is nobody's badge
             if (sb) {
                 const tooltip = (cbId === "oldname" && data.oldName)
                     ? t("Originally known as {name}", { name: data.oldName })
@@ -318,7 +321,7 @@ function buildUserBadgesArray(data: CustomProfileData, enabled: boolean): any[] 
         }
     }
 
-    // === Tiered badges (account age, streaming, game time, game variety, gifting) ===
+    // Tiered badges: account age, streaming, game time, game variety, gifting
     for (const type of TIERED_BADGES) {
         const tier = data.tieredBadges?.[type.key];
         if (tier != null && type.tiers[tier]) {
@@ -636,7 +639,7 @@ function scanTextNode(node: Text) {
     // Nearly every text node on the page holds neither the name nor the date, so that is checked first: the editable
     // area check below walks every ancestor of the node with attribute selectors, on each node Discord adds
     const lower = val.toLowerCase();
-    if (!textNeedles().some(needle => lower.includes(needle))) return;
+    if (!(_batchNeedles ?? textNeedles()).some(needle => lower.includes(needle))) return;
     if (shouldSkipText(node)) return;
 
     let result = val;
@@ -667,25 +670,33 @@ function scanNode(node: Node) {
 
 const MAX_DOM_MUTATIONS_PER_BATCH = 80;
 
+// What to look for, worked out once per batch instead of once per text node
+let _batchNeedles: string[] | null = null;
+
 function processDomBatch() {
     _domQueued = false;
     if (!isEnabled) { _domMutations = []; return; }
     const batch = _domMutations.slice(0, MAX_DOM_MUTATIONS_PER_BATCH);
     _domMutations = _domMutations.slice(MAX_DOM_MUTATIONS_PER_BATCH);
+    _batchNeedles = textNeedles();
+    try { scanBatch(batch); } finally { _batchNeedles = null; }
+    // If there are still queued mutations, process them in the next frame
+    if (_domMutations.length > 0 && !_domQueued) {
+        _domQueued = true;
+        setTimeout(() => requestAnimationFrame(processDomBatch), 80);
+    }
+}
+
+function scanBatch(batch: MutationRecord[]) {
     for (const m of batch) {
         if (m.type === "characterData") scanTextNode(m.target as Text);
         else for (const n of m.addedNodes) {
-            // Skip SVG/Canvas/Script subtrees — they never contain username text
+            // SVG, canvas and script subtrees never contain the name
             const el = n as Element;
             const tag = el.tagName;
             if (tag === "SVG" || tag === "CANVAS" || tag === "SCRIPT" || tag === "STYLE" || tag === "IMG" || tag === "VIDEO" || tag === "SOURCE" || tag === "LINK") continue;
             scanNode(n);
         }
-    }
-    // If there are still queued mutations, process them in the next frame
-    if (_domMutations.length > 0 && !_domQueued) {
-        _domQueued = true;
-        setTimeout(() => requestAnimationFrame(processDomBatch), 80);
     }
 }
 
@@ -907,15 +918,26 @@ function BadgeBtn({ label, icon, active, onClick }: { label: string; icon?: stri
     );
 }
 
-function BadgePicker({ selected, onChange, nitroType, onNitroType, boostLevel, onBoostLevel, customIds, onCustomIds, oldName, onOldName, tiered, onTiered }: {
-    selected: number; onChange: (v: number) => void;
-    nitroType: number; onNitroType: (v: number) => void;
-    boostLevel: number; onBoostLevel: (v: number) => void;
-    customIds: string[]; onCustomIds: (v: string[]) => void;
-    oldName: string; onOldName: (v: string) => void;
-    tiered: Record<string, number>; onTiered: (v: Record<string, number>) => void;
+type SetField = <K extends keyof CustomProfileData>(key: K, val: CustomProfileData[K]) => void;
+
+// Stable empty values, so memoised children don't re-render
+const NO_IDS: string[] = [];
+const NO_TIERS: Record<string, number> = {};
+
+// Memoised, so typing in a field doesn't re-render every badge button
+const BadgePicker = LazyComponent(() => React.memo(function BadgePicker({ badgeFlags: selected, nitroLevel: nitroType, boostLevel, customIds, oldName, tiered, set }: {
+    badgeFlags: number; nitroLevel: number; boostLevel: number; customIds: string[]; oldName: string; tiered: Record<string, number>; set: SetField;
 }) {
     const { t } = useI18n();
+    const onChange = (v: number) => set("badgeFlags", v);
+    const onNitroType = (v: number) => {
+        set("nitroLevel", v as any);
+        if (v >= 1) set("nitro", true);
+    };
+    const onBoostLevel = (v: number) => set("boostMonths", v);
+    const onCustomIds = (v: string[]) => set("customBadgeIds", v);
+    const onOldName = (v: string) => set("oldName", v);
+    const onTiered = (v: Record<string, number>) => set("tieredBadges", v);
     const hasOldName = customIds.includes("oldname");
     // Discord shows one Gifting tier at a time, so the tiers are a single choice
     const giftId = customIds.find(x => GIFT_IDS.includes(x));
@@ -1001,7 +1023,7 @@ function BadgePicker({ selected, onChange, nitroType, onNitroType, boostLevel, o
             })}
         </div>
     );
-}
+}));
 
 function forceAccountPanelRerender() {
     try {
@@ -1018,6 +1040,8 @@ function forceAccountPanelRerender() {
     } catch { }
 }
 
+const filterShelf = <T extends { label: string; }>(items: T[], query: string) => query ? items.filter(item => item.label.toLowerCase().includes(query)) : items;
+
 function CustomProfileModal({ rootProps }: { rootProps: any; }) {
     const { t } = useI18n();
     const shop = useShopCollectibles();
@@ -1029,13 +1053,14 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
         return [...shop.byType[CollectibleType.AVATAR_DECORATION].map(dec => ({ id: dec.skuId, label: dec.name })), ...AVATAR_DECORATIONS]
             .filter(dec => !seen.has(dec.id) && !!seen.add(dec.id));
     }, [shop.byType]);
+    const { showOthers } = settings.use(["showOthers"]);
     const myId = AuthenticationStore?.getId?.() || "";
     const [selectedAccountId, setSelectedAccountId] = React.useState(myId);
     const [data, setData] = React.useState<CustomProfileData>(() => ({ ...(allAccountsData[myId] || storedData || {}) }));
     const [saving, setSaving] = React.useState(false);
     const nitroLevel = data.nitroLevel ?? -1;
     const boostLevel = data.boostMonths ?? -1;
-    const customIds = data.customBadgeIds ?? [];
+    const customIds = data.customBadgeIds ?? NO_IDS;
     const oldName = data.oldName ?? "";
     const accounts = React.useMemo(() => {
         try {
@@ -1061,9 +1086,49 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
         setData({ ...newData });
     }, [selectedAccountId]);
 
-    function set<K extends keyof CustomProfileData>(key: K, val: CustomProfileData[K]) {
-        setData(d => ({ ...d, [key]: val }));
-    }
+    // Stable callback, so the memoised sections only re-render when their own values change
+    const set: SetField = React.useCallback((key, val) => setData(d => ({ ...d, [key]: val })), []);
+
+    // Shop sections, built once per catalog. Images load lazily and decode off the main thread
+    const decorationItems = React.useMemo(() => decorations.map(dec => ({
+        id: dec.id,
+        label: dec.label,
+        art: <img src={getDecorationUrl(dec.id)} alt={dec.label} loading="lazy" decoding="async" draggable={false} />
+    })), [decorations]);
+    const effectItems = React.useMemo(() => shop.byType[CollectibleType.PROFILE_EFFECT].map(eff => ({
+        id: eff.skuId,
+        label: eff.name,
+        art: eff.item.thumbnailPreviewSrc
+            ? <img src={eff.item.thumbnailPreviewSrc} alt={eff.name} loading="lazy" decoding="async" draggable={false} />
+            : <span>{eff.name}</span>
+    })), [shop.byType]);
+    const frameItems = React.useMemo(() => shop.byType[CollectibleType.PROFILE_FRAME].map(frame => ({
+        id: frame.skuId,
+        label: frame.name,
+        art: <FramePreview frame={frame} />
+    })), [shop.byType]);
+    const nameplateItems = React.useMemo(() => shop.byType[CollectibleType.NAMEPLATE].map(plate => ({
+        id: plate.skuId,
+        label: plate.name,
+        art: <ShopImage skuId={plate.skuId} name={plate.name} />
+    })), [shop.byType]);
+
+    // Hundreds of items per section: a name finds one in all four
+    const [shopQuery, setShopQuery] = React.useState("");
+    const query = shopQuery.trim().toLowerCase();
+    const shownDecorations = React.useMemo(() => filterShelf(decorationItems, query), [decorationItems, query]);
+    const shownEffects = React.useMemo(() => filterShelf(effectItems, query), [effectItems, query]);
+    const shownFrames = React.useMemo(() => filterShelf(frameItems, query), [frameItems, query]);
+    const shownNameplates = React.useMemo(() => filterShelf(nameplateItems, query), [nameplateItems, query]);
+
+    const pickDecoration = React.useCallback((id?: string) => set("decorationAsset", id), [set]);
+    const pickEffect = React.useCallback((id?: string) => set("profileEffectId", id), [set]);
+    const pickFrame = React.useCallback((id?: string) => set("profileFrameId", id), [set]);
+    const pickNameplate = React.useCallback((id?: string) => {
+        const plate = id ? shop.byType[CollectibleType.NAMEPLATE].find(item => item.skuId === id) : undefined;
+        set("nameplate", plate && { skuId: plate.skuId, asset: plate.item.asset, label: plate.item.label, palette: plate.item.palette });
+    }, [set, shop.byType]);
+    const setNameStyles = React.useCallback((value: DisplayNameStyles | undefined) => set("displayNameStyles", value), [set]);
 
     function loadPreset(presetData: CustomProfileData) {
         setData({ ...presetData });
@@ -1121,10 +1186,10 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
                 bumpDataVersion();
             }
 
-            // Immediately revert all modified text nodes in DOM and stop observer
+            // Put the rewritten text nodes back and stop the observer
             stopDomObserver();
 
-            // Immediately clear custom badges from memory so native Discord badges show instantly
+            // Drop the custom badges so Discord's own show again right away
             try {
                 if (BadgeAPIPlugin && BadgeAPIPlugin.DonorBadges) {
                     delete BadgeAPIPlugin.DonorBadges[selectedAccountId];
@@ -1156,12 +1221,12 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
         }
     }
 
-    // Repair: re-apply current stored data without deleting anything
+    // Repair: apply the stored data again without deleting anything
     function repair() {
         try {
             _trueOriginalUser = null;
             bumpDataVersion();
-            // Reload from localStorage to ensure consistency
+            // Read it back from storage so memory matches what's saved
             loadDataSync();
             forceAccountPanelRerender();
         } catch (err) {
@@ -1173,46 +1238,14 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
     const accentHex = data.accentColor != null ? `#${data.accentColor.toString(16).padStart(6, "0")}` : "";
 
     return (
-        <ModalRoot {...rootProps} size="medium">
+        <ModalRoot {...rootProps} className={ENDCORD_THEME} size="medium">
             <ModalHeader separator={false}>
                 <div className="cp-header">
                     <EditIcon size={16} />
                     <span className="cp-header-title">{t("Custom Profile")}</span>
                 </div>
                 <div style={{ marginLeft: "auto", marginRight: 8, minWidth: 200 }}>
-                    <Select
-                        options={accounts.map((acc: any) => ({
-                            value: acc.id,
-                            label: acc.globalName || acc.username,
-                        }))}
-                        isSelected={(v: string) => v === selectedAccountId}
-                        select={(v: string) => setSelectedAccountId(v)}
-                        serialize={(v: string) => v}
-                        renderOptionLabel={(o: any) => {
-                            const acc = accounts.find((a: any) => a.id === o.value);
-                            let avatarUrl = "";
-                            try { if (acc && IconUtils?.getUserAvatarURL) avatarUrl = IconUtils.getUserAvatarURL(acc, false, 20); } catch {}
-                            return (
-                                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                    {avatarUrl ? <img src={avatarUrl} style={{ borderRadius: "50%", width: 20, height: 20 }} /> : null}
-                                    {o.label}
-                                </div>
-                            );
-                        }}
-                        renderOptionValue={(selected: any[]) => {
-                            const option = selected[0];
-                            if (!option) return t("Select Account");
-                            const acc = accounts.find((a: any) => a.id === option.value);
-                            let avatarUrl = "";
-                            try { if (acc && IconUtils?.getUserAvatarURL) avatarUrl = IconUtils.getUserAvatarURL(acc, false, 20); } catch {}
-                            return (
-                                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                    {avatarUrl ? <img src={avatarUrl} style={{ borderRadius: "50%", width: 20, height: 20 }} /> : null}
-                                    {option.label}
-                                </div>
-                            );
-                        }}
-                    />
+                    <AccountPicker accounts={accounts} selected={selectedAccountId} onSelect={setSelectedAccountId} />
                 </div>
                 <ModalCloseButton onClick={rootProps.onClose} />
             </ModalHeader>
@@ -1220,6 +1253,10 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
                 <PresetsBar accountId={selectedAccountId} currentData={data} onLoad={loadPreset} />
             </div>
             <ModalContent className="cp-content">
+                <div className="ec-modal-marker" hidden />
+                {/* A viewing choice, not part of the profile: applies at once, without Save */}
+                <Toggle label={t("Show the profiles other Endcord users made with CustomProfile")} checked={showOthers} onChange={v => settings.store.showOthers = v} />
+                <div className="cp-divider" />
                 <Field label={t("Username")} value={data.username ?? ""} placeholder="my_username_00" onChange={v => set("username", v)} />
                 <Field label={t("Display name")} value={data.globalName ?? ""} placeholder={t("My Name")} onChange={v => set("globalName", v)} />
                 <ImageUpload label={t("Profile picture")} value={data.avatar ?? ""} onChange={v => set("avatar", v)} isAvatar={true} />
@@ -1248,101 +1285,40 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
                     </div>
                 </div>
                 <Field label={t("Account creation date")} value={data.createdAt ?? ""} placeholder="2010-06-29" type="date" onChange={v => set("createdAt", v)} />
-                <Field label={t("Email address (local display)")} value={data.email ?? ""} placeholder={t("exemple@mail.com")} onChange={v => set("email", v)} />
-                <Field label={t("Phone (local display)")} value={data.phone ?? ""} placeholder="+33 6 00 00 00 00" onChange={v => set("phone", v)} />
+                <Field label={t("Email address (local display)")} value={data.email ?? ""} placeholder="name@example.com" onChange={v => set("email", v)} />
+                <Field label={t("Phone (local display)")} value={data.phone ?? ""} placeholder="+1 555 010 0199" onChange={v => set("phone", v)} />
                 <div className="cp-divider" />
                 <BadgePicker
-                    selected={data.badgeFlags ?? 0} onChange={v => set("badgeFlags", v)}
-                    nitroType={nitroLevel} onNitroType={v => {
-                        set("nitroLevel", v as any);
-                        if (v >= 1) set("nitro", true);
-                    }}
-                    boostLevel={boostLevel} onBoostLevel={v => set("boostMonths", v)}
-                    customIds={customIds} onCustomIds={v => set("customBadgeIds", v)}
-                    tiered={data.tieredBadges ?? {}} onTiered={v => set("tieredBadges", v)}
-                    oldName={oldName} onOldName={v => set("oldName", v)}
+                    badgeFlags={data.badgeFlags ?? 0}
+                    nitroLevel={nitroLevel}
+                    boostLevel={boostLevel}
+                    customIds={customIds}
+                    tiered={data.tieredBadges ?? NO_TIERS}
+                    oldName={oldName}
+                    set={set}
                 />
                 {nitroLevel >= 0 && (
                     <Field label={t("Nitro date")} value={data.nitroSince ?? ""} type="date" onChange={v => set("nitroSince", v || undefined)} />
                 )}
                 <div className="cp-divider" />
+                <input className="cp-input" value={shopQuery} placeholder={t("Search the shop by name")} onChange={e => setShopQuery(e.target.value)} />
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <SectionLabel>{t("Avatar decoration")}</SectionLabel>
                 </div>
 
-                <div className="cp-badges cp-effects" style={{ flexWrap: "wrap", gap: 6 }}>
-                    <button onClick={() => set("decorationAsset", undefined)}
-                        className={`cp-badge ${!data.decorationAsset ? "cp-badge--on" : ""}`} style={{ minWidth: 60 }}>
-                        {t("None")}
-                    </button>
-                    {decorations.map(dec => (
-                        <button key={dec.id}
-                            onClick={() => set("decorationAsset", data.decorationAsset === dec.id ? undefined : dec.id)}
-                            className={`cp-badge ${data.decorationAsset === dec.id ? "cp-badge--on" : ""}`}
-                            title={dec.label} style={{ padding: 3, lineHeight: 0, width: 52, height: 52, borderRadius: 6 }}>
-                            <img src={getDecorationUrl(dec.id)} alt={dec.label}
-                                style={{ width: 46, height: 46, objectFit: "contain", display: "block" }} />
-                        </button>
-                    ))}
-                </div>
+                <Shelf items={shownDecorations} picked={data.decorationAsset} onPick={pickDecoration} kind="cp-decoration" />
                 <div className="cp-divider" />
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <SectionLabel>{t("Profile Effect")}</SectionLabel>
                 </div>
 
-                <div className="cp-badges cp-effects">
-                    <button onClick={() => set("profileEffectId", undefined)}
-                        className={`cp-badge ${!data.profileEffectId ? "cp-badge--on" : ""}`} style={{ minWidth: 60 }}>
-                        {t("None")}
-                    </button>
-                    {shop.byType[CollectibleType.PROFILE_EFFECT].map(eff => (
-                        <button key={eff.skuId}
-                            onClick={() => set("profileEffectId", data.profileEffectId === eff.skuId ? undefined : eff.skuId)}
-                            className={`cp-badge cp-effect ${data.profileEffectId === eff.skuId ? "cp-badge--on" : ""}`}
-                            title={eff.name}>
-                            {eff.item.thumbnailPreviewSrc
-                                ? <img src={eff.item.thumbnailPreviewSrc} alt={eff.name} loading="lazy" />
-                                : <span>{eff.name}</span>}
-                        </button>
-                    ))}
-                </div>
+                <Shelf items={shownEffects} picked={data.profileEffectId} onPick={pickEffect} kind="cp-effect" />
                 <div className="cp-divider" />
                 <SectionLabel>{t("Profile frame")}</SectionLabel>
-                <div className="cp-badges cp-effects">
-                    <button onClick={() => set("profileFrameId", undefined)}
-                        className={`cp-badge ${!data.profileFrameId ? "cp-badge--on" : ""}`} style={{ minWidth: 60 }}>
-                        {t("None")}
-                    </button>
-                    {shop.byType[CollectibleType.PROFILE_FRAME].map(frame => (
-                        <button key={frame.skuId}
-                            onClick={() => set("profileFrameId", data.profileFrameId === frame.skuId ? undefined : frame.skuId)}
-                            className={`cp-badge cp-effect ${data.profileFrameId === frame.skuId ? "cp-badge--on" : ""}`}
-                            title={frame.name}>
-                            <FramePreview frame={frame} />
-                        </button>
-                    ))}
-                </div>
+                <Shelf items={shownFrames} picked={data.profileFrameId} onPick={pickFrame} kind="cp-effect" />
                 <div className="cp-divider" />
                 <SectionLabel>{t("Nameplate")}</SectionLabel>
-                <div className="cp-badges cp-effects">
-                    <button onClick={() => set("nameplate", undefined)}
-                        className={`cp-badge ${!data.nameplate ? "cp-badge--on" : ""}`} style={{ minWidth: 60 }}>
-                        {t("None")}
-                    </button>
-                    {shop.byType[CollectibleType.NAMEPLATE].map(plate => (
-                        <button key={plate.skuId}
-                            onClick={() => set("nameplate", data.nameplate?.skuId === plate.skuId ? undefined : {
-                                skuId: plate.skuId,
-                                asset: plate.item.asset,
-                                label: plate.item.label,
-                                palette: plate.item.palette
-                            })}
-                            className={`cp-badge cp-nameplate ${data.nameplate?.skuId === plate.skuId ? "cp-badge--on" : ""}`}
-                            title={plate.name}>
-                            <ShopImage skuId={plate.skuId} name={plate.name} />
-                        </button>
-                    ))}
-                </div>
+                <Shelf items={shownNameplates} picked={data.nameplate?.skuId} onPick={pickNameplate} kind="cp-nameplate" />
                 {shop.loading && <div className="cp-hint">{t("Loading the Discord shop…")}</div>}
                 {shop.failed && <div className="cp-hint">{t("Couldn't load the Discord shop. Close this window and try again.")}</div>}
                 <div className="cp-divider" />
@@ -1352,7 +1328,7 @@ function CustomProfileModal({ rootProps }: { rootProps: any; }) {
                     previewName={data.globalName || UserStore.getCurrentUser()?.globalName || UserStore.getCurrentUser()?.username || "Endcord"}
                     fonts={nameFonts}
                     effects={nameEffects}
-                    onChange={v => set("displayNameStyles", v)}
+                    onChange={setNameStyles}
                 />
                 <div className="cp-hint">{t("Visual and local modifications only — persistent between restarts.")}</div>
             </ModalContent>
@@ -1384,7 +1360,7 @@ export default definePlugin({
     name: "CustomProfile",
     enabledByDefault: true,
     description: t("Visually customize your Discord profile (username, PFP, banner, badges, bio...). Other Endcord users see it too."),
-    authors: [Devs.ewlle],
+    authors: [Devs.rootpoi],
     dependencies: ["HeaderBarAPI", "ContextMenuAPI"],
     settings,
 
@@ -1629,21 +1605,6 @@ export default definePlugin({
         }
     },
 
-    fakeObfuscatedEmail(real: string | null) {
-        if (!isEnabled || !storedData.email || !real) return real;
-        const fake = storedData.email;
-        const atIdx = fake.indexOf("@");
-        if (atIdx <= 1) return fake;
-        return `${fake[0]}***${fake.slice(atIdx - 1)}`;
-    },
-
-    fakeObfuscatedPhone(real: string | null) {
-        if (!isEnabled || !storedData.phone || !real) return real;
-        const fake = storedData.phone;
-        if (fake.length < 4) return fake;
-        return `***-***-${fake.slice(-4)}`;
-    },
-
     patchBannerUrl({ displayProfile }: any) {
         try {
             const uid = displayProfile?.userId;
@@ -1655,39 +1616,12 @@ export default definePlugin({
         return null;
     },
 
-    profileEffectHook(userId: string, original: any) {
-        try {
-            if (!original || !userId) return original;
-            const pd = getProfileDataFor(userId);
-            if (!pd || !pd.profileEffectId) return original;
-            return safeRecordMerge(original, {
-                profileEffectId: pd.profileEffectId,
-                profileEffect: {
-                    expireAt: null,
-                    skuId: pd.profileEffectId,
-                },
-                premiumType: original.premiumType ?? 2
-            }, `cpe:${userId}:${_dataVersion}`);
-        } catch {
-            return original;
-        }
-    },
-
-    premiumTypeHook({ userId }: any) {
-        try {
-            const pd = getProfileDataFor(userId);
-            if (pd && (pd.profileEffectId || pd.nitro)) return 2;
-        } catch {}
-        return undefined;
-    },
-
     toolboxActions: {
         [t("Open Custom Profile")]() { openModal(props => <CustomProfileModal rootProps={props} />); },
     },
 
     _origGetUserAvatarURL: null as any,
     _origExtractTimestamp: null as any,
-    _forceNative: false,
 
     async start() {
         for (const [uid, data] of Object.entries(allAccountsData)) {
@@ -1815,6 +1749,9 @@ export default definePlugin({
                 if (UU.useName) {
                     const orig = UU.useName.bind(UU);
                     UU.useName = (user: any) => {
+                        // A hook: Discord's has to run on every render. Skipping it once a profile loaded, was saved or
+                        // arrived from another user changed the message's hook count, and React crashed
+                        const name = orig(user);
                         if (user?.id) {
                             const myId = AuthenticationStore?.getId?.();
                             const isMe = !!(myId && user.id === myId);
@@ -1822,7 +1759,7 @@ export default definePlugin({
                             if (isMe && pd?.globalName) return pd.globalName;
                             if (pd?.username && !user.globalName) return pd.username;
                         }
-                        return orig(user);
+                        return name;
                     };
                 }
                 UU._cp_name_hook = true;
@@ -1921,9 +1858,11 @@ export default definePlugin({
             if (SnowflakeUtils?.extractTimestamp && !this._origExtractTimestamp) {
                 this._origExtractTimestamp = SnowflakeUtils.extractTimestamp;
                 const origExtract = this._origExtractTimestamp;
+                // Account ages come from the id, so a chosen creation date (own or shared) is applied here too
                 (SnowflakeUtils as any).extractTimestamp = (snowflake: string) => {
-                    if (isEnabled && storedData.createdAt && isMe(snowflake)) {
-                        return new Date(`${storedData.createdAt}T12:00:00Z`).getTime();
+                    if (isEnabled) {
+                        const createdAt = isMe(snowflake) ? storedData.createdAt : getProfileDataFor(snowflake)?.createdAt;
+                        if (createdAt) return new Date(`${createdAt}T12:00:00Z`).getTime();
                     }
                     return origExtract(snowflake);
                 };

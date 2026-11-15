@@ -59,17 +59,14 @@ function sensitiveKeysOf(name: string) {
     return getSensitiveKeys(Plugins[name]);
 }
 
-// Whoever controls an import must not get to redirect this device's keys, choose who can act for the user, stop
-// its updates or load a browser extension into Discord. A backup file may fill in a plugin that has nothing
-// configured here; the cloud never touches these
-function keepLocalSettings(imported: any, source: "file" | "cloud") {
+// Whoever controls an import must not get to redirect this device's keys, choose who can act for the user or whom
+// the user follows into voice, stop its updates or load a browser extension into Discord. Exports leave these
+// settings out, so a file that carries them was written by hand: they never come from a file or from the cloud
+function keepLocalSettings(imported: any) {
     for (const pluginName of Object.keys(Plugins)) {
         const keys = sensitiveKeysOf(pluginName);
         if (!keys.length) continue;
-        const plugin = Plugins[pluginName];
         const local = PlainSettings.plugins[pluginName] ?? {};
-        const isConfigured = keys.some(key => local[key] && local[key] !== (plugin.settings!.def[key] as { default?: unknown; }).default);
-        if (source === "file" && !isConfigured) continue;
 
         for (const key of keys) {
             if (key in local) ((imported.plugins ??= {})[pluginName] ??= {})[key] = local[key];
@@ -80,7 +77,7 @@ function keepLocalSettings(imported: any, source: "file" | "cloud") {
     for (const key of ["cloud", "autoUpdate", "autoUpdateNotification", "enableReactDevtools"]) imported[key] = PlainSettings[key];
 }
 
-export async function importSettings(data: string, source: "file" | "cloud" = "file") {
+export async function importSettings(data: string) {
     try {
         var parsed = JSON.parse(data);
     } catch (err) {
@@ -91,7 +88,7 @@ export async function importSettings(data: string, source: "file" | "cloud" = "f
         throw new Error("Unsafe Settings");
 
     if ("settings" in parsed && "quickCss" in parsed) {
-        keepLocalSettings(parsed.settings, source);
+        keepLocalSettings(parsed.settings);
         Object.assign(PlainSettings, parsed.settings);
         await EndcordNative.settings.set(parsed.settings);
         await EndcordNative.quickCss.set(parsed.quickCss);

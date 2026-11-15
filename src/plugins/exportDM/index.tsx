@@ -6,6 +6,7 @@
 
 import { addHeaderBarButton, HeaderBarButton, removeHeaderBarButton } from "@api/HeaderBar";
 import { Devs } from "@utils/constants";
+import { ENDCORD_THEME } from "@utils/css";
 import { ModalCloseButton,ModalContent, ModalHeader, ModalRoot, openModal } from "@utils/modal";
 import definePlugin from "@utils/types";
 import { findByPropsLazy, findStoreLazy } from "@webpack";
@@ -133,7 +134,7 @@ async function fetchAllMessages(channelId: string, token: string, onProgress: (n
         await new Promise(r => setTimeout(r, 250));
     }
 
-    // Source 1: MessageStore cache (basic MessageLogger — in-memory only)
+    // From MessageStore's cache (MessageLogger, memory only)
     try {
         const cached = MessageStore.getMessages?.(channelId);
         if (cached) {
@@ -175,7 +176,7 @@ async function fetchAllMessages(channelId: string, token: string, onProgress: (n
         console.error("[ExportDM] Error fetching cached messages:", e);
     }
 
-    // Source 2: MessageLoggerEnhanced IndexedDB (persistent — works without being in the conversation)
+    // From MessageLoggerEnhanced's IndexedDB, which also has conversations that aren't open
     try {
         const idbRecords = await getDeletedMessagesFromIDB(channelId);
         for (const record of idbRecords) {
@@ -324,7 +325,7 @@ function downloadFile(content: string, filename: string, mime: string) {
     URL.revokeObjectURL(url);
 }
 
-// ── Icône SVG pour la recherche ───────────────────────────────────────────────
+// Search icon
 function SearchIcon() {
     return (
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.5, flexShrink: 0 }}>
@@ -333,7 +334,7 @@ function SearchIcon() {
     );
 }
 
-// ── Modal ─────────────────────────────────────────────────────────────────
+// ---- Modal ----
 function ExportDMModal({ rootProps }: { rootProps: any; }) {
     const [channels, setChannels] = useState<any[]>([]);
     const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -424,13 +425,13 @@ function ExportDMModal({ rootProps }: { rootProps: any; }) {
         return null;
     }
 
-    // Filtre la liste selon la recherche
+    // Filter by the search
     const filtered = search.trim()
         ? channels.filter(c => c.name.toLowerCase().includes(search.toLowerCase()))
         : channels;
 
     return (
-        <ModalRoot {...rootProps} size="medium">
+        <ModalRoot {...rootProps} className={ENDCORD_THEME} size="medium">
             <ModalHeader separator={false}>
                 <Forms.FormTitle tag="h4" style={{ margin: 0, display: "flex", alignItems: "center", gap: 8, color: "#fff" }}>
                     <ExportIcon width={16} height={16} /> {t("Export DMs")}
@@ -439,7 +440,9 @@ function ExportDMModal({ rootProps }: { rootProps: any; }) {
             </ModalHeader>
             <ModalContent className="edm-content">
 
-                {/* Barre de recherche */}
+                <div className="ec-modal-marker" hidden />
+
+                {/* Search bar */}
                 <div className="edm-search-bar">
                     <SearchIcon />
                     <input
@@ -455,7 +458,7 @@ function ExportDMModal({ rootProps }: { rootProps: any; }) {
                     )}
                 </div>
 
-                {/* Liste conversations */}
+                {/* Conversation list */}
                 <Forms.FormTitle tag="h5" className="edm-label">{t("CHOOSE A CONVERSATION")}</Forms.FormTitle>
                 <div className="edm-channel-list">
                     {filtered.length === 0 && (
@@ -481,7 +484,7 @@ function ExportDMModal({ rootProps }: { rootProps: any; }) {
                     })}
                 </div>
 
-                {/* Options — sans emojis Google, avec labels texte */}
+                {/* Options, as text labels */}
                 <div className="edm-options-row">
                     <label className="edm-option">
                         <input type="checkbox" checked={includeMedia} onChange={e => setIncludeMedia(e.target.checked)} />
@@ -542,6 +545,6 @@ export default definePlugin({
     authors: [Devs.vpg],
     dependencies: ["HeaderBarAPI"],
 
-    start() { addHeaderBarButton("nightcord-export-dm", () => <ExportButton />, 4); },
-    stop() { removeHeaderBarButton("nightcord-export-dm"); },
+    start() { addHeaderBarButton("endcord-export-dm", () => <ExportButton />, 4); },
+    stop() { removeHeaderBarButton("endcord-export-dm"); },
 });

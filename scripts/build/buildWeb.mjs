@@ -64,7 +64,7 @@ const commonOptions = {
         IS_REPORTER,
         IS_ANTI_CRASH_TEST,
         IS_DISCORD_DESKTOP: false,
-        IS_VESKTOP: false,
+        IS_ENDCORD_DESKTOP: false,
         IS_UPDATER_DISABLED: true,
         VERSION,
         BUILD_TIMESTAMP

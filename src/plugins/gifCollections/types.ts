@@ -43,11 +43,3 @@ export interface GifPickerInstance {
     forceUpdate: () => void;
 }
 
-export interface GifItem {
-    name?: string;
-    id?: string;
-    src?: string;
-    url?: string;
-    height?: number;
-    width?: number;
-}

@@ -152,8 +152,13 @@ fi
 # ---- Getting Endcord's files ----------------------------------------------------------------------
 
 download() {
+    # A release only ever comes over https, redirects included
+    case "$1" in
+        https://*) ;;
+        *) fail "Refusing to download from an address that isn't https: $1" ;;
+    esac
     if command -v curl >/dev/null 2>&1; then
-        curl -fsSL --retry 2 "$1" -o "$2"
+        curl -fsSL --proto '=https' --proto-redir '=https' --retry 2 "$1" -o "$2"
     elif command -v wget >/dev/null 2>&1; then
         wget -q "$1" -O "$2"
     else
@@ -183,9 +188,10 @@ read_assets() {
     ' "$1"
 }
 
-# True when $1 lists all four files, each with a SHA-256 (writes them to $TMP/assets)
+# True when $1 lists the four files and nothing else, each with a SHA-256 (writes them to $TMP/assets)
 has_checksums() {
     read_assets "$1" > "$TMP/assets" || return 1
+    [ "$(grep -c . "$TMP/assets")" -eq 4 ] || return 1
     for f in $FILES; do
         grep -Eq "^$f [^ ]+ [0-9a-fA-F]{64}\$" "$TMP/assets" || return 1
     done
@@ -214,6 +220,9 @@ verify_manifest() {
     for key in version hash updatedAt installerSha256; do
         [ -n "$(manifest_value "$1" "$key")" ] || fail "The current release is incomplete, so it can't be verified. Try again later."
     done
+    # Each signed field keeps to its own line of the signed text, so none may carry a line of its own
+    manifest_value "$1" installerSha256 | grep -Eq '^[0-9a-fA-F]{64}$' || fail "The current release is malformed, so it can't be verified. Try again later."
+    manifest_value "$1" version | grep -Eq '^[A-Za-z0-9_.+-]{1,64}$' || fail "The current release is malformed, so it can't be verified. Try again later."
     cat > "$TMP/update-key.pem" <<'EOF'
 -----BEGIN PUBLIC KEY-----
 MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEJi37GlwG/uPNC4oQicUcI1bPlnri
@@ -246,7 +255,9 @@ fetch_files() {
         [ -n "$bundle" ] || fail "The current release has no download for macOS and Linux. Try again later."
         download "$bundle" "$TMP/bundle.tar.gz" || fail "Could not download Endcord"
         mkdir -p "$TMP/bundle"
-        tar -xzf "$TMP/bundle.tar.gz" -C "$TMP/bundle" || fail "The download was damaged; nothing was installed."
+        # The archive isn't checked yet, so only the four files are taken out of it, by name and as this user's
+        # shellcheck disable=SC2086
+        tar -xzof "$TMP/bundle.tar.gz" -C "$TMP/bundle" $FILES || fail "The download was damaged; nothing was installed."
         for f in $FILES; do
             [ -f "$TMP/bundle/$f" ] || fail "The download is missing $f; nothing was installed."
             cp "$TMP/bundle/$f" "$TMP/$f"
@@ -286,7 +297,7 @@ printf '%s\n' '{' '  "name": "discord",' '  "main": "index.js"' '}' > "$TMP/load
 cat > "$TMP/loader/index.js" <<'EOF'
 // Endcord Loader
 const { join } = require('path');
-const appData = process.env.ENDCORD_INSTALLER_ROAMING || process.env.APPDATA || (process.platform === 'darwin' ? join(process.env.HOME, 'Library/Application Support') : join(process.env.HOME, '.config'));
+const appData = process.env.APPDATA || (process.platform === 'darwin' ? join(process.env.HOME, 'Library/Application Support') : join(process.env.HOME, '.config'));
 const patcherPath = join(appData, 'Endcord', 'dist', 'patcher.js');
 try {
     require(patcherPath);

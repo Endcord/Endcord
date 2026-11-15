@@ -8,6 +8,7 @@ import * as DataStore from "@api/DataStore";
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
+import { wrapMethod } from "@utils/wrapMethod";
 import { Constants, RestAPI, UserStore } from "@webpack/common";
 
 const settings = definePluginSettings({
@@ -49,11 +50,10 @@ interface CachedMessage {
     savedAt: number; // timestamp for cache cleanup
 }
 
-// In-memory cache — mirror of IndexedDB for fast access
+// In-memory copy of the IndexedDB cache
 let memCache: Record<string, CachedMessage> = {};
 let dbLoaded = false;
 
-// Load cache from IndexedDB on startup
 async function loadCache() {
     try {
         const stored = await DataStore.get<Record<string, CachedMessage>>(DB_KEY);
@@ -67,7 +67,7 @@ async function loadCache() {
     }
 }
 
-// Persist cache to IndexedDB (debounced to avoid writing on every message)
+// Persisted to IndexedDB 1s after the last message, so it doesn't write on every one
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
 function scheduleSave() {
     if (saveTimer) clearTimeout(saveTimer);
@@ -77,7 +77,7 @@ function scheduleSave() {
         } catch (e) {
             console.warn("[AntiDeleteMessage] Failed to save cache:", e);
         }
-    }, 1000); // writes to disk 1s after the last received message
+    }, 1000);
 }
 
 function getBlacklistedGuildIds(): Set<string> {
@@ -95,7 +95,6 @@ function addToCache(messageId: string, data: CachedMessage) {
     // Evict oldest entries if cache exceeds the limit
     const ids = Object.keys(memCache);
     if (ids.length >= maxSize) {
-        // Sort by savedAt and remove the oldest 10%
         const sorted = ids.sort((a, b) => (memCache[a].savedAt ?? 0) - (memCache[b].savedAt ?? 0));
         const toDelete = Math.max(1, Math.floor(maxSize * 0.1));
         for (let i = 0; i < toDelete; i++) delete memCache[sorted[i]];
@@ -104,6 +103,11 @@ function addToCache(messageId: string, data: CachedMessage) {
     memCache[messageId] = data;
     scheduleSave();
 }
+
+/** Messages deleted from this client: the user wanted those gone, so they aren't sent again */
+const deletedHere = new Set<string>();
+const MESSAGE_PATH = /\/channels\/\d+\/messages\/(\d+)$/;
+let unwrapDelete: (() => void) | undefined;
 
 async function resendMessage(cached: CachedMessage) {
     try {
@@ -130,7 +134,7 @@ async function resendMessage(cached: CachedMessage) {
 
 export default definePlugin({
     name: "AntiDeleteMessage",
-    description: "Automatically resends your messages if someone deletes them. Cache persisted across restarts.",
+    description: "Automatically resends your messages if someone else deletes them. Messages you delete yourself from this device stay deleted. Cache persisted across restarts.",
     authors: [Devs.vpg],
     enabledByDefault: false,
     settings,
@@ -179,6 +183,12 @@ export default definePlugin({
             const cached = memCache[id];
             if (!cached) return;
 
+            if (deletedHere.delete(id)) {
+                delete memCache[id];
+                scheduleSave();
+                return;
+            }
+
             // Check blacklist at delete-time too (in case the setting changed)
             if (cached.guildId && getBlacklistedGuildIds().has(cached.guildId)) {
                 delete memCache[id];
@@ -196,9 +206,18 @@ export default definePlugin({
 
     async start() {
         await loadCache();
+        // Every delete this client sends goes through here, whichever button or plugin asked for it
+        unwrapDelete = wrapMethod(RestAPI, "del", function (original, req) {
+            const id = MESSAGE_PATH.exec(String(req?.url))?.[1];
+            if (id && memCache[id]) deletedHere.add(id);
+            return original.call(this, req);
+        });
     },
 
     stop() {
+        unwrapDelete?.();
+        unwrapDelete = undefined;
+        deletedHere.clear();
         if (saveTimer) {
             clearTimeout(saveTimer);
             // Final synchronous save

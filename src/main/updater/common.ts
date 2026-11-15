@@ -13,8 +13,10 @@ export const ENDCORD_FILES = [
     ...(IS_DISCORD_DESKTOP ? [] : ["main.js", "preload.js"]),
 ];
 
-/** The release manifest this build reads: Endcord Desktop has its own, signed the same way */
-export const MANIFEST_URL = `https://raw.githubusercontent.com/Endcord/Endcord/main/${IS_DISCORD_DESKTOP ? "" : "desktop/"}version.json`;
+/** The release manifest this build reads: Endcord Desktop has its own, signed the same way, in its own repository */
+export const MANIFEST_URL = IS_DISCORD_DESKTOP
+    ? "https://raw.githubusercontent.com/Endcord/Endcord/main/version.json"
+    : "https://raw.githubusercontent.com/Endcord/EndcordDesktop/main/version.json";
 
 /** What the updater has actually checked, for the settings page. Nothing here is assumed */
 export interface UpdateTrust {

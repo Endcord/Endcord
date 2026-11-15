@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { BroadcastIcon, DropletIcon, EndcordMark, GamepadIcon, PulseIcon, ShieldCheckIcon } from "@components/EndcordIcons";
+import { AppsIcon, EndcordMark, PulseIcon, ShieldCheckIcon, SlidersIcon, SparkleIcon } from "@components/EndcordIcons";
 import type { IconProps } from "@utils/types";
 import type { ComponentType } from "react";
 
@@ -24,38 +24,38 @@ export interface Release {
  */
 export const RELEASES: Release[] = [
     {
-        version: "4.1.0",
-        summary: "Endcord is easier to reach, easier to make your own, and open about what it's doing.",
+        version: "4.1.1",
+        summary: "Safer, back in step with Discord, and a little more playful.",
         highlights: [
             {
-                Icon: EndcordMark,
-                title: "Control Center",
-                description: "The panda in the title bar now opens your themes, memory use and settings in one place."
-            },
-            {
-                Icon: DropletIcon,
-                title: "Theme Studio",
-                description: "Pick a color and Discord changes as you drag, with no code. Export it when you like the result."
+                Icon: ShieldCheckIcon,
+                title: "Security fixes",
+                description: "SharePerms, AntiDeleteMessage, settings files and shared profiles can't be pushed past what they're for."
             },
             {
                 Icon: PulseIcon,
-                title: "Diagnostics",
-                description: "See how long each plugin took to start and how much memory Discord uses, measured on your PC."
+                title: "Discord's updates",
+                description: "Plugins Discord's November updates broke work again, and Endcord's notifications show again."
             },
             {
-                Icon: ShieldCheckIcon,
-                title: "Security status",
-                description: "Endcord checks its release signature and installed files, and shows you the result."
+                Icon: EndcordMark,
+                title: "Panda visits",
+                description: "Now and then the panda somersaults along the bottom of Discord. Click it to catch it."
             },
             {
-                Icon: GamepadIcon,
-                title: "Game Mode",
-                description: "While you play, Discord redraws at 15 FPS and pauses its animations, so your game keeps more of your PC."
+                Icon: SparkleIcon,
+                title: "Plugins in Endcord's look",
+                description: "About 75 plugin windows open in Endcord's colors, and switches and settings move like a hand moved them."
             },
             {
-                Icon: BroadcastIcon,
-                title: "Streamer Shield",
-                description: "Blurs your DM list while Streamer Mode is on, and can turn it on when you share your screen."
+                Icon: SlidersIcon,
+                title: "CustomProfile",
+                description: "The whole shop is back, typing is quick again, and others see the creation date you pick."
+            },
+            {
+                Icon: AppsIcon,
+                title: "Downloads on GitHub",
+                description: "Installers come from Endcord's GitHub releases now, with a checksum for every file."
             }
         ]
     }

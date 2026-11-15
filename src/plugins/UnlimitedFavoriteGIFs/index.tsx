@@ -67,7 +67,7 @@ const settings = definePluginSettings({
 // Patch the addFavoriteGif function directly at runtime
 function applyRuntimePatch() {
     try {
-        const webpackReq = wreq ?? (window as any).Vencord?.Webpack?.wreq;
+        const webpackReq = wreq ?? (window as any).Endcord?.Webpack?.wreq;
         if (!webpackReq?.m) return false;
 
         for (const key of Object.keys(webpackReq.m)) {

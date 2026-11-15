@@ -155,7 +155,7 @@ export default definePlugin({
         },
         {
             // Exports the guildless server list item component used by the Quest button.
-            find: '="DOWNLOAD_APPS";function',
+            find: '="DOWNLOAD_APPS"',
             replacement: {
                 match: /(?<=\i\.\i\(\i,\{)(?=\i:\(\)=>\i.{0,30000}?let (\i)=function\(\i\)\{let\{ref:)/,
                 replace: "GuildlessServerListItemComponent:()=>$1,"
@@ -256,8 +256,8 @@ export default definePlugin({
                     replace: "||true"
                 },
                 {
-                    // QUESTS_FETCH_QUEST_TO_DELIVER_BEGIN
-                    match: /(?=let \i=Date\.now\(\)[;,](?:\i=)?\i\.recordQuestRequestAttempt.{0,90}QUESTS_FETCH_QUEST_TO_DELIVER_BEGIN)/,
+                    // QUESTS_FETCH_QUEST_TO_DELIVER_BEGIN. Discord's next update reads an optional third argument first
+                    match: /(?=let \i=(?:arguments\.length>2[^,;]{0,80},\i=)?Date\.now\(\)[;,](?:\i=)?\i\.recordQuestRequestAttempt.{0,90}QUESTS_FETCH_QUEST_TO_DELIVER_BEGIN)/,
                     replace: "return;"
                 }
             ]
@@ -458,13 +458,13 @@ export default definePlugin({
             predicate: () => !getQuestifySettings().disableQuestsEverything,
             replacement: [
                 {
-                    // Subscribes each Quest tile to Questify's manual rerender trigger.
-                    match: /(?=return\(0,\i\.\i\)\("article",\{id:)/,
+                    // Subscribes each Quest tile to Questify's manual rerender trigger. The tile may be wrapped in a Provider
+                    match: /(?=return\(0,\i\.\i\)\((?:\i(?:\.\i)?\.Provider,\{value:\i,children:\(0,\i\.\i\)\()?"article",\{id:)/,
                     replace: "void $self.useQuestRerender();"
                 },
                 {
                     // Adds Questify tile classes and inline CSS variables.
-                    match: /(?<=className:)(\i\(\)\(\i\.\i,\i\))(?=,onMouseEnter)/,
+                    match: /(?<=className:)(\i\(\)\(\i\.\i,\i(?:,\{[^{}]*\})?\))(?=,onMouseEnter)/,
                     replace: "$self.getQuestTileClasses($1,arguments[0].quest),style:$self.getQuestTileStyle(arguments[0].quest)"
                 },
                 {

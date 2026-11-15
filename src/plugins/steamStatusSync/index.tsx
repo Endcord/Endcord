@@ -84,7 +84,7 @@ export const settings = definePluginSettings({
 
 export default definePlugin({
     name: "SteamStatusSync",
-    description: "Sync your status to Steam! (Online, Away, Invisible, or Offline.)",
+    description: "Syncs your Discord status to Steam: Online, Away, Invisible or Offline.",
     tags: ["Activity", "Appearance", "Customisation"],
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
@@ -104,7 +104,7 @@ export default definePlugin({
                 }
                 if (steamStatus === SteamStatus.None) { return; }
 
-                // Open steam protocol URI for status change
+                // The status is changed through a steam:// link
                 open(`steam://friends/status/${steamStatus}`);
             }
         }

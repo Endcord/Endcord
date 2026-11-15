@@ -1,4 +1,4 @@
-/* What Endcord's own screens share, so they read as one product: the installer's colors and one way of moving */
+/* Shared by Endcord's screens: the installer's colors and one set of motion curves */
 :root {
     --ec-night: #10182a;
     --ec-panel: #162137;
@@ -18,19 +18,22 @@
     --ec-dots: radial-gradient(rgb(156 203 255 / 11%) 1px, transparent 1.4px);
     --ec-font-display: "Barlow", "Bahnschrift", "Segoe UI", system-ui, sans-serif;
 
-    /* Smooth corners. Pixel style swaps them for the installer's stepped ones, so a rule uses both and gets one */
+    /* Rounded corners; pixel style swaps them for the installer's stepped ones */
     --ec-pc: none;
     --ec-pc4: none;
     --ec-radius: 8px;
     --ec-radius-lg: 12px;
     --ec-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+    /* Overshoot easing for small interactive things: knobs, icons, presses */
+    --ec-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
     --ec-motion-fast: 140ms;
     --ec-motion-base: 260ms;
     --ec-motion-slow: 420ms;
 }
 
 :root[data-ec-pixel] {
-    /* Two steps per corner, like the installer's buttons. --ec-pc4 is the same with bigger steps, for big frames */
+    /* Stepped corners, two steps each, like the installer's buttons. --ec-pc4 has bigger steps, for large frames */
     --ec-pc: polygon(0 6px, 3px 6px, 3px 3px, 6px 3px, 6px 0, calc(100% - 6px) 0, calc(100% - 6px) 3px, calc(100% - 3px) 3px, calc(100% - 3px) 6px, 100% 6px, 100% calc(100% - 6px), calc(100% - 3px) calc(100% - 6px), calc(100% - 3px) calc(100% - 3px), calc(100% - 6px) calc(100% - 3px), calc(100% - 6px) 100%, 6px 100%, 6px calc(100% - 3px), 3px calc(100% - 3px), 3px calc(100% - 6px), 0 calc(100% - 6px));
     --ec-pc4: polygon(0 8px, 4px 8px, 4px 4px, 8px 4px, 8px 0, calc(100% - 8px) 0, calc(100% - 8px) 4px, calc(100% - 4px) 4px, calc(100% - 4px) 8px, 100% 8px, 100% calc(100% - 8px), calc(100% - 4px) calc(100% - 8px), calc(100% - 4px) calc(100% - 4px), calc(100% - 8px) calc(100% - 4px), calc(100% - 8px) 100%, 8px 100%, 8px calc(100% - 4px), 4px calc(100% - 4px), 4px calc(100% - 8px), 0 calc(100% - 8px));
     --ec-radius: 0px;
@@ -71,8 +74,8 @@
     color: var(--ec-ice);
 }
 
-/* Cards and tiles: the edge color sits behind a fill inset by one pixel, so the edge follows pixel corners too */
-.ec-theme :is(.vc-addon-card, .vc-card-normal, .vc-settings-quickActions-pill, .ec-security-root, .ec-diagnostics-tile, .ec-studio-preset, .vc-plugins-stat) {
+/* Cards and tiles: the border is a background behind a 1px-inset fill, so it follows pixel corners too */
+.ec-theme :is(.vc-addon-card, .vc-card-normal, .vc-settings-quickActions-pill, .ec-security-root, .ec-diagnostics-tile, .ec-studio-preset, .vc-plugins-stat, .ec-home-logo, .ec-home-action) {
     position: relative;
     isolation: isolate;
     border: 0;
@@ -81,7 +84,7 @@
     clip-path: var(--ec-pc);
 }
 
-.ec-theme :is(.vc-addon-card, .vc-card-normal, .vc-settings-quickActions-pill, .ec-security-root, .ec-diagnostics-tile, .ec-studio-preset, .vc-plugins-stat)::before {
+.ec-theme :is(.vc-addon-card, .vc-card-normal, .vc-settings-quickActions-pill, .ec-security-root, .ec-diagnostics-tile, .ec-studio-preset, .vc-plugins-stat, .ec-home-logo, .ec-home-action)::before {
     content: "";
     position: absolute;
     inset: 1px;
@@ -92,12 +95,12 @@
     transition: background-color var(--ec-motion-fast) ease;
 }
 
-.ec-theme :is(.vc-addon-card, .vc-settings-quickActions-pill, .ec-studio-preset, .vc-plugins-stat):hover {
+.ec-theme :is(.vc-addon-card, .vc-settings-quickActions-pill, .ec-studio-preset, .vc-plugins-stat, .ec-home-logo, .ec-home-action):hover {
     --ec-edge: var(--ec-line-strong);
     --ec-fill: var(--ec-panel-hi);
 }
 
-.ec-theme :is(.vc-settings-quickActions-pill, .ec-studio-preset, .vc-plugins-stat):focus-visible {
+.ec-theme :is(.vc-settings-quickActions-pill, .ec-studio-preset, .vc-plugins-stat, .ec-home-action):focus-visible {
     --ec-edge: var(--ec-ice);
 
     outline: none;
@@ -120,13 +123,13 @@
     rx: 0;
 }
 
-/* Discord's class names change with its builds, so these only hold on to the part that doesn't */
+/* Discord's class names carry build hashes, so these only match the stable prefix */
 [data-ec-pixel] .ec-theme[role="dialog"] > [class*="outerContainer_"] > [class*="container_"] {
     border-radius: 0;
     clip-path: var(--ec-pc4);
 }
 
-/* A bar. In pixel style it is made of blocks, like the installer's progress bar */
+/* Progress bar, split into blocks in pixel style like the installer's */
 .ec-pixel-meter {
     display: block;
     overflow: hidden;
@@ -155,7 +158,7 @@
     animation-timing-function: steps(12);
 }
 
-/* Endcord's icons come in both styles, and only one shows */
+/* Icons ship in both styles; only the active one is shown */
 :root:not([data-ec-pixel]) .ec-icon-pixel,
 [data-ec-pixel] .ec-icon-smooth {
     display: none;
@@ -168,6 +171,165 @@
     font-weight: 700;
     letter-spacing: 0.01em;
     line-height: 1.15;
+}
+
+/*
+ * Endcord's entries in Discord's settings sidebar share one hover highlight that slides between them (positioned
+ * by settings.tsx), in Endcord blue, and their icons get a spring. Discord's own entries keep Discord's hover
+ */
+.ec-glide {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: -1;
+    border-radius: var(--radius-sm, 8px);
+    background: color-mix(in srgb, var(--ec-cobalt) 18%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    transition:
+        transform var(--ec-motion-base) var(--ec-ease-out),
+        height var(--ec-motion-base) var(--ec-ease-out),
+        opacity var(--ec-motion-base) ease,
+        background-color var(--ec-motion-fast) ease;
+}
+
+[data-ec-pixel] .ec-glide {
+    border-radius: 0;
+    clip-path: var(--ec-pc);
+}
+
+.ec-side-lit {
+    opacity: 1;
+}
+
+[data-ec-side] > [role="link"]:not([aria-current="page"]):hover {
+    background-color: transparent;
+}
+
+.ec-side-icon {
+    display: contents;
+}
+
+.ec-side-icon > * {
+    transition: transform var(--ec-motion-slow) var(--ec-ease-spring);
+}
+
+[data-ec-side] > [role="link"]:hover .ec-side-icon > * {
+    transform: scale(1.12) rotate(-6deg);
+}
+
+[data-ec-side] > [role="link"]:active .ec-side-icon > * {
+    transform: scale(0.86);
+    transition-duration: var(--ec-motion-fast);
+}
+
+/*
+ * Modals (Endcord's own, and plugins' through EndcordModal) animate like the settings pages: staggered entrance and
+ * a press effect on buttons. Uses `scale` rather than `transform` so Discord's own button transforms aren't
+ * overridden. Delays are multiples of the motion duration, so reduced motion means no delay
+ */
+:where(.ec-modal-marker ~ *) {
+    animation: ec-modal-piece calc(var(--ec-motion-base) * 1.3) var(--ec-ease-out) backwards;
+}
+
+:where(.ec-modal-marker ~ :nth-child(3)) { animation-delay: calc(var(--ec-motion-base) * 0.08); }
+:where(.ec-modal-marker ~ :nth-child(4)) { animation-delay: calc(var(--ec-motion-base) * 0.16); }
+:where(.ec-modal-marker ~ :nth-child(5)) { animation-delay: calc(var(--ec-motion-base) * 0.24); }
+:where(.ec-modal-marker ~ :nth-child(6)) { animation-delay: calc(var(--ec-motion-base) * 0.32); }
+:where(.ec-modal-marker ~ :nth-child(n + 7)) { animation-delay: calc(var(--ec-motion-base) * 0.4); }
+
+@keyframes ec-modal-piece {
+    from {
+        opacity: 0;
+        translate: 0 8px;
+    }
+}
+
+/* Keep Discord's own color transitions in the list */
+.ec-theme[role="dialog"] :is([data-mana-component="button"], .vc-btn-base) {
+    transition:
+        background-color 0.17s ease,
+        color 0.17s ease,
+        border-color 0.17s ease,
+        box-shadow 0.17s ease,
+        scale var(--ec-motion-slow) var(--ec-ease-spring);
+}
+
+.ec-theme[role="dialog"] :is([data-mana-component="button"], .vc-btn-base):active:not(:disabled) {
+    scale: 0.95;
+    transition-duration: var(--ec-motion-fast);
+}
+
+/*
+ * Unstyled form fields inside Endcord modals get Endcord's field style instead of the browser defaults. :where()
+ * keeps specificity at zero, so any style a plugin gives its own fields still wins
+ */
+:where(.ec-theme[role="dialog"]) :where(input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="hidden"]), select, textarea):not([class]) {
+    box-sizing: border-box;
+    min-height: 34px;
+    padding: 7px 10px;
+    border: 1px solid var(--ec-line);
+    border-radius: var(--ec-radius);
+    background: var(--ec-night);
+    color: var(--ec-paper);
+    font: inherit;
+    font-size: 14px;
+    color-scheme: dark;
+    outline: none;
+    transition: border-color var(--ec-motion-fast) ease, background-color var(--ec-motion-fast) ease;
+}
+
+:where(.ec-theme[role="dialog"]) :where(input, select, textarea):not([class]):hover {
+    border-color: var(--ec-line-strong);
+}
+
+:where(.ec-theme[role="dialog"]) :where(input, select, textarea):not([class]):focus {
+    border-color: var(--ec-ice);
+}
+
+:where(.ec-theme[role="dialog"]) :where(input, textarea):not([class])::placeholder {
+    color: var(--ec-mist);
+    opacity: 0.7;
+}
+
+:where(.ec-theme[role="dialog"]) :where(button):not([class], [style]) {
+    min-height: 32px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: var(--ec-radius);
+    background: var(--ec-panel-hi);
+    color: var(--ec-paper);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color var(--ec-motion-fast) ease, scale var(--ec-motion-slow) var(--ec-ease-spring);
+}
+
+:where(.ec-theme[role="dialog"]) :where(button):not([class], [style]):hover {
+    background: var(--ec-line-strong);
+}
+
+:where(.ec-theme[role="dialog"]) :where(button):not([class], [style]):active {
+    scale: 0.95;
+    transition-duration: var(--ec-motion-fast);
+}
+
+:where(.ec-theme[role="dialog"]) input[type="file"]:not([class])::file-selector-button {
+    margin-right: 10px;
+    padding: 7px 14px;
+    border: 0;
+    border-radius: var(--ec-radius);
+    background: var(--ec-cobalt);
+    color: #fff;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.ec-theme :where(input[type="checkbox"], input[type="radio"], input[type="range"], progress) {
+    accent-color: var(--ec-cobalt);
 }
 
 @keyframes ec-meter-fill {

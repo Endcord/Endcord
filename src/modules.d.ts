@@ -18,7 +18,7 @@ declare module "~plugins" {
         /** Plugin folders this plugin imports code from; they are loaded together with it */
         loadsWith?: string[];
     }>;
-    export const ExcludedPlugins: Record<string, "web" | "discordDesktop" | "vesktop" | "desktop" | "dev">;
+    export const ExcludedPlugins: Record<string, "web" | "discordDesktop" | "endcordDesktop" | "desktop" | "dev">;
     /** Whether the plugin's module has been evaluated. Reading `plugins[name]` loads it. */
     export function isPluginLoaded(name: string): boolean;
     /** Reads `required` / `enabledByDefault` without loading a lazy plugin */

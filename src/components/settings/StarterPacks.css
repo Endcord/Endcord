@@ -4,7 +4,7 @@
     gap: 8px;
 }
 
-/* A plain row of text with a hairline edge; picking it lights the edge and tints the inside */
+/* Plain row with a 1px border; a selected row gets an accent border and a tint */
 .ec-packs-pack {
     display: flex;
     flex-direction: column;
@@ -41,7 +41,7 @@
     box-shadow: inset 0 0 0 1px var(--ec-cobalt-hi);
 }
 
-/* The recommended pack takes the whole first row, so it reads as the place to start */
+/* The recommended pack gets the whole first row */
 .ec-packs-recommended {
     grid-column: 1 / -1;
 }
@@ -77,7 +77,7 @@
     border-radius: 0;
 }
 
-/* A round mark that fills in when the pack is picked, and its check draws itself */
+/* Radio-style mark that fills in when selected; the check is drawn with a stroke animation */
 .ec-packs-check {
     display: grid;
     flex-shrink: 0;

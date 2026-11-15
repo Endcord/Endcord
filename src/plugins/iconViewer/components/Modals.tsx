@@ -6,6 +6,7 @@
 
 import { BaseText } from "@components/BaseText";
 import { CodeBlock } from "@components/CodeBlock";
+import { EndcordModal } from "@components/EndcordModal";
 import { Flex } from "@components/Flex";
 import { HeadingSecondary } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
@@ -17,20 +18,7 @@ import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import { saveFile } from "@utils/web";
 import { findComponentByCodeLazy } from "@webpack";
-import {
-    Clickable,
-    ContextMenuApi,
-    createRoot,
-    FluxDispatcher,
-    Menu,
-    Modal,
-    openModal,
-    ReactDOM,
-    useCallback,
-    useEffect,
-    useMemo,
-    useState
-} from "@webpack/common";
+import { Clickable, ContextMenuApi, createRoot, FluxDispatcher, Menu, openModal, ReactDOM, useCallback, useEffect, useMemo, useState } from "@webpack/common";
 
 const logger = new Logger("IconViewer");
 const BugIcon = findComponentByCodeLazy("1.1.27.1.37 0a6.66 6.6");
@@ -245,7 +233,7 @@ function IconModal({ iconName, Icon, onClose, transitionState }: { iconName: str
     };
 
     return (
-        <Modal
+        <EndcordModal
             transitionState={transitionState}
             onClose={onClose}
             size="md"
@@ -290,7 +278,7 @@ function IconModal({ iconName, Icon, onClose, transitionState }: { iconName: str
             <Clickable className="vc-ic-codeblock-wrapper" onClick={() => copyWithToast(findCode, "Copied!")}>
                 <CodeBlock content={findCode} lang="ts" />
             </Clickable>
-        </Modal>
+        </EndcordModal>
     );
 }
 

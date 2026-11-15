@@ -48,12 +48,11 @@ const settings = definePluginSettings({
   },
 });
 
-// Regex to detect Discord IDs (usually 17-19 digit numbers)
+// Snowflakes are 17-19 digits
 function createIdRegex(minLength: number, maxLength: number): RegExp {
   return new RegExp(`\\b\\d{${minLength},${maxLength}}\\b`, "g");
 }
 
-// Check if an ID corresponds to a user
 function isUserId(id: string): boolean {
   try {
     const user = UserStore.getUser(id);
@@ -63,7 +62,6 @@ function isUserId(id: string): boolean {
   }
 }
 
-// Check if an ID corresponds to a channel
 function isChannelId(id: string): boolean {
   try {
     const channel = ChannelStore.getChannel(id);
@@ -73,7 +71,7 @@ function isChannelId(id: string): boolean {
   }
 }
 
-// Check if an ID corresponds to a role (via current channel)
+// Roles are looked up in the current channel's server
 function isRoleId(id: string, channelId?: string): boolean {
   if (!channelId) return false;
   try {
@@ -83,24 +81,21 @@ function isRoleId(id: string, channelId?: string): boolean {
     const guild = GuildStore.getGuild(channel.guild_id);
     if (!guild) return false;
 
-    // Check if the role exists in the server
     return (guild as any).roles?.[id] !== undefined;
   } catch {
     return false;
   }
 }
 
-// Check if an ID is already in a Discord mention or URL
+// Already inside a mention or a URL?
 function isIdInContext(content: string, id: string, index: number): boolean {
-  // Check context before the ID
   const beforeStart = Math.max(0, index - 5);
   const before = content.substring(beforeStart, index);
 
-  // Check context after the ID
   const afterEnd = Math.min(content.length, index + id.length + 5);
   const after = content.substring(index + id.length, afterEnd);
 
-  // Ignore if ID is part of an existing Discord mention
+  // Part of a mention
   if (
     before.includes("<@") ||
     before.includes("<#") ||
@@ -109,12 +104,12 @@ function isIdInContext(content: string, id: string, index: number): boolean {
     return true;
   }
 
-  // Ignore if ID is part of a URL
+  // Part of a URL
   if (before.match(/[:/.]/) || after.match(/[:/.]/)) {
     return true;
   }
 
-  // Ignore if ID is preceded or followed by @ or #
+  // Right next to @ or #
   if (
     before.endsWith("@") ||
     before.endsWith("#") ||
@@ -127,7 +122,6 @@ function isIdInContext(content: string, id: string, index: number): boolean {
   return false;
 }
 
-// Main function to translate IDs to clickable mentions
 function translateIds(content: string, channelId?: string): string {
   if (!content) return content;
 
@@ -153,7 +147,6 @@ function translateIds(content: string, channelId?: string): string {
   let translatedContent = content;
   const processedIds = new Map<string, string>(); // ID -> replacement
 
-  // Find all IDs and determine their replacements
   let match;
   const idMatches: Array<{ id: string; index: number }> = [];
 
@@ -161,7 +154,6 @@ function translateIds(content: string, channelId?: string): string {
     const id = match[0];
     const { index } = match;
 
-    // Check if ID is in a special context
     if (isIdInContext(content, id, index)) {
       continue;
     }
@@ -171,7 +163,6 @@ function translateIds(content: string, channelId?: string): string {
       continue;
     }
 
-    // Determine ID type and appropriate replacement
     let replacement: string | null = null;
 
     if (translateUserIds && isUserId(id)) {
@@ -197,7 +188,7 @@ function translateIds(content: string, channelId?: string): string {
     }
   }
 
-  // Replace IDs from end to beginning to preserve indices
+  // Back to front, so the indices stay valid
   idMatches.reverse().forEach(({ id, index }) => {
     const replacement = processedIds.get(id);
     if (replacement) {
@@ -211,23 +202,20 @@ function translateIds(content: string, channelId?: string): string {
   return translatedContent;
 }
 
-// Function to modify incoming messages
 function modifyIncomingMessage(message: Message): string {
   if (!message.content) return message.content || "";
 
-  // Check if message comes from current user
   const currentUser = UserStore.getCurrentUser();
   const messageAuthor = message.author;
   const isOwnMessage =
     currentUser?.id && messageAuthor?.id && messageAuthor.id === currentUser.id;
 
-  // Don't modify current user's messages unless option is enabled
+  // Own messages only with that option on
   if (isOwnMessage && !settings.store.translateOwnMessages) {
     return message.content;
   }
 
-  // Don't modify messages that already contain Discord mentions
-  // to avoid duplicates (except if it's just a message link)
+  // Skip messages that already have mentions, so nothing is doubled (a lone message link is fine)
   if (message.content.includes("<@") || message.content.includes("<#")) {
     return message.content;
   }
@@ -242,7 +230,6 @@ export default definePlugin({
     tags: ["Chat", "Utility"],
   authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
   isModified: true,
-  testcordModified: true,
 
   settings,
   modifyIncomingMessage,

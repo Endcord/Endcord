@@ -16,5 +16,5 @@ files.forEach(f => {
         fs.writeFileSync(path.join(outDir, f + '.gz'), compressed);
     }
 });
-console.log('✅ Resources GZipped successfully (unmasked standard gzip)!');
+console.log('Gzipped the resources (standard gzip, level 9)');
 

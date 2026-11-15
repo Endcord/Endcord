@@ -48,20 +48,11 @@ export class ChannelStore extends FluxStore {
      * @returns Record keyed by channel ID.
      */
     getMutableGuildChannelsForGuild(guildId: string): Record<string, Channel>;
-    /**
-     * Gets all threads for a guild.
-     * @param guildId Guild ID to get threads for.
-     */
+    /** @param guildId Guild ID to get threads for. */
     getAllThreadsForGuild(guildId: string): Channel[];
-    /**
-     * Gets all threads under a parent channel.
-     * @param parentChannelId Parent channel ID.
-     */
+    /** Gets all threads under a parent channel. */
     getAllThreadsForParent(parentChannelId: string): Channel[];
-    /**
-     * Gets sorted linked channels for a guild, such as stage instances and events.
-     * @param guildId Guild ID.
-     */
+    /** Gets sorted linked channels for a guild, such as stage instances and events. */
     getSortedLinkedChannelsForGuild(guildId: string): Channel[];
 
     /**
@@ -70,10 +61,7 @@ export class ChannelStore extends FluxStore {
      * @returns Channel ID, not the channel object.
      */
     getDMFromUserId(userId: string): string | undefined;
-    /**
-     * Gets DM channel object for a user.
-     * @param userId User ID to get DM for.
-     */
+    /** @param userId User ID to get DM for. */
     getDMChannelFromUserId(userId: string): Channel | undefined;
     /** Gets all user IDs that have DM channels. */
     getDMUserIds(): string[];
@@ -90,10 +78,7 @@ export class ChannelStore extends FluxStore {
     /** Gets private channels sorted by last message. */
     getSortedPrivateChannels(): Channel[];
 
-    /**
-     * Gets version number for guild channels, incremented on changes.
-     * @param guildId Guild ID.
-     */
+    /** Gets version number for guild channels, incremented on changes. */
     getGuildChannelsVersion(guildId: string): number;
     /** Gets version number for private channels, incremented on changes. */
     getPrivateChannelsVersion(): number;

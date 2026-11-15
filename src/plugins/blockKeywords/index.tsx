@@ -175,8 +175,13 @@ export default definePlugin({
         if (blockedWordsList.length === 0) return;
 
         if (settings.store.useRegex) {
-            blockedKeywords = blockedWordsList.map(word => {
-                return new RegExp(word, caseSensitiveFlag);
+            // One pattern that doesn't parse must not stop the others from blocking (the Regex Helper shows which it is)
+            blockedKeywords = blockedWordsList.flatMap(word => {
+                try {
+                    return [new RegExp(word, caseSensitiveFlag)];
+                } catch {
+                    return [];
+                }
             });
         } else {
             blockedKeywords = blockedWordsList.map(word => {

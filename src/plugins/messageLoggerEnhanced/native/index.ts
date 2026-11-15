@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { readdir, readFile, unlink, writeFile } from "node:fs/promises";
+import { readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { DATA_DIR } from "@main/utils/constants";
@@ -34,16 +34,27 @@ export const getNativeSavedImages = () => nativeSavedImages;
 let logsDir: string;
 let imageCacheDir: string;
 
-const getImageCacheDir = async () => imageCacheDir ?? await getDefaultNativeImageDir();
-const getLogsDir = async () => logsDir ?? await getDefaultNativeDataDir();
+// Read on first use, not when the main process loads this: that ran for everyone with the plugin off too, wrote its
+// settings file, and started Node's thread pool for it
+let dirsRead: Promise<void> | undefined;
+export function initDirs() {
+    return dirsRead = (async () => {
+        const { logsDir: ld, imageCacheDir: icd } = await getSettings();
 
-export async function initDirs() {
-    const { logsDir: ld, imageCacheDir: icd } = await getSettings();
-
-    logsDir = ld || await getDefaultNativeDataDir();
-    imageCacheDir = icd || await getDefaultNativeImageDir();
+        logsDir = ld || await getDefaultNativeDataDir();
+        imageCacheDir = icd || await getDefaultNativeImageDir();
+    })();
 }
-initDirs();
+const readDirs = () => dirsRead ?? initDirs();
+
+async function getImageCacheDir() {
+    await readDirs();
+    return imageCacheDir;
+}
+async function getLogsDir() {
+    await readDirs();
+    return logsDir;
+}
 
 export async function init(_event: IpcMainInvokeEvent) {
     const imageDir = await getImageCacheDir();
@@ -66,13 +77,6 @@ export async function getImageNative(_event: IpcMainInvokeEvent, attachmentId: s
         console.error(error);
         return null;
     }
-}
-
-export async function deleteFileNative(_event: IpcMainInvokeEvent, attachmentId: string) {
-    const imagePath = nativeSavedImages.get(attachmentId);
-    if (!imagePath) return;
-
-    await unlink(imagePath);
 }
 
 export async function writeLogs(_event: IpcMainInvokeEvent, contents: string) {

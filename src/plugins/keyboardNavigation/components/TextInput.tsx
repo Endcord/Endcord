@@ -6,9 +6,10 @@
 
 import "./style.css";
 
+import { EndcordModal } from "@components/EndcordModal";
 import { RenderModalProps } from "@endcord/discord-types";
 import { t } from "@utils/i18n";
-import { closeAllModals, Modal,openModal, React, TextInput, useEffect, useState } from "@webpack/common";
+import { closeAllModals, openModal, React, TextInput, useEffect, useState } from "@webpack/common";
 
 interface SimpleTextInputProps {
     modalProps: RenderModalProps;
@@ -36,7 +37,7 @@ export function SimpleTextInput({ modalProps, onSelect, placeholder, info }: Sim
     }, []);
 
     return (
-        <Modal {...modalProps} size="sm" title={t("Text Input")}>
+        <EndcordModal {...modalProps} size="sm" title={t("Text Input")}>
             <div className="vc-command-palette-simple-text" onKeyDown={handleKeyDown}>
                 <TextInput
                     value={inputValue}
@@ -46,7 +47,7 @@ export function SimpleTextInput({ modalProps, onSelect, placeholder, info }: Sim
                 />
                 {info && <div className="vc-command-palette-textinfo">{info}</div>}
             </div>
-        </Modal>
+        </EndcordModal>
     );
 }
 

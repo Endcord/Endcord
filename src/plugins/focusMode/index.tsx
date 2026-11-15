@@ -10,12 +10,13 @@ import { addHeaderBarButton, HeaderBarButton, removeHeaderBarButton } from "@api
 import { DataStore } from "@api/index";
 import { definePluginSettings } from "@api/Settings";
 import { getUserSettingLazy } from "@api/UserSettings";
+import { EndcordModal } from "@components/EndcordModal";
 import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType } from "@utils/types";
 import { findByPropsLazy } from "@webpack";
-import { ChannelStore, FluxDispatcher, GuildStore, Modal, openModal, React, showToast, Toasts, UserGuildSettingsStore, useState } from "@webpack/common";
+import { ChannelStore, FluxDispatcher, GuildStore, openModal, React, showToast, Toasts, UserGuildSettingsStore, useState } from "@webpack/common";
 
 import { FocusPanel } from "./FocusPanel";
 
@@ -280,10 +281,10 @@ function HeaderButton() {
 
 export function openFocusPanel() {
     openModal(props => (
-        <Modal {...props} title={t("Focus Mode")} subtitle={t("Quiet Discord down with one switch, and get everything back the way it was.")} size="md"
+        <EndcordModal {...props} title={t("Focus Mode")} subtitle={t("Quiet Discord down with one switch, and get everything back the way it was.")} size="md"
             actions={[{ text: t("Done"), variant: "primary", onClick: props.onClose }]}>
             <FocusPanel />
-        </Modal>
+        </EndcordModal>
     ));
 }
 

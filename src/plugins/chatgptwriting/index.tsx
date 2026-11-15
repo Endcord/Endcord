@@ -16,7 +16,7 @@ import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 import { React } from "@webpack/common";
 
-// Kaomoji arrays for different tones
+// Kaomoji per tone
 const kaomojis: Record<string, string[]> = {
     happy: ["ヽ(´▽`)/", "<(￣︶￣)>", "o(≧▽≦)o", "(─‿‿─)♡", "(*≧ω≦*)"],
     sad: ["ಥ_ಥ", "(´・ω・`)", "(╥_╥)", "｡ﾟ･ (>﹏<) ･ﾟ｡", "(ノ_<。)"],
@@ -30,7 +30,7 @@ const kaomojis: Record<string, string[]> = {
     default: ["(◕‿◕)", "( ˘ᴗ˘ )", "(｡•̀ᴗ-)✧", "(*ᴗ͈ˬᴗ͈)", "( ˘◡˘ )"]
 };
 
-// Emoji arrays for different tones
+// Emoji per tone
 const emojis: Record<string, string[]> = {
     happy: ["😊", "😄", "🥰", "✨", "💕"],
     sad: ["😢", "💔", "😞", "🥺", "💧"],
@@ -44,7 +44,7 @@ const emojis: Record<string, string[]> = {
     default: ["✨", "👍", "❤️", "😊", "💫"]
 };
 
-// Simple word replacement dictionary for autocorrect
+// Autocorrect replacements
 const wordReplacements: Record<string, string> = {
     "teh": "the",
     "thier": "their",
@@ -94,7 +94,7 @@ const wordReplacements: Record<string, string> = {
     "gimme": "give me"
 };
 
-// Detect message tone based on keywords
+// Guess the tone from keywords
 function detectTone(content: string): string {
     const lowerContent = content.toLowerCase();
 

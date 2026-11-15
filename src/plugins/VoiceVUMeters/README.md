@@ -26,7 +26,7 @@ Screen share tiles meter the stream's own audio, never the streamer's microphone
 
 On 2026-10-01, two synthetic participants sent independently encoded, encrypted Opus packets through the actual installed native voice decoder in an isolated process. The left participant reached a left peak of 0.517 with a zero right peak. The right participant reached a right peak of 0.501 with a zero left peak. Connection-owned participant callbacks supplied 492 frames. This verifies the native decoder path, beyond injecting synthetic arrays into the meter.
 
-33 meter/identity/guard regression checks, native metric checks, bridge connection/decoder checks, targeted lint and full Desktop and Equibop builds passed. Both builds retain the current guard sources and their recovery helpers. The bridge and all three plugins loaded successfully in Discord with no matching startup warnings or errors. A live friend's transmitted hard-pan test and a visual peak-marker inspection were not performed. The maintainer previously confirmed their own live Ableton hard pan.
+33 meter/identity/guard regression checks, native metric checks, bridge connection/decoder checks, targeted lint and full Discord Desktop and Endcord Desktop builds passed. Both builds retain the current guard sources and their recovery helpers. The bridge and all three plugins loaded successfully in Discord with no matching startup warnings or errors. A live friend's transmitted hard-pan test and a visual peak-marker inspection were not performed. The maintainer previously confirmed their own live Ableton hard pan.
 
 ## Rollback
 

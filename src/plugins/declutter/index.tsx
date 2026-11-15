@@ -334,7 +334,7 @@ export default definePlugin({
             ],
         },
         {
-            // ? Another button tooltips
+            // More button tooltips
             find: "#{intl::USER_SETTINGS_WITH_BUILD_OVERRIDE}",
             replacement: {
                 match: /tooltipText:\i,tooltipPositionKey/,

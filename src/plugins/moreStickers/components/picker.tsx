@@ -4,12 +4,13 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { EndcordModal } from "@components/EndcordModal";
 import { PickerContent, PickerContentHeader, PickerContentRow, PickerContentRowGrid, PickerHeaderProps, SidebarProps, Sticker, StickerCategoryType, StickerPack } from "@plugins/moreStickers/types";
 import { sendSticker } from "@plugins/moreStickers/upload";
 import { clPicker, FFmpegStateContext } from "@plugins/moreStickers/utils";
 import { debounce } from "@shared/debounce";
 import { t } from "@utils/i18n";
-import { Modal,openModal, React, TextInput } from "@webpack/common";
+import { openModal, React, TextInput } from "@webpack/common";
 import { JSX } from "react";
 
 import { CategoryImage, CategoryScroller, CategoryWrapper, StickerCategory } from "./categories";
@@ -71,9 +72,9 @@ export const PickerSidebar = ({ packMetas, onPackSelect }: SidebarProps) => {
                     onClick={() => {
                         openModal(modalProps => {
                             return (
-                                <Modal size="lg" title={t("Stickers+")} {...modalProps}>
+                                <EndcordModal size="lg" title={t("Stickers+")} {...modalProps}>
                                     <Packs />
-                                </Modal>
+                                </EndcordModal>
                             );
                         });
                     }}

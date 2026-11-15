@@ -17,7 +17,7 @@ import { findCssClassesLazy, findStoreLazy } from "@webpack";
 import { Clickable, ContextMenuApi, FluxDispatcher, Menu, React } from "@webpack/common";
 
 import { contextMenus } from "./components/contextMenu";
-import { openCategoryModal, requireSettingsModal } from "./components/CreateCategoryModal";
+import { openCategoryModal } from "./components/CreateCategoryModal";
 import { DEFAULT_CHUNK_SIZE } from "./constants";
 import { canMoveCategory, canMoveCategoryInDirection, Category, categoryLen, collapseCategory, getAllUncollapsedChannels, getCategoryByIndex, getSections, init, isPinned, moveCategory, removeCategory, usePinnedDms } from "./data";
 
@@ -127,7 +127,6 @@ export default definePlugin({
             ]
         },
 
-
         // forceUpdate moment
         // https://regex101.com/r/kDN9fO/1
         {
@@ -177,7 +176,6 @@ export default definePlugin({
     categoryLen,
     getSections,
     getAllUncollapsedChannels,
-    requireSettingsMenu: requireSettingsModal,
 
     makeProps(instance, { sections }: { sections: number[]; }) {
         this._instance = instance;
@@ -308,7 +306,6 @@ export default definePlugin({
                                 label={t("Delete Category")}
                                 action={() => removeCategory(category.id)}
                             />
-
 
                         </Menu.Menu>
                     ));

@@ -103,7 +103,6 @@ export interface ApplicationCommandIndexResult {
 export interface ApplicationCommandIndexState {
     /** Server version symbol for staleness detection. */
     serverVersion: symbol;
-    /** Current fetch state. */
     fetchState: ApplicationCommandIndexFetchState;
     /** Fetched result, if available. */
     result?: ApplicationCommandIndexResult;
@@ -117,7 +116,6 @@ export interface ApplicationCommandSection {
     commands: Record<string, ApplicationCommand>;
 }
 
-/** Descriptor for a command section. */
 export interface ApplicationCommandSectionDescriptor {
     /** Section ID, typically the application ID or a special value like "-1" for built-in. */
     id: string;
@@ -147,7 +145,6 @@ export interface ApplicationCommandPermission {
     permission: boolean;
 }
 
-/** Option for an application command. */
 export interface ApplicationCommandOption {
     /** Option type. */
     type: ApplicationCommandOptionType;
@@ -183,7 +180,6 @@ export interface ApplicationCommandOption {
     autocomplete?: boolean;
 }
 
-/** Choice for a command option. */
 export interface ApplicationCommandOptionChoice {
     /** Choice name. */
     name: string;
@@ -229,11 +225,9 @@ export interface ApplicationCommand {
     untranslatedName: string;
     /** Localized command name from server. Bot commands only. */
     serverLocalizedName?: string;
-    /** Application ID. */
     applicationId: string;
     /** Command type. */
     type: ApplicationCommandType;
-    /** Input type. */
     inputType: ApplicationCommandInputType;
     /** Original untranslated description. */
     untranslatedDescription: string;
@@ -307,7 +301,6 @@ export interface ApplicationCommandQueryOptions {
     allowApplicationState?: boolean;
     /** Specific application ID to query. */
     applicationId?: string;
-    /** Sorting options. */
     sortOptions?: ApplicationCommandSortOptions;
     /** Whether to include install-on-demand apps. */
     installOnDemand?: boolean;
@@ -329,7 +322,6 @@ export interface ApplicationCommandSortConfig {
     useScore: boolean;
 }
 
-/** Result of a command query. */
 export interface ApplicationCommandQueryResult {
     /** All section descriptors. */
     descriptors: ApplicationCommandSectionDescriptor[];
@@ -354,9 +346,7 @@ export interface ApplicationCommandSectionInfo {
     descriptor?: ApplicationCommandSectionDescriptor;
     /** Commands in this section. */
     sectionCommands?: ApplicationCommand[];
-    /** Whether installed in a guild. */
     isGuildInstalled: boolean;
-    /** Whether installed for user. */
     isUserInstalled: boolean;
 }
 
@@ -383,7 +373,6 @@ export class ApplicationCommandIndexStore extends FluxStore {
 
     /**
      * Gets the command index state for a guild.
-     * @param guildId Guild ID.
      * @returns Index state for the guild.
      */
     getGuildState(guildId: string): ApplicationCommandIndexState;
@@ -396,14 +385,12 @@ export class ApplicationCommandIndexStore extends FluxStore {
 
     /**
      * Checks if an application has commands in the user state.
-     * @param applicationId Application ID.
      * @returns Whether the application has user commands.
      */
     hasUserStateApplication(applicationId: string): boolean;
 
     /**
      * Gets the command index state for a specific application.
-     * @param applicationId Application ID.
      * @returns Index state for the application.
      */
     getApplicationState(applicationId: string): ApplicationCommandIndexState;
@@ -416,7 +403,6 @@ export class ApplicationCommandIndexStore extends FluxStore {
 
     /**
      * Checks if an application state exists.
-     * @param applicationId Application ID.
      * @returns Whether the application state exists.
      */
     hasApplicationState(applicationId: string): boolean;
@@ -434,10 +420,6 @@ export class ApplicationCommandIndexStore extends FluxStore {
         options: ApplicationCommandQueryOptions
     ): ApplicationCommandQueryResult;
 
-    /**
-     * Queries for install-on-demand app commands.
-     * @param applicationId Application ID.
-     * @param channelId Channel ID.
-     */
+    /** Queries for install-on-demand app commands. */
     queryInstallOnDemandApp(applicationId: string, channelId: string): void;
 }

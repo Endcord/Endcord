@@ -8,6 +8,7 @@ import { generateId } from "@api/Commands";
 import { Settings } from "@api/Settings";
 import { Button } from "@components/Button";
 import { Card } from "@components/Card";
+import { EndcordModal } from "@components/EndcordModal";
 import { HeadingPrimary } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
 import { User } from "@endcord/discord-types";
@@ -15,7 +16,7 @@ import type { Theme, ThemeLikeProps } from "@plugins/themeLibrary/types";
 import { useI18n } from "@utils/i18n";
 import { proxyLazy } from "@utils/lazy";
 import { Margins } from "@utils/margins";
-import { FluxDispatcher, Modal, openModal, Parser, React, UserStore, UserUtils } from "@webpack/common";
+import { FluxDispatcher, openModal, Parser, React, UserStore, UserUtils } from "@webpack/common";
 import { Constructor } from "type-fest";
 
 import { LikesComponent } from "./LikesComponent";
@@ -66,7 +67,7 @@ export const ThemeCard: React.FC<ThemeCardProps> = ({ theme, themeLinks, likedTh
 
         if (requiresThemeAttributes && !Settings.plugins.ThemeAttributes.enabled) {
             openModal(modalProps => (
-                <Modal
+                <EndcordModal
                     {...modalProps}
                     size="sm"
                     title={t("Hold on!")}
@@ -91,7 +92,7 @@ export const ThemeCard: React.FC<ThemeCardProps> = ({ theme, themeLinks, likedTh
                         <p>{t("This theme requires the ThemeAttributes plugin to work properly!")}</p>
                         <p>{t("Do you want to enable it?")}</p>
                     </Paragraph>
-                </Modal>
+                </EndcordModal>
             ));
         } else {
             handleAddRemoveTheme();

@@ -10,7 +10,7 @@ import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 import { moment, useEffect, useReducer } from "@webpack/common";
 
-// ─── Settings ────────────────────────────────────────────────────────────────
+// ---- Settings ----
 
 const settings = definePluginSettings({
     format: {
@@ -34,7 +34,7 @@ const settings = definePluginSettings({
     },
 });
 
-// ─── Shared global tick — one interval for all timestamps ────────────────────
+// ---- One shared 1s tick for every timestamp ----
 
 let tickInterval: ReturnType<typeof setInterval> | null = null;
 let tickVersion = 0;
@@ -65,20 +65,17 @@ function subscribeTick(callback: () => void): () => void {
     return () => { tickListeners.delete(callback); };
 }
 
-// ─── Hook that re-renders on the global tick ─────────────────────────────────
+// ---- Hook that re-renders on the tick ----
 
 function useGlobalTick() {
     const [, forceUpdate] = useReducer((n: number) => n + 1, 0);
     useEffect(() => { return subscribeTick(forceUpdate); }, []);
 }
 
-// ─── Renderers called by the patches ─────────────────────────────────────────
+// ---- Renderers the patches call ----
 
-// Formatted output is identical for every timestamp that lands in the same
-// second with the same settings, so cache by second + the settings that affect
-// the string. On a busy guild this turns N moment().format() calls per tick
-// into one per unique second, while keeping the same string return type the
-// patch sites depend on. Bounded so it can't grow without limit.
+// Cached by second and by the settings that affect the string: on a busy server that's one moment().format() per
+// distinct second instead of one per timestamp on every tick. Size-capped.
 const formatCache = new Map<string, string>();
 const FORMAT_CACHE_MAX = 512;
 
@@ -152,7 +149,7 @@ function renderTimestamp(input: unknown, type: "cozy" | "compact" | "tooltip"): 
     return formatCached(date, type, fmt);
 }
 
-// ─── Plugin ──────────────────────────────────────────────────────────────────
+// ---- Plugin ----
 
 export default definePlugin({
     name: "RealtimeTimestamps",
@@ -165,13 +162,13 @@ export default definePlugin({
     renderTimestamp,
 
     patches: [
-        // ─── Main Timestamp component (cozy + compact messages + hover tooltip) ─
+        // ---- Timestamp component (cozy and compact messages, hover tooltip) ----
         {
             find: "#{intl::MESSAGE_EDITED_TIMESTAMP_A11Y_LABEL}",
             predicate: () => !isPluginEnabled("CustomTimestamps"),
             replacement: [
                 {
-                    // Subscribe component to the 1s tick
+                    // Re-render on the tick
                     match: /(?<=\.memo\(function\(\i\)\{)/,
                     replace: "$self.useGlobalTick();",
                 },
@@ -188,7 +185,7 @@ export default definePlugin({
             ],
         },
 
-        // ─── Timestamp markdown <t:unix:t> — hover tooltip ────────────────────
+        // ---- <t:unix:t> markdown, hover tooltip ----
         {
             find: ".full,ariaHidden:!0",
             predicate: () => !isPluginEnabled("CustomTimestamps"),

@@ -6,6 +6,7 @@
 
 import { BaseText } from "@components/BaseText";
 import { Button } from "@components/Button";
+import { EndcordModal } from "@components/EndcordModal";
 import { Flex } from "@components/Flex";
 import { InfoIcon } from "@components/Icons";
 import { Channel, RenderModalProps, type User } from "@endcord/discord-types";
@@ -18,7 +19,7 @@ import { copyWithToast, openUserProfile } from "@utils/discord";
 import { t } from "@utils/i18n";
 import { LazyComponent } from "@utils/react";
 import { find, findByCodeLazy } from "@webpack";
-import { Alerts, ChannelStore, closeAllModals, ContextMenuApi, FluxDispatcher, GuildStore, Menu, Modal, NavigationRouter, openModal, React, TabBar, TextInput, Tooltip, useMemo, useRef, useState } from "@webpack/common";
+import { Alerts, ChannelStore, closeAllModals, ContextMenuApi, FluxDispatcher, GuildStore, Menu, NavigationRouter, openModal, React, TabBar, TextInput, Tooltip, useMemo, useRef, useState } from "@webpack/common";
 
 import { useMessages } from "./hooks";
 
@@ -56,7 +57,7 @@ export function LogsModal({ modalProps, initalQuery }: Props) {
     const { messages, total, statusTotal, pending, reset } = useMessages(queryEh, currentTab, sortNewest, numDisplayedMessages);
 
     return (
-        <Modal
+        <EndcordModal
             {...modalProps}
             size="lg"
             title={
@@ -167,7 +168,7 @@ export function LogsModal({ modalProps, initalQuery }: Props) {
                     </div>
                 }
             </div>
-        </Modal>
+        </EndcordModal>
     );
 }
 

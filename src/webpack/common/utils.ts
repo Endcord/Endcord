@@ -95,8 +95,10 @@ interface ToastsExports {
     popToast(): void;
 }
 
-const ToastsExports = mapMangledModuleLazy(".currentToastMap.has(", {
-    showToast: filters.byCode(".currentToastMap.has("),
+// A small store since Discord's November 14 update: showToast shows a toast or queues it behind the one shown (and
+// replaces a queued one with the same toastKey), popToast takes the shown one off
+const ToastsExports = mapMangledModuleLazy("queuedToastsMap:new Map", {
+    showToast: filters.byCode("toastKey"),
     popToast: filters.byCode(".delete(")
 });
 

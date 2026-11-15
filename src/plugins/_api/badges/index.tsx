@@ -21,7 +21,8 @@ import type { ReactElement } from "react";
 import { CONTRIBUTOR_ICON, DEVELOPER_ICON } from "./badgeArt";
 import { openBadgeDetails } from "./BadgeDetails";
 import { renderBadgeHoverCard } from "./BadgeHoverCard";
-import { describeDiscordBadge, learnBadges, loadLearnedBadges, rememberProfileBadges, requestCatalog } from "./discordBadges";
+import { describeDiscordBadge, getProfileBadges, learnBadges, loadLearnedBadges, rememberProfileBadges, requestCatalog } from "./discordBadges";
+import { startSupporterBadges, stopSupporterBadges, supporterBadgesOf } from "./supporterBadges";
 
 let DonorBadges = {} as Record<string, Array<Record<"tooltip" | "badge", string>>>;
 const withOwner = new WeakMap<object, any>();
@@ -84,12 +85,38 @@ function endcordBadge(id: string, icon: string, title: string, flavor: string, t
     };
 }
 
-// The people who make Endcord, and everyone who has helped build it. There are only a handful of each, so both sit
-// above anything Discord gives out
+// Endcord developer and contributor badges. Only a handful of people have either, so both rank above Discord's
+// rarest
 const DeveloperBadge = endcordBadge("endcord_developer", DEVELOPER_ICON, "Endcord Developer", "Makes Endcord",
     () => t("Given to the people who make Endcord. {count} people have it.", { count: EndcordDeveloperIds.length }), isEndcordDeveloper);
 const ContributorBadge = endcordBadge("endcord_contributor", CONTRIBUTOR_ICON, "Endcord Contributor", "Helped build Endcord",
     () => t("Given to the people who helped build Endcord. {count} people have it.", { count: Object.keys(DevsById).length }), isPluginDev);
+
+// Badges people who support Endcord picked for themselves, from the list the team approves (see ./supporterBadges)
+const SupporterBadge: ProfileBadge = {
+    id: "endcord_supporter",
+    position: BadgePosition.START,
+    shouldShow: ({ userId }) => supporterBadgesOf(userId).length > 0,
+    getBadges: ({ userId }) => supporterBadgesOf(userId).map((supporter, index) => {
+        const badge: ProfileBadge = {
+            id: `endcord_supporter_${index}`,
+            description: supporter.name,
+            title: supporter.name,
+            body: t("Endcord Supporter"),
+            rarity: BadgeRarity.EPIC,
+            iconSrc: supporter.icon,
+            details: {
+                flavor: t("Supports Endcord"),
+                era: "Endcord",
+                label: t("Endcord Badge"),
+                text: t("Given to the people who support Endcord on Ko-fi. Each one picks their own badge."),
+                notice: t("Only people who use Endcord can see this badge.")
+            }
+        };
+        badge.onContextMenu = (event, user) => ContextMenuApi.openContextMenu(event, () => <BadgeContextMenu badge={{ ...badge, ...user }} />);
+        return badge;
+    })
+};
 
 export default definePlugin({
     name: "BadgeAPI",
@@ -127,6 +154,12 @@ export default definePlugin({
                     match: /(\i)\.preventDefault\(\),\(0,\i\.openBadgeDirectoryModal\)\(\{initialBadgeId:\(0,\i\.\i\)\((\i)\.id\),targetUserId:(\i)\?\.userId.{0,80}?\}\);return\}/,
                     replace: "$&if($self.openDiscordBadgePage($2,$3?.userId,$1))return;"
                 },
+                // With Discord's badge pages on, a profile shows six badges and "+N" opens Discord's page, which only
+                // lists the badges Discord's servers know: the rest, Endcord's among them, were nowhere to be seen
+                {
+                    match: /(\i)>0&&\(\i\?.{0,160}?onClick:function\(\)\{(?=let \i=null!=(\i))/,
+                    replace: "$&if($self.openAllBadges($2,$1))return;"
+                },
                 // Path with 2026-04-badge-discovery OFF
                 {
                     match: /(?<=forceOpen:.{0,40}?ariaHidden:!0,)children:(?=.{0,50}?(\i)\.id)/,
@@ -157,12 +190,16 @@ export default definePlugin({
     start() {
         addProfileBadge(DeveloperBadge);
         addProfileBadge(ContributorBadge);
+        addProfileBadge(SupporterBadge);
+        startSupporterBadges();
         loadLearnedBadges().catch(e => new Logger("BadgeAPI").error("Couldn't load the badges Discord described before", e));
     },
 
     stop() {
         removeProfileBadge(DeveloperBadge);
         removeProfileBadge(ContributorBadge);
+        removeProfileBadge(SupporterBadge);
+        stopSupporterBadges();
     },
 
     flux: {
@@ -255,6 +292,19 @@ export default definePlugin({
             return true;
         } catch (e) {
             new Logger("BadgeAPI#openDiscordBadgePage").error(e);
+            return false;
+        }
+    },
+
+    /** Opens Endcord's badge window, which lists every badge of the profile, on the first one the row left out */
+    openAllBadges(userId: string | undefined, hiddenCount: number) {
+        try {
+            const badges = getProfileBadges(userId);
+            if (!badges?.length) return false;
+
+            openBadgeDetails({ ...badges[badges.length - hiddenCount] ?? badges[0], userId });
+            return true;
+        } catch {
             return false;
         }
     },

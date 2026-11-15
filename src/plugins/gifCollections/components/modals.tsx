@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { EndcordModal } from "@components/EndcordModal";
 import { Flex } from "@components/Flex";
 import { Heading } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
@@ -14,7 +15,7 @@ import { cache_collections, createCollection, getItemCollectionNameFromId, moveG
 import { cl, stripPrefix } from "@plugins/gifCollections/utils/misc";
 import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
-import { Button, FluxDispatcher, Modal, openModal, TextInput, useCallback, useState } from "@webpack/common";
+import { Button, FluxDispatcher, openModal, TextInput, useCallback, useState } from "@webpack/common";
 
 export function openCollectionInfoModal(collection: Collection) {
     openModal(props => (
@@ -51,7 +52,7 @@ export function openRenameCollectionModal(name: string) {
 
 function InfoModal({ props, title, rows }: { props: RenderModalProps; title: string; rows: { label: string; value: string; }[]; }) {
     return (
-        <Modal
+        <EndcordModal
             {...props}
             size="sm"
             title={title}
@@ -67,13 +68,13 @@ function InfoModal({ props, title, rows }: { props: RenderModalProps; title: str
                     </Flex>
                 ))}
             </section>
-        </Modal>
+        </EndcordModal>
     );
 }
 
 function MoveToCollectionModal({ props, gifId }: { props: RenderModalProps; gifId: string; }) {
     return (
-        <Modal
+        <EndcordModal
             {...props}
             size="sm"
             title={t("Move To Collection")}
@@ -102,7 +103,7 @@ function MoveToCollectionModal({ props, gifId }: { props: RenderModalProps; gifI
                         </Button>
                     ))}
             </div>
-        </Modal>
+        </EndcordModal>
     );
 }
 
@@ -116,7 +117,7 @@ function CreateCollectionModal({ props, gif }: { props: RenderModalProps; gif: G
     }, [name, gif, props]);
 
     return (
-        <Modal
+        <EndcordModal
             {...props}
             size="sm"
             title={t("Create Collection")}
@@ -128,7 +129,7 @@ function CreateCollectionModal({ props, gif }: { props: RenderModalProps; gif: G
                 <Heading className={cl("rename-text")}>{t("Collection Name")}</Heading>
                 <TextInput onChange={setName} />
             </form>
-        </Modal>
+        </EndcordModal>
     );
 }
 
@@ -146,7 +147,7 @@ function RenameCollectionModal({ props, name }: { props: RenderModalProps; name:
     }, [newName, name, tooLong, props]);
 
     return (
-        <Modal
+        <EndcordModal
             {...props}
             size="sm"
             title={t("Rename Collection")}
@@ -159,6 +160,6 @@ function RenameCollectionModal({ props, name }: { props: RenderModalProps; name:
                 <TextInput value={newName} className={classes(cl("rename-input"), tooLong ? cl("input-warning") : "")} onChange={setNewName} />
                 {tooLong && <Paragraph className={cl("warning-text")}>{t("Name can't be longer than 24 characters")}</Paragraph>}
             </form>
-        </Modal>
+        </EndcordModal>
     );
 }

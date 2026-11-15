@@ -1,7 +1,6 @@
 /* Community stylesheet: its class names (BEM "--modifier") and rule order are kept as written. */
 /* stylelint-disable selector-class-pattern, no-duplicate-selectors, no-descending-specificity */
 
-/* ── Export DM Plugin ── */
 
 .edm-content {
     padding: 14px 16px 16px;
@@ -10,7 +9,7 @@
     gap: 12px;
 }
 
-/* ── Barre de recherche ── */
+/* Search bar */
 .edm-search-bar {
     display: flex;
     align-items: center;
@@ -55,7 +54,7 @@
     color: rgb(255 255 255 / 80%);
 }
 
-/* ── Labels ── */
+/* Labels */
 .edm-label {
     margin: 0 !important;
     font-size: 11px !important;
@@ -65,7 +64,7 @@
     color: rgb(255 255 255 / 50%) !important;
 }
 
-/* ── Liste conversations ── */
+/* Conversation list */
 .edm-channel-list {
     display: flex;
     flex-direction: column;
@@ -98,7 +97,7 @@
     border-radius: 6px;
     cursor: pointer;
     border: 1.5px solid transparent;
-    transition: all 0.1s;
+    transition: background-color var(--ec-motion-fast) ease;
     background: rgb(255 255 255 / 4%);
 }
 
@@ -119,7 +118,7 @@
     flex-shrink: 0;
 }
 
-/* Avatar placeholder (lettre) quand pas d'image */
+/* Letter placeholder when there's no avatar */
 .edm-avatar-placeholder {
     width: 28px;
     height: 28px;
@@ -151,7 +150,7 @@
     flex-shrink: 0;
 }
 
-/* ── Options ── */
+/* Options */
 .edm-options-row {
     display: flex;
     gap: 14px;
@@ -179,7 +178,7 @@
     cursor: pointer;
 }
 
-/* ── Formats ── */
+/* Formats */
 .edm-format-row {
     display: flex;
     gap: 6px;
@@ -198,7 +197,7 @@
     flex-direction: column;
     align-items: center;
     gap: 2px;
-    transition: all 0.1s;
+    transition: border-color var(--ec-motion-fast) ease, background-color var(--ec-motion-fast) ease;
 }
 
 .edm-format-btn:hover {
@@ -223,7 +222,7 @@
     text-align: center;
 }
 
-/* ── Status ── */
+/* Status */
 .edm-status {
     padding: 8px 12px;
     border-radius: 6px;
@@ -232,21 +231,21 @@
 
 .edm-status--fetching {
     background: rgb(250 166 26 / 12%);
-    color: #faa61a;
+    color: var(--status-warning);
 
 }
 
 .edm-status--done {
     background: rgb(59 165 92 / 12%);
-    color: #3ba55c;
+    color: var(--status-positive);
 }
 
 .edm-status--error {
     background: rgb(237 66 69 / 12%);
-    color: #ed4245;
+    color: var(--status-danger);
 }
 
-/* ── Bouton export ── */
+/* Export button */
 .edm-export-btn {
     background: var(--brand-500, #5865f2);
     color: #fff;

@@ -23,7 +23,7 @@ export function getBrokenPlugins() {
     return [...patchProblems.keys()].filter(name => isPluginEnabled(name)).sort();
 }
 
-/** Once per new set of broken plugins, usually right after Discord updates, so it's news and not a nag */
+/** Notifies once per new set of broken plugins (usually right after a Discord update), so it doesn't nag */
 export function watchPluginHealth() {
     setTimeout(async () => {
         const broken = getBrokenPlugins();

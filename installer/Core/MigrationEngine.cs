@@ -104,7 +104,7 @@ namespace EndcordInstaller.Core
         };
 
         /// <summary>
-        /// Builds a full inspection & preview plan of what can and cannot be migrated from a detected client.
+        /// What can and can't be brought over from a detected client, for the preview screen.
         /// </summary>
         public static MigrationPlan Analyze(DetectedClient client)
         {
@@ -192,7 +192,7 @@ namespace EndcordInstaller.Core
                             bool enabled = pObj != null && pObj.GetBool("enabled", false);
                             int optCount = pObj != null ? Math.Max(0, pObj.Count - 1) : 0;
 
-                            // Skip disabled plugins with no custom options to keep preview clean & meaningful
+                            // A disabled plugin with nothing customized has nothing to bring over
                             if (!enabled && optCount == 0) continue;
 
                             bool ok = KnownPlugins.IsSupported(pkv.Key);
@@ -335,7 +335,7 @@ namespace EndcordInstaller.Core
         }
 
         /// <summary>
-        /// Creates a timestamped backup of Endcord's current settings/themes and a safety snapshot of the source client's settings.
+        /// Backs up Endcord's settings and themes, with a copy of the other client's settings next to them, in a timestamped folder.
         /// </summary>
         public static BackupSnapshot CreateBackup(InstallerPaths paths, string sourceModName, string reason, CancellationToken ct)
         {
@@ -433,8 +433,8 @@ namespace EndcordInstaller.Core
         }
 
         /// <summary>
-        /// Executes the migration plan safely: backs up existing Endcord settings and source snapshot first,
-        /// merges compatible settings/plugins/themes/QuickCSS, and automatically rolls back if any write fails.
+        /// Runs the plan: backs up first, merges settings, plugins, themes and QuickCSS,
+        /// and puts everything back if any write fails.
         /// </summary>
         public static MigrationResult Execute(InstallerPaths paths, MigrationPlan plan, CancellationToken ct)
         {
@@ -614,7 +614,7 @@ namespace EndcordInstaller.Core
         }
 
         /// <summary>
-        /// Resets Endcord settings to a clean slate while preserving a full backup first.
+        /// Resets Endcord's settings, after taking a full backup.
         /// </summary>
         public static BackupSnapshot StartFresh(InstallerPaths paths, CancellationToken ct)
         {

@@ -260,10 +260,7 @@ export interface DisambiguatedEmojiContext {
      * @param name Emoji name to look up.
      */
     getByName(name: string): Emoji | undefined;
-    /**
-     * Gets an emoticon by name.
-     * @param name Emoticon name to look up.
-     */
+    /** @param name Emoticon name to look up. */
     getEmoticonByName(name: string): Emoticon | undefined;
     /**
      * Gets an emoji by id.
@@ -294,20 +291,14 @@ export interface DisambiguatedEmojiContext {
         favorites: Emoji[];
         favoriteNamesAndIds: Set<string>;
     };
-    /**
-     * Gets emojis in priority order (favorites, frequent, top) without fetching.
-     * @returns Array of emojis in priority order.
-     */
+    /** Gets emojis in priority order (favorites, frequent, top) without fetching. */
     getEmojiInPriorityOrderWithoutFetchingLatest(): Emoji[];
     /**
      * Gets top emojis for a guild without triggering a fetch.
      * @param guildId Guild id to get top emojis for.
      */
     getTopEmojiWithoutFetchingLatest(guildId: string): Emoji[];
-    /**
-     * Gets newly added emojis for a specific guild.
-     * @param guildId Guild id.
-     */
+    /** Gets newly added emojis for a specific guild. */
     getNewlyAddedEmojiForGuild(guildId: string): CustomEmoji[];
     /** Gets escaped custom emoticon names for regex matching. */
     getEscapedCustomEmoticonNames(): string;
@@ -318,9 +309,6 @@ export interface DisambiguatedEmojiContext {
     nameMatchesChain(name: string): boolean;
 }
 
-/**
- * Search options for emoji search.
- */
 export interface EmojiSearchOptions {
     /** Channel context for permission checks. */
     channel: Channel;
@@ -384,13 +372,11 @@ export class EmojiStore extends FluxStore {
     get loadState(): LoadState;
 
     /**
-     * Gets a custom emoji by its id.
      * @param id Emoji id to look up.
      * @returns The custom emoji if found.
      */
     getCustomEmojiById(id?: string | null): CustomEmoji | undefined;
     /**
-     * Gets a usable custom emoji by its id.
      * @param id Emoji id to look up.
      * @returns The custom emoji if found and usable by current user.
      */

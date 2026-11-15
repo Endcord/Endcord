@@ -1,10 +1,24 @@
 # Endcord
 
-Endcord is a desktop client mod for Discord. It loads with the official app and adds plugins, themes, and a settings panel inside Discord.
+Endcord is a client mod for Discord. It loads with the official app and adds plugins, themes, and a settings panel inside Discord.
 
 Endcord is a fork of [Vencord](https://github.com/Vendicated/Vencord)
 
 [Website](https://endcord.com) · [Download](https://endcord.com/download) · [Discord](https://discord.gg/endcord)
+
+## Platforms
+
+| Platform | What Endcord runs in | How to get it |
+|---|---|---|
+| Windows 10 and 11 | Discord's desktop app: Stable, PTB and Canary | `EndcordInstaller.exe` |
+| macOS | Discord, PTB or Canary in Applications | `install.sh`, or the installer app `EndcordInstaller-macOS.zip` |
+| Linux | Discord's official `.deb`, `.tar.gz` and Flatpak (Stable, PTB, Canary); not Snap | `install.sh` |
+| Browser | Discord on the web (discord.com, PTB, Canary) in Chrome, Edge, Brave, Opera and other Chromium browsers | The extension `EndcordWeb.zip`. Firefox isn't supported yet: Mozilla hasn't signed the extension |
+| Endcord Desktop (Windows 10 and 11, 64-bit) | Endcord's own app around Discord's web app, no Discord app needed | From [Endcord/EndcordDesktop](https://github.com/Endcord/EndcordDesktop) |
+| Android 9 or newer | A separate Endcord app built from the Discord on the phone, no root | Endcord Installer (`.apk`), from [Endcord/endcord-mobile](https://github.com/Endcord/endcord-mobile) |
+| iOS and iPadOS 16 or newer | Discord with Endcord inside, sideloaded, no jailbreak | `Endcord.ipa`, from [Endcord/endcord-mobile](https://github.com/Endcord/endcord-mobile) |
+
+Every download is on [endcord.com/download](https://endcord.com/download); the files themselves are on this repository's [latest release](https://github.com/Endcord/Endcord/releases/latest). This repository is the mod for Discord's desktop app and the browser. Endcord Desktop is developed and released in [Endcord/EndcordDesktop](https://github.com/Endcord/EndcordDesktop), and the phone apps in [Endcord/endcord-mobile](https://github.com/Endcord/endcord-mobile). A userscript for Tampermonkey can be built from this repository (`pnpm buildWeb` writes `dist/Endcord.user.js`), but isn't published.
 
 ## Install
 
@@ -14,8 +28,8 @@ Close Discord completely before installing, then open it again when the installe
 
 Windows 10 and 11. Stable, PTB, and Canary.
 
-1. Download [EndcordInstaller.exe](https://endcord.com/EndcordInstaller.exe).
-2. If the browser blocks the file, use [EndcordInstaller.zip](https://endcord.com/EndcordInstaller.zip) instead. It contains the same installer.
+1. Download [EndcordInstaller.exe](https://github.com/Endcord/Endcord/releases/latest/download/EndcordInstaller.exe).
+2. If the browser blocks the file, use [EndcordInstaller.zip](https://github.com/Endcord/Endcord/releases/latest/download/EndcordInstaller.zip) instead. It contains the same installer.
 3. Run the installer and start Discord.
 
 ### macOS and Linux
@@ -30,7 +44,17 @@ sh -c "$(curl -fsSL https://endcord.com/install.sh)"
 
 The installer downloads Endcord, checks every file against the release checksums, and patches the Discord installs you pick.
 
-On macOS, the first run may stop with "macOS blocked the change". Open **System Settings > Privacy & Security > App Management**, turn on Terminal, reopen Terminal, and run the command again. When Discord updates itself on macOS, run the installer again and choose **Repair Endcord**.
+On macOS, the first run may stop with "macOS blocked the change". Open **System Settings > Privacy & Security > App Management**, turn on Terminal, reopen Terminal, and run the command again. When Discord updates itself on macOS, run the installer again and choose **Repair Endcord**. If you'd rather not use Terminal, download [EndcordInstaller-macOS.zip](https://github.com/Endcord/Endcord/releases/latest/download/EndcordInstaller-macOS.zip), unzip it and open Endcord Installer.
+
+### Browser
+
+1. Download [EndcordWeb.zip](https://github.com/Endcord/Endcord/releases/latest/download/EndcordWeb.zip) and unzip it into a folder you keep.
+2. Open `chrome://extensions` (`edge://extensions`, `brave://extensions`) and turn on Developer mode.
+3. Click **Load unpacked**, choose the folder, and reload discord.com.
+
+### Android and iOS
+
+See [endcord.com/download](https://endcord.com/download#mobile) and [Endcord/endcord-mobile](https://github.com/Endcord/endcord-mobile).
 
 ## Uninstall
 
@@ -75,17 +99,7 @@ Medians of 6 cold launches each, default settings, same Discord Stable build, In
 
 ## Endcord Desktop
 
-Endcord's own app: Discord in an Endcord window of its own, with every Endcord plugin, setting and theme, and no Discord desktop app to patch. It's for when Discord's desktop app is no longer the Electron one mods can load into. It runs Discord's web app, the one in your browser, and Discord sees it as that. Like any client mod it's against Discord's terms, the same as the mod itself.
-
-- A tray icon, closing to the tray, and starting with Windows (all in the tray menu)
-- Unread mentions on the taskbar, notifications, and spell-checked text fields with cut, copy and paste
-- Screen sharing with Endcord's own picker. The computer's sound can go along, without your call's voices
-- Updates from Endcord's signed releases, the same way the mod gets them
-- Your Endcord settings and themes come along on its first start, as a copy
-
-Download `EndcordDesktop-win32-x64.zip` from [endcord.com/download](https://endcord.com/download), unzip it anywhere you like, and run `EndcordDesktop.exe`. It adds itself to the Start menu. To build it yourself: `pnpm buildDesktopApp`, which puts it in `dist/EndcordDesktop-<platform>-<arch>`. Windows is what it's tested on; the same build runs on Linux and macOS but hasn't been tried there yet.
-
-Not there yet: push to talk while Discord is in the background, and showing the game you play.
+Endcord also has an app of its own: Discord in an Endcord window, with every Endcord plugin, setting and theme, and no Discord desktop app to patch. It has its own repository, [Endcord/EndcordDesktop](https://github.com/Endcord/EndcordDesktop), where it's released and where its issues go. This repository builds the Endcord the app loads (the `endcordDesktop` build), the way it builds the mod.
 
 ## Credits
 

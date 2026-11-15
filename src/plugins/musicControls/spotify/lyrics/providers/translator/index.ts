@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import settings from "@plugins/musicControls";
+import { settings } from "@plugins/musicControls/settings";
 import { Provider, SyncedLyric } from "@plugins/musicControls/spotify/lyrics/providers/types";
 
 // stolen from src/plugins/translate/utils.ts
@@ -102,7 +102,7 @@ async function processLyrics(
 }
 
 async function translateLyrics(lyrics: SyncedLyric[]) {
-    return await processLyrics(lyrics, settings.store.TranslateTo, false);
+    return await processLyrics(lyrics, settings.store.translateTo, false);
 }
 
 async function romanizeLyrics(lyrics: SyncedLyric[]) {

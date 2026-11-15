@@ -4,11 +4,12 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { EndcordModal } from "@components/EndcordModal";
 import { Heading } from "@components/Heading";
 import { RenderModalProps } from "@endcord/discord-types";
 import { buildEmbed, decrypt } from "@plugins/invisibleChat.desktop/index";
 import { t } from "@utils/i18n";
-import { Modal, openModal, React, TextInput } from "@webpack/common";
+import { openModal, React, TextInput } from "@webpack/common";
 
 export function DecModal(props: RenderModalProps & { message: any; }) {
     const encryptedMessage: string = props?.message?.content;
@@ -22,7 +23,7 @@ export function DecModal(props: RenderModalProps & { message: any; }) {
     };
 
     return (
-        <Modal
+        <EndcordModal
             {...props}
             size="sm"
             title={t("Decrypt Message")}
@@ -46,7 +47,7 @@ export function DecModal(props: RenderModalProps & { message: any; }) {
                 style={{ marginBottom: "20px" }}
                 onChange={setPassword}
             />
-        </Modal>
+        </EndcordModal>
     );
 }
 

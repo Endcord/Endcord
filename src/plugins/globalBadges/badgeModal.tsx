@@ -4,13 +4,14 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { EndcordModal } from "@components/EndcordModal";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { HeadingTertiary } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
 import { RenderModalProps, User } from "@endcord/discord-types";
 import { openInviteModal } from "@utils/discord";
 import { t } from "@utils/i18n";
-import { Modal, openModal, React, Tooltip } from "@webpack/common";
+import { openModal, React, Tooltip } from "@webpack/common";
 
 import { cl, GlobalBadges, INVITE_LINK } from "./utils";
 
@@ -37,7 +38,7 @@ export function openBadgeModal(user: User) {
     ));
 
     openModal((modalprops: RenderModalProps) => (
-        <Modal
+        <EndcordModal
             {...modalprops}
             size="sm"
             title={
@@ -77,6 +78,6 @@ export function openBadgeModal(user: User) {
                     )}
                 </div>
             </ErrorBoundary>
-        </Modal>
+        </EndcordModal>
     ));
 }

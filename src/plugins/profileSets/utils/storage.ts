@@ -40,8 +40,12 @@ function getLegacyKey(userId: string) {
 
 export async function loadPresets(section: PresetSection) {
     try {
-        const currentUser = UserStore.getCurrentUser();
-        const userId = currentUser.id;
+        // Presets belong to an account; with nobody signed in yet there are none to show
+        const userId = UserStore.getCurrentUser()?.id;
+        if (!userId) {
+            resetPresets();
+            return;
+        }
         const key = getPresetsKey(section, userId);
         activeScopeKey = key;
         const stored = await DataStore.get(key);
@@ -75,8 +79,8 @@ export async function loadPresets(section: PresetSection) {
 export async function savePresetsData(section?: PresetSection) {
     try {
         if (!activeScopeKey && !section) return;
-        const currentUser = UserStore.getCurrentUser();
-        const userId = currentUser.id;
+        const userId = UserStore.getCurrentUser()?.id;
+        if (!userId) return;
         const key = section ? getPresetsKey(section, userId) : activeScopeKey!;
         await DataStore.set(key, presets);
     } catch (err) {

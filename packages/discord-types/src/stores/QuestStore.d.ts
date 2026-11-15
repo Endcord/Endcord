@@ -66,7 +66,6 @@ interface QuestTaskBase {
     target: number;
 }
 
-/** Play on desktop quest task. */
 export interface QuestTaskPlayOnDesktop extends QuestTaskBase {
     type: QuestTaskType.PLAY_ON_DESKTOP;
     /** Applications that qualify for completion. */
@@ -79,7 +78,6 @@ export interface QuestTaskPlayOnDesktopV2 extends QuestTaskBase {
     applications: QuestTaskApplication[];
 }
 
-/** Stream on desktop quest task. */
 export interface QuestTaskStreamOnDesktop extends QuestTaskBase {
     type: QuestTaskType.STREAM_ON_DESKTOP;
     applications: QuestTaskApplication[];
@@ -91,7 +89,6 @@ export interface QuestTaskPlayActivity extends QuestTaskBase {
     applications: QuestTaskApplication[];
 }
 
-/** Play on Xbox quest task. */
 export interface QuestTaskPlayOnXbox extends QuestTaskBase {
     type: QuestTaskType.PLAY_ON_XBOX;
     /** Xbox title IDs. */
@@ -99,7 +96,6 @@ export interface QuestTaskPlayOnXbox extends QuestTaskBase {
     applications: QuestTaskApplication[];
 }
 
-/** Play on PlayStation quest task. */
 export interface QuestTaskPlayOnPlayStation extends QuestTaskBase {
     type: QuestTaskType.PLAY_ON_PLAYSTATION;
     /** PlayStation title IDs (e.g., "PPSA09016_00"). */
@@ -114,14 +110,12 @@ export interface QuestTaskWatchVideo extends QuestTaskBase {
     messages: QuestTaskVideoMessages;
 }
 
-/** Watch video quest task for mobile. */
 export interface QuestTaskWatchVideoOnMobile extends QuestTaskBase {
     type: QuestTaskType.WATCH_VIDEO_ON_MOBILE;
     assets: QuestTaskVideoAssets;
     messages: QuestTaskVideoMessages;
 }
 
-/** Achievement in game quest task. */
 export interface QuestTaskAchievementInGame extends QuestTaskBase {
     type: QuestTaskType.ACHIEVEMENT_IN_GAME;
     /** Event name dispatched when achievement is unlocked. */
@@ -281,7 +275,6 @@ export interface QuestColors {
 export interface QuestMessages {
     /** Quest display name. */
     questName: string;
-    /** Game title. */
     gameTitle: string;
     /** Game publisher name. */
     gamePublisher: string;
@@ -476,7 +469,6 @@ export interface QuestAdDecision {
 
 /** Stream heartbeat failure tracking. Updated via QUESTS_SEND_HEARTBEAT_FAILURE. */
 export interface StreamHeartbeatFailure {
-    /** Quest ID. */
     questId: string;
     /** Stream identifier. */
     streamKey: string;
@@ -494,7 +486,6 @@ export interface QuestHomeTakeoverAsset {
     url: string;
 }
 
-/** Sponsor CTA for quest home takeover. */
 export interface QuestHomeTakeoverCtaSponsor {
     ctaType: string;
     title: string;
@@ -502,7 +493,6 @@ export interface QuestHomeTakeoverCtaSponsor {
     url: string;
 }
 
-/** Quest CTA for quest home takeover. */
 export interface QuestHomeTakeoverCtaQuest {
     ctaType: string;
     title: string;
@@ -547,7 +537,6 @@ export interface QuestClaimedRewardCode {
 
 /** Entitlement item from reward claim. */
 export interface QuestEntitlementItem {
-    /** SKU ID. */
     skuId: string;
     /** Metadata containing reward details. */
     tenantMetadata: {
@@ -623,7 +612,6 @@ export interface QuestTaskDetails {
 /** Third-party task details for external quests. */
 export interface QuestThirdPartyTaskDetails {
     description: string;
-    /** Current progress value. */
     progress: number;
     /** Target completion value. */
     target: number;
@@ -673,13 +661,10 @@ export class QuestStore extends FluxStore {
     /** Quest configs keyed by quest ID. */
     get questConfigs(): Map<string, QuestConfig>;
 
-    /** Whether fetching preview for a quest. */
     isFetchingQuestPreview(questId: string): boolean;
 
-    /** Whether fetching quest to deliver for a placement. */
     isFetchingQuestToDeliverByPlacement(placement: QuestPlacement): boolean;
 
-    /** Gets preview fetch error for a quest. */
     getFetchQuestPreviewError(questId: string): QuestErrorType | undefined;
 
     /** Whether user is currently enrolling in a quest. Set via QUESTS_ENROLL_BEGIN. */

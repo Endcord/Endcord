@@ -4,14 +4,16 @@
 
     "name": "Endcord Web",
     "description": "Endcord for Discord in your browser: plugins, themes and a settings panel right inside Discord.",
-    "author": "rootpoii",
+    "author": "rootpoi",
     "homepage_url": "https://endcord.com",
     "icons": {
         "128": "icon.png"
     },
 
     "host_permissions": [
-        "*://*.discord.com/*",
+        "https://discord.com/*",
+        "https://ptb.discord.com/*",
+        "https://canary.discord.com/*",
         "https://raw.githubusercontent.com/*"
     ],
 
@@ -20,14 +22,14 @@
     "content_scripts": [
         {
             "run_at": "document_start",
-            "matches": ["*://*.discord.com/*"],
+            "matches": ["https://discord.com/*", "https://ptb.discord.com/*", "https://canary.discord.com/*"],
             "js": ["content.js"],
             "all_frames": true,
             "world": "ISOLATED"
         },
         {
             "run_at": "document_start",
-            "matches": ["*://*.discord.com/*"],
+            "matches": ["https://discord.com/*", "https://ptb.discord.com/*", "https://canary.discord.com/*"],
             "js": ["dist/Endcord.js"],
             "all_frames": true,
             "world": "MAIN"
@@ -37,7 +39,7 @@
     "web_accessible_resources": [
         {
             "resources": ["dist/*", "vendor/*"],
-            "matches": ["*://*.discord.com/*"]
+            "matches": ["https://discord.com/*", "https://ptb.discord.com/*", "https://canary.discord.com/*"]
         }
     ],
 

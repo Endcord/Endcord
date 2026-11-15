@@ -11,7 +11,7 @@ import definePlugin from "@utils/types";
 
 export default definePlugin({
     name: "PlainFolderIcon",
-    description: "Dont show the small guild icons in folders",
+    description: "Shows server folders as a plain folder icon, without the small server icons inside.",
     tags: ["Appearance", "Customisation"],
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 

@@ -22,13 +22,28 @@ import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Message } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
-import { getStegCloak } from "@utils/dependencies";
 import { t } from "@utils/i18n";
+import { makeLazy } from "@utils/lazy";
 import definePlugin, { OptionType, ReporterTestable } from "@utils/types";
 import { ChannelStore, Constants, RestAPI, Tooltip } from "@webpack/common";
 
 import { buildDecModal } from "./components/DecryptionModal";
 import { buildEncModal } from "./components/EncryptionModal";
+
+const STEGCLOAK_URL = "https://cdn.jsdelivr.net/npm/stegcloak-dist@1.0.0/index.js";
+const STEGCLOAK_INTEGRITY = "sha384-CkxsGOrVOB9pknx+Aiufw/WWaCg9jCBLj5yLOG236zUdUCG9VA5nPpHnnJagFAmO";
+
+// StegCloak handles the passwords and the hidden text, and it runs inside Discord's page. The browser checks the
+// download against the hash above before any of it runs, so a CDN that served something else would be refused
+const getStegCloak = makeLazy(async () => {
+    const response = await fetch(STEGCLOAK_URL, { integrity: STEGCLOAK_INTEGRITY });
+    const url = URL.createObjectURL(new Blob([await response.blob()], { type: "text/javascript" }));
+    try {
+        return await import(url);
+    } finally {
+        URL.revokeObjectURL(url);
+    }
+});
 
 let steggo: any;
 
@@ -148,7 +163,7 @@ export async function buildEmbed(message: any, revealed: string): Promise<void> 
 
 export default definePlugin({
     name: "InvisibleChat",
-    description: "Encrypt your Messages in a non-suspicious way!",
+    description: "Hides encrypted text inside messages that look ordinary.",
     tags: ["Chat"],
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     dependencies: ["MessageUpdaterAPI", "ChatInputButtonAPI", "MessagePopoverAPI"],

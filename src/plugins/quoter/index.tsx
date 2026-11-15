@@ -5,13 +5,14 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
+import { EndcordModal } from "@components/EndcordModal";
 import { FormSwitch } from "@components/FormSwitch";
 import { Message, RenderModalProps } from "@endcord/discord-types";
 import { Devs } from "@utils/constants";
 import { getCurrentChannel } from "@utils/discord";
 import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
-import { IconUtils, Menu, Modal, openModal, TextInput, UploadHandler, useEffect, useState } from "@webpack/common";
+import { IconUtils, Menu, openModal, TextInput, UploadHandler, useEffect, useState } from "@webpack/common";
 
 import { QuoteIcon } from "./components/QuoteIcon";
 import { QuoteFont } from "./types";
@@ -166,7 +167,7 @@ function QuoteModal({ message, ...props }: RenderModalProps & { message: Message
     };
 
     return (
-        <Modal
+        <EndcordModal
             {...props}
             size="md"
             title={t("Catch Them In 4K.")}
@@ -208,6 +209,6 @@ function QuoteModal({ message, ...props }: RenderModalProps & { message: Message
                     />
                 </div>
             )}
-        </Modal>
+        </EndcordModal>
     );
 }

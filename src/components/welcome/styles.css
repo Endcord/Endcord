@@ -1,6 +1,6 @@
 /*
- * The first thing a new Endcord user sees, right after the installer, so it is drawn the same way: flat night blue,
- * the dot grid, Barlow headings, ice for what's picked and cobalt for the way on. No glows and no gradients
+ * Welcome screen. It's the first thing after the installer, so it uses the same style: flat night blue, the dot
+ * grid, Barlow headings, ice for the selection and cobalt for the primary button. No glows, no gradients
  */
 .ec-welcome-root {
     --ec-spring: cubic-bezier(0.34, 1.45, 0.64, 1);
@@ -18,8 +18,8 @@
 }
 
 /*
- * The darker layer over Discord, which fades out while a look is picked. With the root's own tint it dims Discord to
- * about three quarters. No backdrop blur: on a big window it cost a dropped frame on every step change
+ * Dimming layer over Discord, faded out on the theme step. With the root's own tint it dims Discord to about 75%.
+ * No backdrop-filter: on a large window it dropped a frame on every step change
  */
 .ec-welcome-root::before {
     content: "";
@@ -29,12 +29,12 @@
     transition: opacity calc(520ms * var(--ec-wm, 1)) var(--ec-ease-out);
 }
 
-/* While a look is picked, Discord shows through, since it's what changes */
+/* Theme step: let Discord show through so the preview is visible */
 .ec-welcome-root-see-through::before {
     opacity: 0;
 }
 
-/* Out of the way while Theme Studio is open */
+/* Hidden while Theme Studio is open */
 .ec-welcome-away {
     opacity: 0;
     pointer-events: none;
@@ -58,7 +58,7 @@
     animation: ec-welcome-rise calc(620ms * var(--ec-wm, 1)) var(--ec-ease-out) backwards;
 }
 
-/* The installer's dot grid, behind the top of the card and gone by the middle */
+/* The installer's dot grid, fading out toward the middle of the card */
 .ec-welcome-card::before {
     content: "";
     position: absolute;
@@ -98,7 +98,7 @@
     letter-spacing: 0.01em;
 }
 
-/* The steps, as the installer's tabs: names in a row, and an ice line under the current one */
+/* Step indicator, like the installer's tabs */
 .ec-welcome-steps {
     position: relative;
     display: flex;
@@ -126,7 +126,7 @@
     color: var(--ec-paper);
 }
 
-/* A step already taken can be gone back to */
+/* Completed steps can be clicked to go back */
 .ec-welcome-step-back {
     padding: 0;
     background: none;
@@ -141,7 +141,7 @@
     color: var(--ec-paper);
 }
 
-/* One pixel wide, stretched to the step's width, so moving it is only a transform */
+/* 1px wide and scaled to the step's width, so moving it only needs a transform */
 .ec-welcome-steps-line {
     position: absolute;
     bottom: 0;
@@ -173,15 +173,15 @@
 }
 
 /*
- * What's on a screen arrives in reading order, a beat apart. The markup gives each part its place (--ec-i); a group
- * can start later (--ec-base) or closer together (--ec-gap). Backwards only, so presses and hovers keep their transforms
+ * Staggered entrance in reading order. Each element sets its index (--ec-i); a group can start later (--ec-base)
+ * or use tighter spacing (--ec-gap). fill-mode backwards, so :hover and :active transforms still work afterwards
  */
 .ec-welcome-in {
     animation: ec-welcome-item calc(460ms * var(--ec-wm, 1)) var(--ec-ease-out) backwards;
     animation-delay: calc((var(--ec-base, 40ms) + var(--ec-i, 0) * var(--ec-gap, 45ms)) * var(--ec-wm, 1));
 }
 
-/* Hello: the panda asleep on the card, as on the installer's last screen, and what this is, centred under it */
+/* Hello screen: the sleeping panda (as on the installer's last screen) with the intro text centred below */
 .ec-welcome-hello {
     --ec-base: 300ms;
     --ec-gap: 70ms;
@@ -216,12 +216,12 @@
     transform-origin: 50% 100%;
 }
 
-/* Each wake-up squashes and stretches it once */
+/* Squash and stretch on wake-up */
 .ec-welcome-stage-awake .ec-welcome-panda {
     animation: ec-welcome-wake calc(640ms * var(--ec-wm, 1)) var(--ec-spring);
 }
 
-/* The z's of a sleeping panda, drifting up off it until it wakes */
+/* Floating z's while it sleeps */
 .ec-welcome-zz {
     position: absolute;
     bottom: 92px;
@@ -273,7 +273,7 @@
     line-height: 1.55;
 }
 
-/* A plain line of facts, in the code font, with the installer's square dots between them */
+/* Facts line in the mono font, separated by the installer's square dots */
 .ec-welcome-meta {
     display: flex;
     flex-wrap: wrap;
@@ -322,7 +322,7 @@
     gap: 14px 10px;
 }
 
-/* A look is its little window and its name; picking it rings the window */
+/* Theme option: thumbnail and name; the selected one gets an outline */
 .ec-welcome-look {
     display: flex;
     flex-direction: column;
@@ -359,7 +359,7 @@
     color: var(--ec-paper);
 }
 
-/* As specific as the hover above and after it, so a picked look keeps its ring under the pointer */
+/* Same specificity as the hover rule and placed after it, so the selected outline survives hover */
 .ec-welcome-look.ec-welcome-look-on .ec-look-window {
     box-shadow: 0 0 0 2px var(--ec-ice);
     animation: ec-welcome-snap calc(380ms * var(--ec-wm, 1)) var(--ec-spring);
@@ -379,7 +379,7 @@
     font-weight: 600;
 }
 
-/* Settings under the looks, as plain rows between hairlines */
+/* Settings below the themes: plain rows with 1px dividers */
 .ec-welcome-row {
     display: flex;
     align-items: center;
@@ -415,7 +415,7 @@ label.ec-welcome-row {
     line-height: 1.4;
 }
 
-/* The packs, drawn like the Discords in the installer's list: the recommended one across the top, the rest in two columns */
+/* Starter packs, like the installer's Discord list: the recommended one on its own row, the rest in two columns */
 .ec-welcome-packs {
     --ec-base: 80ms;
     --ec-gap: 30ms;
@@ -474,7 +474,7 @@ label.ec-welcome-row {
     transform: none;
 }
 
-/* The installer's check: an outlined square that fills with ice, and the tick drawing itself in */
+/* Installer-style checkbox: an outlined square that fills in, with the tick drawn by a stroke animation */
 .ec-welcome-box {
     display: grid;
     place-items: center;
@@ -535,7 +535,7 @@ label.ec-welcome-row {
     letter-spacing: 0.01em;
 }
 
-/* A status tag with its square, like "Has Endcord" in the installer */
+/* Status tag with a square, like "Has Endcord" in the installer */
 .ec-welcome-tag {
     display: inline-flex;
     align-items: center;
@@ -567,7 +567,7 @@ label.ec-welcome-row {
     white-space: nowrap;
 }
 
-/* Ready: how many plugins are on, counted up, with the panda hopping in beside it */
+/* Ready screen: the enabled plugin count (animated) and the panda hopping in */
 .ec-welcome-done-head {
     display: flex;
     align-items: flex-start;
@@ -685,7 +685,7 @@ label.ec-welcome-row {
     border-top: 1px solid color-mix(in srgb, var(--ec-line) 60%, transparent);
 }
 
-/* Its words line up with the text above, and its hover still has room around them */
+/* Negative margin so the text lines up with the paragraph above while the hover background keeps its padding */
 .ec-welcome-skip {
     margin: 0 auto 0 -14px;
     padding: 0 14px;
@@ -741,7 +741,7 @@ label.ec-welcome-row {
     transform: translateX(3px);
 }
 
-/* Wide enough that the label can change to the progress without the button changing size */
+/* Fixed width, so swapping the label for the progress text doesn't resize the button */
 .ec-welcome-primary-wide {
     min-width: 200px;
 }
@@ -751,7 +751,7 @@ label.ec-welcome-row {
     font-variant-numeric: tabular-nums;
 }
 
-/* While plugins turn on, the button fills up from the left */
+/* Progress fill while the plugins are being enabled */
 .ec-welcome-busy-fill {
     position: absolute;
     inset: 0;
@@ -820,7 +820,7 @@ label.ec-welcome-row {
     outline-offset: 2px;
 }
 
-/* The way on has the focus from the start, but shows it only once the keyboard is used */
+/* The primary button has focus from the start, but the focus ring only shows after keyboard use */
 .ec-welcome-root:not([data-keys]) :is(button, label):focus-visible {
     outline: none;
 }
@@ -845,7 +845,7 @@ label.ec-welcome-row {
     }
 }
 
-/* Reduced motion: every duration and delay here is multiplied by this, so things still change but don't move */
+/* Reduced motion: every duration and delay in here is multiplied by this */
 .reduce-motion .ec-welcome-root {
     --ec-wm: 0;
 }

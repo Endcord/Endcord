@@ -5,6 +5,7 @@
  */
 
 import { BaseText } from "@components/BaseText";
+import { EndcordModal } from "@components/EndcordModal";
 import { Heading } from "@components/Heading";
 import { Guild, RenderModalProps } from "@endcord/discord-types";
 import { HiddenServersStore } from "@plugins/hideServers/HiddenServersStore";
@@ -13,7 +14,7 @@ import { getGuildAcronym } from "@utils/discord";
 import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
 import { findCssClassesLazy } from "@webpack";
-import { Button, closeModal, IconUtils, Modal, openModal, SortedGuildStore, useStateFromStores } from "@webpack/common";
+import { Button, closeModal, IconUtils, openModal, SortedGuildStore, useStateFromStores } from "@webpack/common";
 
 const cl = classNameFactory("vc-hideservers-");
 const IconClasses = findCssClassesLazy("icon", "acronym", "childWrapper");
@@ -21,9 +22,9 @@ const IconClasses = findCssClassesLazy("icon", "acronym", "childWrapper");
 function HiddenServersModal({ modalProps, close }: { modalProps: RenderModalProps; close(): void; }) {
     const guilds = useStateFromStores([HiddenServersStore], () => HiddenServersStore.hiddenGuildsDetail());
     return (
-        <Modal {...modalProps} size="lg" title={t("Hidden Servers")}>
+        <EndcordModal {...modalProps} size="lg" title={t("Hidden Servers")}>
             <HiddenServersMenu guilds={guilds} />
-        </Modal>
+        </EndcordModal>
     );
 }
 

@@ -30,4 +30,4 @@ ExtensionCache/
 /settings
 
 # Benchmark screenshots show the account that ran it; they stay local
-benchmark/results/screens/
+benchmark/*/screens/

@@ -446,8 +446,19 @@ function runFactoryWithWrap(patchedFactory: PatchedModuleFactory, thisArg: unkno
             throw err;
         }
 
-        logger.error("Error in patched module factory:\n", err);
+        // Discord's own code runs instead. When that throws as well, the patches were never the cause (a desktop-only
+        // module in a browser, or one whose chunk didn't load), so its error goes on as Discord's. It gets fresh exports:
+        // the getters the patched run put there read that run's variables, which it never finished setting, and every
+        // find that went past the module would throw on them
+        module.exports = argArray[1] = {};
         factoryReturn = originalFactory.apply(thisArg, argArray);
+
+        // Every patch in this module is off from here on. Said the way a failed patch is, with who patched it, so the
+        // report lists it rather than burying it among Discord's errors. Except, in the reporter, a dependency that
+        // isn't there ("reading 'call'"): the reporter requires every module of a logged-out page, some of whose
+        // dependencies never load, and the original only gets past it because Webpack keeps the half-run dependency
+        const plugins = pluginsByModule.get(String(module.id))?.join(", ") || "an unknown plugin";
+        if (!(IS_REPORTER && String(err).includes("reading 'call'"))) logger.error(`Patch by ${plugins} errored (Module id is ${String(module.id)}): the patched module threw ${String(err)}\n`, err);
         markLoaded(module);
         return factoryReturn;
     }

@@ -29,11 +29,11 @@ const AppsIcon = findComponentByCodeLazy("2.95H20a2 2 0");
 export const settings = definePluginSettings({
     allowlistedChannels: {
         type: OptionType.STRING,
-        description: "Comma separated list of channels where the Install Plugin button should be displayed. It is always displayed in the Vencord Userplugin channels"
+        description: "Comma separated list of channels where the Install Plugin button should be displayed. It is always displayed in the Endcord userplugin channels"
     },
     notifyIfUpdate: {
         type: OptionType.BOOLEAN,
-        description: "Show a Vencord notification if UserPlugins need to be updated",
+        description: "Show an Endcord notification if UserPlugins need to be updated",
         default: true
     },
     neverNotifyForPlugins: {
@@ -79,7 +79,7 @@ export default definePlugin({
         });
     },
     section: {
-        key: "vencord_userplugins",
+        key: "endcord_userplugins",
         title: "UserPlugins",
         panelTitle: "UserPlugins",
         Component: SettingsTab,
@@ -112,7 +112,7 @@ export default definePlugin({
                     noPersist: true,
                     permanent: true,
                     onClick() {
-                        OpenSettingsModule.openUserSettings("vencord_userplugins_panel");
+                        OpenSettingsModule.openUserSettings("endcord_userplugins_panel");
                     },
                 });
         });

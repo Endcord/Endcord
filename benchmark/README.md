@@ -81,6 +81,9 @@ dependencies, so you can read exactly what it does and run it yourself.
 - **Checked screens.** A screenshot is saved locally at the moment of measurement (`results/screens/`,
   not committed because it shows the account used), so a dialog or an error screen cannot skew a run
   unnoticed.
+- **Window in view.** Chromium stops drawing a covered window. Since November 2026 the script keeps
+  the window on top without taking the focus, and every run records whether the page was visible and
+  its size.
 - **Medians.** Tables and charts show the median of all rounds; `results/` keeps every run.
 
 What each metric means:
@@ -116,3 +119,20 @@ loader and every mod's settings are restored when the script finishes, also when
 - Mods are measured with default settings. Plugins you enable add their own cost.
 - Idle CPU is a small number and sensitive to anything else happening on the PC, which is why it is
   measured over a full minute and reported as a median.
+
+## Endcord Desktop
+
+[Endcord Desktop](https://github.com/Endcord/EndcordDesktop) isn't loaded into Discord's app, so the
+script measures it on its own, with the same metrics:
+
+```bash
+node benchmark/run-benchmark.mjs --mods desktop --rounds 6 --duration 120 --desktop <app folder> --profile <data folder> --out benchmark/results-desktop
+node benchmark/summarize.mjs benchmark/results-desktop
+```
+
+The profile is an `ENDCORD_DESKTOP_DATA_DIR` that you sign in to once and start a few times, so the
+runs see the app as on any day after the first. Leave its window maximized on the Friends page. The
+script only starts, counts and stops the processes of that app folder, and leaves Discord and every
+mod's settings alone. The runs of 15 November 2026 are in [`results-desktop/`](results-desktop), and
+[Endcord Desktop's README](https://github.com/Endcord/EndcordDesktop#lightweight) compares them with
+the results above.

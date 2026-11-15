@@ -5,6 +5,7 @@
  */
 
 import { Button as NewButton } from "@components/Button";
+import { EndcordModal } from "@components/EndcordModal";
 import { Flex } from "@components/Flex";
 import { RenderModalProps, User } from "@endcord/discord-types";
 import { Decoration, getPresets, Preset } from "@plugins/decor/lib/api";
@@ -23,7 +24,7 @@ import { copyWithToast, openInviteModal } from "@utils/discord";
 import { t } from "@utils/i18n";
 import { Margins } from "@utils/margins";
 import { Queue } from "@utils/Queue";
-import { Button, closeAllModals, ConfirmModal, FluxDispatcher, Forms, GuildStore, Modal, NavigationRouter, openModal, Parser, Text, Tooltip, useEffect, UserStore, UserSummaryItem, UserUtils, useState } from "@webpack/common";
+import { Button, closeAllModals, ConfirmModal, FluxDispatcher, Forms, GuildStore, NavigationRouter, openModal, Parser, Text, Tooltip, useEffect, UserStore, UserSummaryItem, UserUtils, useState } from "@webpack/common";
 
 import { openCreateDecorationModal } from "./CreateDecorationModal";
 import { openGuidelinesModal } from "./GuidelinesModal";
@@ -135,7 +136,7 @@ function ChangeDecorationModal(props: RenderModalProps) {
         }))
     ] as Section[];
 
-    return <Modal
+    return <EndcordModal
         {...props}
         title={t("Change Decoration")}
         size="lg"
@@ -262,7 +263,7 @@ function ChangeDecorationModal(props: RenderModalProps) {
             </div>
 
         </div>
-    </Modal>;
+    </EndcordModal>;
 }
 
 export const openChangeDecorationModal = () =>

@@ -1,4 +1,4 @@
-/* Modal Header */
+/* Modal header */
 .vc-scheduled-msg-modal-header {
     display: flex;
     align-items: center;
@@ -7,20 +7,12 @@
     gap: 16px;
 }
 
-.vc-scheduled-msg-modal-title {
-    flex: 1;
-    margin: 0 !important;
-    color: var(--text-strong);
-    font-size: 20px;
-    font-weight: 600;
-}
-
-/* Modal Content */
+/* Modal content */
 .vc-scheduled-msg-modal-content {
     padding: 0 16px 16px;
 }
 
-/* Modal Footer */
+/* Modal footer */
 .vc-scheduled-msg-modal-footer {
     display: flex;
     flex-direction: row-reverse;
@@ -30,7 +22,7 @@
     padding: 16px;
 }
 
-/* Channel Info */
+/* Channel info */
 .vc-scheduled-msg-channel-info {
     display: flex;
     align-items: center;
@@ -67,7 +59,7 @@
     color: #060607 !important;
 }
 
-/* Field Labels */
+/* Field labels */
 .vc-scheduled-msg-field-label {
     margin: 16px 0 8px !important;
     font-size: 12px;
@@ -86,13 +78,13 @@
     color: #4e5058 !important;
 }
 
-/* Schedule Type Buttons */
+/* Schedule type buttons */
 .vc-scheduled-msg-schedule-type-buttons {
     display: flex;
     gap: 8px;
 }
 
-/* DateTime Input */
+/* Date and time input */
 .vc-scheduled-msg-datetime-input {
     width: 100%;
     padding: 10px;
@@ -150,7 +142,7 @@
     color: #313338 !important;
 }
 
-/* Error Display */
+/* Errors */
 .vc-scheduled-msg-error {
     display: flex;
     align-items: center;
@@ -168,7 +160,7 @@
     color: var(--status-danger);
 }
 
-/* Empty State */
+/* Empty state */
 .vc-scheduled-msg-empty-state {
     display: flex;
     flex-direction: column;
@@ -183,7 +175,7 @@
     opacity: 0.5;
 }
 
-/* Message List */
+/* Message list */
 .vc-scheduled-msg-message-list {
     display: flex;
     flex-direction: column;
@@ -251,7 +243,7 @@
     color: #313338 !important;
 }
 
-/* Phantom Message Styles */
+/* Phantom messages */
 .vc-scheduled-msg-phantom {
     opacity: 0.5 !important;
 }

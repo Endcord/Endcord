@@ -6,6 +6,7 @@
 
 import { ENDCORD_USER_AGENT } from "@shared/endcordUserAgent";
 import { lookup } from "dns";
+import { net } from "electron";
 import { IncomingMessage, request as httpRequest } from "http";
 import { request as httpsRequest } from "https";
 import { BlockList, isIP, LookupFunction } from "net";
@@ -21,8 +22,9 @@ const PRIVATE_ADDRESSES = new BlockList();
 for (const [network, prefix] of [["0.0.0.0", 8], ["10.0.0.0", 8], ["100.64.0.0", 10], ["127.0.0.0", 8], ["169.254.0.0", 16], ["172.16.0.0", 12], ["192.0.0.0", 24], ["192.0.2.0", 24], ["192.168.0.0", 16], ["198.18.0.0", 15], ["198.51.100.0", 24], ["203.0.113.0", 24], ["224.0.0.0", 3]] as const) {
     PRIVATE_ADDRESSES.addSubnet(network, prefix, "ipv4");
 }
-// 64:ff9b:: (NAT64), 2002:: (6to4) and 2001:: (Teredo) carry an IPv4 address inside, which is how 127.0.0.1 gets past an IPv4 list
-for (const [network, prefix] of [["::", 128], ["::1", 128], ["64:ff9b::", 96], ["100::", 64], ["2001::", 32], ["2001:db8::", 32], ["2002::", 16], ["fc00::", 7], ["fe80::", 10], ["fec0::", 10], ["ff00::", 8]] as const) {
+// 64:ff9b:: (NAT64), 2002:: (6to4) and 2001:: (Teredo) carry an IPv4 address inside, which is how 127.0.0.1 gets past an IPv4 list.
+// So do the old IPv4-compatible form (::7f00:1), the translated one (::ffff:0:7f00:1) and local NAT64 (64:ff9b:1::)
+for (const [network, prefix] of [["::", 96], ["::ffff:0:0:0", 96], ["64:ff9b:1::", 48], ["::", 128], ["::1", 128], ["64:ff9b::", 96], ["100::", 64], ["2001::", 32], ["2001:db8::", 32], ["2002::", 16], ["fc00::", 7], ["fe80::", 10], ["fec0::", 10], ["ff00::", 8]] as const) {
     PRIVATE_ADDRESSES.addSubnet(network, prefix, "ipv6");
 }
 
@@ -103,6 +105,13 @@ export async function fetchPublicUrl(url: string, options: PublicRequest = {}) {
 
         const next = new URL(location, url);
         if (parsed.protocol === "https:" && next.protocol !== "https:") throw new Error("Disallowed URL");
+        // What the caller sent was meant for the host it named. Another host gets neither its headers (an upload's key)
+        // nor its body (the file), so a request that carries one stops here
+        if (next.hostname !== parsed.hostname) {
+            const { method = "GET", signal } = options;
+            if (options.body || (method !== "GET" && method !== "HEAD")) throw new Error("Disallowed URL");
+            options = { method, signal };
+        }
         url = next.href;
     }
 
@@ -139,9 +148,16 @@ export async function readBody(response: Response, maxBytes: number) {
     return body;
 }
 
+/**
+ * Chromium's network stack, which this process already runs, rather than Node's own fetch: that one loads an HTTP client
+ * and a TLS library of its own on first use, several MB kept for the whole session. Node's stays where Electron's isn't
+ * there (the tests)
+ */
+const request = (url: Url, options?: RequestInit) => typeof net?.fetch === "function" ? net.fetch(String(url), options) : fetch(url, options);
+
 export async function checkedFetch(url: Url, options?: RequestInit) {
     try {
-        var res = await fetch(url, options);
+        var res = await request(url, options);
     } catch (err) {
         const cause = err instanceof Error && err.cause ? err.cause : err;
 

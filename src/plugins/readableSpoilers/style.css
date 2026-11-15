@@ -1,4 +1,4 @@
-/* MallCord ReadableSpoilers — outline unrevealed spoilers */
+/* ReadableSpoilers: outline unrevealed spoilers */
 [class*="spoilerContent"]:not([class*="spoilerContentHidden"]),
 span[class*="spoilerText"]:not([class*="hidden"]) {
     /* revealed: leave untouched */

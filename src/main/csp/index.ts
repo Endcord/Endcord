@@ -75,6 +75,7 @@ export const CspPolicies: PolicyMap = {
     "https://drive.google.com/viewerng/": FrameOnly,
     "https://view.officeapps.live.com/op/": FrameOnly,
     "https://www.viewstl.com": FrameOnly,
+    "https://embed.tidal.com/": FrameOnly, // TidalEmbeds' player; Discord's own frame-src doesn't have it
 
     // Function Specific
     "api.github.com": ConnectSrc, // used for updating Endcord itself
@@ -113,8 +114,8 @@ export const CspPolicies: PolicyMap = {
     "dc.songspotlight.nexpid.xyz": ConnectSrc, // SongSpotlight
     "api.imgur.com": ConnectSrc, // ChannelWallpaper uploads
     "api.openai.com": ConnectSrc, // ChatGPT (user-supplied key)
-    "aiapi.serversmp.xyz": ConnectSrc, // TranslatePlus AI mode
     "placeholder.nin0.dev": ImageSrc, // FavoriteAnything placeholders
+    "userpfp.github.io": ConnectSrc, // UserPFP's list of avatars
     "*.tenor.co": ImageAndMediaSrc,
     "*.giphy.com": ImageAndMediaSrc,
     "*.listenbrainz.org": ConnectSrc, // MusicRichPresence
@@ -171,7 +172,7 @@ const patchCsp = (headers: PolicyMap) => {
         pushDirective("script-src", "'unsafe-inline'", "'unsafe-eval'");
 
         for (const directive of ["style-src", "connect-src", "img-src", "font-src", "media-src", "worker-src"]) {
-            pushDirective(directive, "blob:", "data:", "endcord:", "vesktop:");
+            pushDirective(directive, "blob:", "data:", "endcord:");
         }
 
         for (const [host, directives] of Object.entries(NativeSettings.store.customCspRules)) {

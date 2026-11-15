@@ -44,8 +44,6 @@ export default definePlugin({
     tags: ["Utility", "Developers"],
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
 
-    // Safety check: registry access is only possible on Desktop
-    desktopOnly: true,
     settings,
 
     async start() {
@@ -60,7 +58,7 @@ export default definePlugin({
 
         try {
             const currentPref = settings.store.gpuPreference;
-            // Apply settings on startup to ensure the new app-1.x.xxxx path is registered
+            // Every Discord update runs from a new app-* folder, so apply it on every start
             const applied = await Native.applyGpuPreference(currentPref);
             if (applied) {
                 console.debug("[GpuBinder] New Discord version detected. Registry path updated.");

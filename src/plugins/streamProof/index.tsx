@@ -105,7 +105,7 @@ function disableStreamProof() {
     });
 }
 
-// ── Eye Icons ──────────────────────────────────────────────────────────────────
+// ---- Eye icons ----
 
 function EyeIcon({ height = 20, width = 20 }: { height?: number; width?: number; }) {
     return (
@@ -145,7 +145,7 @@ function EyeSlashIcon({ height = 20, width = 20 }: { height?: number | string; w
     );
 }
 
-// ── Chat Bar Button ────────────────────────────────────────────────────────────
+// ---- Chat bar button ----
 
 const StreamProofButton: ChatBarButtonFactory = ({ isMainChat }) => {
     useStateFromStores([StreamerModeStore, StreamStore, RTCConnectionStore], () => isStreaming());
@@ -176,7 +176,7 @@ const StreamProofButton: ChatBarButtonFactory = ({ isMainChat }) => {
     );
 };
 
-// ── Plugin ─────────────────────────────────────────────────────────────────────
+// ---- Plugin ----
 
 export default definePlugin({
     name: "StreamProof",

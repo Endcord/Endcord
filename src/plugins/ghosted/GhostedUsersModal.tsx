@@ -4,11 +4,12 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { EndcordModal } from "@components/EndcordModal";
 import { Channel, RenderModalProps } from "@endcord/discord-types";
 import { classNameFactory } from "@utils/css";
 import { t } from "@utils/i18n";
 import { findByPropsLazy, findComponentByCodeLazy } from "@webpack";
-import { Avatar, Button, ChannelStore, MessageStore, Modal,React, Text, UserStore } from "@webpack/common";
+import { Avatar, Button, ChannelStore, MessageStore, React, Text, UserStore } from "@webpack/common";
 
 const cl = classNameFactory("vc-boo-");
 
@@ -82,7 +83,7 @@ export function GhostedUsersModal({ modalProps, ghostedChannels: initialChannels
     };
 
     return (
-        <Modal
+        <EndcordModal
             {...modalProps}
             size="md"
             title={`Ghosted Users (${ghostedChannels.length})`}
@@ -142,6 +143,6 @@ export function GhostedUsersModal({ modalProps, ghostedChannels: initialChannels
                     })
                 )}
             </div>
-        </Modal>
+        </EndcordModal>
     );
 }

@@ -16,7 +16,7 @@
         },
         "condition": {
             "resourceTypes": ["main_frame", "sub_frame"],
-            "urlFilter": "||discord.com^"
+            "regexFilter": "^https://((ptb|canary)[.])?discord[.]com/"
         }
     },
     {

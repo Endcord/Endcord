@@ -13,7 +13,7 @@ import { BAN_RISK_LEAD } from "@utils/banRisk";
 import { classNameFactory } from "@utils/css";
 import { useI18n } from "@utils/i18n";
 import { Text, useRef } from "@webpack/common";
-import type { MouseEventHandler, ReactNode } from "react";
+import type { MouseEventHandler, ReactNode, Ref } from "react";
 
 const cl = classNameFactory("vc-addon-");
 
@@ -34,9 +34,10 @@ interface Props {
     infoButton?: ReactNode;
     footer?: ReactNode;
     author?: ReactNode;
+    cardRef?: Ref<HTMLDivElement>;
 }
 
-export function AddonCard({ disabled, isNew, isPopular, banRisk, needsFix, name, infoButton, footer, author, enabled, setEnabled, description, onMouseEnter, onMouseLeave }: Props) {
+export function AddonCard({ disabled, isNew, isPopular, banRisk, needsFix, name, infoButton, footer, author, enabled, setEnabled, description, onMouseEnter, onMouseLeave, cardRef }: Props) {
     // Also shown outside the settings, in the new plugins dialog
     enableScreenStyles();
     const { t } = useI18n();
@@ -45,7 +46,8 @@ export function AddonCard({ disabled, isNew, isPopular, banRisk, needsFix, name,
 
     return (
         <div
-            className={cl("card", { "card-disabled": disabled })}
+            ref={cardRef}
+            className={cl("card", { "card-disabled": disabled, "card-on": enabled })}
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
         >

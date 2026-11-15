@@ -1,9 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using EndcordInstaller.Core;
 using EndcordInstaller.Localization;
+using Microsoft.Win32;
 
 namespace EndcordInstaller.Tests
 {
@@ -42,6 +46,8 @@ namespace EndcordInstaller.Tests
             Check("4. Smart Installation: Conflict replacement, in-place update, cleanup & uninstall", TestInstallUpdateUninstall);
             Check("5. Resilience: Cancellation rollback, locked file retry & damaged install handling", TestResilienceAndErrors);
             Check("6. Payload integrity: a file planted next to the installer is refused, the embedded one passes", TestPayloadIntegrity);
+            Check("7. Release manifest: only a manifest signed by the release key is trusted, in the form Node signs it", TestReleaseManifest);
+            Check("8. Endcord Desktop: installs a signed release, updates without the runtime, refuses bad downloads, uninstalls", TestDesktopSetup);
 
             string summary = string.Format("SUMMARY: {0} passed, {1} failed", passed, failed);
             logs.Add(summary);
@@ -58,6 +64,268 @@ namespace EndcordInstaller.Tests
         static void Assert(bool condition, string message)
         {
             if (!condition) throw new Exception(message);
+        }
+
+        // ---- A release key of the tests' own, so a manifest they sign is accepted and nobody else's would be ----
+
+        static CngKey testKey;
+
+        static CngKey TestKey()
+        {
+            if (testKey == null) testKey = CngKey.Create(CngAlgorithm.ECDsaP256);
+            return testKey;
+        }
+
+        /// <summary>X then Y of the test key, as ReleaseManifest.PublicKey wants it</summary>
+        static byte[] TestPublicKey()
+        {
+            byte[] blob = TestKey().Export(CngKeyBlobFormat.EccPublicBlob);
+            var point = new byte[64];
+            Buffer.BlockCopy(blob, 8, point, 0, 64);
+            return point;
+        }
+
+        /// <summary>A version.json as scripts/uploadRelease.mjs writes one, signed with the test key</summary>
+        static string SignedManifest(string version, IDictionary<string, string> assets, string installerSha256 = null, string folder = "dist/")
+        {
+            const string hash = "abcdef1";
+            const string updatedAt = "1762639513000";
+            installerSha256 = installerSha256 ?? new string('0', 64);
+
+            var assetLines = new List<string>();
+            foreach (var kv in assets) assetLines.Add(kv.Key + " " + kv.Value);
+            assetLines.Sort(string.CompareOrdinal);
+            var payload = new List<string> { version, hash, updatedAt, installerSha256 };
+            payload.AddRange(assetLines);
+
+            byte[] rawSignature;
+            using (var ecdsa = new ECDsaCng(TestKey()))
+            {
+                ecdsa.HashAlgorithm = CngAlgorithm.Sha256;
+                rawSignature = ecdsa.SignData(Encoding.UTF8.GetBytes(string.Join("\n", payload.ToArray())));
+            }
+
+            var manifest = new JsonObject();
+            manifest["version"] = version;
+            manifest["hash"] = hash;
+            manifest["updatedAt"] = new JsonNumber(updatedAt);
+            manifest["installerSha256"] = installerSha256;
+            var list = new List<object>();
+            foreach (var kv in assets)
+            {
+                var asset = new JsonObject();
+                asset["name"] = kv.Key;
+                asset["url"] = (folder == "desktop/" ? DesktopEngine.FileBase : "https://raw.githubusercontent.com/Endcord/Endcord/main/" + folder) + kv.Key;
+                asset["sha256"] = kv.Value;
+                list.Add(asset);
+            }
+            manifest["assets"] = list;
+            manifest["signature"] = Convert.ToBase64String(DerSignature(rawSignature));
+            return Json.Serialize(manifest);
+        }
+
+        /// <summary>CNG signs as r then s; Node writes a DER SEQUENCE of two INTEGERs, which is what the verifier reads</summary>
+        static byte[] DerSignature(byte[] raw)
+        {
+            byte[] r = DerInteger(raw, 0), s = DerInteger(raw, 32);
+            var der = new byte[2 + r.Length + s.Length];
+            der[0] = 0x30;
+            der[1] = (byte)(r.Length + s.Length);
+            Buffer.BlockCopy(r, 0, der, 2, r.Length);
+            Buffer.BlockCopy(s, 0, der, 2 + r.Length, s.Length);
+            return der;
+        }
+
+        static byte[] DerInteger(byte[] raw, int offset)
+        {
+            int start = offset;
+            while (start < offset + 31 && raw[start] == 0) start++;
+            int n = offset + 32 - start;
+            int pad = (raw[start] & 0x80) != 0 ? 1 : 0;
+            var der = new byte[2 + pad + n];
+            der[0] = 0x02;
+            der[1] = (byte)(pad + n);
+            Buffer.BlockCopy(raw, start, der, 2 + pad, n);
+            return der;
+        }
+
+        static void TestReleaseManifest()
+        {
+            var savedKey = ReleaseManifest.PublicKey;
+            try
+            {
+                Assert(savedKey != null && savedKey.Length == 64, "The release key built into the installer should read as a P-256 point");
+
+                // What Node's crypto.sign wrote over this payload with a throwaway key (scratch script, 2026-11-09): the DER form
+                // and the key's point, as the release script and the updater use them
+                byte[] nodeKey = Convert.FromBase64String("e3SrdOebdOmg42S2vIbYhFpfb7LsUtdPhSik+8vCfXA3MCZ0rsL0h+Uv1GU/gwZ6kgXrG9hW/jRyCMjicQ1izw==");
+                byte[] nodeSignature = Convert.FromBase64String("MEYCIQCnCSQpYGEQLtePvdCWpu2cZSLpaG1ayspKk9bYTSNW/QIhAM7e/sTfUv2MGmG5r0kleuGjwB/sZFOs7GOsW6Q2+Og/");
+                byte[] nodePayload = Encoding.UTF8.GetBytes(string.Join("\n", new[] { "4.10.0", "abcdef1", "1762639513000", new string('0', 64), "patcher.js 11", "preload.js 22" }));
+                Assert(ReleaseManifest.VerifySignature(nodePayload, nodeSignature, nodeKey), "A signature Node wrote should verify");
+                nodePayload[0] = (byte)'5';
+                Assert(!ReleaseManifest.VerifySignature(nodePayload, nodeSignature, nodeKey), "A changed payload must not verify");
+                Assert(!ReleaseManifest.VerifySignature(nodePayload, new byte[] { 0x30, 0x02, 0x02, 0x00 }, nodeKey), "A signature that isn't two integers must not verify");
+                Assert(!ReleaseManifest.VerifySignature(nodePayload, nodeSignature, savedKey), "The wrong key must not verify");
+
+                // The manifest as a whole: the same payload rule as the release script, and a real key of the test's own
+                ReleaseManifest.PublicKey = TestPublicKey();
+                var assets = new Dictionary<string, string> { { "renderer.js", new string('a', 64) }, { "patcher.js", new string('B', 64) }, { "preload.js", new string('c', 64) }, { "renderer.css", new string('d', 64) } };
+                string manifest = SignedManifest("4.10.0", assets);
+                var release = ReleaseManifest.Verify(manifest);
+                Assert(release != null && release.Version == "4.10.0" && release.Assets["patcher.js"] == new string('b', 64), "A manifest signed by the release key should be read, with its hashes in lower case");
+                Assert(ReleaseManifest.Verify(manifest.Replace("\"4.10.0\"", "\"4.10.1\"")) == null, "A manifest changed after signing must be refused");
+                Assert(ReleaseManifest.Verify(manifest.Replace("1762639513000", "1762639513001")) == null, "A changed release time must be refused");
+                Assert(ReleaseManifest.Verify("{\"version\":\"4.10.0\"}") == null && ReleaseManifest.Verify("not json") == null, "Something that isn't a manifest must be refused");
+                var partial = new Dictionary<string, string>(assets);
+                partial.Remove("patcher.js");
+                Assert(ReleaseManifest.Verify(SignedManifest("4.10.0", partial)) == null, "A correctly signed manifest with a file missing must be refused");
+                Assert(ReleaseManifest.Verify(SignedManifest("4.10.0\nx", assets)) == null, "A correctly signed manifest with a line break in its version must be refused");
+                ReleaseManifest.PublicKey = savedKey;
+                Assert(ReleaseManifest.Verify(manifest) == null, "A manifest signed by another key must be refused by the release key");
+            }
+            finally
+            {
+                ReleaseManifest.PublicKey = savedKey;
+            }
+        }
+
+        static string Sha(byte[] data)
+        {
+            using (var sha = SHA256.Create())
+            {
+                var sb = new StringBuilder();
+                foreach (var b in sha.ComputeHash(data)) sb.Append(b.ToString("x2"));
+                return sb.ToString();
+            }
+        }
+
+        /// <summary>A runtime zip as buildDesktopApp.mjs makes one: everything under one top folder</summary>
+        static byte[] RuntimeZip(IDictionary<string, string> entries)
+        {
+            using (var buffer = new MemoryStream())
+            {
+                using (var zip = new ZipArchive(buffer, ZipArchiveMode.Create, true))
+                {
+                    foreach (var kv in entries)
+                    {
+                        using (var writer = new StreamWriter(zip.CreateEntry("EndcordDesktop-win32-x64/" + kv.Key).Open())) writer.Write(kv.Value);
+                    }
+                }
+                return buffer.ToArray();
+            }
+        }
+
+        static void TestDesktopSetup()
+        {
+            InstallerPaths paths;
+            string root = CreateSandbox(out paths);
+            var savedKey = ReleaseManifest.PublicKey;
+            var savedFetch = ReleaseManifest.FetchDesktop;
+            const string testKeys = @"Software\EndcordInstallerSelfTest";
+            string regKey = testKeys + @"\Uninstall-" + Guid.NewGuid().ToString("N").Substring(0, 8);
+            try
+            {
+                ReleaseManifest.PublicKey = TestPublicKey();
+                var served = new Dictionary<string, byte[]>(StringComparer.Ordinal);
+                var assets = new Dictionary<string, string>();
+                Action<string> releaseFiles = text =>
+                {
+                    foreach (var name in DesktopEngine.AppFiles)
+                    {
+                        byte[] b = Encoding.UTF8.GetBytes("// " + text + " " + name);
+                        served[DesktopEngine.FileBase + name] = b;
+                        assets[name] = Sha(b);
+                    }
+                };
+                const string version = "1.0.0+electron45.2.2";
+                string runtimeUrl = DesktopEngine.RuntimeUrl(version);
+                Assert(runtimeUrl == "https://github.com/Endcord/EndcordDesktop/releases/download/desktop-1.0.0-electron45.2.2/EndcordDesktop-win32-x64.zip", "The runtime comes from the GitHub release its signed version names");
+                Assert(DesktopEngine.RuntimeUrl("1.0.0") == null && DesktopEngine.RuntimeUrl("1.0.0+electron45.2.2/../x") == null, "A version that doesn't name an Electron gives no address");
+
+                byte[] runtime = RuntimeZip(new Dictionary<string, string> { { "EndcordDesktop.exe", "stand-in" }, { "resources/app/package.json", "{}" }, { "resources/app/main.js", "// runtime's own main" } });
+                served[runtimeUrl] = runtime;
+                releaseFiles("current");
+                string manifest = SignedManifest(version, assets, Sha(runtime), "desktop/");
+                ReleaseManifest.FetchDesktop = () => manifest;
+
+                int runtimeDownloads = 0;
+                var engine = new DesktopEngine(paths) { SkipLaunch = true, UninstallKey = regKey };
+                engine.Download = (url, file, progress, ct) =>
+                {
+                    byte[] b;
+                    if (!served.TryGetValue(url, out b)) throw new System.Net.WebException("404 " + url);
+                    if (url.EndsWith(".zip")) runtimeDownloads++;
+                    File.WriteAllBytes(file, b);
+                    progress(b.Length, b.Length);
+                };
+                string appDir = Path.Combine(engine.InstallDir, "resources", "app");
+                double reached = 0;
+                engine.Install((ratio, status) => reached = ratio, CancellationToken.None);
+                Assert(engine.IsInstalled && FileOps.IsStrictlyInside(engine.Exe, paths.Local), "It installs into the user's own Programs folder");
+                foreach (var name in DesktopEngine.AppFiles)
+                    Assert(File.ReadAllText(Path.Combine(appDir, name)) == "// current " + name, "A new install starts on the current release's files, not the runtime's: " + name);
+                Assert(reached == 1, "Progress ends at 100%");
+                using (var key = Registry.CurrentUser.OpenSubKey(regKey))
+                {
+                    Assert(key != null && (string)key.GetValue("DisplayName") == "Endcord Desktop" && (string)key.GetValue("DisplayVersion") == "1.0.0", "It is listed in Settings > Apps");
+                    Assert(((string)key.GetValue("UninstallString")).Contains("--uninstall-desktop"), "Settings > Apps removes it through setup");
+                }
+
+                // A release of new files on the same runtime: the six files change, the 140 MB zip isn't fetched again
+                File.WriteAllText(Path.Combine(appDir, "update-state.json"), "{}");
+                Directory.CreateDirectory(Path.Combine(appDir, "previous"));
+                Directory.CreateDirectory(engine.DataDir);
+                File.WriteAllText(Path.Combine(engine.DataDir, "Local State"), "signed in");
+                releaseFiles("newer");
+                manifest = SignedManifest(version, assets, Sha(runtime), "desktop/");
+                engine.Install((ratio, status) => { }, CancellationToken.None);
+                Assert(runtimeDownloads == 1, "An update that keeps the runtime only downloads the six files");
+                Assert(File.ReadAllText(Path.Combine(appDir, "main.js")) == "// newer main.js", "The update's files are in place");
+                Assert(!File.Exists(Path.Combine(appDir, "update-state.json")) && !Directory.Exists(Path.Combine(appDir, "previous")), "What the app's updater had kept is cleared");
+
+                // A runtime that isn't the signed one leaves the install as it was
+                const string nextVersion = "1.0.1+electron45.2.3";
+                byte[] signedRuntime = RuntimeZip(new Dictionary<string, string> { { "EndcordDesktop.exe", "next stand-in" }, { "resources/app/package.json", "{}" } });
+                served[DesktopEngine.RuntimeUrl(nextVersion)] = RuntimeZip(new Dictionary<string, string> { { "EndcordDesktop.exe", "planted" }, { "resources/app/package.json", "{}" } });
+                manifest = SignedManifest(nextVersion, assets, Sha(signedRuntime), "desktop/");
+                string refused = null;
+                try { engine.Install((ratio, status) => { }, CancellationToken.None); }
+                catch (DesktopSetupException e) { refused = e.MessageKey; }
+                Assert(refused == "desktop.err.badDownload", "A runtime that doesn't match the signed SHA-256 is refused");
+                Assert(File.ReadAllText(engine.Exe) == "stand-in" && File.ReadAllText(Path.Combine(appDir, "main.js")) == "// newer main.js", "and the installed app is left as it was");
+
+                string unsigned = manifest.Replace("1.0.1", "1.0.2");
+                ReleaseManifest.FetchDesktop = () => unsigned;
+                refused = null;
+                try { engine.Install((ratio, status) => { }, CancellationToken.None); }
+                catch (DesktopSetupException e) { refused = e.MessageKey; }
+                Assert(refused == "desktop.err.unsigned", "A manifest changed after signing is refused");
+                ReleaseManifest.FetchDesktop = () => manifest;
+
+                // A zip entry that climbs out of the folder fails the whole unpack
+                string slipZip = Path.Combine(root, "slip.zip");
+                File.WriteAllBytes(slipZip, RuntimeZip(new Dictionary<string, string> { { "../../escaped.txt", "x" } }));
+                bool slipped = true;
+                try { DesktopEngine.Extract(slipZip, Path.Combine(root, "slip"), CancellationToken.None); }
+                catch (DesktopSetupException) { slipped = false; }
+                Assert(!slipped && !File.Exists(Path.Combine(root, "escaped.txt")), "A zip entry pointing outside the folder is refused");
+
+                // Removing it: the folder and the listing go, the sign-in stays unless asked for
+                engine.Uninstall(false, (ratio, status) => { }, CancellationToken.None);
+                Assert(!Directory.Exists(engine.InstallDir), "Uninstall removes the app's folder");
+                using (var key = Registry.CurrentUser.OpenSubKey(regKey)) Assert(key == null, "and its Settings > Apps entry");
+                Assert(File.Exists(Path.Combine(engine.DataDir, "Local State")), "Its sign-in and settings stay unless the user asks");
+                Directory.CreateDirectory(engine.InstallDir);
+                engine.Uninstall(true, (ratio, status) => { }, CancellationToken.None);
+                Assert(!Directory.Exists(engine.DataDir), "Asked to, uninstall removes them too");
+            }
+            finally
+            {
+                ReleaseManifest.PublicKey = savedKey;
+                ReleaseManifest.FetchDesktop = savedFetch;
+                try { Registry.CurrentUser.DeleteSubKeyTree(testKeys, false); } catch { }
+                try { Directory.Delete(root, true); } catch { }
+            }
         }
 
         static string CreateSandbox(out InstallerPaths paths)
@@ -296,10 +564,66 @@ namespace EndcordInstaller.Tests
                 Assert(clientSettings != null && Convert.ToString(clientSettings["language"]) == "tr", "Client settings.json should inherit installer language 'tr'");
                 Loc.SetLanguage("en");
 
-                // 2. Seamless Update (Endcord already installed)
+                // 2. Running it again over an Endcord that's already installed updates it
                 var det2 = ClientDetector.Detect(paths, null);
                 var updateOut = InstallationEngine.RunInstall(paths, det2.Installs, false, false, null, CancellationToken.None);
                 Assert(updateOut.Success && updateOut.WasUpdate, "Second install should be recognized as seamless update");
+
+                // 2b. An installer older than the Endcord it finds (Endcord updated itself since) keeps the newer files, when
+                // the current signed release confirms they're Endcord's
+                var savedFetch = ReleaseManifest.Fetch;
+                var savedKey = ReleaseManifest.PublicKey;
+                string distPatcher = Path.Combine(paths.Dist, "patcher.js");
+                try
+                {
+                    ReleaseManifest.PublicKey = TestPublicKey();
+                    File.WriteAllText(Path.Combine(payloadDir, "patcher.js"), "// Endcord aaaaaaa\n// Version: 4.1.1\n// endcord patcher\n");
+                    string newer = "// Endcord bbbbbbb\n// Version: 4.10.0\n// newer patcher\n";
+                    File.WriteAllText(distPatcher, newer);
+                    var released = new Dictionary<string, string>();
+                    foreach (var name in InstallationEngine.PayloadFiles) released[name] = FileOps.Sha256(Path.Combine(paths.Dist, name));
+                    string manifest = SignedManifest("4.10.0", released);
+                    ReleaseManifest.Fetch = () => manifest;
+
+                    var oldOut = InstallationEngine.RunInstall(paths, det2.Installs, false, false, null, CancellationToken.None);
+                    Assert(oldOut.Success && oldOut.KeptVersion == "4.10.0" && oldOut.PayloadVersion == "4.1.1",
+                        "An older installer should keep Endcord 4.10.0, kept " + (oldOut.KeptVersion ?? "nothing"));
+                    Assert(FileOps.ReadText(distPatcher) == newer, "The newer patcher.js must not be replaced by an older one");
+                    Assert(oldOut.AffectedInstalls.Count == 1 && oldOut.AffectedInstalls[0].HasEndcord, "Discord should still be hooked up after keeping the newer files");
+
+                    // A file planted in the folder that claims a high version isn't the release's: replaced
+                    File.WriteAllText(distPatcher, "// Endcord planted\n// Version: 9.9.9\n// not Endcord's\n");
+                    var plantedOut = InstallationEngine.RunInstall(paths, det2.Installs, false, false, null, CancellationToken.None);
+                    Assert(plantedOut.Success && plantedOut.KeptVersion == null && FileOps.ReadText(distPatcher).Contains("4.1.1"),
+                        "Files the release doesn't vouch for must be replaced, kept " + (plantedOut.KeptVersion ?? "nothing"));
+
+                    // Offline, there's no release to vouch for them: replaced
+                    File.WriteAllText(distPatcher, newer);
+                    ReleaseManifest.Fetch = () => null;
+                    var offlineOut = InstallationEngine.RunInstall(paths, det2.Installs, false, false, null, CancellationToken.None);
+                    Assert(offlineOut.Success && offlineOut.KeptVersion == null && FileOps.ReadText(distPatcher).Contains("4.1.1"), "Without a manifest the installer's files are installed");
+
+                    // A manifest changed after it was signed vouches for nothing
+                    File.WriteAllText(distPatcher, newer);
+                    ReleaseManifest.Fetch = () => manifest.Replace("\"4.10.0\"", "\"4.10.1\"");
+                    var forgedOut = InstallationEngine.RunInstall(paths, det2.Installs, false, false, null, CancellationToken.None);
+                    Assert(forgedOut.Success && forgedOut.KeptVersion == null && FileOps.ReadText(distPatcher).Contains("4.1.1"), "A manifest with a bad signature must not keep anything");
+
+                    // 2c. One that is newer, or an install from before versions were written down, updates as before
+                    ReleaseManifest.Fetch = () => { throw new Exception("The manifest must not be asked for when the installer is the newer one"); };
+                    File.WriteAllText(distPatcher, "// Endcord ccccccc\n// Version: 4.1.0\n");
+                    var newOut = InstallationEngine.RunInstall(paths, det2.Installs, false, false, null, CancellationToken.None);
+                    Assert(newOut.Success && newOut.KeptVersion == null && FileOps.ReadText(distPatcher).Contains("4.1.1"), "A newer installer should update Endcord");
+                    File.WriteAllText(distPatcher, "// Endcord 479410c\n// Standalone: true\n");
+                    var unknownOut = InstallationEngine.RunInstall(paths, det2.Installs, false, false, null, CancellationToken.None);
+                    Assert(unknownOut.Success && unknownOut.KeptVersion == null && FileOps.ReadText(distPatcher).Contains("4.1.1"), "An install without a version line should be updated");
+                    Assert(InstallationEngine.ReadPayloadVersion(Path.Combine(payloadDir, "missing.js")) == null, "A missing patcher has no version");
+                }
+                finally
+                {
+                    ReleaseManifest.Fetch = savedFetch;
+                    ReleaseManifest.PublicKey = savedKey;
+                }
 
                 // 3a. Cleanup must leave Vencord's files alone while another Discord flavour still loads them
                 string devRes = Path.Combine(paths.Local, "DiscordDevelopment", "app-1.0.1035", "resources");
@@ -340,7 +664,7 @@ namespace EndcordInstaller.Tests
                 CreatePayloadDir(payloadDir);
                 InstallationEngine.CustomPayloadDirectory = payloadDir;
 
-                // 1. Cancellation rollback test
+                // 1. Cancelling halfway puts everything back
                 string stableRes = Path.Combine(paths.Local, "Discord", "app-1.0.9030", "resources");
                 CreateFakeAsar(Path.Combine(stableRes, "app.asar"));
                 var det = ClientDetector.Detect(paths, null);
@@ -357,7 +681,7 @@ namespace EndcordInstaller.Tests
                         "Original app.asar must be intact after cancellation rollback");
                 }
 
-                // 2. Temporarily locked file retry test
+                // 2. A file that's locked for a moment gets retried
                 string lockedFile = Path.Combine(sandbox, "locked.txt");
                 File.WriteAllText(lockedFile, "initial");
                 var fs = new FileStream(lockedFile, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
@@ -369,7 +693,7 @@ namespace EndcordInstaller.Tests
                 FileOps.Retry(() => File.WriteAllText(lockedFile, "updated"), lockedFile, CancellationToken.None);
                 Assert(File.ReadAllText(lockedFile) == "updated", "Retry should succeed once lock releases");
 
-                // 3. Damaged Discord installation (no app.asar)
+                // 3. A Discord install with no app.asar
                 string damagedRes = Path.Combine(paths.Local, "DiscordCanary", "app-1.0.100", "resources");
                 Directory.CreateDirectory(damagedRes);
                 File.WriteAllText(Path.Combine(damagedRes, "app.asar"), "tiny broken stub without backup");

@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { EndcordModal } from "@components/EndcordModal";
 import { Auth } from "@plugins/reviewDB/auth";
 import { ReviewDBUser } from "@plugins/reviewDB/entities";
 import { fetchBlocks, unblockUser } from "@plugins/reviewDB/reviewDbApi";
@@ -11,7 +12,7 @@ import { cl } from "@plugins/reviewDB/utils";
 import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import { useAwaiter } from "@utils/react";
-import { Forms, Modal,openModal, Tooltip, useState } from "@webpack/common";
+import { Forms, openModal, Tooltip, useState } from "@webpack/common";
 
 function UnblockButton(props: { onClick?(): void; }) {
     return (
@@ -85,13 +86,13 @@ function BlockedUsersList() {
 
 export function openBlockModal() {
     openModal(modalProps => (
-        <Modal
+        <EndcordModal
             {...modalProps}
             title={t("Blocked Users")}
         >
             <div className={cl("block-modal")}>
                 {Auth.token ? <BlockedUsersList /> : <Forms.FormText>{t("You are not logged into ReviewDB!")}</Forms.FormText>}
             </div>
-        </Modal>
+        </EndcordModal>
     ));
 }

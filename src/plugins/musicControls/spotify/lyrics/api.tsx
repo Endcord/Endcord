@@ -73,11 +73,6 @@ export async function clearLyricsCache() {
     await DataStore.set(LyricsCacheKey, {});
 }
 
-export async function getLyricsCount(): Promise<number> {
-    const cache = await DataStore.get(LyricsCacheKey) as Record<string, LyricsData | null>;
-    return Object.keys(cache ?? {}).length;
-}
-
 export async function updateLyrics(trackId: string, newLyrics: SyncedLyric[], provider: Provider) {
     const cache = await DataStore.get(LyricsCacheKey) as Record<string, LyricsData | null>;
     const current = cache[trackId];

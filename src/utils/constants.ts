@@ -6,6 +6,7 @@
 
 export const ENDCORD_GUILD_ID = "1543323763695820942";
 export const SUPPORT_CHANNEL_ID = "1543359285503721573";
+export const REPO_URL = "https://github.com/Endcord/Endcord";
 
 const platform = navigator.platform.toLowerCase();
 export const IS_WINDOWS = platform.startsWith("win");

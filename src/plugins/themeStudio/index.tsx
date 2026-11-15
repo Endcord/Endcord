@@ -6,7 +6,7 @@
 
 import { definePluginSettings } from "@api/Settings";
 import { managedStyleRootNode } from "@api/Styles";
-import { PaintbrushIcon } from "@components/Icons";
+import { filled, pixelIcon, SOFT } from "@components/EndcordIcons";
 import { openSettingsTabModal } from "@components/settings/tabs/BaseTab";
 import SettingsPlugin from "@plugins/_core/settings";
 import { Devs } from "@utils/constants";
@@ -16,6 +16,25 @@ import definePlugin, { OptionType, StartAt } from "@utils/types";
 
 import { ColorScale, DISCORD_DESIGN, DiscordScales, generateThemeCss, isSameDesign, PRESETS, ThemeDesign } from "./design";
 import { LookPreview } from "./LookPreview";
+
+// Brush icon: the handle at low opacity, the bristles solid
+const ThemeStudioTabIcon = pixelIcon([
+    ".......+++",
+    "......++++",
+    ".....++++.",
+    "....++++..",
+    "...##++...",
+    "..####....",
+    ".#####....",
+    ".####.....",
+    "####......",
+    "##........"
+], filled(() => (
+    <>
+        <path opacity={SOFT} d="M20.3 3.7a1.6 1.6 0 0 1 0 2.3l-7.2 7.2-2.3-2.3 7.2-7.2a1.6 1.6 0 0 1 2.3 0Z" />
+        <path d="M9.6 12.1 11.9 14.4c.6.6.6 1.6 0 2.2-1.6 1.6-3 3.9-6.7 3.9-1 0-1.7-.3-2.2-.6 1-.6 1.6-1.6 1.6-3 0-1.3.6-2.7 2.1-3.7 1.2-.8 2.3-1.3 2.9-1.1Z" />
+    </>
+)));
 
 const STYLE_ID = "ec-theme-studio";
 
@@ -55,7 +74,7 @@ function readScales() {
 export const getThemeCss = (design: ThemeDesign) => generateThemeCss(design, readScales());
 
 export function applyDesign(design: ThemeDesign) {
-    // Discord's own look needs no stylesheet, nor reading Discord's colors at startup
+    // The default look needs no stylesheet, and no reading of Discord's colors at startup
     if (!style && isSameDesign(design, DISCORD_DESIGN)) return;
 
     style ??= createAndAppendStyle(STYLE_ID, managedStyleRootNode);
@@ -90,7 +109,7 @@ export default definePlugin({
             key: "endcord_theme_studio",
             title: "Theme Studio",
             Component: require("./StudioTab").default,
-            Icon: PaintbrushIcon
+            Icon: ThemeStudioTabIcon
         });
 
         applyDesign(settings.store.design);

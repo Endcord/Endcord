@@ -4,13 +4,14 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { EndcordModal } from "@components/EndcordModal";
 import { RenderModalProps } from "@endcord/discord-types";
 import { DEFAULT_COLOR, SWATCHES } from "@plugins/pinDms/constants";
 import { categoryLen, createCategory, getCategory } from "@plugins/pinDms/data";
 import { classNameFactory } from "@utils/css";
 import { t } from "@utils/i18n";
 import { extractAndLoadChunksLazy, findComponentByCodeLazy } from "@webpack";
-import { ColorPicker, Forms, Modal,openModalLazy, TextInput, Toasts, useMemo, useState } from "@webpack/common";
+import { ColorPicker, Forms, openModalLazy, TextInput, Toasts, useMemo, useState } from "@webpack/common";
 
 interface ColorPickerWithSwatchesProps {
     className?: string;
@@ -72,7 +73,7 @@ export function NewCategoryModal({ categoryId, modalProps, initialChannelId }: P
     };
 
     return (
-        <Modal
+        <EndcordModal
             {...modalProps}
             title={`${categoryId ? "Edit" : "New"} Category`}
             actions={[{
@@ -117,7 +118,7 @@ export function NewCategoryModal({ categoryId, modalProps, initialChannelId }: P
                     />
                 </section>
             </form>
-        </Modal>
+        </EndcordModal>
     );
 }
 

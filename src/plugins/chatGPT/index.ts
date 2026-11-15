@@ -78,11 +78,9 @@ const settings = definePluginSettings({
     },
 });
 
-// Global variables
 let isInitialized = false;
 let isProcessing = false;
 
-// Function to display notifications
 function notify(title: string, body: string, isError = false) {
     if (!settings.store.enableNotifications) return;
 
@@ -93,7 +91,6 @@ function notify(title: string, body: string, isError = false) {
     });
 }
 
-// Function to validate the API key
 function validateApiKey(apiKey: string): boolean {
     return !!(
         apiKey &&
@@ -102,7 +99,7 @@ function validateApiKey(apiKey: string): boolean {
     );
 }
 
-// Function to call ChatGPT via fetch (without OpenAI dependency)
+// Plain fetch, no OpenAI SDK
 async function callChatGPT(prompt: string): Promise<string> {
     const apiKey = settings.store.apiKey.trim();
 
@@ -193,7 +190,6 @@ export default definePlugin({
                         return;
                     }
 
-                    // Check if a request is in progress
                     if (isProcessing) {
                         sendBotMessage(ctx.channel.id, {
                             content:
@@ -202,7 +198,6 @@ export default definePlugin({
                         return;
                     }
 
-                    // Use the API key from settings
                     const { apiKey } = settings.store;
 
                     if (!validateApiKey(apiKey)) {
@@ -288,7 +283,7 @@ export default definePlugin({
             }
 
             isInitialized = true;
-            console.debug("[ChatGPT] Plugin initialized successfully");
+            console.debug("[ChatGPT] Ready");
         } catch (error) {
             console.error("[ChatGPT] Error initializing plugin:", error);
             isInitialized = false;

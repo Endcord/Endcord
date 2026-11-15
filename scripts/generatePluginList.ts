@@ -40,7 +40,7 @@ interface PluginData {
     hasCommands: boolean;
     required: boolean;
     enabledByDefault: boolean;
-    target: "discordDesktop" | "vesktop" | "desktop" | "web" | "dev";
+    target: "discordDesktop" | "endcordDesktop" | "desktop" | "web" | "dev";
     filePath: string;
 }
 
@@ -69,7 +69,7 @@ function parseDevs() {
         const devsDeclaration = child.declarationList.declarations.find(d => hasName(d, "Devs"));
         if (!devsDeclaration?.initializer) continue;
 
-        // Vencord: Object.freeze({...} satisfies ...). Endcord: new Proxy({...} as any, handler) as any.
+        // Devs is new Proxy({...} as any, handler) as any; the older Object.freeze({...} satisfies ...) form is read too
         let value: Node | undefined = devsDeclaration.initializer;
         while (value && (isAsExpression(value) || isSatisfiesExpression(value))) value = value.expression;
         if (value && (isCallExpression(value) || isNewExpression(value))) value = value.arguments?.[0];
@@ -181,7 +181,7 @@ async function parseFile(fileName: string) {
 
         const target = getPluginTarget(fileName);
         if (target) {
-            if (!["web", "discordDesktop", "vesktop", "desktop", "dev"].includes(target)) throw fail(`invalid target ${target}`);
+            if (!["web", "discordDesktop", "endcordDesktop", "desktop", "dev"].includes(target)) throw fail(`invalid target ${target}`);
             data.target = target as any;
         }
 

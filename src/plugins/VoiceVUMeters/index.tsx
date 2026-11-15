@@ -66,7 +66,7 @@ interface AudioOutput {
 
 interface VoiceConnection {
     context: string;
-    // Web clients (browser, Vesktop): one WebAudio stream per remote user.
+    // Web clients (browser, Endcord Desktop): one WebAudio stream per remote user.
     outputs?: Record<string, AudioOutput>;
     audioContext?: AudioContext;
     // Discord Desktop: native PCM bridge, with scalar stats as a fallback.

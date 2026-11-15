@@ -1,4 +1,4 @@
-/* MallCord CompactCompose — slimmer message bar */
+/* CompactCompose: a slimmer message bar */
 [class*="channelTextArea"] {
     margin-top: 0 !important;
     margin-bottom: 6px !important;

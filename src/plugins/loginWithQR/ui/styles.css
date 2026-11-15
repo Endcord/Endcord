@@ -26,12 +26,6 @@
     background-color: var(--mention-background);
 }
 
-.qrlogin-modal-filepaste-disabled {
-    background-color: var(--background-secondary-alt) !important;
-    opacity: 0.5;
-    cursor: unset;
-}
-
 .qrlogin-modal-filepaste-preview {
     border-width: 0;
     background-color: #0005;
@@ -94,12 +88,6 @@
 
 .qrlogin-device-footer {
     justify-content: space-between;
-}
-
-.qrlogin-settings-btns {
-    display: flex;
-    align-items: center;
-    gap: 8px;
 }
 
 .qrlogin-modal-container {

@@ -20,6 +20,7 @@ const stubs = {
     "@api/index": "const m = new Map(); export const DataStore = { get: async k => structuredClone(m.get(k)), set: async (k, v) => { m.set(k, structuredClone(v)); } }; globalThis.__store = m;",
     "@endcord/discord-types/enums": "export const CloudUploadPlatform = { WEB: 1 };",
     "@utils/Logger": "export class Logger { warn() {} error() {} info() {} }",
+    "@utils/i18n": "export const t = key => key;",
     "@webpack/common": `
         const handlers = {};
         globalThis.__dispatch = (type, event) => (handlers[type] ?? []).forEach(f => f(event));
@@ -81,7 +82,8 @@ const PNG = `data:image/png;base64,${Buffer.from("not really a png").toString("b
     });
     const shared = JSON.parse(content.slice(5));
     check("a message starts with the format's name", content.startsWith("ecp1 {"));
-    check("email, phone, creation date and copied user stay on this computer", !("email" in shared) && !("phone" in shared) && !("createdAt" in shared) && !("copiedUserId" in shared));
+    check("email, phone and copied user stay on this computer", !("email" in shared) && !("phone" in shared) && !("copiedUserId" in shared));
+    check("the chosen creation date is shared", shared.createdAt === "2015-05-13");
     check("a picture from this computer goes along as an attachment the text names", files.length === 1 && files[0].name === "avatar.png" && shared.avatar === "att:avatar.png");
     check("a picture on another site isn't shared", !("banner" in shared));
     check("it fits", fits);
@@ -101,22 +103,109 @@ const PNG = `data:image/png;base64,${Buffer.from("not really a png").toString("b
     const hostile = read(`${JSON.stringify("x").slice(0, 0)}ecp1 ${JSON.stringify({
         username: "u".repeat(100), avatar: "https://evil.example/ip-logger.png", banner: "javascript:alert(1)",
         email: "victim@x.y", phone: "1", createdAt: "2010-01-01", badgeFlags: -1, nitroLevel: "3", accentColor: 2 ** 40,
-        customBadgeIds: ["staff", "<img src=x>", 5], tieredBadges: { age: 3, "../x": 1, game: 99 },
+        customBadgeIds: ["quest", "<img src=x>", 5, "constructor", "__proto__", "hasOwnProperty", "staff", "1", "1"],
+        tieredBadges: { account_age: 3, "../x": 1, game_time: 99, constructor: 1, __proto__: { polluted: true } },
         nameplate: { skuId: "123", asset: "../../etc/passwd" }, decorationAsset: "a_123/../../x", profileEffectId: "abc",
         __proto__: { polluted: true }, constructor: "x", globalName: "Real Name"
     })}`);
     check("names over Discord's length are refused", hostile && !("username" in hostile) && hostile.globalName === "Real Name");
     check("pictures from anywhere but Discord's servers are refused", !("avatar" in hostile) && !("banner" in hostile));
-    check("email, phone and creation date never come from someone else", !("email" in hostile) && !("phone" in hostile) && !("createdAt" in hostile));
+    check("email and phone never come from someone else", !("email" in hostile) && !("phone" in hostile));
+    const created = date => read(`ecp1 {"username":"a","createdAt":${JSON.stringify(date)}}`)?.createdAt;
+    check("a shared creation date is taken when it's a day that exists", hostile.createdAt === "2010-01-01" && created("2016-02-29") === "2016-02-29");
+    check("a creation date that isn't a real day, or isn't written as one, is refused", [created("2015-02-30"), created("2015-13-01"), created("2015-5-13"), created("2015-05-13T00:00"), created(20150513)].every(date => date === undefined));
     check("numbers out of range or of the wrong type are refused", !("badgeFlags" in hostile) && !("nitroLevel" in hostile) && !("accentColor" in hostile));
-    check("badge ids must be plain names", JSON.stringify(hostile.customBadgeIds) === '["staff"]');
-    check("tiers must be plain names with a sane level", JSON.stringify(hostile.tieredBadges) === '{"age":3}');
+    check("badge ids must be badges Endcord has, once each, and never Object.prototype's names", JSON.stringify(hostile.customBadgeIds) === '["quest","1"]');
+    check("tiers must be Endcord's tiered badges with a level they have", JSON.stringify(hostile.tieredBadges) === '{"account_age":3}');
     check("paths can't climb out of Discord's asset folders", !("nameplate" in hostile) && !("decorationAsset" in hostile) && !("profileEffectId" in hostile));
     check("nothing lands on Object.prototype", ({}).polluted === undefined && !Object.hasOwn(hostile, "constructor"));
+
+    // A shared picture link lands inside CSS url() in FullVCPFP, ThemeAttributes and themes
+    const cssBreak = read(`ecp1 ${JSON.stringify({ username: "a", avatar: "https://cdn.discordapp.com/a.png),url(https://evil.example/x", banner: "https://cdn.discordapp.com/a.png'" })}`);
+    check("a picture link that could end a CSS url() is refused", cssBreak?.username === "a" && !("avatar" in cssBreak) && !("banner" in cssBreak));
+    const realLinks = read(`ecp1 ${JSON.stringify({ avatar: "https://cdn.discordapp.com/avatars/1/a_b.gif?size=1024", banner: "https://media.discordapp.net/attachments/1/2/x%20y.png?ex=1&is=2&hm=3&=&format=webp&width=1&height=1" })}`);
+    check("Discord's own picture links pass", realLinks?.avatar?.endsWith("?size=1024") && realLinks.banner?.includes("format=webp"));
+
+    // Discord reads other bits of publicFlags as system account, verified bot or spammer
+    check("only badge bits come through in the flags", read(`ecp1 {"badgeFlags":${4 | (1 << 12) | (1 << 16) | (1 << 20)}}`)?.badgeFlags === 4);
+    check("flags without a badge bit are dropped", read(`ecp1 {"username":"a","badgeFlags":${1 << 12}}`)?.badgeFlags === undefined);
+
+    // Characters nobody sees: they'd hide text, flip its direction or break a line where none belongs
+    const invisible = read(`ecp1 ${JSON.stringify({ username: "pa\u202Enda\n\u0000", pronouns: "\u200B\u200E\uFEFF", bio: "line 1\nline 2\u2028\u202E", oldName: "ok\u200D" })}`);
+    check("invisible characters are removed from a name", invisible?.username === "panda");
+    check("a field of only invisible characters is dropped", !("pronouns" in invisible));
+    check("a bio keeps its line breaks and loses the rest", invisible.bio === "line 1\nline 2");
+    check("the zero-width joiner stays, emoji need it", invisible.oldName === "ok\u200D");
+
+    const plates = [
+        read('ecp1 {"nameplate":{"skuId":"1","asset":"nameplates/nameplates/crimson/","label":"Crimson","palette":"crimson"}}'),
+        read('ecp1 {"nameplate":{"skuId":"1","asset":"nameplates/nameplates/crimson/","label":"x\\u0000y","palette":"x;}"}}')
+    ];
+    check("a nameplate palette must look like one of Discord's", plates[0]?.nameplate?.palette === "crimson" && plates[1]?.nameplate && !("palette" in plates[1].nameplate) && plates[1].nameplate.label === "xy");
     check("a Nitro date comes through as a plain date", read('ecp1 {"nitroLevel":3,"nitroSince":"2019-03-14"}')?.nitroSince === "2019-03-14");
     const badDates = [read('ecp1 {"username":"a","nitroSince":"2019-03-14<script>"}'), read('ecp1 {"username":"a","nitroSince":20190314}')];
     check("anything else in the Nitro date is refused", badDates.every(p => p?.username === "a" && !("nitroSince" in p)), badDates);
     check("a message with nothing usable shares nothing", read('ecp1 {"email":"x@y.z"}') === null);
+}
+
+// ---- Hostile input, many times ---------------------------------------------------------------------------------
+// Random profiles built from the characters that break CSS, HTML, JSON and Object lookups: whatever comes out must
+// keep the promises above. ENDCORD_FUZZ_SEED=<seed> replays a failing run
+{
+    const SEED = Number(process.env.ENDCORD_FUZZ_SEED) || Date.now() % 2 ** 31;
+    let state = SEED;
+    const random = () => {
+        state = state + 0x6D2B79F5 | 0;
+        let t = Math.imul(state ^ state >>> 15, 1 | state);
+        t ^= t + Math.imul(t ^ t >>> 7, 61 | t);
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+    const pick = list => list[Math.floor(random() * list.length)];
+    const PIECES = ["a", "Z", "0", "_", ".", "-", "/", "?", "=", "&", "%", "(", ")", ",", "'", "\"", "<", ">", ";", "{", "}", "\\", " ", "\n", "\u0000", "\u202E", "\u200B", "\u200D", "\uFEFF", "\u2028", "https://cdn.discordapp.com/", "https://media.discordapp.net/", "https://evil.example/", "javascript:", "..", "__proto__", "constructor", "quest", "oldname", "account_age", "crimson", "att:avatar.png", "2015-05-13", "2015-02-30", "2015"];
+    const randomString = () => Array.from({ length: Math.floor(random() * 12) }, () => pick(PIECES)).join("");
+    const randomValue = depth => {
+        const kind = random();
+        if (kind < .45) return randomString();
+        if (kind < .6) return Math.floor(random() * 2 ** 33) - 2 ** 32;
+        if (kind < .65) return pick([true, false, null, undefined, 1.5, NaN]);
+        if (kind < .8 && depth < 2) return Array.from({ length: Math.floor(random() * 5) }, () => randomValue(depth + 1));
+        if (depth < 2) return randomObject(depth + 1);
+        return randomString();
+    };
+    const KEYS = ["username", "globalName", "bio", "pronouns", "oldName", "avatar", "banner", "accentColor", "accentColor2", "badgeFlags", "nitroLevel", "nitroSince", "boostMonths", "nitro", "decorationAsset", "profileEffectId", "profileFrameId", "customBadgeIds", "tieredBadges", "nameplate", "displayNameStyles", "skuId", "asset", "label", "palette", "fontId", "effectId", "colors", "email", "phone", "createdAt", "__proto__", "constructor", "toString"];
+    const randomObject = depth => {
+        const out = {};
+        for (let i = Math.floor(random() * 8); i > 0; i--) Object.defineProperty(out, pick(KEYS), { value: randomValue(depth), enumerable: true, writable: true, configurable: true });
+        return out;
+    };
+
+    const LINK = /^https:\/\/(?:cdn\.discordapp\.com|media\.discordapp\.net)\/[\w\-./?=&%]{1,600}$/;
+    const INVISIBLE = /[\u0000-\u001F\u007F-\u009F\u200B\u200C\u200E\u200F\u2028-\u202E\u2060-\u2064\u2066-\u206F\uFEFF]/;
+    const INVISIBLE_IN_BIO = /[\u0000-\u0009\u000B-\u001F\u007F-\u009F\u200B\u200C\u200E\u200F\u2028-\u202E\u2060-\u2064\u2066-\u206F\uFEFF]/;
+    const BADGE_BITS = 1 | 2 | 4 | 8 | 64 | 128 | 256 | 512 | 16384 | 131072 | 262144 | 4194304;
+    const BADGE_ID = /^(?:oldname|quest|meadow|orbs|gift_(?:patron|champion|luminary|icon|hero|legendary)|\d+)$/;
+    const TIER_KEY = /^(?:account_age|streaming|game_time|game_variety)$/;
+    const failures = [];
+    const expect = (ok, what, input) => { if (!ok && failures.length < 8) failures.push(`${what}: ${JSON.stringify(input)}`); };
+
+    for (let round = 0; round < 20_000; round++) {
+        const input = randomObject(0);
+        const out = m.readProfileMessage(`ecp1 ${JSON.stringify(input)}`, [{ filename: "avatar.png", url: pick(["https://cdn.discordapp.com/attachments/1/2/avatar.png", "https://evil.example/avatar.png", "https://cdn.discordapp.com/a),url(https://evil.example/x"]) }]);
+        if (out === null) continue;
+        for (const key of ["avatar", "banner"]) if (key in out) expect(LINK.test(out[key]), `${key} isn't a plain Discord link`, input);
+        for (const key of ["username", "globalName", "pronouns", "oldName"]) if (key in out) expect(typeof out[key] === "string" && !INVISIBLE.test(out[key]) && out[key].length <= 40, `${key} kept an invisible character`, input);
+        if ("bio" in out) expect(!INVISIBLE_IN_BIO.test(out.bio) && out.bio.length <= 400, "bio kept an invisible character", input);
+        if ("badgeFlags" in out) expect((out.badgeFlags & ~BADGE_BITS) === 0 && out.badgeFlags > 0, "badgeFlags carry a bit that isn't a badge", input);
+        if ("customBadgeIds" in out) expect(out.customBadgeIds.every(id => BADGE_ID.test(id)) && new Set(out.customBadgeIds).size === out.customBadgeIds.length, "an unknown badge id got through", input);
+        if ("tieredBadges" in out) expect(Object.keys(out.tieredBadges).every(key => TIER_KEY.test(key) && Number.isInteger(out.tieredBadges[key]) && out.tieredBadges[key] >= 0 && out.tieredBadges[key] <= 9), "an unknown tier got through", input);
+        if ("nameplate" in out) expect(/^\d+$/.test(out.nameplate.skuId) && /^(?!.*\.\.)[\w\-./]+$/.test(out.nameplate.asset) && (out.nameplate.palette === undefined || /^[a-z_]+$/.test(out.nameplate.palette)) && (out.nameplate.label === undefined || !INVISIBLE.test(out.nameplate.label)), "a nameplate field got through unchecked", input);
+        if ("createdAt" in out) expect(/^\d{4}-\d{2}-\d{2}$/.test(out.createdAt) && new Date(`${out.createdAt}T12:00:00Z`).toISOString().startsWith(out.createdAt), "a creation date that isn't a day got through", input);
+        for (const key of ["email", "phone", "copiedUserId", "__proto__", "constructor", "toString"]) expect(!Object.hasOwn(out, key), `${key} came from someone else`, input);
+        expect(Object.getPrototypeOf(out) === Object.prototype, "the output's prototype was replaced", input);
+    }
+    expect(({}).polluted === undefined && !("polluted" in {}), "Object.prototype was polluted", SEED);
+    check(`20000 hostile profiles kept every promise (seed ${SEED})`, failures.length === 0);
+    for (const failure of failures) console.log(`      ${failure}`);
 }
 
 // ---- Reading the channel ---------------------------------------------------------------------------------------
@@ -130,10 +219,19 @@ const PNG = `data:image/png;base64,${Buffer.from("not really a png").toString("b
         msg("902", "A", { username: "a-old" })
     ]];
     // A cache file someone edited by hand is checked again when it's read
-    __store.set("CustomProfile_shared_v1", { channel: CHANNEL, newest: "800", fullAt: Date.now(), profiles: { Z: { m: "800", d: { username: "z", avatar: "https://evil.example/x.png" } } } });
+    const Z = "700000000000000001";
+    __store.set("CustomProfile_shared_v1", {
+        channel: CHANNEL, newest: "800", fullAt: Date.now(), profiles: {
+            [Z]: { m: "800", d: { username: "z", avatar: "https://evil.example/x.png" } },
+            __proto__: { m: "801", d: { username: "proto" } },
+            "not-an-id": { m: "802", d: { username: "odd" } },
+            "700000000000000002": { m: "x", d: { username: "odd-message" } }
+        }
+    });
 
     await m.startSharing(ids => changes.push(...ids), { read: true, mine: () => null });
-    check("a cached profile is checked again when it's loaded", m.getSharedProfile("Z")?.username === "z" && !("avatar" in m.getSharedProfile("Z")));
+    check("a cached profile is checked again when it's loaded", m.getSharedProfile(Z)?.username === "z" && !("avatar" in m.getSharedProfile(Z)));
+    check("cached profiles need a Discord id and message id", m.sharedProfileIds().join() === Z && m.getSharedProfile("not-an-id") === null);
 
     // The first sync waits 15 s after start; the test calls the live path and a manual sync through the timer-free route
     __dispatch("MESSAGE_CREATE", { channelId: CHANNEL, message: msg("906", "B", { username: "b-live" }) });
@@ -172,7 +270,7 @@ const PNG = `data:image/png;base64,${Buffer.from("not really a png").toString("b
     await passive({ guildId: "1", channels: [] }, "915");
     check("an id that leads to nothing is read once, not again and again", __rest.gets === 3);
     m.stopSharing();
-    check("stopping shows nobody's shared profile", m.getSharedProfile("Z") === null && changes.includes("Z"));
+    check("stopping shows nobody's shared profile", m.getSharedProfile(Z) === null && changes.includes(Z));
 }
 
 // ---- A full read of the channel --------------------------------------------------------------------------------

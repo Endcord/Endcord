@@ -5,11 +5,12 @@
  */
 
 import { Button } from "@components/Button";
+import { EndcordModal } from "@components/EndcordModal";
 import type { RenderModalProps } from "@endcord/discord-types";
 import { copyWithToast } from "@utils/discord";
 import { t } from "@utils/i18n";
 import { classes } from "@utils/misc";
-import { Modal, React, RTCConnectionStore, useStateFromStores } from "@webpack/common";
+import { React, RTCConnectionStore, useStateFromStores } from "@webpack/common";
 import type { SVGProps } from "react";
 
 export interface IPInfo {
@@ -99,7 +100,7 @@ export function VoiceServerModal({ rootProps, loadInfo }: VoiceServerModalProps)
         : "Unknown";
 
     return (
-        <Modal
+        <EndcordModal
             {...rootProps}
             size="md"
             title={t("Voice Server Info")}
@@ -155,7 +156,7 @@ export function VoiceServerModal({ rootProps, loadInfo }: VoiceServerModalProps)
                         {t("Copy IP")}</Button>
                 </div>
             </div>
-        </Modal>
+        </EndcordModal>
     );
 }
 

@@ -4,13 +4,14 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { EndcordModal } from "@components/EndcordModal";
 import { Flex } from "@components/Flex";
 import { FormSwitch } from "@components/FormSwitch";
 import { Heading } from "@components/Heading";
 import { RenderModalProps } from "@endcord/discord-types";
 import { characters } from "@plugins/sekaiStickers/characters";
 import { t } from "@utils/i18n";
-import { ChannelStore, Modal, openModal, React, SelectedChannelStore, Slider, TextArea, UploadHandler } from "@webpack/common";
+import { ChannelStore, openModal, React, SelectedChannelStore, Slider, TextArea, UploadHandler } from "@webpack/common";
 
 import Canvas from "./Canvas";
 import CharSelectModal from "./Picker";
@@ -97,7 +98,7 @@ export default function SekaiStickersModal({ modalProps, settings }: { modalProp
         }
     };
     return (
-        <Modal
+        <EndcordModal
             {...modalProps}
             size="lg"
             title={t("Sekai Stickers")}
@@ -142,6 +143,6 @@ export default function SekaiStickersModal({ modalProps, settings }: { modalProp
                     <FormSwitch title={t("Enable curve")} value={curve} onChange={val => setCurve(val)} />
                 </div>
             </Flex>
-        </Modal>
+        </EndcordModal>
     );
 }

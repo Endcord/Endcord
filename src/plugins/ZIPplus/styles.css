@@ -458,7 +458,7 @@
     display: none;
 }
 
-/* Force code block container to full width and add balanced padding */
+/* Full-width code block container with even padding */
 .zp-code-modal .vc-shiki-container {
     width: 100% !important;
     min-width: 100% !important;
@@ -491,7 +491,7 @@
     padding-right: 48px !important;
 }
 
-/* Reposition copy button to be accessible without scrolling */
+/* Keep the copy button reachable without scrolling */
 .zp-code-modal .vc-shiki-btns {
     position: absolute !important;
     bottom: 8px !important;

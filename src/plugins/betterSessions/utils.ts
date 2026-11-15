@@ -11,7 +11,11 @@ import { UserStore } from "@webpack/common";
 import { ChromeIcon, DiscordIcon, EdgeIcon, FirefoxIcon, IEIcon, MobileIcon, OperaIcon, SafariIcon, UnknownIcon } from "./components/icons";
 import { SessionInfo } from "./types";
 
-const getDataKey = () => `BetterSessions_savedSessions_${UserStore.getCurrentUser().id}`;
+// Per account. Before anyone has signed in there is no account, and nothing to load or save
+const getDataKey = () => {
+    const id = UserStore.getCurrentUser()?.id;
+    return id ? `BetterSessions_savedSessions_${id}` : null;
+};
 
 export const cl = classNameFactory("vc-betterSessions-");
 export const savedSessionsCache: Map<string, { name: string, isNew: boolean; }> = new Map();
@@ -20,12 +24,15 @@ export function getDefaultName(clientInfo: SessionInfo["session"]["client_info"]
     return `${clientInfo.os} · ${clientInfo.platform}`;
 }
 
-export function saveSessionsToDataStore() {
-    return DataStore.set(getDataKey(), savedSessionsCache);
+export async function saveSessionsToDataStore() {
+    const key = getDataKey();
+    if (key) await DataStore.set(key, savedSessionsCache);
 }
 
 export async function fetchNamesFromDataStore() {
-    const savedSessions = await DataStore.get<Map<string, { name: string, isNew: boolean; }>>(getDataKey()) || new Map();
+    const key = getDataKey();
+    if (!key) return;
+    const savedSessions = await DataStore.get<Map<string, { name: string, isNew: boolean; }>>(key) || new Map();
     savedSessions.forEach((data, idHash) => {
         savedSessionsCache.set(idHash, data);
     });

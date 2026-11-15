@@ -28,7 +28,7 @@ import { ensureSafePath } from "./utils/ensureSafePath";
 import { makeLinksOpenExternally } from "./utils/externalLinks";
 import { handleIpc } from "./utils/ipc";
 
-const RENDERER_CSS_PATH = join(__dirname, IS_VESKTOP ? "endcordDesktopRenderer.css" : "renderer.css");
+const RENDERER_CSS_PATH = join(__dirname, IS_ENDCORD_DESKTOP ? "endcordDesktopRenderer.css" : "renderer.css");
 
 mkdirSync(THEMES_DIR, { recursive: true });
 

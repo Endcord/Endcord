@@ -14,7 +14,6 @@ import { readdir, readFile, stat } from "fs/promises";
 import { dirname, join, relative, resolve } from "path";
 
 const PLUGIN_ALIASES = ["@plugins/"];
-const ALIAS_FOLDER_REMAP = { equicordToolbox: "endcordToolbox" };
 // Calls that move settings between plugin names at module load. They only matter when the user still has
 // settings under the old name, so the plugin is loaded at startup in exactly that case.
 // Value: index of the first old-name argument; every argument from there on (up to `oldNameCount`) is an old name.
@@ -65,7 +64,7 @@ async function findCrossImports() {
             const alias = PLUGIN_ALIASES.find(a => spec.startsWith(a));
             if (alias) {
                 const folder = spec.slice(alias.length).split("/")[0];
-                target = ALIAS_FOLDER_REMAP[folder] ?? folder;
+                target = folder;
             } else if (spec.startsWith(".")) {
                 target = pluginFolderOf(join(dirname(file), spec));
             }

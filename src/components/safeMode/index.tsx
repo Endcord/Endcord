@@ -24,7 +24,7 @@ const cl = classNameFactory("ec-safe-");
 function SafeModeModal({ onClose, transitionState }: RenderModalProps) {
     const { t } = useI18n();
 
-    // What the crash went through names the plugin best. Failing that, whatever was turned on since the last good start
+    // Blame the plugins in the crash's stack first, otherwise whatever was enabled since the last good start
     const fromCrash = bootState.suspects.filter(name => name in Plugins && Settings.plugins[name]?.enabled);
     const candidates = fromCrash.length ? fromCrash : getPluginsChangedSinceGoodStart().filter(name => name in Plugins);
     const [keepOn, setKeepOn] = useState(() => new Set<string>());
@@ -83,7 +83,7 @@ function SafeModeModal({ onClose, transitionState }: RenderModalProps) {
     );
 }
 
-/** Says what happened and offers the way out. Runs once Discord's screen is up */
+/** Safe mode notice with the way back out. Shown once Discord's UI is up */
 export function showSafeModeScreen() {
     showNotice(t("Safe mode: Endcord's plugins, themes and Custom CSS are off until you restart."), t("Restart normally"), relaunch);
     openModal(props => <SafeModeModal {...props} />);
