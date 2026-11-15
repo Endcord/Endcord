@@ -36,9 +36,8 @@ function throttle<T extends (...args: never[]) => void>(func: T, limit: number, 
     } as T;
 }
 
+// Keys are fixed-host addresses; Discord answers with its own media path
 async function getAsset(key: string): Promise<string> {
-    if (/https?:\/\/(cdn|media)\.discordapp\.(com|net)\/attachments\//.test(key))
-        return `mp:${key.replace(/https?:\/\/(cdn|media)\.discordapp\.(com|net)\//, "")}`;
     return (await ApplicationAssetUtils.fetchAssetIds(OSU_APP_ID, [key]))[0];
 }
 

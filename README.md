@@ -84,18 +84,20 @@ Plugin ideas and fixes go through pull requests. Read [CONTRIBUTING.md](CONTRIBU
 
 ## Performance
 
-Endcord ships 500 plugins, nearly three times as many as Vencord, and runs in the same memory: within 2% of Vencord and below Equicord on every memory measure, with the lowest idle CPU of the three. Plugins are only loaded when you turn them on.
+Endcord ships 500 plugins, nearly three times as many as Vencord, and runs in the same memory: within 2% of Vencord and below Equicord on every memory measure, with the lowest idle CPU of the three. Plugins are only loaded when you turn them on. [Endcord Desktop](#endcord-desktop), Endcord's own app, runs the same 500 plugins in at least 130 MB less memory than Discord's app with any of the three mods, and is usable about a second sooner.
 
-| | Endcord | Vencord | Equicord | Vanilla Discord |
-|---|---:|---:|---:|---:|
-| Plugins | **500** | 178 | 381 | – |
-| Total RAM | 698 MB | **687 MB** | 727 MB | 672 MB |
-| Renderer RAM | 401 MB | **397 MB** | 415 MB | 366 MB |
-| JS heap after GC | 107 MB | **106 MB** | 110 MB | 98 MB |
-| Idle CPU (one core) | **1.80%** | 1.87% | 1.88% | 1.51% |
-| Launch to usable | 3.75 s | **3.42 s** | 3.43 s | 3.38 s |
+| | Endcord Desktop | Endcord | Vencord | Equicord | Vanilla Discord |
+|---|---:|---:|---:|---:|---:|
+| Plugins | **500** | **500** | 178 | 381 | – |
+| Total RAM | **551 MB** | 698 MB | 687 MB | 727 MB | 672 MB |
+| Renderer RAM | **302 MB** | 401 MB | 397 MB | 415 MB | 366 MB |
+| JS heap after GC | **103 MB** | 107 MB | 106 MB | 110 MB | 98 MB |
+| Idle CPU (one core) | 4.81%\* | **1.80%** | 1.87% | 1.88% | 1.51% |
+| Launch to usable | **2.50 s** | 3.75 s | 3.42 s | 3.43 s | 3.38 s |
 
-Medians of 6 cold launches each, default settings, same Discord Stable build, Intel Core i5-12400F with 32 GB RAM on Windows 10. Bold marks the best of the three mods. See the [benchmark](benchmark/README.md) for the method, every run and a script to run it yourself.
+Medians of 6 cold launches each, default settings, same Discord Stable build, Intel Core i5-12400F with 32 GB RAM on Windows 10. Bold marks the best of everything but vanilla Discord. See the [benchmark](benchmark/README.md) for the method, every run and a script to run it yourself.
+
+Endcord Desktop 1.0.0 was measured on 15 November 2026 with the same script, PC and Discord account, the other columns on 23 October 2026. \*Idle CPU follows what Discord's page shows: on the 15th the account's Friends page had 12 friends online with live activity timers, against 4 in October, and Endcord's own code was about 3% of that work. Signed out, with nothing changing on screen, the app idles under 1% of one core. More in [Endcord Desktop's README](https://github.com/Endcord/EndcordDesktop#lightweight).
 
 ## Endcord Desktop
 

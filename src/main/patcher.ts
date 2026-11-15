@@ -178,7 +178,9 @@ if (!IS_VANILLA) {
         // Each Discord update installs to a new app-* folder, so its entries would pile up. Start over on each one
         const stamp = join(cacheDir, "discord-install");
         const install = dirname(process.execPath);
-        if (!existsSync(stamp) || readFileSync(stamp, "utf-8") !== install) {
+        let stamped: string | undefined;
+        try { stamped = readFileSync(stamp, "utf-8"); } catch { }
+        if (stamped !== install) {
             rmSync(cacheDir, { recursive: true, force: true });
             mkdirSync(cacheDir, { recursive: true });
             writeFileSync(stamp, install);
