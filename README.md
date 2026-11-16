@@ -92,7 +92,7 @@ Endcord ships 500 plugins, nearly three times as many as Vencord, and runs in th
 | Total RAM | **551 MB** | 698 MB | 687 MB | 727 MB | 672 MB |
 | Renderer RAM | **302 MB** | 401 MB | 397 MB | 415 MB | 366 MB |
 | JS heap after GC | **103 MB** | 107 MB | 106 MB | 110 MB | 98 MB |
-| Idle CPU (one core) | 4.81%\* | **1.80%** | 1.87% | 1.88% | 1.51% |
+| Idle CPU (one core) | **1.02%**\* | 1.80% | 1.87% | 1.88% | 1.51% |
 | Launch to usable | **2.50 s** | 3.75 s | 3.42 s | 3.43 s | 3.38 s |
 
 Medians of 6 cold launches each, default settings, same Discord Stable build, Intel Core i5-12400F with 32 GB RAM on Windows 10. Bold marks the best of everything but vanilla Discord. See the [benchmark](benchmark/README.md) for the method, every run and a script to run it yourself.
