@@ -141,12 +141,13 @@ export const settings = definePluginSettings({
         ]
     },
     fallbackProvider: {
-        description: "When a lyrics provider fails, try other providers",
+        description: "When a lyrics provider fails, try other providers (the Spotify provider sends the track ID to spotify-lyrics-api-pi.vercel.app)",
         type: OptionType.BOOLEAN,
-        default: true,
+        // Off so the LRCLIB default never sends the Spotify track id to the lyrics proxy unasked.
+        default: false,
     },
     showFailedToasts: {
-        description: "Hide toasts when lyrics fail to fetch",
+        description: "Show toasts when lyrics fail to fetch",
         type: OptionType.BOOLEAN,
         default: true,
     },
@@ -217,7 +218,7 @@ export const settings = definePluginSettings({
         default: false,
     },
     showTidalLyrics: {
-        description: "Show Tidal Controls",
+        description: "Show Tidal Lyrics",
         type: OptionType.BOOLEAN,
         default: false,
     },

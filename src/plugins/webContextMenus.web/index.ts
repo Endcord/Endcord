@@ -113,12 +113,13 @@ export default definePlugin({
             find: "Copy image not supported",
             replacement: [
                 {
-                    match: /(?<=(?:canSaveImage|canCopyImage)\(.{0,120}?)!\i\.isPlatformEmbedded/g,
+                    // "!" first so the lookbehind only runs at "!" positions
+                    match: /!(?<=(?:canSaveImage|canCopyImage)\(.{0,120}?!)\i\.isPlatformEmbedded/g,
                     replace: "false"
                 },
                 {
-                    match: /(?<=canCopyImage\(.+?)typeof \i\.clipboard\.copyImage/,
-                    replace: '"function"'
+                    match: /(canCopyImage\(.+?)typeof \i\.clipboard\.copyImage/,
+                    replace: '$1"function"'
                 }
             ]
         },
@@ -213,8 +214,9 @@ export default definePlugin({
                 replace: "true"
             }
         },
+        // Copy item for selected message text
         {
-            find: "#{intl::COPY}),hint:",
+            find: '"Ctrl+C",leadingAccessory:',
             replacement: [
                 {
                     match: /\i\.isPlatformEmbedded/,
@@ -224,9 +226,7 @@ export default definePlugin({
                     match: /\i\.\i\.copy(?=\(\i)/,
                     replace: "Endcord.Util.copyToClipboard"
                 }
-            ],
-            all: true,
-            noWarn: true
+            ]
         },
         // Automod add filter words
         {

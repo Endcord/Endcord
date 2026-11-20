@@ -135,13 +135,36 @@ export const startAllPlugins = traceFunction("startAllPlugins", function startAl
     }
 });
 
+/** The API plugins a plugin uses through its definition, without listing them in dependencies */
+function implicitApis(p: Plugin) {
+    const apis: string[] = [];
+    if (p.commands?.length) apis.push("CommandsAPI");
+    if (p.onBeforeMessageEdit || p.onBeforeMessageSend || p.onMessageClick) apis.push("MessageEventsAPI");
+    if (p.chatBarButton) apis.push("ChatInputButtonAPI");
+    if (p.renderMemberListDecorator) apis.push("MemberListDecoratorsAPI");
+    if (p.renderMessageAccessory) apis.push("MessageAccessoriesAPI");
+    if (p.renderMessageDecoration) apis.push("MessageDecorationsAPI");
+    if (p.messagePopoverButton) apis.push("MessagePopoverAPI");
+    if (p.userProfileBadge || (p as any).userProfileBadges) apis.push("BadgeAPI");
+    if (p.renderNicknameIcon) apis.push("NicknameIconsAPI");
+    if (p.headerBarButton) apis.push("HeaderBarAPI");
+    if (p.audioProcessor) apis.push("AudioPlayerAPI");
+    if (p.userAreaButton) apis.push("UserAreaAPI");
+    if (p.renderProfileCollection) apis.push("ProfileCollectionsAPI");
+    if (p.chatBarButtonWrapper) apis.push("ChatInputButtonAPI");
+    if (p.renderProfileSection) apis.push("ProfileSectionsAPI");
+    return apis;
+}
+
 export function startDependenciesRecursive(p: Plugin) {
     const settings = Settings.plugins;
     let restartNeeded = false;
     const failures: string[] = [];
 
-    p.dependencies?.forEach(d => {
-        if (!settings[d].enabled) {
+    // Turned on while Discord runs, a plugin also needs the APIs it uses implicitly, which only init enables otherwise
+    [...p.dependencies ?? [], ...implicitApis(p)].forEach(d => {
+        // A required API runs whatever its stored flag says
+        if (!isPluginEnabled(d)) {
             const dep = Plugins[d];
             startDependenciesRecursive(dep);
 
@@ -230,12 +253,14 @@ export const startPlugin = traceFunction("startPlugin", function startPlugin(p: 
             logger.warn(`${name} already started`);
             return false;
         }
+        const failed = (e: unknown) => logger.error(`Failed to start ${name}\n`, e);
         try {
             const startedAt = performance.now();
-            p.start();
+            // A rejected async start() would otherwise go unnoticed
+            (p.start() as unknown as Promise<void> | undefined)?.catch?.(failed);
             pluginStartTimes.set(name, performance.now() - startedAt);
         } catch (e) {
-            logger.error(`Failed to start ${name}\n`, e);
+            failed(e);
             return false;
         }
     }
@@ -314,10 +339,11 @@ export const stopPlugin = traceFunction("stopPlugin", function stopPlugin(p: Plu
             logger.warn(`${name} already stopped`);
             return false;
         }
+        const failed = (e: unknown) => logger.error(`Failed to stop ${name}\n`, e);
         try {
-            p.stop();
+            (p.stop() as unknown as Promise<void> | undefined)?.catch?.(failed);
         } catch (e) {
-            logger.error(`Failed to stop ${name}\n`, e);
+            failed(e);
             return false;
         }
     }
@@ -459,21 +485,7 @@ export const initPluginManager = onlyOnce(function init() {
             dep.isDependency = true;
         });
 
-        if (p.commands?.length) neededApiPlugins.add("CommandsAPI");
-        if (p.onBeforeMessageEdit || p.onBeforeMessageSend || p.onMessageClick) neededApiPlugins.add("MessageEventsAPI");
-        if (p.chatBarButton) neededApiPlugins.add("ChatInputButtonAPI");
-        if (p.renderMemberListDecorator) neededApiPlugins.add("MemberListDecoratorsAPI");
-        if (p.renderMessageAccessory) neededApiPlugins.add("MessageAccessoriesAPI");
-        if (p.renderMessageDecoration) neededApiPlugins.add("MessageDecorationsAPI");
-        if (p.messagePopoverButton) neededApiPlugins.add("MessagePopoverAPI");
-        if (p.userProfileBadge || (p as any).userProfileBadges) neededApiPlugins.add("BadgeAPI");
-        if (p.renderNicknameIcon) neededApiPlugins.add("NicknameIconsAPI");
-        if (p.headerBarButton) neededApiPlugins.add("HeaderBarAPI");
-        if (p.audioProcessor) neededApiPlugins.add("AudioPlayerAPI");
-        if (p.userAreaButton) neededApiPlugins.add("UserAreaAPI");
-        if (p.renderProfileCollection) neededApiPlugins.add("ProfileCollectionsAPI");
-        if (p.chatBarButtonWrapper) neededApiPlugins.add("ChatInputButtonAPI");
-        if (p.renderProfileSection) neededApiPlugins.add("ProfileSectionsAPI");
+        for (const api of implicitApis(p)) neededApiPlugins.add(api);
 
         for (const key of pluginKeysToBind) {
             p[key] &&= (p[key] as Function).bind(p);

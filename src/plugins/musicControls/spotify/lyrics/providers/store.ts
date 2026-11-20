@@ -5,6 +5,7 @@
  */
 
 import { showNotification } from "@api/Notifications";
+import { isPluginEnabled } from "@api/PluginManager";
 import { settings } from "@plugins/musicControls/settings";
 import { getLyrics, lyricFetchers, providers, updateLyrics } from "@plugins/musicControls/spotify/lyrics/api";
 import { SpotifyStore, type Track } from "@plugins/musicControls/spotify/SpotifyStore";
@@ -40,10 +41,19 @@ export const SpotifyLrcStore = proxyLazyWebpack(() => {
 
     const store = new SpotifyLrcStore(FluxDispatcher, {
         async SPOTIFY_PLAYER_STATE(e: { track: Track | null; }) {
-            if (fetchingsTracks.includes(e.track?.id ?? "")) return;
+            // The store outlives the lyrics view: don't fetch once lyrics or the plugin are turned off.
+            if (!settings.store.showSpotifyLyrics || !isPluginEnabled("MusicControls")) return;
+            const trackId = e.track?.id ?? "";
+            if (fetchingsTracks.includes(trackId)) return;
 
-            fetchingsTracks.push(e.track?.id ?? "");
-            lyricsInfo = await getLyrics(e.track);
+            fetchingsTracks.push(trackId);
+            try {
+                lyricsInfo = await getLyrics(e.track);
+            } catch {
+                lyricsInfo = null;
+            } finally {
+                fetchingsTracks = fetchingsTracks.filter(id => id !== trackId);
+            }
             const { lyricsConversion } = settings.store;
             if (lyricsConversion !== Provider.None) {
                 FluxDispatcher.dispatch({
@@ -53,7 +63,6 @@ export const SpotifyLrcStore = proxyLazyWebpack(() => {
                 });
             }
 
-            fetchingsTracks = fetchingsTracks.filter(id => id !== e.track?.id);
             store.emitChange();
         },
 

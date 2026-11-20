@@ -19,6 +19,7 @@ export const ScriptSrc = ["script-src", "worker-src"];
 // the page send data out, so hosts that only ever serve themes don't get it
 export const ThemeSrc = ["style-src", "font-src", "img-src"];
 const ImageOnly = ["img-src"];
+const MediaOnly = ["media-src"];
 const FrameOnly = ["frame-src"];
 
 // Plugins can whitelist their own domains by importing this object in their native.ts
@@ -115,6 +116,11 @@ export const CspPolicies: PolicyMap = {
     "api.imgur.com": ConnectSrc, // ChannelWallpaper uploads
     "api.openai.com": ConnectSrc, // ChatGPT (user-supplied key)
     "placeholder.nin0.dev": ImageSrc, // FavoriteAnything placeholders
+    "openrouter.ai": ConnectSrc, // TriviaAI's default endpoint
+    "st.ayaka.one": ImageOnly, // SekaiStickers character art, drawn into a canvas
+    "equicord.org": ImageOnly, // FriendshipRanks icons, StickerBlocker's GIF; the subdomain entries don't cover the apex
+    "github.githubassets.com": ImageOnly, // UnlimitedFavoriteGIFs' GitHub logo
+    "www.myinstants.com": MediaOnly, // AntiSnitch alarm sound
     "userpfp.github.io": ConnectSrc, // UserPFP's list of avatars
     "*.tenor.co": ImageAndMediaSrc,
     "*.giphy.com": ImageAndMediaSrc,

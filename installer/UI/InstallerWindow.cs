@@ -1253,8 +1253,9 @@ namespace EndcordInstaller.UI
             if (!string.IsNullOrEmpty(body))
                 info.Children.Add(new TextBlock { Text = body, FontFamily = Ink.Body, FontSize = 13.5, Foreground = Ink.Frozen(Ink.Mist), TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 4, 0, 0), MaxHeight = 90, TextTrimming = TextTrimming.CharacterEllipsis });
 
-            DetectedClient cleanup = GetCleanupCandidateClient();
-            if (ok && cleanup != null)
+            // The offer is only shown after a success, and an unseen box must not count as ticked
+            DetectedClient cleanup = ok ? GetCleanupCandidateClient() : null;
+            if (cleanup != null)
             {
                 var row = CheckRow(Loc.F("done.cleanupOffer", cleanup.Mod.DisplayName), _cleanupPrevClientChecked, v => _cleanupPrevClientChecked = v);
                 row.Margin = new Thickness(0, 14, 0, 0);
@@ -1735,6 +1736,7 @@ namespace EndcordInstaller.UI
             _cts = new CancellationTokenSource();
             var token = _cts.Token;
             bool relaunch = _prefs.Relaunch;
+            var customPaths = _prefs.CustomPaths;
 
             NavigateTo(WizardScreen.Installing, 1);
             SetProgress(3, null);
@@ -1745,12 +1747,17 @@ namespace EndcordInstaller.UI
                 try
                 {
                     outcome = mode == 2
-                        ? InstallationEngine.RunUninstall(_paths, targets, relaunch, OnInstallProgress, token)
+                        ? InstallationEngine.RunUninstall(_paths, targets, relaunch, OnInstallProgress, token, customPaths)
                         : InstallationEngine.RunInstall(_paths, targets, mode == 1, relaunch, OnInstallProgress, token);
                 }
                 catch (Exception ex)
                 {
-                    outcome = new OperationOutcome { Success = false, ErrorDetail = ex.Message };
+                    outcome = new OperationOutcome
+                    {
+                        Operation = mode == 2 ? InstallOperationKind.Uninstall : (mode == 1 ? InstallOperationKind.Repair : InstallOperationKind.InstallOrUpdate),
+                        Success = false,
+                        ErrorDetail = ex.Message
+                    };
                 }
 
                 Dispatcher.BeginInvoke(new Action(() =>
@@ -1880,9 +1887,18 @@ namespace EndcordInstaller.UI
                     : (o.Operation == InstallOperationKind.Repair
                         ? Loc.T("status.repairComplete")
                         : (o.WasUpdate ? Loc.T("status.updateComplete") : Loc.T("status.installComplete")));
-                body = o.KeptVersion != null
-                    ? Loc.F("done.banner.keptNewer", o.KeptVersion, o.PayloadVersion, o.AffectedInstalls.Count)
-                    : Loc.F("done.banner.installed", o.AffectedInstalls.Count);
+                body = o.Operation == InstallOperationKind.Uninstall
+                    ? Loc.F("done.banner.uninstalled", o.AffectedInstalls.Count)
+                    : (o.KeptVersion != null
+                        ? Loc.F("done.banner.keptNewer", o.KeptVersion, o.PayloadVersion, o.AffectedInstalls.Count)
+                        : Loc.F("done.banner.installed", o.AffectedInstalls.Count));
+                return;
+            }
+            bool uninstall = o.Operation == InstallOperationKind.Uninstall;
+            if (o.FailureKind == FailureKind.Cancelled && (uninstall || !o.RolledBack))
+            {
+                title = Loc.T("err.cancelled.title");
+                body = Loc.T(uninstall ? "err.cancelled.uninstallBody" : "err.rollbackFailed");
                 return;
             }
             switch (o.FailureKind)
@@ -1893,6 +1909,8 @@ namespace EndcordInstaller.UI
                 case FailureKind.DiscordDamaged: title = Loc.T("err.damaged.title"); body = Loc.F("err.damaged.body", o.FailureSubject ?? "Discord"); break;
                 default: title = Loc.T("err.generic.title"); body = o.ErrorDetail ?? ""; break;
             }
+            if (o.FailureKind != FailureKind.NoTargets && (uninstall || !o.RolledBack))
+                body = (string.IsNullOrEmpty(body) ? "" : body + " ") + Loc.T(uninstall ? "err.uninstallIncomplete" : "err.rollbackFailed");
         }
 
         // ---- Images ----
@@ -1989,7 +2007,7 @@ namespace EndcordInstaller.UI
                 w._lastOutcome = new OperationOutcome { Success = true, Operation = InstallOperationKind.InstallOrUpdate };
                 w._lastOutcome.AffectedInstalls.Add(new DiscordInstall { DisplayName = "Discord" });
                 snap("6_completed.png", WizardScreen.Completed, null);
-                w._lastOutcome = new OperationOutcome { Success = false, FailureKind = FailureKind.FilesLocked, FailureSubject = "app.asar" };
+                w._lastOutcome = new OperationOutcome { Success = false, RolledBack = true, FailureKind = FailureKind.FilesLocked, FailureSubject = "app.asar" };
                 snap("7_failed.png", WizardScreen.Completed, null);
                 snap("8_targets_tr.png", WizardScreen.ClientTargets, "tr");
             }

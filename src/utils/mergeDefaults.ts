@@ -15,6 +15,8 @@ export function mergeDefaults<T>(obj: T, defaults: T): T {
         const v = defaults[key];
         if (typeof v === "object" && !Array.isArray(v)) {
             obj[key] ??= {} as any;
+            // An imported or hand-edited file can hold a primitive here; writing into it throws in strict mode
+            if (v && typeof obj[key] !== "object") obj[key] = {} as any;
             mergeDefaults(obj[key], v);
         } else {
             obj[key] ??= v;

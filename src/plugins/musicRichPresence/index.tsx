@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { definePluginSettings, migratePluginSetting, migrateRemovedPlugin } from "@api/Settings";
+import { definePluginSettings, migratePluginSetting, migrateRemovedPlugin, SettingsStore } from "@api/Settings";
 import { Button, LinkButton } from "@components/Button";
 import { Card } from "@components/Card";
 import { Heading } from "@components/Heading";
@@ -283,7 +283,18 @@ function CustomInstanceAboutComponent() {
     return null;
 }
 
+// An imported settings file can bring the old entry back; its server and key must not replace this device's
+const localSecrets = (["instanceBaseURL", "instanceAPIBaseUrl", "apiKey"] as const)
+    .filter(key => SettingsStore.plain.plugins.MusicRichPresence?.[key])
+    .map(key => [key, SettingsStore.plain.plugins.MusicRichPresence[key]]);
+const entryBefore = SettingsStore.plain.plugins.MusicRichPresence;
 migrateRemovedPlugin("MusicRichPresence", "LastFMRichPresence", { keepSettings: true });
+// Only when the migration replaced the entry: saving on every start would make cloud sync think local is newer
+const entryAfter = SettingsStore.plain.plugins.MusicRichPresence;
+if (localSecrets.length && entryAfter && entryAfter !== entryBefore) {
+    Object.assign(entryAfter, Object.fromEntries(localSecrets));
+    SettingsStore.markAsChanged();
+}
 migratePluginSetting("MusicRichPresence", "showLastFmLogo", "showLogo");
 export default definePlugin({
     name: "MusicRichPresence",

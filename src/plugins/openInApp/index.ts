@@ -118,7 +118,8 @@ export default definePlugin({
         for (const [key, rule] of Object.entries(UrlReplacementRules)) {
             if (!pluginSettings.store[key]) continue;
 
-            if (rule.shortlinkMatch?.test(url)) {
+            // Resolving a short link needs the native side, which the browser build doesn't have
+            if (!IS_WEB && rule.shortlinkMatch?.test(url)) {
                 event?.preventDefault();
                 url = await Native.resolveRedirect(url);
             }

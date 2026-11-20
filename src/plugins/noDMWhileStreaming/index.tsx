@@ -29,10 +29,28 @@ const settings = definePluginSettings({
     }
 });
 
-let originalNotification: any = null;
 let originalPlaySound: any = null;
-let originalShowNotification: any = null;
-let originalMakeTextNotification: any = null;
+const restoreExports: Array<() => void> = [];
+
+function isHiddenChannel(channelId: unknown, channelType?: unknown): boolean {
+    const type = typeof channelType === "number" ? channelType : ChannelStore?.getChannel?.(channelId as string)?.type;
+    return type === 1 || (type === 3 && settings.store.hideGroups);
+}
+
+/**
+ * Webpack exports are getter-only properties (configurable, see defineExports), so plain assignment throws in strict
+ * code. Redefine the property instead; callers in other modules read it on every call
+ */
+function overrideExport(obj: any, key: string, make: (original: any) => any) {
+    const desc = Object.getOwnPropertyDescriptor(obj, key);
+    const original = obj[key];
+    if (typeof original !== "function") return;
+    Object.defineProperty(obj, key, { configurable: true, enumerable: desc?.enumerable ?? true, writable: true, value: make(original) });
+    restoreExports.push(() => {
+        if (desc) Object.defineProperty(obj, key, desc);
+        else delete obj[key];
+    });
+}
 
 function isStreaming(): boolean {
     try {
@@ -111,14 +129,6 @@ export default definePlugin({
 
             if (!isDM && !isGroup) return;
 
-            // Silence the notification and the sound at the Flux event level
-            event.isPushNotification = false;
-            event.optimistic = false;
-            event.silent = true;
-            if (event.message) {
-                event.message.flags = (event.message.flags || 0) | 4096; // 4096 = EPHEMERAL/SILENT
-            }
-
             // Do not ack own messages
             const currentUser = UserStore?.getCurrentUser?.();
             if (currentUser && message.author?.id === currentUser.id) return;
@@ -191,35 +201,6 @@ export default definePlugin({
     start() {
         if (settings.store.debugMode) console.debug("[NoDMWhileStreaming] Plugin started");
 
-        // Patch window.Notification to block desktop notifications while streaming
-        if (typeof window !== "undefined" && window.Notification) {
-            originalNotification = window.Notification;
-            try {
-                // @ts-ignore
-                window.Notification = function (title: string, options: any) {
-                    if (isStreaming()) {
-                        if (settings.store.debugMode) {
-                            console.debug("[NoDMWhileStreaming] [Notification] Blocked desktop notification:", title);
-                        }
-                        return {
-                            close() { },
-                            onclick: null,
-                            onclose: null,
-                            onerror: null,
-                            onshow: null,
-                        };
-                    }
-                    return new originalNotification(title, options);
-                };
-                // Copy properties to maintain compatibility
-                window.Notification.prototype = originalNotification.prototype;
-                (window.Notification as any).permission = originalNotification.permission;
-                window.Notification.requestPermission = originalNotification.requestPermission;
-            } catch (e) {
-                console.error("[NoDMWhileStreaming] Failed to patch window.Notification:", e);
-            }
-        }
-
         // Patch playSound to block message sounds while streaming
         try {
             // Discord no longer exposes this helper object; look it up quietly and skip sound blocking when missing
@@ -240,46 +221,31 @@ export default definePlugin({
             console.error("[NoDMWhileStreaming] Failed to patch soundModule:", e);
         }
 
-        // Patch Discord's internal notification actions to fully prevent in-app/desktop notification creation
+        // Discord's message notifications, desktop and in-app, and their sound go through showNotification.
+        // Its arguments are (icon, title, body, analytics, options); analytics carries channel_id and channel_type
         try {
             const notificationActions = findByProps("showNotification");
             if (notificationActions) {
-                if (notificationActions.showNotification) {
-                    originalShowNotification = notificationActions.showNotification;
-                    notificationActions.showNotification = function (channelId: string, ...args: any[]) {
-                        if (isStreaming()) {
-                            const channel = ChannelStore?.getChannel?.(channelId);
-                            if (channel) {
-                                const isDM = channel.type === 1;
-                                const isGroup = channel.type === 3 && settings.store.hideGroups;
-                                if (isDM || isGroup) {
-                                    if (settings.store.debugMode) {
-                                        console.debug("[NoDMWhileStreaming] [Notification] Blocked native showNotification for channel:", channelId);
-                                    }
-                                    return;
-                                }
-                            }
+                overrideExport(notificationActions, "showNotification", original => function (this: any, ...args: any[]) {
+                    const info = args[3];
+                    if (isStreaming() && isHiddenChannel(info?.channel_id ?? args[0], info?.channel_type)) {
+                        if (settings.store.debugMode) {
+                            console.debug("[NoDMWhileStreaming] [Notification] Blocked native showNotification for channel:", info?.channel_id);
                         }
-                        return originalShowNotification.call(notificationActions, channelId, ...args);
-                    };
-                }
+                        return;
+                    }
+                    return original.apply(this, args);
+                });
 
-                if (notificationActions.makeTextNotification) {
-                    originalMakeTextNotification = notificationActions.makeTextNotification;
-                    notificationActions.makeTextNotification = function (channel: any, ...args: any[]) {
-                        if (isStreaming()) {
-                            const isDM = channel?.type === 1;
-                            const isGroup = channel?.type === 3 && settings.store.hideGroups;
-                            if (isDM || isGroup) {
-                                if (settings.store.debugMode) {
-                                    console.debug("[NoDMWhileStreaming] [Notification] Blocked native makeTextNotification");
-                                }
-                                return;
-                            }
+                overrideExport(notificationActions, "makeTextNotification", original => function (this: any, channel: any, ...args: any[]) {
+                    if (isStreaming() && isHiddenChannel(channel?.id, channel?.type)) {
+                        if (settings.store.debugMode) {
+                            console.debug("[NoDMWhileStreaming] [Notification] Blocked native makeTextNotification");
                         }
-                        return originalMakeTextNotification.call(notificationActions, channel, ...args);
-                    };
-                }
+                        return;
+                    }
+                    return original.call(this, channel, ...args);
+                });
             }
         } catch (e) {
             console.error("[NoDMWhileStreaming] Failed to patch native notificationActions:", e);
@@ -288,16 +254,6 @@ export default definePlugin({
 
     stop() {
         if (settings.store.debugMode) console.debug("[NoDMWhileStreaming] Plugin stopped");
-
-        // Restore window.Notification
-        if (originalNotification && typeof window !== "undefined") {
-            try {
-                window.Notification = originalNotification;
-            } catch (e) {
-                console.error("[NoDMWhileStreaming] Failed to restore window.Notification:", e);
-            }
-            originalNotification = null;
-        }
 
         // Restore playSound
         if (originalPlaySound) {
@@ -313,21 +269,10 @@ export default definePlugin({
             originalPlaySound = null;
         }
 
-        // Restore notificationActions
-        try {
-            const notificationActions = findByProps("showNotification");
-            if (notificationActions) {
-                if (originalShowNotification && notificationActions.showNotification) {
-                    notificationActions.showNotification = originalShowNotification;
-                }
-                if (originalMakeTextNotification && notificationActions.makeTextNotification) {
-                    notificationActions.makeTextNotification = originalMakeTextNotification;
-                }
+        for (const restore of restoreExports.splice(0)) {
+            try { restore(); } catch (e) {
+                console.error("[NoDMWhileStreaming] Failed to restore notificationActions:", e);
             }
-        } catch (e) {
-            console.error("[NoDMWhileStreaming] Failed to restore notificationActions:", e);
         }
-        originalShowNotification = null;
-        originalMakeTextNotification = null;
     }
 });

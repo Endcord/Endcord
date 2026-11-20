@@ -70,6 +70,11 @@ check("core can't depend on a plugin", flags("layer-boundaries", importing("@plu
 check("core may use its own plugins", !flags("layer-boundaries", importing("@plugins/_api/badges"), "src/api/a.ts"));
 check("the page can't import electron", flags("layer-boundaries", importing("electron"), "src/utils/a.ts"));
 check("type imports don't exist at runtime", !flags("layer-boundaries", 'import type { x } from "@main/themes";', "src/api/a.ts"));
+check("a re-export reaches the module too", flags("layer-boundaries", 'export { x } from "@main/settings";', "src/shared/a.ts"));
+check("so does a re-export of everything", flags("layer-boundaries", 'export * from "@plugins/fakeNitro";', "src/api/a.ts"));
+check("type re-exports don't exist at runtime", !flags("layer-boundaries", 'export type { x } from "@main/themes";', "src/api/a.ts"));
+check("a dynamic import reaches the module", flags("layer-boundaries", 'const m = import("@plugins/fakeNitro");', "src/components/a.ts"));
+check("so does require", flags("layer-boundaries", 'const { ipcRenderer } = require("electron");', "src/utils/a.ts"));
 check("plugins aren't a layer", !flags("layer-boundaries", importing("@plugins/other"), "src/plugins/x/index.ts"));
 
 // ---- webpack-common-at-load --------------------------------------------------------------------------------

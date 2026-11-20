@@ -28,7 +28,7 @@ const serviceOptions = [
     { label: "Encrypting.host", value: ServiceType.ENCRYPTINGHOST },
     { label: "S3-Compatible", value: ServiceType.S3 },
     { label: "Catbox.moe", value: ServiceType.CATBOX },
-    ...(IS_DISCORD_DESKTOP ? [{ label: "0x0.st", value: ServiceType.ZEROX0 }] : []),
+    ...(!IS_WEB ? [{ label: "0x0.st", value: ServiceType.ZEROX0 }] : []),
     { label: "Litterbox", value: ServiceType.LITTERBOX },
     { label: "GoFile", value: ServiceType.GOFILE },
     { label: "tmpfiles.org", value: ServiceType.TMPFILES },
@@ -221,6 +221,12 @@ export const settings = definePluginSettings({
     disableFallbacks: {
         type: OptionType.BOOLEAN,
         description: "Disable fallback upload services",
+        default: false,
+        hidden: true
+    },
+    publicFallbacks: {
+        type: OptionType.BOOLEAN,
+        description: "Fall back from your own uploader to anonymous public hosts",
         default: false,
         hidden: true
     },
@@ -924,9 +930,16 @@ export function SettingsComponent() {
 
                 <SettingSwitch
                     name="Disable Fallback Uploaders"
-                    description={t("Only use the selected uploader without trying fallback hosts.")}
+                    description={t("Only use the selected uploader. When this is off, other uploaders are tried if it fails; anonymous public hosts only if the selected one is public or Fall Back to Public Hosts is on.")}
                     checked={store.disableFallbacks}
                     onChange={v => store.disableFallbacks = v}
+                />
+
+                <SettingSwitch
+                    name="Fall Back to Public Hosts"
+                    description={t("If your own uploader fails, try anonymous hosts like Catbox too. Anyone with the link can open the file there.")}
+                    checked={Boolean((store as { publicFallbacks?: boolean; }).publicFallbacks)}
+                    onChange={v => (store as { publicFallbacks?: boolean; }).publicFallbacks = v}
                 />
 
                 <SettingSwitch

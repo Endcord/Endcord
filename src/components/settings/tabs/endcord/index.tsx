@@ -185,7 +185,7 @@ function General() {
 
     return (
         <Group title={t("General")}>
-            <Row title={t("Language")} description={t("Select the language for Endcord and Discord.")} wide>
+            <Row title={t("Language")} description={t("Select the language for Endcord.")} wide>
                 <Select
                     options={SUPPORTED_LANGUAGES.map(l => ({ label: `${l.nativeName} (${l.englishName})`, value: l.code }))}
                     closeOnSelect={true}

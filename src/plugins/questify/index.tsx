@@ -559,7 +559,8 @@ export default definePlugin({
         },
         {
             // Adds a maxDigits prop to the LowerBadge component which allows for not truncating, or for truncating at a specific threshold.
-            find: ".BADGE_NOTIFICATION_BACKGROUND.css,disableColor",
+            // The "9k+" formatter; the text badge module also has BADGE_NOTIFICATION_BACKGROUND.css,disableColor
+            find: "}k+`",
             group: true,
             replacement: [
                 {

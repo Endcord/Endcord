@@ -7,7 +7,7 @@
 import * as DataStore from "@api/DataStore";
 
 import { removeRecentStickerByPackId } from "./components";
-import { StickerPack, StickerPackMeta } from "./types";
+import { Sticker, StickerPack, StickerPackMeta } from "./types";
 import { Mutex } from "./utils";
 
 const mutex = new Mutex();
@@ -27,6 +27,47 @@ function stickerPackToMeta(sp: StickerPack): StickerPackMeta {
         author: sp.author,
         logo: sp.logo,
         dynamic: sp.dynamic,
+    };
+}
+
+const RESERVED_KEYS = new Set([PACKS_KEY, "MoreStickers:RecentStickers"]);
+
+function isHttpsUrl(v: unknown): v is string {
+    try { return typeof v === "string" && new URL(v).protocol === "https:"; } catch { return false; }
+}
+
+function cleanSticker(raw: any, packId: string): Sticker {
+    if (!raw || typeof raw !== "object" || typeof raw.id !== "string" || typeof raw.title !== "string" || !isHttpsUrl(raw.image))
+        throw new Error("Invalid sticker in sticker pack");
+    return {
+        id: raw.id,
+        image: raw.image,
+        title: raw.title,
+        stickerPackId: packId,
+        ...(typeof raw.filename === "string" && { filename: raw.filename }),
+        ...(typeof raw.isAnimated === "boolean" && { isAnimated: raw.isAnimated }),
+    };
+}
+
+/**
+ * Checks a sticker pack read from a file and rebuilds it from known fields only. The pack id is its DataStore key,
+ * which is shared with every other plugin, so it has to be one of MoreStickers' own pack keys
+ */
+export function sanitizeStickerPack(raw: any): StickerPack {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("Invalid sticker pack");
+    const { id } = raw;
+    if (typeof id !== "string" || !/^MoreStickers:[\w:-]*Pack:[\w-]+$/.test(id) || RESERVED_KEYS.has(id))
+        throw new Error("Invalid sticker pack id");
+    if (typeof raw.title !== "string" || !Array.isArray(raw.stickers)) throw new Error("Invalid sticker pack");
+    const author = raw.author && typeof raw.author === "object" && typeof raw.author.name === "string"
+        ? { name: raw.author.name, ...(isHttpsUrl(raw.author.url) && { url: raw.author.url }) }
+        : undefined;
+    return {
+        id,
+        title: raw.title,
+        author,
+        logo: cleanSticker(raw.logo, id),
+        stickers: raw.stickers.map((s: any) => cleanSticker(s, id)),
     };
 }
 

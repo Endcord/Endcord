@@ -15,9 +15,9 @@ using EndcordInstaller.UI;
 [assembly: AssemblyCopyright("Copyright © 2026 Endcord. Licensed under GPL-3.0-or-later.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-[assembly: AssemblyVersion("4.1.1.0")]
-[assembly: AssemblyFileVersion("4.1.1.0")]
-[assembly: AssemblyInformationalVersion("4.1.1")]
+[assembly: AssemblyVersion("4.1.2.0")]
+[assembly: AssemblyFileVersion("4.1.2.0")]
+[assembly: AssemblyInformationalVersion("4.1.2")]
 [assembly: ComVisible(false)]
 [assembly: Guid("e8760626-8dd3-498f-abb9-eeac29266e0b")]
 [assembly: System.Resources.NeutralResourcesLanguage("en-US")]
@@ -60,15 +60,54 @@ namespace EndcordInstaller
             if (removeDesktop || HasArg(args, "--desktop") || Path.GetFileName(self).IndexOf("Desktop", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 if (removeDesktop && RelaunchOutsideInstall(self)) return 0;
-                var setup = new System.Windows.Application { ShutdownMode = System.Windows.ShutdownMode.OnMainWindowClose };
-                setup.Run(new DesktopSetupWindow(removeDesktop));
+                using (var single = TakeSingleInstance("Local\\EndcordDesktopSetup"))
+                {
+                    if (single == null)
+                    {
+                        if (HasArg(args, "--from-temp")) DeleteWhenClosed(self);
+                        return 0;
+                    }
+                    var setup = new System.Windows.Application { ShutdownMode = System.Windows.ShutdownMode.OnMainWindowClose };
+                    setup.Run(new DesktopSetupWindow(removeDesktop));
+                }
                 if (HasArg(args, "--from-temp")) DeleteWhenClosed(self);
                 return 0;
             }
 
-            var app = new System.Windows.Application { ShutdownMode = System.Windows.ShutdownMode.OnMainWindowClose };
-            app.Run(new InstallerWindow());
+            using (var single = TakeSingleInstance("Local\\EndcordInstaller"))
+            {
+                if (single == null) return 0;
+                var app = new System.Windows.Application { ShutdownMode = System.Windows.ShutdownMode.OnMainWindowClose };
+                app.Run(new InstallerWindow());
+            }
             return 0;
+        }
+
+        /// <summary>Null when another copy already holds it: two installers would share the staging and rollback folders</summary>
+        static System.Threading.Mutex TakeSingleInstance(string name)
+        {
+            try
+            {
+                bool createdNew;
+                var mutex = new System.Threading.Mutex(true, name, out createdNew);
+                if (createdNew) return mutex;
+                mutex.Dispose();
+                return null;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // The copy holding it runs elevated, so this one may not open it
+                return null;
+            }
+            catch (System.Threading.WaitHandleCannotBeOpenedException)
+            {
+                return null;
+            }
+            catch
+            {
+                // Without the mutex the installer still has to start
+                return new System.Threading.Mutex();
+            }
         }
 
         static bool HasArg(string[] args, string name)

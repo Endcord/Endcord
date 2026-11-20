@@ -276,12 +276,13 @@ function injectCall(
 
 // ---- Restoring saved fakes on startup ----
 let _restoreHandler: (() => void) | null = null;
+let _restoreTimer: ReturnType<typeof setTimeout> | null = null;
 
 function scheduleRestore() {
     _restoreHandler = () => {
         FluxDispatcher.unsubscribe("CONNECTION_OPEN", _restoreHandler!);
         _restoreHandler = null;
-        setTimeout(doRestore, 1200);
+        _restoreTimer = setTimeout(() => { _restoreTimer = null; doRestore(); }, 1200);
     };
     FluxDispatcher.subscribe("CONNECTION_OPEN", _restoreHandler);
 }
@@ -613,6 +614,10 @@ export default definePlugin({
         if (_restoreHandler) {
             FluxDispatcher.unsubscribe("CONNECTION_OPEN", _restoreHandler);
             _restoreHandler = null;
+        }
+        if (_restoreTimer) {
+            clearTimeout(_restoreTimer);
+            _restoreTimer = null;
         }
         fakeIds.clear();
         _idCounter = 0;

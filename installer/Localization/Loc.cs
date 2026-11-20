@@ -507,6 +507,13 @@ namespace EndcordInstaller.Localization
                 "Tu Endcord {0} es más nuevo que este instalador ({1}), así que se quedó. Discord está conectado de nuevo en {2}.",
                 "Votre Endcord {0} est plus récent que cet installateur ({1}), il a donc été gardé. Discord est reconnecté sur {2}.");
 
+            Add("done.banner.uninstalled",
+                "Endcord is off {0} Discord install(s). Your Endcord settings are kept.",
+                "Endcord {0} Discord kurulumundan kaldırıldı. Endcord ayarların duruyor.",
+                "Endcord удалён ({0}). Настройки Endcord сохранены.",
+                "Endcord se quitó de {0} Discord. Tus ajustes de Endcord se conservan.",
+                "Endcord a été retiré de {0} Discord. Vos réglages Endcord sont conservés.");
+
             Add("done.banner.migrated",
                 "Brought over {0} plugins, {1} preferences and {2} themes from {3}.",
                 "{3} içinden {0} eklenti, {1} tercih ve {2} tema taşındı.",
@@ -576,6 +583,24 @@ namespace EndcordInstaller.Localization
                 "Ничего не осталось недоделанным. Всё как было.",
                 "No quedó nada a medias. Todo está como antes.",
                 "Rien n'est resté à moitié fait. Tout est comme avant.");
+            Add("err.cancelled.uninstallBody",
+                "Installs that were already done are plain Discord again; the rest still have Endcord.",
+                "Bitmiş kurulumlar yeniden sade Discord; diğerlerinde Endcord duruyor.",
+                "Уже обработанные установки снова обычный Discord, в остальных Endcord остался.",
+                "Las instalaciones ya terminadas vuelven a ser Discord normal; las demás siguen con Endcord.",
+                "Les installations déjà traitées sont revenues à Discord d'origine ; les autres gardent Endcord.");
+            Add("err.rollbackFailed",
+                "Not everything could be put back. Run Repair, or reinstall Discord if it won't start.",
+                "Her şey eski haline döndürülemedi. Onar'ı çalıştır; Discord açılmazsa Discord'u yeniden kur.",
+                "Не всё удалось вернуть. Запустите «Починка» или переустановите Discord, если он не запускается.",
+                "No se pudo restaurar todo. Usa Reparar o reinstala Discord si no se abre.",
+                "Tout n'a pas pu être remis en place. Lancez Réparer, ou réinstallez Discord s'il ne démarre pas.");
+            Add("err.uninstallIncomplete",
+                "Uninstall didn't finish. Run it again, or reinstall Discord if it won't start.",
+                "Kaldırma tamamlanmadı. Yeniden dene; Discord açılmazsa Discord'u yeniden kur.",
+                "Удаление не завершено. Запустите его снова или переустановите Discord, если он не запускается.",
+                "La desinstalación no terminó. Vuelve a intentarlo o reinstala Discord si no se abre.",
+                "La désinstallation n'est pas terminée. Relancez-la, ou réinstallez Discord s'il ne démarre pas.");
 
             Add("err.permission.title",
                 "Needs a bit more permission",

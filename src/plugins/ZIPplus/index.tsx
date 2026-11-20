@@ -287,7 +287,7 @@ function handlePaste(event: ClipboardEvent) {
 }
 
 function getNative(): ZipPreviewNative | null {
-    if (!IS_DISCORD_DESKTOP || !EndcordNative?.pluginHelpers) return null;
+    if (IS_WEB || !EndcordNative?.pluginHelpers) return null;
     const native: unknown = EndcordNative.pluginHelpers["ZIP+"];
     return isZipPreviewNative(native) ? native : null;
 }
@@ -305,7 +305,7 @@ async function fetchBlob(url: string): Promise<Blob | null> {
         }
     }
 
-    if (IS_DISCORD_DESKTOP) return null;
+    if (!IS_WEB) return null;
 
     try {
         const res = await fetch(url, {
@@ -394,7 +394,7 @@ function MessageContextMenu(children: React.ReactNode[], props: ZipMessageContex
                             const native = getNative();
                             const message = native?.fetchAttachment
                                 ? "Failed to fetch attachment. Please try again."
-                                : (IS_DISCORD_DESKTOP
+                                : (!IS_WEB
                                 ? "ZIP+ native helper missing. Please reinstall Endcord."
                                 : "Unable to fetch attachment: CORS restrictions on web. Desktop app required for zip preview.");
                             showToast(message);
@@ -476,7 +476,7 @@ function ZipAttachmentPreviewInner({ attachment }: { attachment: ZipAttachmentLi
                         const native = getNative();
                         setError(native?.fetchAttachment
                             ? "Failed to fetch archive. Please try again."
-                            : (IS_DISCORD_DESKTOP
+                            : (!IS_WEB
                                 ? "ZIP+ native helper missing. Please reinstall Endcord."
                                 : "Unable to fetch: CORS restrictions on web. Desktop app required."));
                     }

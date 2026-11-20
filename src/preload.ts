@@ -13,7 +13,7 @@ import { contextBridge, webFrame } from "electron/renderer";
 import { join } from "path";
 
 import EndcordNative, { invoke, primeSettings, sendSync } from "./EndcordNative";
-import { loadRenderer, splitRenderer } from "./pluginChunkLoader";
+import { discardStartupFile, loadRenderer, splitRenderer } from "./pluginChunkLoader";
 
 // Monaco popout: its code comes from a CDN, so it only gets the three calls it needs
 if (location.protocol === "data:") {
@@ -43,7 +43,10 @@ if (location.protocol === "data:") {
         } catch {
             rendererJs = splitRenderer(Buffer.from(sendSync<string>(IpcEvents.PRELOAD_GET_RENDERER_JS), "utf-8"), rendererPath, settings);
         }
-        webFrame.executeJavaScript(rendererJs);
+        webFrame.executeJavaScript(rendererJs).catch(err => {
+            discardStartupFile(rendererPath);
+            throw err;
+        });
     }
 
     // Not supported in sandboxed preload scripts but Discord doesn't support it either so who cares

@@ -63,6 +63,9 @@ function sensitiveKeysOf(name: string) {
 // the user follows into voice, stop its updates or load a browser extension into Discord. Exports leave these
 // settings out, so a file that carries them was written by hand: they never come from a file or from the cloud
 function keepLocalSettings(imported: any) {
+    // A null or primitive plugin entry would make every start throw
+    for (const name in imported.plugins) if (typeof imported.plugins[name] !== "object" || !imported.plugins[name]) delete imported.plugins[name];
+
     for (const pluginName of Object.keys(Plugins)) {
         const keys = sensitiveKeysOf(pluginName);
         if (!keys.length) continue;

@@ -30,12 +30,19 @@ export async function exportCollections() {
 export async function importCollections(data: string) {
     const parsed = JSON.parse(data);
 
-    if ("collections" in parsed) {
-        await DataStore.set(DATA_COLLECTION_NAME, parsed.collections);
-        await refreshCacheCollection();
-    } else {
-        throw new Error("Invalid collections format");
-    }
+    if (!parsed || typeof parsed !== "object" || !Array.isArray(parsed.collections)) throw new Error("Invalid collections format");
+
+    // The picker reads c.gifs and each gif's src/url without checks, so anything else is refused or dropped here
+    const collections = parsed.collections.map((c: any) => {
+        if (!c || typeof c !== "object" || typeof c.name !== "string" || !Array.isArray(c.gifs)) throw new Error("Invalid collections format");
+        return {
+            ...c,
+            gifs: c.gifs.filter((g: any) => g && typeof g === "object" && typeof g.id === "string" && typeof g.src === "string" && typeof g.url === "string")
+        };
+    });
+
+    await DataStore.set(DATA_COLLECTION_NAME, collections);
+    await refreshCacheCollection();
 }
 
 export async function uploadGifCollections(showToast = true): Promise<void> {

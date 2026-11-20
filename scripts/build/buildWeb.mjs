@@ -24,7 +24,7 @@ import { readFileSync } from "fs";
 import { appendFile, mkdir, readdir, readFile, rm, writeFile } from "fs/promises";
 import { join, relative } from "path";
 
-import { BUILD_TIMESTAMP, buildOrWatchAll, commonOpts, commonRendererPlugins, globPlugins, IS_ANTI_CRASH_TEST, IS_DEV, IS_REPORTER, stringifyValues,VERSION } from "./common.mjs";
+import { BUILD_TIMESTAMP, buildOrWatchAll, commonOpts, commonRendererPlugins, compareNames, globPlugins, IS_ANTI_CRASH_TEST, IS_DEV, IS_REPORTER, stringifyValues,VERSION } from "./common.mjs";
 
 /**
  * @param {string} folder
@@ -38,7 +38,9 @@ async function zipFolder(folder, output) {
         const path = join(entry.parentPath, entry.name);
         files[relative(folder, path).replaceAll("\\", "/")] = await readFile(path);
     }
-    await writeFile(output, zipSync(files, { level: 9 }));
+    // Entries in a fixed order instead of the file system's
+    const sorted = Object.fromEntries(Object.entries(files).sort(([a], [b]) => compareNames(a, b)));
+    await writeFile(output, zipSync(sorted, { level: 9 }));
 }
 
 /**
@@ -191,7 +193,7 @@ async function buildExtension(target, files) {
 }
 
 const appendCssRuntime = readFile("dist/Endcord.user.css", "utf-8").then(content => {
-    const cssRuntime = `unsafeWindow._vcUserScriptRendererCss=\`${content.replaceAll("`", "\\`")}\``;
+    const cssRuntime = `unsafeWindow._vcUserScriptRendererCss=${JSON.stringify(content)}`;
 
     return appendFile("dist/Endcord.user.js", cssRuntime);
 });

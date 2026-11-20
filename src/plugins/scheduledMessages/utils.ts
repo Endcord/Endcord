@@ -19,6 +19,8 @@ const STORAGE_KEY = "ScheduledMessages_queue";
 let scheduledMessages: ScheduledMessage[] = [];
 let checkInterval: ReturnType<typeof setInterval> | null = null;
 let isProcessingMessages = false;
+// A failed send stays queued and is retried after 1, 2, 4 ... 30 minutes
+const failedSends = new Map<string, { count: number; retryAt: number; }>();
 
 export const phantomMessageMap = new Map<string, PhantomMessageData>();
 const pendingReactions = new Map<string, ScheduledReaction[]>();
@@ -335,24 +337,31 @@ async function addReactionsToMessage(channelId: string, messageId: string, react
     }
 }
 
+// true once the message itself is posted; reactions failing afterwards don't count
 async function sendScheduledMessage(msg: ScheduledMessage): Promise<boolean> {
+    if (!ChannelStore.getChannel(msg.channelId)) return false;
+
+    const reactions = pendingReactions.get(msg.id) ?? msg.reactions ?? [];
     try {
-        if (!ChannelStore.getChannel(msg.channelId)) return false;
-
-        const reactions = pendingReactions.get(msg.id) ?? msg.reactions ?? [];
-        removePhantomMessage(msg);
-        pendingReactions.delete(msg.id);
-
         if (msg.attachments?.length) {
             const uploaded = (await Promise.all(msg.attachments.map((att, i) =>
                 uploadAttachment(msg.channelId, att).then(r => r ? { ...r, id: String(i) } : null)
             ))).filter(Boolean) as { id: string; filename: string; uploaded_filename: string; }[];
+            if (uploaded.length !== msg.attachments.length) return false;
 
-            await postMessage(msg.channelId, msg.content, uploaded.length ? uploaded : undefined);
+            await postMessage(msg.channelId, msg.content, uploaded);
         } else {
             await postMessage(msg.channelId, msg.content);
         }
+    } catch (e) {
+        logger.error("Failed to send scheduled message", e);
+        return false;
+    }
 
+    removePhantomMessage(msg);
+    pendingReactions.delete(msg.id);
+
+    try {
         if (reactions.length) {
             await new Promise(r => setTimeout(r, 1500));
             const msgArray = (MessageStore.getMessages(msg.channelId) as { _array?: Message[]; })?._array ?? [];
@@ -366,15 +375,14 @@ async function sendScheduledMessage(msg: ScheduledMessage): Promise<boolean> {
                 }
             }
         }
-
-        if (settings.store.showNotifications) {
-            showToast(`Scheduled message sent to ${getChannelDisplayInfo(msg.channelId).name}`, Toasts.Type.SUCCESS);
-        }
-        return true;
-    } catch {
-        if (settings.store.showNotifications) showToast("Failed to send scheduled message", Toasts.Type.FAILURE);
-        return false;
+    } catch (e) {
+        logger.error("Failed to add reactions to scheduled message", e);
     }
+
+    if (settings.store.showNotifications) {
+        showToast(`Scheduled message sent to ${getChannelDisplayInfo(msg.channelId).name}`, Toasts.Type.SUCCESS);
+    }
+    return true;
 }
 
 export async function addScheduledMessage(
@@ -433,8 +441,18 @@ async function checkAndSendMessages(): Promise<void> {
         const dueMessages = scheduledMessages.filter(m => m.scheduledTime <= now);
 
         for (const msg of dueMessages) {
-            await removeScheduledMessage(msg.id);
-            await sendScheduledMessage(msg);
+            const failed = failedSends.get(msg.id);
+            if (failed && failed.retryAt > now) continue;
+
+            if (await sendScheduledMessage(msg)) {
+                failedSends.delete(msg.id);
+                await removeScheduledMessage(msg.id);
+                continue;
+            }
+
+            const count = (failed?.count ?? 0) + 1;
+            failedSends.set(msg.id, { count, retryAt: now + Math.min(2 ** (count - 1), 30) * 60_000 });
+            if (count === 1) showToast("Couldn't send a scheduled message, it stays queued and will be retried", Toasts.Type.FAILURE);
         }
     } finally {
         isProcessingMessages = false;

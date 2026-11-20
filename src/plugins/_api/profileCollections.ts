@@ -31,16 +31,11 @@ export default definePlugin({
         // dm sidebar
         {
             find: ".SIDEBAR,disableToolbar:",
-            replacement: [
-                {
-                    match: /user:\i,widgets:.{0,100}?\}\),(?=.{0,100}user:\i,currentUser:\i)/,
-                    replace: "$&arguments[0]?.isRedesignEnabled&&Endcord.Api.ProfileCollections.renderProfileCollections({...arguments[0],isSideBar:true}),"
-                },
-                {
-                    match: /user:\i,widgets:.{0,100}?\}\),(?=.{0,100}unownedWishlistItems:\i,wishlistId:\i)/,
-                    replace: "$&!arguments[0]?.isRedesignEnabled&&Endcord.Api.ProfileCollections.renderProfileCollections({...arguments[0],isSideBar:true}),"
-                }
-            ]
+            replacement: {
+                // The sidebar no longer gets isRedesignEnabled; its only layout is the redesigned cards column
+                match: /user:\i,widgets:.{0,100}?\}\),(?=.{0,100}user:\i,currentUser:\i)/,
+                replace: "$&Endcord.Api.ProfileCollections.renderProfileCollections({...arguments[0],isSideBar:true,isRedesignEnabled:true}),"
+            }
         }
     ]
 });

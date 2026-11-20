@@ -151,6 +151,7 @@ function SharePermsModal({ rootProps }: { rootProps: any; }) {
     React.useEffect(() => {
         const timer = setInterval(() => {
             forceUpdate();
+            setUsers(getSharedUsers());
             setLogs(getLogs());
         }, 1000);
         return () => clearInterval(timer);
@@ -162,7 +163,7 @@ function SharePermsModal({ rootProps }: { rootProps: any; }) {
     const addUser = async () => {
         if (newUserIds.length === 0 || !newGuildId) return;
 
-        const updated = [...users];
+        const added: SharedUser[] = [];
         for (const userId of newUserIds) {
             const newUser: SharedUser = {
                 id: userId,
@@ -176,13 +177,13 @@ function SharePermsModal({ rootProps }: { rootProps: any; }) {
                 uses: 0,
                 usesMap: {}
             };
-            updated.push(newUser);
+            added.push(newUser);
 
             // Notify via DM
             try {
                 const guild = GuildStore.getGuild(newGuildId);
                 const channelInfo = newChannelId ? `only in <#${newChannelId}>` : "anywhere";
-                const usesInfo = newUser.maxUses > 0 ? `${newUser.maxUses} times` : "Unlimited";
+                const usesInfo = newUser.maxUses > 0 ? `${newUser.maxUses} times per command` : "Unlimited";
 
                 const messageContent = "🛡 **Endcord Permission Access Granted**\n\n" +
                     "Hello! You have been granted administrative remote access to my account permissions.\n\n" +
@@ -236,6 +237,8 @@ function SharePermsModal({ rootProps }: { rootProps: any; }) {
             }
         }
 
+        // The DMs above are awaited; start from the stored list so commands counted meanwhile aren't lost
+        const updated = [...getSharedUsers(), ...added];
         setUsers(updated);
         saveSharedUsers(updated);
         setNewUserIds([]);
@@ -244,8 +247,8 @@ function SharePermsModal({ rootProps }: { rootProps: any; }) {
 
     const removeUser = async (index: number) => {
         const userToRemove = users[index];
-        const updated = [...users];
-        updated.splice(index, 1);
+        if (!userToRemove) return;
+        const updated = getSharedUsers().filter(u => !(u.id === userToRemove.id && u.guildId === userToRemove.guildId && u.startTime === userToRemove.startTime));
         setUsers(updated);
         saveSharedUsers(updated);
 
@@ -427,6 +430,8 @@ function SharePermsModal({ rootProps }: { rootProps: any; }) {
                         const user = UserStore.getUser(u.id);
                         const duration = parseDuration(u.validUntil);
                         const timeLeft = duration ? Math.max(0, u.startTime + duration - Date.now()) : Infinity;
+                        // The limit is per command, so show the most used one
+                        const usedMost = Math.max(0, ...Object.values(u.usesMap ?? {}));
 
                         return (
                             <div key={`${u.id}-${index}`} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: 12, background: "var(--background-secondary)", borderRadius: 8, marginBottom: 10 }}>
@@ -442,8 +447,8 @@ function SharePermsModal({ rootProps }: { rootProps: any; }) {
                                                 {formatTimeLeft(timeLeft)}
                                             </Text>
                                             {u.maxUses > 0 && (
-                                                <Text variant="text-xs/bold" style={{ color: (u.maxUses - u.uses) <= 1 ? "var(--text-feedback-critical)" : "var(--text-feedback-positive)" }}>
-                                                    {u.uses}/{u.maxUses}{" "}{t("Uses")}</Text>
+                                                <Text variant="text-xs/bold" style={{ color: (u.maxUses - usedMost) <= 1 ? "var(--text-feedback-critical)" : "var(--text-feedback-positive)" }}>
+                                                    {usedMost}/{u.maxUses}{" "}{t("Uses")}</Text>
                                             )}
                                         </div>
                                     </div>
@@ -539,6 +544,199 @@ function resolveId(arg: string): string {
     return id;
 }
 
+let commandQueue: Promise<void> = Promise.resolve();
+
+async function handleCommand({ message }: any) {
+    if (!message || !message.content) return;
+
+    const users = getSharedUsers();
+    const configIndex = users.findIndex(u => u.id === message.author.id);
+    if (configIndex === -1) return;
+
+    const config = users[configIndex];
+    const duration = parseDuration(config.validUntil);
+    if (duration !== 0 && Date.now() > config.startTime + duration) return;
+
+    // Commands only work in DMs or in the configured server's channels
+    const channel = ChannelStore.getChannel(message.channel_id);
+    const isDM = channel?.type === 1; // Type 1 = DM
+    const isTargetGuild = channel?.guild_id === config.guildId;
+
+    if (!isDM && !isTargetGuild) return;
+
+    const { prefix } = config;
+    if (!message.content.startsWith(prefix)) return;
+
+    const args = message.content.slice(prefix.length).trim().split(/ +/);
+    const command = args.shift()?.toLowerCase();
+    if (!command) return;
+
+    // Per-command quota
+    if (config.maxUses > 0) {
+        const currentUses = config.usesMap?.[command] || 0;
+        if (currentUses >= config.maxUses) {
+            sendBotMessage(message.channel_id, { content: `❌ Error: You have reached your limit of ${config.maxUses} uses for the \`${command}\` command.` });
+            return;
+        }
+    }
+
+    const { guildId } = config;
+    const permsList = config.permissions.split(",");
+    const hasAll = permsList.includes("all");
+    const channelId = message.channel_id;
+
+    let success = false;
+    let targetId = "";
+
+    try {
+        if (command === "tempmute" || command === "timeout") {
+            if (!hasAll && !permsList.includes("timeout")) return;
+            targetId = resolveId(args[0]);
+            const durationStr = args[1] || "10m";
+            const d = parseDuration(durationStr);
+            const until = new Date(Date.now() + d).toISOString();
+
+            await RestAPI.patch({
+                url: `/guilds/${guildId}/members/${targetId}`,
+                body: { communication_disabled_until: until }
+            });
+            sendBotMessage(channelId, { content: `✅ User <@${targetId}> timed out until ${new Date(until).toLocaleString()} (API).` });
+            success = true;
+        }
+        else if (command === "kick") {
+            if (!hasAll && !permsList.includes("kick")) return;
+            targetId = resolveId(args[0]);
+            await RestAPI.del({
+                url: `/guilds/${guildId}/members/${targetId}`,
+                reason: args.slice(1).join(" ") || "."
+            } as any);
+            sendBotMessage(channelId, { content: `✅ User <@${targetId}> kicked (API).` });
+            success = true;
+        }
+        else if (command === "ban") {
+            if (!hasAll && !permsList.includes("ban")) return;
+            targetId = resolveId(args[0]);
+            const reason = args.slice(1).join(" ") || ".";
+            await RestAPI.put({
+                url: `/guilds/${guildId}/bans/${targetId}`,
+                body: { delete_message_seconds: 0, reason }
+            });
+            sendBotMessage(channelId, { content: `✅ User <@${targetId}> banned (API).` });
+            success = true;
+        }
+        else if (command === "unmute") {
+            if (!hasAll && !permsList.includes("mute_voice")) return;
+            targetId = resolveId(args[0]);
+            await VoiceActions.setServerMute(guildId, targetId, false);
+            sendBotMessage(channelId, { content: `✅ User <@${targetId}> server unmuted.` });
+            success = true;
+        }
+        else if (command === "untimeout") {
+            if (!hasAll && !permsList.includes("timeout")) return;
+            targetId = resolveId(args[0]);
+            await RestAPI.patch({
+                url: `/guilds/${guildId}/members/${targetId}`,
+                body: { communication_disabled_until: null }
+            });
+            sendBotMessage(channelId, { content: `✅ User <@${targetId}> timeout removed.` });
+            success = true;
+        }
+        else if (command === "unban") {
+            if (!hasAll && !permsList.includes("ban")) return;
+            targetId = resolveId(args[0]);
+            await RestAPI.del({
+                url: `/guilds/${guildId}/bans/${targetId}`
+            });
+            sendBotMessage(channelId, { content: `✅ User <@${targetId}> unbanned.` });
+            success = true;
+        }
+        else if (command === "rename") {
+            if (!hasAll && !permsList.includes("rename_user")) return;
+            targetId = resolveId(args[0]);
+            const newName = args.slice(1).join(" ");
+            // Errors (missing permission, rate limit) are reported by the catch below
+            await RestAPI.patch({
+                url: `/guilds/${guildId}/members/${targetId}`,
+                body: { nick: newName }
+            });
+            sendBotMessage(channelId, { content: `✅ User <@${targetId}> renamed to ${newName}.` });
+            success = true;
+        }
+        else if (command === "addrole") {
+            if (!hasAll && !permsList.includes("add_role")) return;
+            targetId = resolveId(args[0]);
+            const roleId = resolveId(args[1]);
+            const MemberStore = findByPropsLazy("getMember");
+            const member = MemberStore.getMember(guildId, targetId);
+            const roles = new Set([...(member?.roles || []), roleId]);
+            await MemberRoleActions.updateMemberRoles(guildId, targetId, Array.from(roles));
+            sendBotMessage(channelId, { content: `✅ Role <@&${roleId}> added to <@${targetId}>.` });
+            success = true;
+        }
+        else if (command === "mute") {
+            if (!hasAll && !permsList.includes("mute_voice")) return;
+            targetId = resolveId(args[0]);
+            await VoiceActions.setServerMute(guildId, targetId, true);
+            sendBotMessage(channelId, { content: `✅ User <@${targetId}> server muted.` });
+            success = true;
+        }
+        else if (command === "disconnect") {
+            if (!hasAll && !permsList.includes("disconnect_voice")) return;
+            targetId = resolveId(args[0]);
+            await VoiceActions.setChannel(guildId, targetId, null);
+            sendBotMessage(channelId, { content: `✅ User <@${targetId}> disconnected from voice.` });
+            success = true;
+        }
+        else if (command === "move") {
+            if (!hasAll && !permsList.includes("move_voice")) return;
+            targetId = resolveId(args[0]);
+
+            // The author's current voice channel
+            const authorVoiceState = VoiceStateStore.getVoiceState(guildId, message.author.id);
+            const destChannelId = authorVoiceState?.channelId;
+
+            if (!destChannelId) {
+                sendBotMessage(channelId, { content: "❌ Error: You must be in a voice channel to move someone." });
+                return;
+            }
+
+            await VoiceActions.setChannel(guildId, targetId, destChannelId);
+            sendBotMessage(channelId, { content: `✅ User <@${targetId}> moved to your channel <#${destChannelId}>.` });
+            success = true;
+        }
+
+        if (success) {
+            // Re-read: the list may have changed during the request, and a revoked entry must stay gone
+            const fresh = getSharedUsers();
+            const entry = fresh.find(u => u.id === config.id && u.guildId === config.guildId && u.startTime === config.startTime);
+            if (entry) {
+                if (!entry.usesMap) entry.usesMap = {};
+                entry.usesMap[command] = (entry.usesMap[command] || 0) + 1;
+                entry.uses = (entry.uses || 0) + 1; // Still increment global for UI reference
+                saveSharedUsers(fresh);
+            }
+            saveLog({
+                userId: message.author.id,
+                command,
+                targetId,
+                timestamp: Date.now(),
+                success: true
+            });
+        }
+    } catch (e: any) {
+        console.error("SharePerms Command Error:", e);
+        const errorMsg = e.body?.message || e.message || JSON.stringify(e);
+        sendBotMessage(channelId, { content: `❌ Error: ${errorMsg}` });
+        saveLog({
+            userId: message.author.id,
+            command: command || "unknown",
+            targetId: targetId || "unknown",
+            timestamp: Date.now(),
+            success: false
+        });
+    }
+}
+
 export default definePlugin({
     name: "SharePerms",
     description: "Multi-user permission sharing with interactive UI.",
@@ -557,191 +755,9 @@ export default definePlugin({
         removeHeaderBarButton("shareperms-manager");
     },
 
-    onMessage: async ({ message }: any) => {
-        if (!message || !message.content) return;
-
-        const users = getSharedUsers();
-        const configIndex = users.findIndex(u => u.id === message.author.id);
-        if (configIndex === -1) return;
-
-        const config = users[configIndex];
-        const duration = parseDuration(config.validUntil);
-        if (duration !== 0 && Date.now() > config.startTime + duration) return;
-
-        // Commands only work in DMs or in the configured server's channels
-        const channel = ChannelStore.getChannel(message.channel_id);
-        const isDM = channel?.type === 1; // Type 1 = DM
-        const isTargetGuild = channel?.guild_id === config.guildId;
-
-        if (!isDM && !isTargetGuild) return;
-
-        const { prefix } = config;
-        if (!message.content.startsWith(prefix)) return;
-
-        const args = message.content.slice(prefix.length).trim().split(/ +/);
-        const command = args.shift()?.toLowerCase();
-        if (!command) return;
-
-        // Per-command quota
-        if (config.maxUses > 0) {
-            const currentUses = config.usesMap?.[command] || 0;
-            if (currentUses >= config.maxUses) {
-                sendBotMessage(message.channel_id, { content: `❌ Error: You have reached your limit of ${config.maxUses} uses for the \`${command}\` command.` });
-                return;
-            }
-        }
-
-        const { guildId } = config;
-        const permsList = config.permissions.split(",");
-        const hasAll = permsList.includes("all");
-        const channelId = message.channel_id;
-
-        let success = false;
-        let targetId = "";
-
-        try {
-            if (command === "tempmute" || command === "timeout") {
-                if (!hasAll && !permsList.includes("timeout")) return;
-                targetId = resolveId(args[0]);
-                const durationStr = args[1] || "10m";
-                const d = parseDuration(durationStr);
-                const until = new Date(Date.now() + d).toISOString();
-
-                await RestAPI.patch({
-                    url: `/guilds/${guildId}/members/${targetId}`,
-                    body: { communication_disabled_until: until }
-                });
-                sendBotMessage(channelId, { content: `✅ User <@${targetId}> timed out until ${new Date(until).toLocaleString()} (API).` });
-                success = true;
-            }
-            else if (command === "kick") {
-                if (!hasAll && !permsList.includes("kick")) return;
-                targetId = resolveId(args[0]);
-                await RestAPI.del({
-                    url: `/guilds/${guildId}/members/${targetId}`,
-                    reason: args.slice(1).join(" ") || "."
-                } as any);
-                sendBotMessage(channelId, { content: `✅ User <@${targetId}> kicked (API).` });
-                success = true;
-            }
-            else if (command === "ban") {
-                if (!hasAll && !permsList.includes("ban")) return;
-                targetId = resolveId(args[0]);
-                const reason = args.slice(1).join(" ") || ".";
-                await RestAPI.put({
-                    url: `/guilds/${guildId}/bans/${targetId}`,
-                    body: { delete_message_seconds: 0, reason }
-                });
-                sendBotMessage(channelId, { content: `✅ User <@${targetId}> banned (API).` });
-                success = true;
-            }
-            else if (command === "unmute") {
-                if (!hasAll && !permsList.includes("mute_voice")) return;
-                targetId = resolveId(args[0]);
-                await VoiceActions.setServerMute(guildId, targetId, false);
-                sendBotMessage(channelId, { content: `✅ User <@${targetId}> server unmuted.` });
-                success = true;
-            }
-            else if (command === "untimeout") {
-                if (!hasAll && !permsList.includes("timeout")) return;
-                targetId = resolveId(args[0]);
-                await RestAPI.patch({
-                    url: `/guilds/${guildId}/members/${targetId}`,
-                    body: { communication_disabled_until: null }
-                });
-                sendBotMessage(channelId, { content: `✅ User <@${targetId}> timeout removed.` });
-                success = true;
-            }
-            else if (command === "unban") {
-                if (!hasAll && !permsList.includes("ban")) return;
-                targetId = resolveId(args[0]);
-                await RestAPI.del({
-                    url: `/guilds/${guildId}/bans/${targetId}`
-                });
-                sendBotMessage(channelId, { content: `✅ User <@${targetId}> unbanned.` });
-                success = true;
-            }
-            else if (command === "rename") {
-                if (!hasAll && !permsList.includes("rename_user")) return;
-                targetId = resolveId(args[0]);
-                const newName = args.slice(1).join(" ");
-                // Errors (missing permission, rate limit) are reported by the catch below
-                await RestAPI.patch({
-                    url: `/guilds/${guildId}/members/${targetId}`,
-                    body: { nick: newName }
-                });
-                sendBotMessage(channelId, { content: `✅ User <@${targetId}> renamed to ${newName}.` });
-                success = true;
-            }
-            else if (command === "addrole") {
-                if (!hasAll && !permsList.includes("add_role")) return;
-                targetId = resolveId(args[0]);
-                const roleId = resolveId(args[1]);
-                const MemberStore = findByPropsLazy("getMember");
-                const member = MemberStore.getMember(guildId, targetId);
-                const roles = new Set([...(member?.roles || []), roleId]);
-                await MemberRoleActions.updateMemberRoles(guildId, targetId, Array.from(roles));
-                sendBotMessage(channelId, { content: `✅ Role <@&${roleId}> added to <@${targetId}>.` });
-                success = true;
-            }
-            else if (command === "mute") {
-                if (!hasAll && !permsList.includes("mute_voice")) return;
-                targetId = resolveId(args[0]);
-                await VoiceActions.setServerMute(guildId, targetId, true);
-                sendBotMessage(channelId, { content: `✅ User <@${targetId}> server muted.` });
-                success = true;
-            }
-            else if (command === "disconnect") {
-                if (!hasAll && !permsList.includes("disconnect_voice")) return;
-                targetId = resolveId(args[0]);
-                await VoiceActions.setChannel(guildId, targetId, null);
-                sendBotMessage(channelId, { content: `✅ User <@${targetId}> disconnected from voice.` });
-                success = true;
-            }
-            else if (command === "move") {
-                if (!hasAll && !permsList.includes("move_voice")) return;
-                targetId = resolveId(args[0]);
-
-                // The author's current voice channel
-                const authorVoiceState = VoiceStateStore.getVoiceState(guildId, message.author.id);
-                const destChannelId = authorVoiceState?.channelId;
-
-                if (!destChannelId) {
-                    sendBotMessage(channelId, { content: "❌ Error: You must be in a voice channel to move someone." });
-                    return;
-                }
-
-                await VoiceActions.setChannel(guildId, targetId, destChannelId);
-                sendBotMessage(channelId, { content: `✅ User <@${targetId}> moved to your channel <#${destChannelId}>.` });
-                success = true;
-            }
-
-            if (success) {
-                if (!config.usesMap) config.usesMap = {};
-                config.usesMap[command] = (config.usesMap[command] || 0) + 1;
-                config.uses++; // Still increment global for UI reference
-                users[configIndex] = config;
-                saveSharedUsers(users);
-                saveLog({
-                    userId: message.author.id,
-                    command,
-                    targetId,
-                    timestamp: Date.now(),
-                    success: true
-                });
-            }
-        } catch (e: any) {
-            console.error("SharePerms Command Error:", e);
-            const errorMsg = e.body?.message || e.message || JSON.stringify(e);
-            sendBotMessage(channelId, { content: `❌ Error: ${errorMsg}` });
-            saveLog({
-                userId: message.author.id,
-                command: command || "unknown",
-                targetId: targetId || "unknown",
-                timestamp: Date.now(),
-                success: false
-            });
-        }
+    // One command at a time, so the quota check and the counter write can't interleave
+    onMessage: (event: any) => {
+        commandQueue = commandQueue.then(() => handleCommand(event)).catch(e => console.error("SharePerms Command Error:", e));
     },
 
     headerBarButtons: []

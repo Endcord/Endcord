@@ -140,6 +140,8 @@ namespace EndcordInstaller.Core
                 report(0.93, "desktop.status.closing");
                 CloseRunning();
                 ct.ThrowIfCancellationRequested();
+                // From here a cancel would leave the live install half-copied or half-swapped
+                ct = CancellationToken.None;
 
                 report(0.95, "desktop.status.installing");
                 string appDir = keepRuntime ? AppDir : Path.Combine(staging, "resources", "app");

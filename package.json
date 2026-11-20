@@ -1,7 +1,7 @@
 {
     "name": "endcord",
     "private": "true",
-    "version": "4.1.1",
+    "version": "4.1.2",
     "description": "A Discord client mod with plugins, themes and a settings panel",
     "homepage": "https://github.com/Endcord/Endcord#readme",
     "bugs": {
@@ -30,9 +30,10 @@
         "lint": "eslint",
         "lint-styles": "stylelint \"src/**/*.css\" --ignore-pattern src/userplugins",
         "lint:fix": "pnpm lint --fix",
-        "test": "pnpm buildStandalone && pnpm testTsc && pnpm lint && pnpm lint-styles && pnpm testQuality && pnpm testRules && pnpm testUi && pnpm testSecurity && pnpm testMutationStrings && pnpm testChunks && pnpm testWebpack && pnpm testWrapMethod && pnpm testSharing && pnpm testFuzz && pnpm generatePluginJson",
+        "test": "pnpm buildStandalone && pnpm testTsc && pnpm lint && pnpm lint-styles && pnpm testQuality && pnpm testRules && pnpm testUi && pnpm testSecurity && pnpm testMutationStrings && pnpm testChunks && pnpm testDesktop && pnpm testWebpack && pnpm testWrapMethod && pnpm testSharing && pnpm testFuzz && pnpm generatePluginJson",
         "testSecurity": "node test/security.mjs",
         "testChunks": "node test/chunks.mjs",
+        "testDesktop": "node -e \"fs.existsSync('test/desktop.mjs') && import('./test/desktop.mjs')\"",
         "testWebpack": "node test/webpack.mjs",
         "testWrapMethod": "node test/wrapMethod.mjs",
         "testSharing": "node test/sharing.mjs",

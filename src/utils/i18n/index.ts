@@ -5,9 +5,7 @@
  */
 
 import { PlainSettings, Settings, useSettings } from "@api/Settings";
-import { UserSettings } from "@api/UserSettings";
 import { translateHook } from "@utils/translateHook";
-import { findByProps } from "@webpack";
 import { toastTranslator } from "@webpack/common/utils";
 
 import dictEs from "./locales/es";
@@ -60,35 +58,9 @@ export function getCurrentLang(): EndcordLang {
     return "en";
 }
 
-export function syncDiscordLocale(lang: EndcordLang) {
-    try {
-        const opt = SUPPORTED_LANGUAGES.find(l => l.code === lang) ?? SUPPORTED_LANGUAGES[0];
-        const targetLocale = opt.discordLocale;
-
-        if (UserSettings) {
-            for (const key in UserSettings) {
-                const s = UserSettings[key];
-                if (s && s.userSettingsAPIGroup === "localization" && s.userSettingsAPIName === "locale") {
-                    const cur = s.getSetting?.();
-                    if (cur && cur !== targetLocale) {
-                        s.updateSetting?.(targetLocale);
-                    }
-                    break;
-                }
-            }
-        }
-
-        const localeMgr = findByProps("setLocale", "getLocale");
-        if (localeMgr?.setLocale && localeMgr?.getLocale?.() !== targetLocale) {
-            localeMgr.setLocale(targetLocale);
-        }
-    } catch { }
-}
-
 export function setEndcordLanguage(lang: EndcordLang) {
     const normalized = normalizeLang(lang);
     Settings.language = normalized;
-    syncDiscordLocale(normalized);
 }
 
 
@@ -105,7 +77,9 @@ export function t(key: string, vars?: Record<string, string | number>): string {
     const lang = getCurrentLang();
     let res = key;
     if (lang !== "en") {
-        res = getDict(lang)[key] ?? key;
+        // Own keys only: "constructor" or "toString" would otherwise come back as Object.prototype functions
+        const dict = getDict(lang);
+        if (Object.hasOwn(dict, key)) res = dict[key];
     }
     if (vars) {
         for (const [k, v] of Object.entries(vars)) {

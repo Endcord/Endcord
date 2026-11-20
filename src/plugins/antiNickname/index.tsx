@@ -7,7 +7,8 @@
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
-import { RestAPI, showToast,UserStore } from "@webpack/common";
+import { wrapMethod } from "@utils/wrapMethod";
+import { GuildMemberStore, GuildStore, RestAPI, showToast,UserStore } from "@webpack/common";
 
 const settings = definePluginSettings({
     showToast: {
@@ -20,6 +21,13 @@ const settings = definePluginSettings({
 // Guilds we're resetting right now. Our own PATCH fires GUILD_MEMBER_UPDATE as well, this keeps it from
 // sending a second one
 const resettingGuilds = new Set<string>();
+
+// Last nickname seen per guild, so updates that don't change it (roles, avatar, ...) are ignored
+const lastNick = new Map<string, string | null>();
+// Nicknames the user set from this client: guildId -> nick
+const ownNicks = new Map<string, string | null>();
+const OWN_NICK_PATH = /^\/(?:guilds\/(\d+)\/members\/@me|users\/@me\/guilds\/(\d+)\/profile)(?:\/nick)?$/;
+let unwrapPatch: (() => void) | undefined;
 
 async function resetNick(guildId: string, forcedNick: string, currentUserId: string) {
     if (resettingGuilds.has(guildId)) return;
@@ -76,18 +84,40 @@ export default definePlugin({
             nick: string | null;
         }) {
             const currentUser = UserStore.getCurrentUser();
-            if (!currentUser || user.id !== currentUser.id) return;
+            if (!currentUser || user?.id !== currentUser.id) return;
 
+            const known = lastNick.has(guildId);
+            const previous = lastNick.get(guildId);
+            lastNick.set(guildId, nick || null);
             // nick null or empty = already reset (by us or the admin), nothing to do
-            if (!nick) return;
+            if (!nick || (known && previous === nick)) return;
+            if (ownNicks.has(guildId) && ownNicks.get(guildId) === nick) return;
 
             // Someone set a nickname on us, reset it
             setTimeout(() => resetNick(guildId, nick, currentUser.id), 300);
         }
     },
 
-    start() {},
+    start() {
+        const me = UserStore.getCurrentUser()?.id;
+        if (me) {
+            for (const guildId of Object.keys(GuildStore.getGuilds() ?? {})) {
+                const member = GuildMemberStore.getMember(guildId, me);
+                if (member) lastNick.set(guildId, member.nick || null);
+            }
+        }
+        unwrapPatch = wrapMethod(RestAPI, "patch", function (original, req) {
+            const m = OWN_NICK_PATH.exec(String(req?.url ?? ""));
+            const guildId = m?.[1] ?? m?.[2];
+            if (guildId && !resettingGuilds.has(guildId) && req?.body && "nick" in req.body) ownNicks.set(guildId, req.body.nick || null);
+            return original.call(this, req);
+        });
+    },
     stop() {
+        unwrapPatch?.();
+        unwrapPatch = undefined;
         resettingGuilds.clear();
+        lastNick.clear();
+        ownNicks.clear();
     }
 });

@@ -11,6 +11,7 @@ import { ENDCORD_THEME } from "@utils/css";
 import { t } from "@utils/i18n";
 import { ModalCloseButton as ModalCloseButton_, ModalContent as ModalContent_, ModalFooter as ModalFooter_, ModalHeader as ModalHeader_, ModalRoot as ModalRoot_ } from "@utils/modal";
 import definePlugin, { IconComponent } from "@utils/types";
+import { Unwrap, wrapMethod } from "@utils/wrapMethod";
 import { FluxDispatcher, openModal, React, UserStore } from "@webpack/common";
 
 const ModalRoot = ModalRoot_;
@@ -24,7 +25,7 @@ const DS_KEY = "FakeNitroAge_months";
 // ---- State ----
 
 let fakeMonths: number | null = null;
-let originalGetCurrentUser: (() => ReturnType<typeof UserStore.getCurrentUser>) | null = null;
+let unwrapGetCurrentUser: Unwrap<() => any> | null = null;
 
 // Store selectors compare by reference, so returning a new clone on every call re-renders forever (React #185).
 let lastSourceUser: any = null;
@@ -51,24 +52,24 @@ function cloneWithPremium(user: any, months: number): any {
 }
 
 function applyPatch() {
-    if (originalGetCurrentUser) return;
-    originalGetCurrentUser = UserStore.getCurrentUser.bind(UserStore);
-    (UserStore as any).getCurrentUser = function () {
-        const user = originalGetCurrentUser!();
+    if (unwrapGetCurrentUser) return;
+    // wrapMethod, not assignment: FakeTag and CustomProfile wrap the same method and may stop in any order
+    unwrapGetCurrentUser = wrapMethod(UserStore, "getCurrentUser", function (original) {
+        const user = original.call(this);
         if (!user || fakeMonths == null) return user;
         return cloneWithPremium(user, fakeMonths);
-    };
+    });
 }
 
 function removePatch() {
-    if (!originalGetCurrentUser) return;
-    (UserStore as any).getCurrentUser = originalGetCurrentUser;
-    originalGetCurrentUser = null;
+    if (!unwrapGetCurrentUser) return;
+    unwrapGetCurrentUser();
+    unwrapGetCurrentUser = null;
 }
 
 function notifyUpdate() {
     try {
-        const me = originalGetCurrentUser?.() ?? UserStore.getCurrentUser();
+        const me = unwrapGetCurrentUser?.original() ?? UserStore.getCurrentUser();
         if (me) FluxDispatcher.dispatch({ type: "USER_UPDATE", user: me });
     } catch { }
 }

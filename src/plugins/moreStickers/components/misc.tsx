@@ -14,7 +14,7 @@ import { Paragraph } from "@components/Paragraph";
 import { convert as convertLineEP, getIdFromUrl as getLineEmojiPackIdFromUrl, getStickerPackById as getLineEmojiPackById, isLineEmojiPackHtml, parseHtml as getLineEPFromHtml } from "@plugins/moreStickers/lineEmojis";
 import { convert as convertLineSP, getIdFromUrl as getLineStickerPackIdFromUrl, getStickerPackById as getLineStickerPackById, isLineStickerPackHtml, parseHtml as getLineSPFromHtml } from "@plugins/moreStickers/lineStickers";
 import { isV1, migrate } from "@plugins/moreStickers/migrate-v1";
-import { deleteStickerPack, getStickerPack, getStickerPackMetas, saveStickerPack } from "@plugins/moreStickers/stickers";
+import { deleteStickerPack, getStickerPack, getStickerPackMetas, sanitizeStickerPack, saveStickerPack } from "@plugins/moreStickers/stickers";
 import { SettingsTabsKey, Sticker, StickerPack, StickerPackMeta } from "@plugins/moreStickers/types";
 import { cl, clPicker, Mutex } from "@plugins/moreStickers/utils";
 import { t } from "@utils/i18n";
@@ -329,12 +329,8 @@ export const Packs = () => {
 
                                     const fileText = await file.text();
                                     const fileJson = JSON.parse(fileText);
-                                    let stickerPacks: StickerPack[] = [];
-                                    if (Array.isArray(fileJson)) {
-                                        stickerPacks = fileJson;
-                                    } else {
-                                        stickerPacks = [fileJson];
-                                    }
+                                    // All packs are checked before any is saved
+                                    const stickerPacks: StickerPack[] = (Array.isArray(fileJson) ? fileJson : [fileJson]).map(sanitizeStickerPack);
 
                                     for (const stickerPack of stickerPacks) {
                                         await saveStickerPack(stickerPack);

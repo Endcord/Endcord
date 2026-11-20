@@ -17,10 +17,13 @@ export default definePlugin({
     noop: () => { },
 
     patches: [{
+        // Generic route hook plus the quest home and quest preview pages each call it
         find: /\.openNativeAppModal\(.{0,50}?\.DEEP_LINK/,
+        all: true,
         replacement: {
-            match: /\i\.\i\.openNativeAppModal/,
-            replace: "$self.noop",
+            // Starts on the literal: a leading \i makes this global match take ~11 ms on the 900 KB main module
+            match: /\.openNativeAppModal(?=\(.{0,50}?\.DEEP_LINK)/g,
+            replace: ".openNativeAppModal&&$self.noop",
         }
     }]
 });

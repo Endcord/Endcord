@@ -293,7 +293,7 @@ function restoreChannelStore() {
 
 export default definePlugin({
     name: "SurfaceTranslate",
-    description: "Translate channel names, channel topics, and search result text.",
+    description: "Translate channel names, channel topics, and search result text. The text is sent to Google Translate.",
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     tags: ["Chat", "Utility"],
     settings,
@@ -301,7 +301,7 @@ export default definePlugin({
     patches: [
         {
             // The message component of the search results panel (chat messages use a different one)
-            find: "inlineEditor:",
+            find: /inlineEditor:\i,\.\.\.\i\}=/,
             replacement: {
                 match: /(?<=let\{message:\i,[^}]{0,400}?inlineEditor:\i,\.\.\.\i\}=)\i(?=,)/,
                 replace: "$self.useSearchResultProps($&)",

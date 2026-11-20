@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { migratePluginSettings, Settings } from "@api/Settings";
+import { migratePluginSettings, PlainSettings, Settings } from "@api/Settings";
 import { Logger } from "@utils/Logger";
 
 import { settings, SettingsStore } from "./settings";
@@ -89,7 +89,15 @@ export function migrateOldSettings() {
             setStoreValue(migration.enableKey, true);
         }
 
+        // An imported settings file can bring an old entry back (and drop _migrated). Its server and key must not
+        // replace the ones this device already has, or the local key would go to the file's server
+        const isSensitive = (key: SettingsKey) => (settings.def[key] as { sensitive?: boolean; }).sensitive;
+        const keepLocal = Object.values(migration.keys).some(key => isSensitive(key) && settings.store[key]);
+
+        // With a local server and key, the whole group stays local: a user name or id from the file paired with the
+        // local server would still point this device's key at someone else's data
         for (const [oldKey, newKey] of Object.entries(migration.keys)) {
+            if (keepLocal) break;
             if (oldSettings[oldKey] != null) {
                 setStoreValue(newKey, oldSettings[oldKey]);
             }
@@ -103,5 +111,8 @@ export function migrateOldSettings() {
         setStoreValue("tosu_enabled", true);
     }
 
+    // The old entries hold passwords and API keys that backups would otherwise keep carrying (exports only strip
+    // the secrets of plugins that still exist)
+    for (const name of [...migrations.map(m => m.oldPlugin), "TosuRPC"]) delete PlainSettings.plugins[name];
     Settings.plugins.RichPresence._migrated = true;
 }

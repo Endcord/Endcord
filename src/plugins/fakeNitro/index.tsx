@@ -210,43 +210,21 @@ export default definePlugin({
             ]
         },
         {
-            find: "canUseCustomStickersEverywhere:",
+            find: '"ProductCatalog.tsx"',
             replacement: [
-                // Unlock profile effects, decorations, nameplates, frames, animated avatars
+                // Collectibles covers avatar decorations, profile effects, nameplates and profile frames
                 {
-                    match: /(?<=canUseProfileEffects:function\(\i\)\{)/,
-                    replace: "return true;",
-                    noWarn: true
+                    match: /(?<=\{)(?=return \i\(\i\.\i\.PREMIUM_COLLECTIBLES,\i\)\})/,
+                    replace: "return true;"
                 },
                 {
-                    match: /(?<=canUseAvatarDecorations:function\(\i\)\{)/,
-                    replace: "return true;",
-                    noWarn: true
+                    match: /(?<=\{)(?=return \i\(\i\.\i\.ANIMATED_AVATAR,\i\)\})/,
+                    replace: "return true;"
                 },
+                // Profile banners
                 {
-                    match: /(?<=canUseAnimatedAvatar:function\(\i\)\{)/,
-                    replace: "return true;",
-                    noWarn: true
-                },
-                {
-                    match: /(?<=canUseProfileBanners:function\(\i\)\{)/,
-                    replace: "return true;",
-                    noWarn: true
-                },
-                {
-                    match: /(?<=canUseNamePlates:function\(\i\)\{)/,
-                    replace: "return true;",
-                    noWarn: true
-                },
-                {
-                    match: /(?<=canUseProfileFrames:function\(\i\)\{)/,
-                    replace: "return true;",
-                    noWarn: true
-                },
-                {
-                    match: /(?<=canUseCollectibles:function\(\i\)\{)/,
-                    replace: "return true;",
-                    noWarn: true
+                    match: /(?<=\{)(?=return \i\(\i\.\i\.PROFILE_PREMIUM_FEATURES,\i\)\})/,
+                    replace: "return true;"
                 }
             ],
         },
@@ -415,7 +393,7 @@ export default definePlugin({
         },
         // Separate patch for allowing using custom app icons
         {
-            find: "getCurrentDesktopIcon(),",
+            find: ".canKeepDesktopIconWithoutPremium(",
             replacement: {
                 match: /\i\.\i\.isPremium\(\i\.\i\.getCurrentUser\(\)\)/,
                 replace: "true"

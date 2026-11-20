@@ -24,7 +24,7 @@
 import * as DataStore from "@api/DataStore";
 import type { Settings } from "@api/Settings";
 import { getThemeInfo } from "@main/themes";
-import { addSuspects, beginBoot, BootRecord, BootState, confirmBoot, readBootRecord } from "@shared/bootGuard";
+import { addSuspects, beginBoot, BootRecord, BootState, confirmBoot, isSignedOutPage, readBootRecord } from "@shared/bootGuard";
 import { debounce } from "@shared/debounce";
 import { isSafeExternalUrl } from "@shared/externalLinks";
 import { localStorage } from "@utils/localStorage";
@@ -43,7 +43,12 @@ const themeStore = DataStore.createStore("EndcordThemes", "EndcordThemeData");
 
 // The start record that decides safe mode, see @shared/bootGuard
 const BOOT_KEY = "EndcordBoot";
+// The script also runs on discord.com's other pages (home, developer portal, OAuth popups) and in its frames, none of
+// which ever confirms a start
+const APP_PAGE = /^\/(?:app|channels|activity|library|store|shop|discovery|guild-discovery|quests|message-requests)(?:\/|$)/;
 let bootState: BootState | undefined;
+/** This page's start is in the count and not confirmed yet */
+let bootCounted = false;
 
 function readStoredBoot() {
     try {
@@ -152,11 +157,23 @@ window.EndcordNative = {
     boot: {
         begin() {
             const [record, state] = beginBoot(readStoredBoot());
-            writeStoredBoot(record);
             bootState = state;
+            if (window !== window.top || !APP_PAGE.test(location.pathname)) return state;
+
+            writeStoredBoot(record);
+            bootCounted = true;
+            // Signed out, /app moves on to /login in the page
+            addEventListener("pagehide", () => {
+                if (!bootCounted || !isSignedOutPage(location.href)) return;
+                const stored = readStoredBoot();
+                if (stored.pending) writeStoredBoot({ ...stored, pending: stored.pending - 1 });
+            }, { once: true });
             return state;
         },
-        confirm: async enabledPlugins => writeStoredBoot(confirmBoot(readStoredBoot(), bootState?.safeMode ? null : enabledPlugins)),
+        confirm: async enabledPlugins => {
+            bootCounted = false;
+            writeStoredBoot(confirmBoot(readStoredBoot(), bootState?.safeMode ? null : enabledPlugins));
+        },
         reportCrash: async plugins => writeStoredBoot(addSuspects(readStoredBoot(), plugins)),
         requestSafeMode: async () => writeStoredBoot({ ...readStoredBoot(), safeNext: true }),
     },

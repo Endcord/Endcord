@@ -44,7 +44,9 @@ Medians of 6 cold launches per variant; bold marks the best mod in each row. Eve
 - **Startup:** Endcord's renderer bundle is 5.1 MB, against 3.1 MB for Equicord and 0.7 MB for
   Vencord: 500 plugins and five full translations are code that has to be read. That costs Endcord
   roughly 0.3 s of launch time against Vencord. Plugins are only evaluated when they are turned on,
-  so the bundle size does not grow memory at the same rate.
+  so the bundle size does not grow memory at the same rate. (This describes the 23 October build.
+  Since 4.1.0 the plugin code sits after the core script in `renderer.js`, and only the core, about
+  405 KB, plus the code of the plugins that are on runs at startup.)
 - **Plugins are off until you turn them on.** The numbers above are with default settings in every
   mod. Each plugin you enable costs something, in any mod.
 

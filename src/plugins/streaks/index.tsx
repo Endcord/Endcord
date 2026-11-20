@@ -29,6 +29,18 @@ const STREAK_THRESHOLDS = {
     BRONZE: 7
 };
 
+// The today flags only change once a day, so a busy DM needs at most one sync per side per interval.
+const SYNC_INTERVAL = 10 * 60_000;
+const lastSync = new Map<string, { day: string; at: number; }>();
+
+function shouldSync(key: string, day: string) {
+    const now = Date.now();
+    const last = lastSync.get(key);
+    if (last && last.day === day && now - last.at < SYNC_INTERVAL) return false;
+    lastSync.set(key, { day, at: now });
+    return true;
+}
+
 const colorFor = (streak: number) => {
     if (streak >= STREAK_THRESHOLDS.ELITE) return settings.store.eliteColor;
     if (streak >= STREAK_THRESHOLDS.DIAMOND) return settings.store.diamondColor;
@@ -96,11 +108,11 @@ export default definePlugin({
             const theirFlag = cached && cached.today_date != null && cached.today_date === today && (cached.user_a_id === me ? cached.user_b_today : cached.user_a_today);
 
             if (message.author.id === me) {
-                if (!myFlag) {
+                if (!myFlag && shouldSync(`me:${recipientId}`, today)) {
                     useStreaksStore.getState().update(recipientId);
                 }
             } else if (message.author.id === recipientId) {
-                if (!theirFlag) {
+                if (!theirFlag && shouldSync(`them:${recipientId}`, today)) {
                     setTimeout(async () => {
                         const before = useStreaksStore.getState().streaks[recipientId]?.count;
                         await useStreaksStore.getState().refresh(recipientId);

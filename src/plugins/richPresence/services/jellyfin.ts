@@ -112,15 +112,18 @@ async function getActivity(): Promise<Activity | null> {
         richPresenceType = mediaData.type === "Audio" ? 2 : 3;
     }
 
+    // Hidden per placeholder: replacing the values in the result also matched "" and substrings
+    const hide = (value: string | undefined, placeholder: string) =>
+        settings.store.jf_privacyMode && value ? placeholder : value || "";
     const templateReplace = (template: string) =>
         template
-            .replace(/\{name\}/g, mediaData.name || "")
-            .replace(/\{series\}/g, mediaData.seriesName || "")
+            .replace(/\{name\}/g, () => hide(mediaData.name, "[Title Hidden]"))
+            .replace(/\{series\}/g, () => hide(mediaData.seriesName, "[Series Hidden]"))
             .replace(/\{season\}/g, mediaData.seasonNumber?.toString() || "")
             .replace(/\{episode\}/g, mediaData.episodeNumber?.toString() || "")
-            .replace(/\{artist\}/g, mediaData.artist || "")
-            .replace(/\{album\}/g, mediaData.album || "")
-            .replace(/\{year\}/g, mediaData.year?.toString() || "");
+            .replace(/\{artist\}/g, () => hide(mediaData.artist, "[Artist Hidden]"))
+            .replace(/\{album\}/g, () => hide(mediaData.album, "[Album Hidden]"))
+            .replace(/\{year\}/g, () => hide(mediaData.year?.toString(), "????"));
 
     let appName: string;
     const nameSetting = settings.store.jf_nameDisplay || "default";
@@ -141,16 +144,9 @@ async function getActivity(): Promise<Activity | null> {
             break;
         case "custom":
             appName = templateReplace(settings.store.jf_customName || "{name} on Jellyfin");
-            if (settings.store.jf_privacyMode) {
-                appName = appName
-                    .replace(mediaData.name || "", "[Title Hidden]")
-                    .replace(mediaData.seriesName || "", "[Series Hidden]")
-                    .replace(mediaData.artist || "", "[Artist Hidden]")
-                    .replace(mediaData.album || "", "[Album Hidden]");
-            }
             break;
         default:
-            if (mediaData.type === "Episode" && mediaData.seriesName) {
+            if (mediaData.type === "Episode" && mediaData.seriesName && !settings.store.jf_privacyMode) {
                 appName = mediaData.seriesName;
             } else {
                 appName = settings.store.jf_privacyMode ? "[Media Hidden]" : mediaData.name || "Jellyfin";
@@ -161,15 +157,17 @@ async function getActivity(): Promise<Activity | null> {
     const assets = {
         large_image: !settings.store.jf_privacyMode && mediaData.imageUrl
             ? await getAsset(mediaData.imageUrl) : undefined,
-        large_text: mediaData.seriesName || mediaData.album || undefined,
+        large_text: settings.store.jf_privacyMode ? undefined : mediaData.seriesName || mediaData.album || undefined,
     };
 
     const getDetails = () => {
         let details: string;
         if (mediaData.type === "Episode" && mediaData.seriesName)
             details = settings.store.jf_privacyMode ? "Watching a TV Show" : mediaData.seriesName;
+        else if (settings.store.jf_privacyMode)
+            details = mediaData.type === "Audio" ? "Listening to Something" : "Watching Something";
         else
-            details = settings.store.jf_privacyMode ? "Watching Something" : mediaData.name;
+            details = mediaData.name;
         if (mediaData.isPaused) details += " - Paused";
         return details;
     };

@@ -2,6 +2,44 @@
 
 What changed in each Endcord release. Every release is signed, and the updater checks the signature before it installs anything; [SECURITY.md](SECURITY.md) explains how to check a release yourself.
 
+## 4.1.2 (2026-11-20)
+
+### Security
+
+- A settings file could still set protected settings through an old plugin's name. The RichPresence and MusicRichPresence migrations copied a server address and key from an imported JellyfinRichPresence or LastFMRichPresence entry over the ones this device had, so the device's Jellyfin key could go to the file's server. A migration now keeps the server and key a device already has, and the old entries are deleted once migrated, so backups no longer carry their passwords.
+- ExportDM's HTML export escapes everything it writes. Names, file names, emoji and links come from other people and could add markup or scripts to the file.
+- The Linux installer no longer runs a script from /tmp with admin rights: it hands the script to pkexec or sudo directly.
+- FileUpload no longer sends a file to anonymous public hosts when your own server fails, unless you turn on Fall Back to Public Hosts.
+- MoreStickers checks an imported sticker pack before saving it. A crafted pack could overwrite any plugin's stored data.
+- Endcord Desktop's main process is held to the same lint rules as Endcord's own (programs by full path, IPC handlers that check the page), and its screen share picker ignores key presses a page makes up.
+
+### Fixed
+
+- Fixes for Discord's November 19 builds. NoMosaic no longer breaks the attachment view. FakeNitro's profile decoration, effect, frame, nameplate, animated avatar and banner unlocks work again (Discord now checks these in fewer places, so the profile editor and the shop also show the Nitro options; Discord still checks on its side). SilentEdit, FavoriteAnything in embeds with several images, profile collections and sections in the DM sidebar, MutualGroupDMs, WebContextMenus' Copy, VoiceSettings' push-to-talk delay, FastGifPicker, BetterRoleDot and CtrlEnterSave work again, and DisableDeepLinks covers every "open in the app" prompt.
+- Patches that could land in the wrong Discord module, depending on what loaded first, now find the right one: BannersEverywhere, CustomAppIcons, FakeNitro's app icon, FakeProfileThemes, MiddleClickTweaks, PinDMs, Questify, ShowMessageEmbeds, SortFriendRequests, SurfaceTranslate and ValidUser. ImplicitRelationships drops patches Discord made unnecessary.
+- ClientSideBlock and AntiSoap no longer freeze Discord for over a minute when the member list loads. StatusPresets, Timezones and WebContextMenus patch faster too.
+- Plugins that load more of Discord's code when you use them (PinDMs categories, CustomUserColors, Decor, PermissionsViewer, ReviewDB pages and others) load it again. Discord's newer builds number that code, and Endcord asked for it by name.
+- MessageLoggerEnhanced keeps logging after Clear Logs. It stopped until the next restart, and with Clear logs on restart its start could hang.
+- ScheduledMessages keeps a message queued when sending fails and tries again later, instead of losing it.
+- RemindMe reminders more than 24.8 days away no longer go off at once.
+- A settings file with a wrong kind of value (a number where a section goes, an empty plugin entry) no longer stops Endcord from starting.
+- A damaged startup cache no longer stops Endcord from loading: it's ignored and made again.
+- Updates: popouts and the game overlay no longer count as failed starts of a new release, two installs of an update can't run at once, Update Now tries again after a failed install, and a reinstall with an installer is no longer undone by the update's rollback.
+- Safe mode: Restart normally no longer lands in safe mode again, and the browser version no longer goes into safe mode because of Discord's home, developer or sign-in pages.
+- Endcord Desktop retries when Discord's page doesn't load (offline at sign-in), Restart no longer hides it in the tray after it started with Windows, a window saved on a monitor that's gone opens on screen, game detection tries again when Discord's list fails, and the screen share picker speaks Spanish, French and Russian too.
+- Windows installer: an interrupted install no longer leaves Discord unable to start, an unreadable settings.json is left alone, the cancel and uninstall screens say what really happened, an Endcord install on a custom path is counted before Endcord's files are removed, two installers can't run at once, and closing Endcord Desktop's setup while it works cancels it cleanly.
+- Linux installers: Uninstall keeps your Endcord settings and themes, Repair after a Discord update keeps the new app.asar, files get readable permissions whatever the umask, a failed patch puts Discord's files back, another mod's loader is backed up instead of deleted, gui.py refuses to run as root, and a Flatpak Discord restarts inside its sandbox.
+- Plugins: QuickDelete no longer deletes several messages when the key is held, VoiceChatUtilities paces its bulk changes, SharePerms limits hold when commands arrive at once, AntiNickname keeps the nickname you set yourself, FakeTag and FakeNitroAge can be turned off separately, EventLogs no longer rewrites its whole log on every event and can't be crashed by a message that says "constructor", ExportDM waits out rate limits and says when an export is incomplete, SongLink shows an error instead of loading forever, MessageTranslate and ReviewDB back off after rate limits, Streaks syncs at most every ten minutes per friend, PullUserIntoVoice waits until the user is in a voice channel, VoiceMessages lets go of the microphone, RecordUrMic deletes Discord's raw copy of a recording once it's saved, Jellyfin's privacy mode hides the title everywhere, NoDMWhileStreaming blocks Discord's own DM notifications, SelfDestruct keeps planned deletions across restarts, MessageVault keeps each account's messages apart, GifCollections checks imported collections, FileUpload and ZIP+ upload through Endcord Desktop's own process, and SekaiStickers and TriviaAI work on desktop (their hosts were missing from the content security policy).
+- MusicControls' lyrics fallback setting works and is off by default, so the Spotify track id only goes to the Vercel lyrics proxy when you turn it on, and lyrics stop being fetched when you turn them off.
+- ChannelWallpaper only uploads a wallpaper picked from a file to Imgur in a DM with sync on (it did in every channel), only sends its sync message when sync is on, and keeps other files on this PC, up to 2 MB.
+
+### Changed
+
+- The Language setting changes Endcord's language only. It said it changed Discord's too, but only forced an old Discord helper to English at every start.
+- Descriptions say where data goes: MessageTranslate and SurfaceTranslate send text to Google Translate, and ChannelWallpaper's sync uses Imgur.
+- The release build sorts files the same way on every machine, and the chunked build keeps the styles of five components it used to drop.
+- The daily patch report lists noWarn patches that do nothing in a section of their own.
+
 ## 4.1.1 (2026-11-15)
 
 ### Added

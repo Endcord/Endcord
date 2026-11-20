@@ -51,7 +51,7 @@ export default definePlugin({
             replace: "}).sortBy(row => $self.wrapSort(($1), row)).value()"
         }
     }, {
-        find: "#{intl::FRIEND_REQUEST_CANCEL}",
+        find: "#{intl::FRIEND_REQUEST_CANCEL}),ariaLabelMessage:",
         replacement: {
             predicate: () => settings.store.showDates,
             match: /(?<=children:\[)\(0,.{0,100}user:\i,hovered:\i.+?(?=,\(0)(?<=user:(\i).+?)/,

@@ -46,9 +46,10 @@ export async function update() {
     const res = await Unwrap(EndcordNative.updater.update());
 
     if (res) {
-        isOutdated = false;
         if (!await Unwrap(EndcordNative.updater.rebuild()))
             throw new Error("The Build failed. Please try manually building the new update");
+        // Only now: after a failed install the next click has to try again instead of reporting success
+        isOutdated = false;
     }
 
     return res;

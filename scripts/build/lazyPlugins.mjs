@@ -27,11 +27,23 @@ const MIGRATION_RE = new RegExp(`\\b(${Object.keys(CROSS_PLUGIN_MIGRATIONS).join
 const IMPORT_RE = /(?:\bfrom\s*|\bimport\s*\(?\s*|\brequire\s*\(\s*)["']([^"']+)["']/g;
 const TYPE_IMPORT_RE = /\b(?:import|export)\s+type\b[^;"']*?\bfrom\s*["'][^"']+["']|\btypeof\s+import\s*\(\s*["'][^"']+["']\s*\)/g;
 
+/**
+ * Orders names the way NTFS lists a folder (by upper case, then as written), but independent of the machine's locale
+ * and file system, so a build on Linux or another locale comes out the same as on the release machine
+ * @param {string} a
+ * @param {string} b
+ */
+export function compareNames(a, b) {
+    const upperA = a.toUpperCase(), upperB = b.toUpperCase();
+    if (upperA !== upperB) return upperA < upperB ? -1 : 1;
+    return a < b ? -1 : a > b ? 1 : 0;
+}
+
 /** @param {string} dir */
 async function listSourceFiles(dir) {
     /** @type {string[]} */
     const out = [];
-    for (const entry of await readdir(dir, { withFileTypes: true })) {
+    for (const entry of (await readdir(dir, { withFileTypes: true })).sort((a, b) => compareNames(a.name, b.name))) {
         const p = join(dir, entry.name);
         if (entry.isDirectory()) out.push(...await listSourceFiles(p));
         else if (/\.(tsx?|jsx?|mts)$/.test(entry.name)) out.push(p);

@@ -63,7 +63,9 @@ export default definePlugin({
             }
         },
         {
-            find: ".roleVerifiedIcon",
+            // Profile role pills (verified icon, dot or circle). noWarn: the reporter drops predicates, so it also
+            // applies the bothStyles patch above, which has already replaced this match
+            find: "numRolesHidden",
             all: true,
             predicate: () => settings.store.copyRoleColorInProfilePopout && !settings.store.bothStyles,
             noWarn: true,

@@ -39,7 +39,7 @@ export const TidalLrcStore = proxyLazyWebpack(() => {
     const store = new TidalLrcStore(FluxDispatcher);
     function handleTidalStoreChange() {
         const { track } = TidalStore;
-        if (!track?.id || lastTrackId === track.id) return;
+        if (!settings.store.showTidalLyrics || !track?.id || lastTrackId === track.id) return;
         lastTrackId = track.id;
         getLyrics(track)
             .then(l => { lyrics = l; store.emitChange(); })

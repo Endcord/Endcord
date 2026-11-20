@@ -78,30 +78,8 @@ export default definePlugin({
                 match: /\}\)\.sortBy\((.+?)\)\.value\(\)/,
                 replace: "}).sortBy(row => $self.wrapSort(($1), row)).value()"
             }
-        },
-
-        // Add support for the nonce parameter to Discord's shitcode
-        {
-            find: ".REQUEST_GUILD_MEMBERS,",
-            replacement: {
-                match: /\.REQUEST_GUILD_MEMBERS,{/,
-                replace: "$&nonce:arguments[1]?.nonce,"
-            }
-        },
-        {
-            find: "GUILD_MEMBERS_REQUEST:",
-            replacement: {
-                match: /presences:!!(\i)\.presences/,
-                replace: "$&,nonce:$1.nonce"
-            },
-        },
-        {
-            find: ".not_found",
-            replacement: {
-                match: /notFound:(\i)\.not_found/,
-                replace: "$&,nonce:$1.nonce"
-            },
         }
+        // GUILD_MEMBERS_REQUEST (userIds), the gateway send and GUILD_MEMBERS_CHUNK_BATCH pass nonce natively
     ],
 
     wrapSort(comparator: Function, row: any) {

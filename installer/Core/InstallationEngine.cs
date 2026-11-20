@@ -342,8 +342,10 @@ namespace EndcordInstaller.Core
                                 false, false, false);
                         }
 
-                        var rb = PatchSingleAppDir(paths, t, appDir, ct);
+                        // Listed before any change, so a patch that stops halfway is still rolled back
+                        var rb = new AppDirRollback { AppDir = appDir };
                         patchedDirs.Add(rb);
+                        PatchSingleAppDir(t, appDir, rb, ct);
                         step++;
                     }
 
@@ -418,11 +420,12 @@ namespace EndcordInstaller.Core
 
         static void RollbackInstall(InstallerPaths paths, string distBackup, List<AppDirRollback> patchedDirs, OperationOutcome outcome)
         {
+            bool restored = true;
+            for (int i = patchedDirs.Count - 1; i >= 0; i--)
+                if (!patchedDirs[i].Rollback()) restored = false;
+
             try
             {
-                for (int i = patchedDirs.Count - 1; i >= 0; i--)
-                    patchedDirs[i].Rollback();
-
                 if (Directory.Exists(distBackup))
                 {
                     if (Directory.Exists(paths.Dist))
@@ -432,7 +435,7 @@ namespace EndcordInstaller.Core
                 }
                 if (Directory.Exists(paths.StagingDir))
                     FileOps.DeleteDirectory(paths.StagingDir, CancellationToken.None);
-                outcome.RolledBack = true;
+                outcome.RolledBack = restored;
             }
             catch { }
         }
@@ -442,7 +445,8 @@ namespace EndcordInstaller.Core
             IList<DiscordInstall> targets,
             bool relaunchAfter,
             Action<InstallProgressEvent> onProgress,
-            CancellationToken ct)
+            CancellationToken ct,
+            IEnumerable<string> customRoots = null)
         {
             var outcome = new OperationOutcome { Operation = InstallOperationKind.Uninstall };
             if (targets == null || targets.Count == 0)
@@ -493,6 +497,14 @@ namespace EndcordInstaller.Core
 
                 // Only remove %APPDATA%\Endcord\dist if no remaining Discord installations on the machine use Endcord
                 var allAfter = DiscordLocator.FindAll(paths);
+                if (customRoots != null)
+                {
+                    foreach (var root in customRoots)
+                    {
+                        var custom = DiscordLocator.OpenCustom(root);
+                        if (custom != null) allAfter.Add(custom);
+                    }
+                }
                 bool anyStillInstalled = false;
                 foreach (var d in allAfter) if (d.HasEndcord) anyStillInstalled = true;
                 if (!anyStillInstalled && Directory.Exists(paths.Dist))
@@ -609,19 +621,24 @@ namespace EndcordInstaller.Core
             public string SavedAppFolder;
             public string SavedStubAsar;
             public Dictionary<string, string> SavedCoreFiles = new Dictionary<string, string>();
+            // resources/app is Endcord's from here on: the user's own was moved aside or there was none
+            public bool OwnsAppFolder;
+            public bool RemovedOriginalAsar;
 
-            public void Rollback()
+            /// <summary>False when some of the folder could not be put back</summary>
+            public bool Rollback()
             {
+                bool ok = true;
                 try
                 {
-                    if (Directory.Exists(AppDir.AppFolder))
+                    if (OwnsAppFolder && Directory.Exists(AppDir.AppFolder))
                         FileOps.DeleteDirectory(AppDir.AppFolder, CancellationToken.None);
 
                     if (!string.IsNullOrEmpty(SavedAppFolder) && Directory.Exists(SavedAppFolder))
                     {
                         FileOps.Move(SavedAppFolder, AppDir.AppFolder, CancellationToken.None);
                     }
-                    else if (string.IsNullOrEmpty(SavedStubAsar) && File.Exists(AppDir.BackupAsar) && !File.Exists(AppDir.AppAsar))
+                    else if (RemovedOriginalAsar && string.IsNullOrEmpty(SavedStubAsar) && File.Exists(AppDir.BackupAsar) && !File.Exists(AppDir.AppAsar))
                     {
                         FileOps.Move(AppDir.BackupAsar, AppDir.AppAsar, CancellationToken.None);
                     }
@@ -632,13 +649,14 @@ namespace EndcordInstaller.Core
                             FileOps.DeletePath(AppDir.AppAsar, CancellationToken.None);
                         FileOps.Move(SavedStubAsar, AppDir.AppAsar, CancellationToken.None);
                     }
-
-                    foreach (var kv in SavedCoreFiles)
-                    {
-                        try { FileOps.WriteAllTextAtomic(kv.Key, kv.Value); } catch { }
-                    }
                 }
-                catch { }
+                catch { ok = false; }
+
+                foreach (var kv in SavedCoreFiles)
+                {
+                    try { FileOps.WriteAllTextAtomic(kv.Key, kv.Value); } catch { ok = false; }
+                }
+                return ok;
             }
 
             public void Commit(CancellationToken ct)
@@ -654,13 +672,11 @@ namespace EndcordInstaller.Core
             }
         }
 
-        static AppDirRollback PatchSingleAppDir(InstallerPaths paths, DiscordInstall install, AppDirInfo appDir, CancellationToken ct)
+        static void PatchSingleAppDir(DiscordInstall install, AppDirInfo appDir, AppDirRollback rb, CancellationToken ct)
         {
             if (!appDir.HasOriginalAsar)
                 throw new InstallerException(FailureKind.DiscordDamaged,
                     "Original Discord app.asar is missing in " + appDir.ResourcesPath, install.DisplayName);
-
-            var rb = new AppDirRollback { AppDir = appDir };
 
             // Clear out discord_desktop_core injections (BetterDiscord, legacy mods)
             foreach (var coreIndex in DiscordLocator.FindDesktopCoreIndices(appDir.Path))
@@ -678,6 +694,7 @@ namespace EndcordInstaller.Core
                 FileOps.Move(appDir.AppFolder, prevApp, ct);
                 rb.SavedAppFolder = prevApp;
             }
+            rb.OwnsAppFolder = true;
 
             // app.asar can be Discord's real archive, another mod's stub file, or a stub folder
             if (Directory.Exists(appDir.AppAsar))
@@ -702,6 +719,7 @@ namespace EndcordInstaller.Core
                         if (FileOps.Exists(appDir.BackupAsar)) FileOps.DeletePath(appDir.BackupAsar, ct);
                         FileOps.Move(appDir.AppAsar, appDir.BackupAsar, ct);
                     }
+                    rb.RemovedOriginalAsar = true;
                 }
                 else
                 {
@@ -733,8 +751,6 @@ namespace EndcordInstaller.Core
                 "}\n";
             string indexPath = Path.Combine(appDir.AppFolder, "index.js");
             FileOps.Retry(() => FileOps.WriteAllTextAtomic(indexPath, loaderJs), indexPath, ct);
-
-            return rb;
         }
 
         static void RestoreVanillaAppDir(AppDirInfo appDir, CancellationToken ct)
@@ -742,17 +758,19 @@ namespace EndcordInstaller.Core
             foreach (var coreIndex in DiscordLocator.FindDesktopCoreIndices(appDir.Path))
                 CleanDesktopCoreFile(coreIndex, ct);
 
+            // Nothing undoes these steps, and a cancel between them would leave Discord without a loader or app.asar
+            ct.ThrowIfCancellationRequested();
             if (Directory.Exists(appDir.AppFolder))
-                FileOps.DeleteDirectory(appDir.AppFolder, ct);
+                FileOps.DeleteDirectory(appDir.AppFolder, CancellationToken.None);
 
             if (Directory.Exists(appDir.AppAsar))
-                FileOps.DeleteDirectory(appDir.AppAsar, ct);
+                FileOps.DeleteDirectory(appDir.AppAsar, CancellationToken.None);
 
             if (File.Exists(appDir.BackupAsar) && FileOps.SizeOf(appDir.BackupAsar) >= DiscordLocator.OriginalAsarMinSize)
             {
                 if (File.Exists(appDir.AppAsar))
-                    FileOps.DeleteFile(appDir.AppAsar, ct);
-                FileOps.Move(appDir.BackupAsar, appDir.AppAsar, ct);
+                    FileOps.DeleteFile(appDir.AppAsar, CancellationToken.None);
+                FileOps.Move(appDir.BackupAsar, appDir.AppAsar, CancellationToken.None);
             }
         }
 
@@ -1002,17 +1020,22 @@ namespace EndcordInstaller.Core
                 JsonObject root;
                 if (File.Exists(paths.SettingsFile))
                 {
+                    // An unreadable file is left for the client, which recovers it from settings.json.bak and
+                    // takes the language from installer-state.json
                     try { root = Json.ParseObject(FileOps.ReadText(paths.SettingsFile)); }
-                    catch { root = new JsonObject(); }
+                    catch { root = null; }
                 }
                 else
                 {
                     root = new JsonObject();
                 }
 
-                root["language"] = norm;
-                string serialized = Json.Serialize(root) + "\n";
-                FileOps.WriteAllTextAtomic(paths.SettingsFile, serialized);
+                if (root != null)
+                {
+                    root["language"] = norm;
+                    string serialized = Json.Serialize(root) + "\n";
+                    try { FileOps.WriteAllTextAtomic(paths.SettingsFile, serialized); } catch { }
+                }
 
                 string stateFile = Path.Combine(paths.EndcordRoot, "installer-state.json");
                 var stateObj = new JsonObject();

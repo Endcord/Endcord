@@ -56,6 +56,7 @@ async function saveRecordingFile(sourcePath: string) {
         }
         logger.info("Recording:", fileData.length, "bytes");
         const filePath = await Native.saveRecording(fileData.buffer, folder, getFileName());
+        void Native.discardRecording(sourcePath);
         settings.store.lastSavedFile = filePath;
         logger.info("Saved:", filePath);
         showNotification({ title: "CallRecorder", body: `Saved to ${filePath}` });

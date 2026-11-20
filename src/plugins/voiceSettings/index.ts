@@ -97,6 +97,8 @@ const settings = definePluginSettings({
         markers: makeRange(2000, 10000, 1000),
         default: 5000,
         stickToMarkers: true,
+        // the settings page reads it once, when its module loads
+        restartNeeded: true,
     },
 });
 
@@ -120,13 +122,21 @@ export default definePlugin({
             noWarn: true,
         },
 
+        // PTT release delay slider in User Settings > Voice & Video
         {
-            find: "pttReleaseDelay",
+            find: "VOICE_PUSH_TO_TALK_RELEASE_DELAY_SETTING,",
             replacement: {
-                match: /(?<=pttReleaseDelay.{0,200})maxValue:2000/,
-                replace: "maxValue:$self.settings.store.pttDelayMax",
+                match: /(VOICE_PUSH_TO_TALK_RELEASE_DELAY_SETTING,.{0,300}?\{delay:\i\}.{0,40}?maxValue:)2e3/,
+                replace: "$1$self.settings.store.pttDelayMax",
             },
-            noWarn: true,
+        },
+        // Same slider in the per-context voice settings modal
+        {
+            find: 'location:"VoiceSettingsModal"',
+            replacement: {
+                match: /(\{delay:\i\},\i\),onValueRender:.{0,100}?maxValue:)2e3/,
+                replace: "$1$self.settings.store.pttDelayMax",
+            },
         },
 
         {

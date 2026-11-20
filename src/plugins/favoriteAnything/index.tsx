@@ -52,9 +52,9 @@ export default definePlugin({
                     replace: "$&{return $self.renderEmbed(this)}__render()"
                 },
                 {
-                    // Specify the index for individual items in embed.images
-                    match: /\.images\.map\((\i)=>(this.renderImage\(\{[^}]{50,100}\}\))\)/,
-                    replace: ".images.map(($1,index)=>$self.renderEmbedMosaicItem($2,index))"
+                    // Specify the index for individual items in embed.images (the mosaic item's uniqueId carries it)
+                    match: /(uniqueId:`\$\{\i\.url\}--\$\{(\i)\}`.{0,300}?renderImageComponent:)(\i=>.+?)(?=,renderVideoComponent:)/,
+                    replace: "$1(...vcArgs)=>$self.renderEmbedMosaicItem(($3)(...vcArgs),$2)"
                 }
             ]
         },

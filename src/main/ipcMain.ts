@@ -14,7 +14,7 @@ import { isSafeExternalUrl } from "@shared/externalLinks";
 import { IpcEvents } from "@shared/IpcEvents";
 import { RENDERER_FILE } from "@shared/pluginChunks";
 import { BrowserWindow, ipcMain, nativeTheme, shell, systemPreferences } from "electron";
-import monacoHtml from "file://monacoWin.html?minify&base64";
+import monacoHtml from "file://monacoWin.html?minify";
 import { FSWatcher, mkdirSync, readFileSync, watch, writeFileSync } from "fs";
 import { open, readdir, readFile } from "fs/promises";
 import { release } from "os";
@@ -157,7 +157,8 @@ handleIpc(IpcEvents.OPEN_MONACO_EDITOR, async () => {
 
     makeLinksOpenExternally(win);
 
-    await win.loadURL(`data:text/html;base64,${monacoHtml}`);
+    // Embedded as text, not base64: a third smaller in the main process bundle
+    await win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(monacoHtml)}`);
 });
 
 handleIpc(IpcEvents.GET_RENDERER_CSS, () => readFile(RENDERER_CSS_PATH, "utf-8"));

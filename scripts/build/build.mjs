@@ -24,7 +24,7 @@ import { readdir, readFile } from "fs/promises";
 import { join, resolve } from "path";
 
 import { getPluginTarget } from "../utils.mjs";
-import { banner, BUILD_TIMESTAMP, buildOrWatchAll, commonOpts, commonRendererPlugins, exists, externalLocalesPlugin, globPlugins, IS_ANTI_CRASH_TEST, IS_DEV, IS_REPORTER, IS_STANDALONE, IS_UPDATER_DISABLED, isExcludedTarget, resolvePluginName, stringifyValues,stripLocales, VERSION, watch } from "./common.mjs";
+import { banner, BUILD_TIMESTAMP, buildOrWatchAll, commonOpts, commonRendererPlugins, compareNames, exists, externalLocalesPlugin, globPlugins, IS_ANTI_CRASH_TEST, IS_DEV, IS_REPORTER, IS_STANDALONE, IS_UPDATER_DISABLED, isExcludedTarget, resolvePluginName, stringifyValues,stripLocales, VERSION, watch } from "./common.mjs";
 import { buildChunkedRenderer } from "./pluginChunks.mjs";
 
 const defines = stringifyValues({
@@ -95,7 +95,7 @@ const globNativesPlugin = kind => ({
             for (const dir of pluginDirs) {
                 const dirPath = join("src", dir);
                 if (!await exists(dirPath)) continue;
-                const plugins = await readdir(dirPath, { withFileTypes: true });
+                const plugins = (await readdir(dirPath, { withFileTypes: true })).sort((a, b) => compareNames(a.name, b.name));
                 for (const file of plugins) {
                     const fileName = file.name;
                     const nativePath = join(dirPath, fileName, "native.ts");
@@ -147,7 +147,7 @@ const nativeMethodsPlugin = kind => ({
             for (const dir of ["plugins", "userplugins"]) {
                 const dirPath = join("src", dir);
                 if (!await exists(dirPath)) continue;
-                for (const file of await readdir(dirPath, { withFileTypes: true })) {
+                for (const file of (await readdir(dirPath, { withFileTypes: true })).sort((a, b) => compareNames(a.name, b.name))) {
                     const target = getPluginTarget(file.name);
                     if (target && !IS_REPORTER && isExcludedTarget(target, kind)) continue;
 

@@ -14,6 +14,27 @@ const translationCache = new Map<string, CachedTranslation>();
 const inProgress = new Set<string>();
 const failed = new Map<string, string>();
 
+const MAX_CONCURRENT = 4;
+let active = 0;
+const waiting: (() => void)[] = [];
+let rateLimitedUntil = 0;
+
+class RateLimitError extends Error { }
+
+async function acquireSlot() {
+    if (active < MAX_CONCURRENT) {
+        active++;
+        return;
+    }
+    await new Promise<void>(resolve => waiting.push(resolve));
+}
+
+function releaseSlot() {
+    const next = waiting.shift();
+    if (next) next();
+    else active--;
+}
+
 export function getCached(messageId: string): CachedTranslation | undefined {
     return translationCache.get(messageId);
 }
@@ -40,8 +61,15 @@ async function fetchTranslation(text: string, targetLang: string): Promise<Trans
         "query.targetLanguage": targetLang,
         "query.text": text,
     })}`;
-    const response = await fetch(url);
+    const response = await fetch(url, { signal: AbortSignal.timeout(15_000) });
 
+    if (response.status === 429) {
+        const retryAfter = Number(response.headers.get("Retry-After"));
+        const alreadyLimited = Date.now() < rateLimitedUntil;
+        rateLimitedUntil = Date.now() + (retryAfter > 0 ? Math.min(retryAfter, 600) * 1000 : 60_000);
+        if (!alreadyLimited) logger.warn(`Rate limited, pausing translations until ${new Date(rateLimitedUntil).toLocaleTimeString()}`);
+        throw new RateLimitError("Translation API returned 429");
+    }
     if (!response.ok) {
         throw new Error(`Translation API returned ${response.status} ${response.statusText}`);
     }
@@ -52,10 +80,14 @@ async function fetchTranslation(text: string, targetLang: string): Promise<Trans
 export async function translate(messageId: string, text: string): Promise<CachedTranslation | null> {
     if (inProgress.has(messageId)) return null;
     if (translationCache.has(messageId)) return translationCache.get(messageId)!;
+    if (Date.now() < rateLimitedUntil) return null;
 
     inProgress.add(messageId);
+    await acquireSlot();
 
     try {
+        // Requests queued before a 429 are dropped; the message is retried on a later render.
+        if (Date.now() < rateLimitedUntil) return null;
         const targetLang = settings.store.targetLanguage;
         const response = await fetchTranslation(text, targetLang);
 
@@ -79,10 +111,12 @@ export async function translate(messageId: string, text: string): Promise<Cached
         translationCache.set(messageId, entry);
         return entry;
     } catch (e) {
+        if (e instanceof RateLimitError) return null;
         logger.error("Translation failed", e);
         failed.set(messageId, text);
         return null;
     } finally {
+        releaseSlot();
         inProgress.delete(messageId);
     }
 }

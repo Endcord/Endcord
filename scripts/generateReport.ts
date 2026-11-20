@@ -73,7 +73,9 @@ const report = {
     }[],
     otherErrors: [] as string[],
     ignoredErrors: [] as string[],
-    badWebpackFinds: [] as string[]
+    badWebpackFinds: [] as string[],
+    /** noWarn replacements that changed nothing: listed so dead ones don't pile up unseen, but not a failure */
+    silencedPatches: [] as string[]
 };
 
 const IGNORED_DISCORD_ERRORS = [
@@ -174,6 +176,11 @@ async function printReport() {
 
     console.log();
 
+    console.log("## noWarn Patches With No Effect (not a failure)");
+    report.silencedPatches.forEach(p => console.log(`- ${p}`));
+
+    console.log();
+
     console.log("## Bad Starts");
     report.badStarts.forEach(p => {
         console.log(`- ${p.plugin}`);
@@ -252,6 +259,14 @@ async function printReport() {
                 title: "No issues found",
                 description: "Seems like everything is working fine (for now) <:shipit:1330992641466433556>",
                 color: 0x00ff00
+            });
+        }
+
+        if (report.silencedPatches.length) {
+            embeds.push({
+                title: "noWarn Patches With No Effect",
+                description: toCodeBlock(report.silencedPatches.join("\n"), 0, true),
+                color: 0x99aab5
             });
         }
 
@@ -384,6 +399,9 @@ page.on("console", async e => {
                         await browser.close();
                         await printReport();
                         process.exit();
+                        break;
+                    default:
+                        if (message.startsWith("noWarn replacements with no effect")) report.silencedPatches.push(...message.split("\n").slice(1));
                 }
         }
     }

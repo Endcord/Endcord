@@ -116,10 +116,10 @@ export default definePlugin({
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     patches: [
         {
-            // The notice text key is shared with another component that loads first
-            find: "saveButtonTooltip:",
+            // Unsaved-changes notice; the plain prop name also appears in guild settings
+            find: /saveButtonTooltip:\i\}=/,
             replacement: {
-                match: /onSave:(\i).*?children:\[/,
+                match: /onSave:(\i),.*?children:\[/,
                 replace: "$&$self.KeyListener($1),"
             }
         }

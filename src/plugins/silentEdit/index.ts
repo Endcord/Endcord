@@ -30,12 +30,12 @@ export default definePlugin({
 
     patches: [
         {
-            find: "#{intl::MESSAGE_EDITED_TIMESTAMP_A11Y_LABEL}",
+            // "(edited)" label next to the message content
+            find: '"AFTER_ACCESSORIES"',
             replacement: {
-                match: /(\i)\.edited_timestamp(?=.{0,300}MESSAGE_EDITED_TIMESTAMP_A11Y_LABEL)/,
-                replace: "($self.shouldHide(arguments[0]?.id) ? null : $1.edited_timestamp)",
+                match: /return (\i)\.isEdited\(\)&&null!=\1\.editedTimestamp/,
+                replace: "return !$self.shouldHide($1.id)&&$1.isEdited()&&null!=$1.editedTimestamp",
             },
-            noWarn: true,
         },
     ],
 

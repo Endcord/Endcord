@@ -31,7 +31,7 @@ function SafeModeModal({ onClose, transitionState }: RenderModalProps) {
 
     const restart = () => {
         for (const name of candidates) Settings.plugins[name].enabled = keepOn.has(name);
-        relaunch();
+        restartNormally();
     };
 
     const offCount = candidates.length - keepOn.size;
@@ -48,7 +48,7 @@ function SafeModeModal({ onClose, transitionState }: RenderModalProps) {
             actions={bootState.reason === "manual" || !candidates.length
                 ? [
                     { text: t("Stay in safe mode"), variant: "secondary", onClick: onClose },
-                    { text: t("Restart normally"), variant: "primary", onClick: relaunch }
+                    { text: t("Restart normally"), variant: "primary", onClick: restartNormally }
                 ]
                 : [
                     { text: t("Stay in safe mode"), variant: "secondary", onClick: onClose },
@@ -83,8 +83,12 @@ function SafeModeModal({ onClose, transitionState }: RenderModalProps) {
     );
 }
 
+// Leaving safe mode on purpose isn't a failed start: clear the count first, or a restart within the first seconds
+// lands in safe mode again
+const restartNormally = () => (EndcordNative.boot?.confirm([]) ?? Promise.resolve()).finally(relaunch);
+
 /** Safe mode notice with the way back out. Shown once Discord's UI is up */
 export function showSafeModeScreen() {
-    showNotice(t("Safe mode: Endcord's plugins, themes and Custom CSS are off until you restart."), t("Restart normally"), relaunch);
+    showNotice(t("Safe mode: Endcord's plugins, themes and Custom CSS are off until you restart."), t("Restart normally"), restartNormally);
     openModal(props => <SafeModeModal {...props} />);
 }

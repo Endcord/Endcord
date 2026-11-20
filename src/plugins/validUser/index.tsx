@@ -169,7 +169,7 @@ export default definePlugin({
 
     patches: [
         {
-            find: 'className:"mention"',
+            find: '||"@here"===',
             replacement: {
                 // mention = { react: function (data, parse, props) { if (data.userId == null) return RoleMention() else return UserMention()
                 match: /react(?=\(\i,\i,\i\).{0,100}return null==.{0,70}\?\(0,\i\.jsx\)\((\i\.\i),.+?jsx\)\((\i\.\i),\{className:"mention")/,

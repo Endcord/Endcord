@@ -20,7 +20,7 @@ import { getExtensionFromBytes, getExtensionFromMime, getMimeFromExtension, getU
 import { isS3Configured, uploadToS3 } from "./s3";
 import { parseShareXConfig, resolveShareXTemplate } from "./sharex";
 
-const Native = IS_DISCORD_DESKTOP
+const Native = !IS_WEB
     ? EndcordNative.pluginHelpers.FileUpload as PluginNative<typeof import("../native")>
     : null;
 
@@ -613,14 +613,12 @@ async function uploadToEncryptingHost(fileBlob: Blob, filename: string): Promise
     return url;
 }
 
-export function isConfigured(): boolean {
+export function isConfigured(serviceType: ServiceType = settings.store.serviceType): boolean {
     const {
-        serviceType,
         serviceUrl,
         ziplineToken,
         nestToken
     } = settings.store as {
-        serviceType: ServiceType;
         serviceUrl?: string;
         ziplineToken?: string;
         nestToken?: string;
@@ -1190,6 +1188,19 @@ function normalizePrimaryService(primary: ServiceType, fileName: string): Servic
     return primary;
 }
 
+// Anonymous hosts: anyone with the link can open the file
+const PUBLIC_HOSTS = new Set<ServiceType>([
+    ServiceType.CATBOX,
+    ServiceType.ZEROX0,
+    ServiceType.LITTERBOX,
+    ServiceType.GOFILE,
+    ServiceType.TMPFILES,
+    ServiceType.BUZZHEAVIER,
+    ServiceType.TEMPSH,
+    ServiceType.FILEBIN,
+    ServiceType.PIXELDRAIN
+]);
+
 function buildUploadOrder(primary: ServiceType, fileName: string): ServiceType[] {
     const disableFallbacks = Boolean((settings.store as { disableFallbacks?: boolean; }).disableFallbacks);
     const effectivePrimary = normalizePrimaryService(primary, fileName);
@@ -1199,8 +1210,13 @@ function buildUploadOrder(primary: ServiceType, fileName: string): ServiceType[]
         return order;
     }
 
+    // A file meant for the user's own server or account only reaches a public host if they allowed that
+    const allowPublic = PUBLIC_HOSTS.has(effectivePrimary)
+        || Boolean((settings.store as { publicFallbacks?: boolean; }).publicFallbacks);
+
     for (const fallback of getFallbackServices()) {
-        if (fallback !== effectivePrimary && canServiceHandleFile(fallback, fileName)) {
+        if (fallback !== effectivePrimary && canServiceHandleFile(fallback, fileName) && isConfigured(fallback)
+            && (allowPublic || !PUBLIC_HOSTS.has(fallback))) {
             order.push(fallback);
         }
     }
@@ -1278,6 +1294,7 @@ async function uploadWithFallbacks(fileBlob: Blob, filename: string, primary: Se
     const uploadOrder = buildUploadOrder(primary, filename);
     const attempted: string[] = [];
     let lastError = "Unknown error";
+    let firstError = "";
 
     setUploadState({
         phase: "uploading",
@@ -1333,10 +1350,13 @@ async function uploadWithFallbacks(fileBlob: Blob, filename: string, primary: Se
                 throw error;
             }
 
-            const message = error instanceof Error ? error.message : "Unknown error";
+            let message = error instanceof Error ? error.message : "Unknown error";
+            // Thrown in the main process by the request guard (src/main/utils/http.ts)
+            if (message.includes("Disallowed URL")) message = "the server address isn't allowed (local network addresses can't be reached)";
 
             attempted.push(serviceLabels[service]);
             lastError = message;
+            firstError ||= message;
             logger.warn(`Upload failed for ${serviceLabels[service]}: ${message}`);
             setUploadState({
                 phase: "retrying",
@@ -1356,7 +1376,8 @@ async function uploadWithFallbacks(fileBlob: Blob, filename: string, primary: Se
         percent: 0
     });
 
-    throw new Error(`All upload services failed. Last error: ${lastError}. Tried: ${attempted.join(", ")}`);
+    if (attempted.length === 1) throw new Error(`${attempted[0]}: ${lastError}`);
+    throw new Error(`All upload services failed. ${attempted[0]}: ${firstError}. Last error: ${lastError}. Tried: ${attempted.join(", ")}`);
 }
 
 async function normalizeUploadBlob(blob: Blob, sourceUrl?: string): Promise<{ blob: Blob; filename: string; }> {

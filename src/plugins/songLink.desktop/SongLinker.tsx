@@ -23,23 +23,58 @@ interface SongLinkerProps {
     onResolved?: (url: string, result: SongLinkResult) => void;
 }
 
+const FAILURE_TTL = 5 * 60_000;
+const pending = new Map<string, Promise<SongLinkResult>>();
+const failedAt = new Map<string, number>();
+
+function getTrackData(url: string): Promise<SongLinkResult> {
+    let p = pending.get(url);
+    if (!p) {
+        p = Native.getTrackData(url).then(sd => {
+            pl.addToCache(url, sd);
+            return sd;
+        }, e => {
+            failedAt.set(url, Date.now());
+            throw e;
+        }).finally(() => pending.delete(url));
+        pending.set(url, p);
+    }
+    return p;
+}
+
 export default function SongLinker({ url, onResolved }: SongLinkerProps) {
     const [songData, setSongData] = useState<SongLinkResult>();
+    const [failed, setFailed] = useState(false);
 
     useEffect(() => {
+        let cancelled = false;
+        setFailed(false);
         async function doStuff() {
             let sd: SongLinkResult;
             if (pl.cache[url]) {
                 sd = pl.cache[url];
             } else {
-                sd = await Native.getTrackData(url);
-                pl.addToCache(url, sd);
+                const at = failedAt.get(url);
+                if (at !== undefined && Date.now() - at < FAILURE_TTL) {
+                    setFailed(true);
+                    return;
+                }
+                try {
+                    sd = await getTrackData(url);
+                } catch {
+                    if (!cancelled) setFailed(true);
+                    return;
+                }
             }
+            if (cancelled) return;
             setSongData(sd);
             onResolved?.(url, sd);
         }
         doStuff();
+        return () => { cancelled = true; };
     }, [url]);
+
+    if (failed && !songData) return <BaseText>{t("Couldn't load this right now :(")}</BaseText>;
 
     return <BaseText>
         {

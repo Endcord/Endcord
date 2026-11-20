@@ -41,6 +41,28 @@ export interface BootState {
 
 export const NORMAL_BOOT: BootState = { safeMode: false, reason: null, failedStarts: 0, suspects: [], lastGood: [] };
 
+function pathOf(url: string) {
+    try {
+        return new URL(url).pathname;
+    } catch {
+        return null;
+    }
+}
+
+/** Popouts and the overlay load the same page, but only the main window's start says whether Discord came up */
+export function isMainPage(url: string) {
+    const path = pathOf(url);
+    return path !== null && !/^\/(?:popout|overlay)/.test(path);
+}
+
+/** Signed out, Discord waits on its login page and Endcord never reports in, but nothing is wrong */
+export const SIGNED_OUT_PAGE = /^\/(?:login|register|reset|verify|authorize|oauth2|invite)/;
+
+export function isSignedOutPage(url: string) {
+    const path = pathOf(url);
+    return path !== null && SIGNED_OUT_PAGE.test(path);
+}
+
 const names = (value: unknown, limit = MAX_PLUGINS) => Array.isArray(value)
     ? [...new Set(value.filter((name): name is string => typeof name === "string" && name.length < 100))].slice(0, limit)
     : [];

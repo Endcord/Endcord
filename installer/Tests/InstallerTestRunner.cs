@@ -681,6 +681,52 @@ namespace EndcordInstaller.Tests
                         "Original app.asar must be intact after cancellation rollback");
                 }
 
+                // 1b. A patch stopped after app.asar went to _app.asar is still rolled back. A file named "app" makes
+                // creating resources/app fail; the retry it causes is where the cancel lands
+                string appBlocker = Path.Combine(stableRes, "app");
+                File.WriteAllText(appBlocker, "not a folder");
+                using (var cts = new CancellationTokenSource())
+                {
+                    Action<string> cancelOnRetry = subject => cts.Cancel();
+                    FileOps.RetryingLocked += cancelOnRetry;
+                    try
+                    {
+                        var midOutcome = InstallationEngine.RunInstall(paths, ClientDetector.Detect(paths, null).Installs, false, false, null, cts.Token);
+                        Assert(midOutcome.Cancelled && midOutcome.RolledBack, "An install cancelled halfway through a folder should roll back");
+                        Assert(File.Exists(Path.Combine(stableRes, "app.asar")) && !File.Exists(Path.Combine(stableRes, "_app.asar")),
+                            "app.asar must be put back when the patch stopped after moving it");
+                    }
+                    finally
+                    {
+                        FileOps.RetryingLocked -= cancelOnRetry;
+                        File.Delete(appBlocker);
+                    }
+                }
+
+                // 1c. An unreadable settings.json is left for the client's .bak recovery; the language still goes to installer-state.json
+                Directory.CreateDirectory(paths.SettingsDir);
+                File.WriteAllText(paths.SettingsFile, "{\"plugins\": {");
+                InstallationEngine.SyncClientLanguageSetting(paths, "tr");
+                Assert(File.ReadAllText(paths.SettingsFile) == "{\"plugins\": {", "A settings.json that doesn't parse must not be overwritten");
+                Assert(File.ReadAllText(Path.Combine(paths.EndcordRoot, "installer-state.json")).Contains("\"tr\""), "The language must still reach installer-state.json");
+                File.WriteAllText(paths.SettingsFile, "{\"plugins\": {}}");
+                InstallationEngine.SyncClientLanguageSetting(paths, "fr");
+                string synced = File.ReadAllText(paths.SettingsFile);
+                Assert(synced.Contains("\"fr\"") && synced.Contains("plugins"), "A readable settings.json gets the language and keeps the rest");
+
+                // 1d. Uninstalling one Discord keeps dist while an install on a custom path still loads it
+                string customRoot = Path.Combine(sandbox, "PortableDiscord");
+                CreateFakeAsar(Path.Combine(customRoot, "app-1.0.9030", "resources", "app.asar"));
+                var custom = DiscordLocator.OpenCustom(customRoot);
+                var stableOnly = ClientDetector.Detect(paths, null).Installs.Find(i => i.Id == "stable");
+                var bothOut = InstallationEngine.RunInstall(paths, new[] { stableOnly, custom }, false, false, null, CancellationToken.None);
+                Assert(bothOut.Success, "Installing on a custom path should succeed");
+                stableOnly = ClientDetector.Detect(paths, null).Installs.Find(i => i.Id == "stable");
+                var partialOut = InstallationEngine.RunUninstall(paths, new[] { stableOnly }, false, null, CancellationToken.None, new[] { customRoot });
+                Assert(partialOut.Success && File.Exists(Path.Combine(paths.Dist, "patcher.js")), "dist must stay while a custom-path install still uses it");
+                var lastOut = InstallationEngine.RunUninstall(paths, new[] { DiscordLocator.OpenCustom(customRoot) }, false, null, CancellationToken.None, new[] { customRoot });
+                Assert(lastOut.Success && !Directory.Exists(paths.Dist), "dist goes with the last install that used it");
+
                 // 2. A file that's locked for a moment gets retried
                 string lockedFile = Path.Combine(sandbox, "locked.txt");
                 File.WriteAllText(lockedFile, "initial");

@@ -6,6 +6,9 @@
 
 // Local message index in the browser's IndexedDB. Nothing here ever leaves the device.
 
+import { localStorage } from "@utils/localStorage";
+import { UserStore } from "@webpack/common";
+
 export interface IndexedMessage {
     id: string;
     /** channel id */
@@ -50,11 +53,29 @@ const MESSAGES = "messages";
 const SAVED = "saved";
 const MAX_SCAN = 400_000;
 
-let dbPromise: Promise<IDBDatabase> | null = null;
+const OWNER_KEY = "EndcordMessageVault_owner";
+const dbPromises = new Map<string, Promise<IDBDatabase>>();
+
+/**
+ * One database per account. The unsuffixed one predates this and belongs to the first account that opens it, so its
+ * messages don't show up in another account's searches
+ */
+function dbName(): string {
+    const uid = UserStore.getCurrentUser()?.id;
+    if (!uid) return DB_NAME;
+    let owner: string | null = null;
+    try {
+        owner = localStorage.getItem(OWNER_KEY);
+        if (!owner) localStorage.setItem(OWNER_KEY, owner = uid);
+    } catch { }
+    return !owner || owner === uid ? DB_NAME : `${DB_NAME}:${uid}`;
+}
 
 function open(): Promise<IDBDatabase> {
-    return dbPromise ??= new Promise((resolve, reject) => {
-        const req = indexedDB.open(DB_NAME, 1);
+    const name = dbName();
+    let dbPromise = dbPromises.get(name);
+    if (!dbPromise) dbPromises.set(name, dbPromise = new Promise((resolve, reject) => {
+        const req = indexedDB.open(name, 1);
         req.onupgradeneeded = () => {
             const db = req.result;
             const messages = db.createObjectStore(MESSAGES, { keyPath: "id" });
@@ -65,8 +86,9 @@ function open(): Promise<IDBDatabase> {
             db.createObjectStore(SAVED, { keyPath: "id" }).createIndex("savedAt", "savedAt");
         };
         req.onsuccess = () => resolve(req.result);
-        req.onerror = () => { dbPromise = null; reject(req.error); };
-    });
+        req.onerror = () => { dbPromises.delete(name); reject(req.error); };
+    }));
+    return dbPromise;
 }
 
 const done = (tx: IDBTransaction) => new Promise<void>((resolve, reject) => {

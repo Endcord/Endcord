@@ -22,14 +22,8 @@ from pathlib import Path
 from urllib.request import urlopen, Request
 
 HOME = os.path.expanduser("~")
-if os.environ.get("SUDO_USER") and os.geteuid() == 0:
-    try:
-        import pwd
-        HOME = pwd.getpwnam(os.environ["SUDO_USER"]).pw_dir
-    except Exception:
-        HOME = "/home/" + os.environ["SUDO_USER"]
-
-CONFIG = os.environ.get("XDG_CONFIG_HOME") or os.path.join(HOME, ".config")
+# The loader reads $HOME/.config whatever XDG_CONFIG_HOME says
+CONFIG = os.path.join(HOME, ".config")
 DIST_DIR = os.path.join(CONFIG, "Endcord", "dist")
 FILES = ("patcher.js", "preload.js", "renderer.js", "renderer.css")
 # Where the files are, and the manifest with their checksums. endcord.com has them in one archive
@@ -53,18 +47,6 @@ MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEJi37GlwG/uPNC4oQicUcI1bPlnri
 1pXQGzUzDQwBnxQ1+F7tFtUkOjancC1eScKb9H9eASOz7iUA3CiGgXtHaw==
 -----END PUBLIC KEY-----
 """
-
-LOADER_JS = """const { join } = require('path');
-const appData = process.env.APPDATA || (process.platform === 'darwin' ? join(process.env.HOME, 'Library/Application Support') : join(process.env.HOME, '.config'));
-const patcherPath = join(appData, 'Endcord', 'dist', 'patcher.js');
-try {
-    require(patcherPath);
-} catch (e) {
-    console.error('[Endcord] ' + e);
-    require(join(__dirname, '..', '_app.asar'));
-}
-"""
-LOADER_PKG = '{\n  "name": "discord",\n  "main": "index.js"\n}\n'
 
 CANDIDATES = [
     ("Discord Stable", "/opt/discord", "Discord"),
@@ -286,91 +268,85 @@ def fetch_dist():
     raise RuntimeError("Could not download Endcord files. Check https://endcord.com/download (%s)" % last)
 
 
-def write_loader(app_dir):
-    os.makedirs(app_dir, exist_ok=True)
-    Path(os.path.join(app_dir, "package.json")).write_text(LOADER_PKG, encoding="utf-8")
-    Path(os.path.join(app_dir, "index.js")).write_text(LOADER_JS, encoding="utf-8")
-
-
-def _patch_res(res):
-    asar = os.path.join(res, "app.asar")
-    backup = os.path.join(res, "_app.asar")
-    app = os.path.join(res, "app")
-    if os.path.isdir(asar):
-        shutil.rmtree(asar, ignore_errors=True)
-    if os.path.isfile(asar):
-        size = os.path.getsize(backup) if os.path.isfile(backup) else 0
-        if size < 100000:
-            if os.path.isfile(backup):
-                os.remove(backup)
-            os.rename(asar, backup)
-        else:
-            os.remove(asar)
-    if os.path.isdir(app):
-        shutil.rmtree(app, ignore_errors=True)
-    write_loader(app)
-
-
-def _restore_res(res):
-    asar = os.path.join(res, "app.asar")
-    backup = os.path.join(res, "_app.asar")
-    app = os.path.join(res, "app")
-    if os.path.isdir(app):
-        shutil.rmtree(app, ignore_errors=True)
-    if os.path.isdir(asar):
-        shutil.rmtree(asar, ignore_errors=True)
-    if os.path.isfile(backup):
-        if os.path.isfile(asar):
-            os.remove(asar)
-        try:
-            os.rename(backup, asar)
-        except OSError:
-            shutil.copy2(backup, asar)
-            os.remove(backup)
-
-
+# Same rules as PATCH_SCRIPT and RESTORE_SCRIPT in install.sh. Exit 3: no Discord app.asar to fall back to,
+# exit 4: uninstall found another mod's loader in app/ and left it
 PRIV_BASH = r"""#!/usr/bin/env bash
 set -euo pipefail
+umask 022
 mode="$1"
 res="$2"
+min=100000
 asar="$res/app.asar"
 backup="$res/_app.asar"
 app="$res/app"
+new="$res/app.endcord-new"
+prev="$res/app.endcord-prev"
+size() { if [ -f "$1" ]; then wc -c < "$1" | tr -d ' '; else echo 0; fi; }
 if [ "$mode" = patch ]; then
-  [ -d "$asar" ] && rm -rf "$asar"
-  if [ -f "$asar" ]; then
-    bsz=0
-    [ -f "$backup" ] && bsz=$(stat -c%s "$backup" 2>/dev/null || echo 0)
-    if [ "$bsz" -lt 100000 ]; then
-      rm -f "$backup"
-      mv "$asar" "$backup"
-    else
-      rm -f "$asar"
-    fi
+  # A full-size app.asar is Discord's own, also right after a package update; a smaller one is another mod's stub
+  real=0
+  [ "$(size "$asar")" -ge "$min" ] && real=1
+  if [ "$real" = 0 ] && [ "$(size "$backup")" -lt "$min" ]; then
+    echo "Discord's app.asar is missing in $res; reinstall Discord and try again." >&2
+    exit 3
   fi
-  rm -rf "$app"
-  mkdir -p "$app"
-  printf '%s\n' '{"name":"discord","main":"index.js"}' > "$app/package.json"
-  cat > "$app/index.js" <<'EOF'
+  ok=0
+  rollback() {
+    rm -rf "$new"
+    [ "$ok" = 1 ] && return
+    if [ ! -e "$app" ] && [ -e "$prev" ]; then mv "$prev" "$app"; fi
+    if [ ! -e "$app" ] && [ ! -e "$asar" ] && [ "$real" = 1 ]; then mv "$backup" "$asar"; fi
+  }
+  trap rollback EXIT
+  # The loader is complete before anything of Discord's is moved
+  rm -rf "$new"
+  mkdir "$new"
+  printf '%s\n' '{' '  "name": "discord",' '  "main": "index.js"' '}' > "$new/package.json"
+  cat > "$new/index.js" <<'EOF'
+// Endcord Loader
 const { join } = require('path');
 const appData = process.env.APPDATA || (process.platform === 'darwin' ? join(process.env.HOME, 'Library/Application Support') : join(process.env.HOME, '.config'));
 const patcherPath = join(appData, 'Endcord', 'dist', 'patcher.js');
 try {
     require(patcherPath);
 } catch (e) {
-    console.error('[Endcord] ' + e);
+    console.error('[Endcord] Failed to load patcher.js, falling back to vanilla _app.asar:', e);
     require(join(__dirname, '..', '_app.asar'));
 }
 EOF
+  if [ "$real" = 1 ]; then mv -f "$asar" "$backup"; else rm -rf "$asar"; fi
+  rm -rf "$prev"
+  if [ -e "$app" ]; then mv "$app" "$prev"; fi
+  mv "$new" "$app"
+  ok=1
+  rm -rf "$prev"
 else
-  rm -rf "$app"
-  [ -d "$asar" ] && rm -rf "$asar"
-  if [ -f "$backup" ]; then
-    rm -f "$asar"
-    mv "$backup" "$asar" 2>/dev/null || { cp -f "$backup" "$asar"; rm -f "$backup"; }
+  if [ -f "$app/index.js" ] && ! grep -q Endcord "$app/index.js"; then
+    exit 4
   fi
+  if [ -f "$backup" ]; then
+    if [ "$(size "$asar")" -ge "$min" ]; then
+      rm -f "$backup"
+    else
+      rm -rf "$asar"
+      mv -f "$backup" "$asar"
+    fi
+  fi
+  rm -rf "$app"
 fi
 """
+
+
+def run_script(cmd):
+    """cmd ends in bash -s mode res; PRIV_BASH goes on its stdin."""
+    r = subprocess.run(cmd, input=PRIV_BASH, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, universal_newlines=True)
+    return r.returncode, (r.stderr or "").strip()
+
+
+def check_script(code, err):
+    if code not in (0, 4):
+        raise RuntimeError(err or "exit %d" % code)
+    return code
 
 
 def is_system_folder(path):
@@ -389,41 +365,24 @@ def run_priv(mode, res):
     res = os.path.realpath(res)
     if not is_system_folder(res):
         raise RuntimeError("%s isn't a system folder, so it won't be changed with admin rights" % res)
-    fd, path = tempfile.mkstemp(prefix="endcord-", suffix=".sh")
-    os.close(fd)
-    try:
-        Path(path).write_text(PRIV_BASH, encoding="utf-8")
-        os.chmod(path, 0o700)
-        env = os.environ.copy()
-        cmds = []
-        if shutil.which("pkexec"):
-            cmds.append(["pkexec", "bash", path, mode, res])
-        if shutil.which("sudo"):
-            cmds.append(["sudo", "bash", path, mode, res])
-        last = None
-        for cmd in cmds:
-            try:
-                subprocess.run(cmd, check=True, env=env)
-                return
-            except Exception as e:
-                last = e
-        raise RuntimeError("Need admin rights for %s (%s)" % (res, last))
-    finally:
-        try:
-            os.remove(path)
-        except OSError:
-            pass
+    # The script comes on stdin, not from a file: a file of this user's could be swapped while the password prompt is open
+    last = "neither pkexec nor sudo is installed"
+    for tool in ("pkexec", "sudo"):
+        if not shutil.which(tool):
+            continue
+        code, err = run_script([tool, "bash", "-s", mode, res])
+        # pkexec: 126 = dismissed or not authorized, 127 = authentication failed
+        if tool == "pkexec" and code in (126, 127):
+            last = err or "pkexec exit %d" % code
+            continue
+        return check_script(code, err)
+    raise RuntimeError("Need admin rights for %s (%s)" % (res, last))
 
 
 def apply_res(mode, res):
-    parent = os.path.dirname(res)
-    try:
-        if os.access(parent, os.W_OK):
-            (_patch_res if mode == "patch" else _restore_res)(res)
-            return
-    except PermissionError:
-        pass
-    run_priv(mode, res)
+    if os.access(res, os.W_OK):
+        return check_script(*run_script(["bash", "-s", mode, res]))
+    return run_priv(mode, res)
 
 
 def close_discord():
@@ -436,25 +395,18 @@ def close_discord():
     time.sleep(1)
 
 
+def flatpak_id(root):
+    for app_id in ("com.discordapp.DiscordCanary", "com.discordapp.DiscordPTB", "com.discordapp.DiscordDevelopment", "com.discordapp.Discord"):
+        if app_id in root:
+            return app_id
+    return None
+
+
 def grant_flatpak(root):
-    app_id = None
-    if "com.discordapp.DiscordCanary" in root:
-        app_id = "com.discordapp.DiscordCanary"
-    elif "com.discordapp.DiscordPTB" in root:
-        app_id = "com.discordapp.DiscordPTB"
-    elif "com.discordapp.DiscordDevelopment" in root:
-        app_id = "com.discordapp.DiscordDevelopment"
-    elif "com.discordapp.Discord" in root:
-        app_id = "com.discordapp.Discord"
+    app_id = flatpak_id(root)
     if not app_id or not shutil.which("flatpak"):
         return None
-    target = os.path.join(HOME, ".config", "Endcord")
-    os.makedirs(os.path.join(target, "dist"), exist_ok=True)
-    if os.path.abspath(DIST_DIR) != os.path.abspath(os.path.join(target, "dist")):
-        for name in FILES:
-            src = os.path.join(DIST_DIR, name)
-            if os.path.isfile(src):
-                shutil.copy2(src, os.path.join(target, "dist", name))
+    target = os.path.dirname(DIST_DIR)
     result = subprocess.run(
         ["flatpak", "override", "--user", "--filesystem=" + target, app_id],
         capture_output=True, text=True,
@@ -466,6 +418,12 @@ def grant_flatpak(root):
 
 
 def launch_client(root, proc):
+    app_id = flatpak_id(root)
+    if app_id:
+        # Its binary only works inside the sandbox
+        if shutil.which("flatpak"):
+            subprocess.Popen(["flatpak", "run", app_id], start_new_session=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return
     for name in (proc, proc.lower(), "Discord", "discord"):
         exe = os.path.join(root, name)
         if os.path.isfile(exe) and os.access(exe, os.X_OK):
@@ -512,8 +470,10 @@ def do_action(action, roots, relaunch):
         for res in resource_dirs(c["root"]):
             try:
                 if action == "uninstall":
-                    apply_res("restore", res)
-                    log("Restored %s" % c["name"])
+                    if apply_res("restore", res) == 4:
+                        log("Left %s as it is: %s/app is another mod's loader" % (c["name"], res))
+                    else:
+                        log("Restored %s" % c["name"])
                 else:
                     apply_res("patch", res)
                     log("Patched %s → %s/app" % (c["name"], res))
@@ -523,9 +483,13 @@ def do_action(action, roots, relaunch):
             except Exception as e:
                 log("ERROR %s: %s" % (c["name"], e))
 
+    # Only the files the installer put there; settings and themes stay, and so does dist while a Discord still loads it
     if action == "uninstall":
-        shutil.rmtree(os.path.join(CONFIG, "Endcord"), ignore_errors=True)
-        log("Removed ~/.config/Endcord")
+        if any(c["injected"] for c in scan_clients(roots)):
+            log("Other Discord installs still use Endcord, so its files stay in %s" % DIST_DIR)
+        else:
+            shutil.rmtree(DIST_DIR, ignore_errors=True)
+            log("Removed %s. Your Endcord settings are kept." % DIST_DIR)
 
     if relaunch and action != "uninstall":
         for c in clients:
@@ -1008,4 +972,8 @@ if __name__ == "__main__":
     if "--cli" in sys.argv:
         print("Use ../install.sh --cli")
         sys.exit(2)
+    # Files written as root would leave ~/.config/Endcord unwritable for Discord
+    if os.geteuid() == 0:
+        print("Run the Endcord installer as your normal user, not root. It asks for your password only if a Discord install needs it.", file=sys.stderr)
+        sys.exit(1)
     main()

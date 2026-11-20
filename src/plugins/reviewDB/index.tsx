@@ -23,9 +23,26 @@ import { Clickable, ConfirmModal, IconUtils, Menu, openModal, Parser } from "@we
 import { Auth, initAuth, updateAuth } from "./auth";
 import { openReviewsModal } from "./components/ReviewModal";
 import { NotificationType, ReviewType } from "./entities";
-import { getCurrentUserInfo, getReviews, readNotification } from "./reviewDbApi";
+import { getCurrentUserInfo, getReviews, readNotification, UserReviewsData } from "./reviewDbApi";
 import { settings } from "./settings";
 import { cl, showToast } from "./utils";
+
+const PROFILE_CACHE_TTL = 30_000;
+const profileReviewsCache = new Map<string, { at: number; data: Promise<UserReviewsData | null>; }>();
+
+// Every popout open would otherwise fetch again and toast on each 429.
+function getProfileReviews(userId: string) {
+    const now = Date.now();
+    const hit = profileReviewsCache.get(userId);
+    if (hit && now - hit.at < PROFILE_CACHE_TTL) return hit.data;
+
+    for (const [id, entry] of profileReviewsCache)
+        if (now - entry.at >= PROFILE_CACHE_TTL) profileReviewsCache.delete(id);
+
+    const data = getReviews(userId, { limit: 4, silent: true }).catch(() => null);
+    profileReviewsCache.set(userId, { at: now, data });
+    return data;
+}
 
 const DMSideBarClasses = findCssClassesLazy("widgetPreviews");
 const ProfileCardClasses = findCssClassesLazy("cardsList", "firstCardContainer", "card", "container");
@@ -146,7 +163,8 @@ export default definePlugin({
     },
 
     renderProfileComponent: ErrorBoundary.wrap(({ user, isSideBar = false }: { user: User; isSideBar?: boolean; }) => {
-        const [reviewData] = useAwaiter(() => getReviews(user.id, { limit: 4 }), { deps: [user.id], fallbackValue: null });
+        const [reviewData, , pending] = useAwaiter(() => getProfileReviews(user.id), { deps: [user.id], fallbackValue: null });
+        const failed = !pending && (!reviewData || reviewData.failed);
 
         // Discord are masters at using a huge number of html elements and css classes to create a simple ui that could have
         // been made with less than half of the number of elements, so we have to do this insanity to replicate their ui
@@ -190,7 +208,7 @@ export default definePlugin({
                                                 })}
                                         </div>
                                     )
-                                    : <Paragraph size={isSideBar ? "sm" : "xs"}>{reviewData?.hasOptedOut ? "User opted out" : "No reviews yet"}</Paragraph>
+                                    : <Paragraph size={isSideBar ? "sm" : "xs"}>{failed ? t("Couldn't load this right now :(") : reviewData?.hasOptedOut ? "User opted out" : "No reviews yet"}</Paragraph>
                                 }
                             </div>
                         </Clickable>

@@ -29,7 +29,16 @@ function readSettings<T = object>(name: string, file: string): Partial<T> {
     }
 }
 
-const initialRendererSettings = readSettings<Settings>("renderer", SETTINGS_FILE);
+// A null or primitive plugin entry (a hand-edited file, an old import) makes the renderer throw on every start
+function dropBadPluginEntries<T>(data: T): T {
+    const { plugins } = data as { plugins?: Record<string, unknown>; };
+    if (plugins && typeof plugins === "object") {
+        for (const name in plugins) if (!plugins[name] || typeof plugins[name] !== "object") delete plugins[name];
+    }
+    return data;
+}
+
+const initialRendererSettings = dropBadPluginEntries(readSettings<Settings>("renderer", SETTINGS_FILE));
 try {
     if (!initialRendererSettings.language) {
         const installerStateFile = join(DATA_DIR, "installer-state.json");

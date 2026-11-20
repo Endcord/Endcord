@@ -322,40 +322,62 @@ as_owner() {
     fi
 }
 
-# $1 = resources folder, $2 = loader folder
+# Keep these two in sync with PRIV_BASH in linux/gui.py. umask and chmod: root's files must stay readable to Discord.
+# A full-size app.asar is Discord's own, also right after a package update; a smaller one is another mod's stub.
+# The loader is complete before anything of Discord's is moved, and a failed swap puts the old app/ and app.asar back.
+# $1 = resources folder, $2 = loader folder, $3 = original-asar size threshold; exit 3 = no Discord app.asar to fall back to
 PATCH_SCRIPT='
 set -e
+umask 022
 res="$1"; loader="$2"; min="$3"
-asar="$res/app.asar"; backup="$res/_app.asar"
-[ -d "$asar" ] && rm -rf "$asar"
-if [ -f "$asar" ]; then
-    if [ "$(wc -c < "$asar" | tr -d " ")" -ge "$min" ]; then
-        mv -f "$asar" "$backup"
-    else
-        rm -f "$asar"
-    fi
+asar="$res/app.asar"; backup="$res/_app.asar"; app="$res/app"
+new="$res/app.endcord-new"; prev="$res/app.endcord-prev"
+size() { if [ -f "$1" ]; then wc -c < "$1" | tr -d " "; else echo 0; fi; }
+real=0
+[ "$(size "$asar")" -ge "$min" ] && real=1
+if [ "$real" = 0 ] && [ "$(size "$backup")" -lt "$min" ]; then
+    echo "Discord'"'"'s app.asar is missing in $res; reinstall Discord and try again." >&2
+    exit 3
 fi
-[ -f "$backup" ] || { echo "Discord'"'"'s app.asar is missing in $res; reinstall Discord and try again." >&2; exit 3; }
-rm -rf "$res/app"
-mkdir "$res/app"
-cp "$loader/index.js" "$loader/package.json" "$res/app/"
+ok=0
+rollback() {
+    rm -rf "$new"
+    [ "$ok" = 1 ] && return
+    if [ ! -e "$app" ] && [ -e "$prev" ]; then mv "$prev" "$app"; fi
+    if [ ! -e "$app" ] && [ ! -e "$asar" ] && [ "$real" = 1 ]; then mv "$backup" "$asar"; fi
+}
+trap rollback EXIT
+rm -rf "$new"
+mkdir "$new"
+cp "$loader/index.js" "$loader/package.json" "$new/"
+chmod 644 "$new/index.js" "$new/package.json"
+if [ "$real" = 1 ]; then mv -f "$asar" "$backup"; else rm -rf "$asar"; fi
+rm -rf "$prev"
+if [ -e "$app" ]; then mv "$app" "$prev"; fi
+mv "$new" "$app"
+ok=1
+rm -rf "$prev"
 '
 
-# $1 = resources folder, $2 = original-asar size threshold
+# $1 = resources folder, $2 = original-asar size threshold; exit 4 = app/ is another mod's loader, left as it is
 RESTORE_SCRIPT='
 set -e
+umask 022
 res="$1"; min="$2"
-asar="$res/app.asar"; backup="$res/_app.asar"
-rm -rf "$res/app"
-[ -d "$asar" ] && rm -rf "$asar"
+asar="$res/app.asar"; backup="$res/_app.asar"; app="$res/app"
+size() { if [ -f "$1" ]; then wc -c < "$1" | tr -d " "; else echo 0; fi; }
+if [ -f "$app/index.js" ] && ! grep -q Endcord "$app/index.js"; then
+    exit 4
+fi
 if [ -f "$backup" ]; then
-    if [ -f "$asar" ] && [ "$(wc -c < "$asar" | tr -d " ")" -ge "$min" ]; then
+    if [ "$(size "$asar")" -ge "$min" ]; then
         rm -f "$backup"
     else
-        rm -f "$asar"
+        rm -rf "$asar"
         mv -f "$backup" "$asar"
     fi
 fi
+rm -rf "$app"
 '
 
 close_discord() {
@@ -420,8 +442,13 @@ patch_client() {
 
 restore_client() {
     can_modify "$2" || return 1
-    as_owner "$2" sh -c "$RESTORE_SCRIPT" sh "$2" "$ORIGINAL_ASAR_MIN_SIZE" || return 1
-    say "  Restored $1"
+    rc=0
+    as_owner "$2" sh -c "$RESTORE_SCRIPT" sh "$2" "$ORIGINAL_ASAR_MIN_SIZE" || rc=$?
+    case "$rc" in
+        0) say "  Restored $1" ;;
+        4) say "  Left $1 as it is: its app folder is another mod's loader" ;;
+        *) return 1 ;;
+    esac
 }
 
 # ---- Doing it -------------------------------------------------------------------------------------
@@ -449,7 +476,7 @@ say ""
 if [ "$ACTION" = uninstall ]; then
     still_used=0
     while IFS='|' read -r label res; do
-        grep -qs "Endcord Loader" "$res/app/index.js" && still_used=1
+        grep -qs Endcord "$res/app/index.js" && still_used=1
     done < "$CLIENTS"
     if [ "$still_used" = 0 ]; then
         rm -rf "$DIST_DIR"

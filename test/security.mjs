@@ -44,7 +44,7 @@ const stubs = {
     "~git-hash": "export default 'abc1234';",
     "electron/renderer": `
         export const contextBridge = { exposeInMainWorld: name => globalThis.__exposed.push(name) };
-        export const webFrame = { executeJavaScript: () => { globalThis.__rendererRan = true; } };
+        export const webFrame = { executeJavaScript: () => { globalThis.__rendererRan = true; return Promise.resolve(); } };
         export const ipcRenderer = { sendSync: () => ({}), invoke: async () => {}, on() {} };`,
     "~git-remote": "export default 'Endcord/Endcord';",
     "@api/Settings": "export const PlainSettings = globalThis.__plain;",

@@ -62,10 +62,19 @@ function measure() {
 
 const current = measure();
 
-if (process.argv.includes("--update") || !existsSync(BASELINE)) {
-    writeFileSync(BASELINE, `${JSON.stringify(current, null, 4)}\n`);
-    console.log(`Baseline written to ${relative(ROOT, BASELINE).split(sep).join("/")}`);
+const BASELINE_NAME = relative(ROOT, BASELINE).split(sep).join("/");
+
+if (process.argv.includes("--update")) {
+    // Without --bundle the bundle sizes aren't measured: keep their limits instead of dropping them
+    const kept = existsSync(BASELINE) ? JSON.parse(readFileSync(BASELINE, "utf8")) : {};
+    writeFileSync(BASELINE, `${JSON.stringify({ ...kept, ...current }, null, 4)}\n`);
+    console.log(`Baseline written to ${BASELINE_NAME}`);
     process.exit(0);
+}
+
+if (!existsSync(BASELINE)) {
+    console.error(`${BASELINE_NAME} is missing: restore it from git, or run with --update to start a new one`);
+    process.exit(1);
 }
 
 const baseline = JSON.parse(readFileSync(BASELINE, "utf8"));
@@ -73,6 +82,11 @@ const baseline = JSON.parse(readFileSync(BASELINE, "utf8"));
 const allowance = { rendererKilobytes: 1.02, pluginChunkKilobytes: 1.05, mainProcessKilobytes: 1.05 };
 
 let failed = false;
+for (const name of Object.keys(current)) {
+    if (typeof baseline[name] === "number") continue;
+    failed = true;
+    console.log(`WORSE  ${name}: ${current[name]} (no limit in ${BASELINE_NAME})`);
+}
 for (const [name, limit] of Object.entries(baseline)) {
     if (current[name] == null) continue;
 

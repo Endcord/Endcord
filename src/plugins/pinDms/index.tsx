@@ -139,7 +139,7 @@ export default definePlugin({
 
         // Fix Alt Up/Down navigation
         {
-            find: ".APPLICATION_STORE&&",
+            find: "binds:[\"alt+down\"]",
             replacement: {
                 // channelIds = __OVERLAY__ ? stuff : [...getStaticPaths(),...channelIds)]
                 match: /(?<=\i=__OVERLAY__\?\i:\[\.\.\.\i\(\),\.\.\.)\i/,

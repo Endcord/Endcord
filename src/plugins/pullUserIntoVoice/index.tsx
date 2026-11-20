@@ -69,7 +69,11 @@ async function pullUser() {
     const target = VoiceStateStore.getVoiceStateForUser(userId);
     if (target?.channelId === myVoice.channelId) return;
 
-    if (!target?.channelId && !settings.store.pullWhenUserLeaves) return;
+    // Discord can only move members who are connected to voice: wait for them to rejoin.
+    if (!target?.channelId) {
+        if (!settings.store.pullWhenUserLeaves) pulledUserId = null;
+        return;
+    }
 
     if (Date.now() - lastFailureAt < FAILURE_COOLDOWN) return;
 

@@ -33,15 +33,25 @@ function fire(r: Reminder) {
     });
 }
 
-async function schedule(r: Reminder) {
+// setTimeout wraps delays above 2^31-1 ms, so long reminders are reached in steps
+const MAX_DELAY = 2 ** 31 - 1;
+
+function remove(done: Reminder[]) {
+    return DataStore.update<Reminder[]>(KEY, list => (list ?? []).filter(x => !done.some(r => x.time === r.time && x.text === r.text)))
+        .catch(e => console.error("[RemindMe] Failed to remove reminder", e));
+}
+
+function schedule(r: Reminder) {
     const delay = r.time - Date.now();
-    if (delay <= 0) { fire(r); return; }
-    const id = setTimeout(async () => {
+    if (delay <= 0) {
         fire(r);
+        remove([r]);
+        return;
+    }
+    const id = setTimeout(() => {
         timers.delete(id);
-        const list = (await DataStore.get<Reminder[]>(KEY)) ?? [];
-        await DataStore.set(KEY, list.filter(x => x.time !== r.time || x.text !== r.text));
-    }, delay);
+        schedule(r);
+    }, Math.min(delay, MAX_DELAY));
     timers.add(id);
 }
 
@@ -53,9 +63,12 @@ export default definePlugin({
 
     async start() {
         const list = (await DataStore.get<Reminder[]>(KEY)) ?? [];
-        const live = list.filter(r => r.time > Date.now() - 60_000);
-        if (live.length !== list.length) await DataStore.set(KEY, live);
-        live.forEach(schedule);
+        const now = Date.now();
+        // Reminders that came due while Discord was closed are shown once now, then dropped
+        const due = list.filter(r => !(r.time > now));
+        due.forEach(fire);
+        if (due.length) await remove(due);
+        list.filter(r => r.time > now).forEach(schedule);
     },
 
     stop() {
@@ -89,9 +102,11 @@ export default definePlugin({
                     return;
                 }
                 const reminder: Reminder = { text, time: Date.now() + amount * (UNITS[unit] ?? UNITS.m), channelId: ctx.channel.id };
-                const list = (await DataStore.get<Reminder[]>(KEY)) ?? [];
-                list.push(reminder);
-                await DataStore.set(KEY, list);
+                if (!Number.isSafeInteger(reminder.time) || reminder.time > 8.64e15) {
+                    sendBotMessage(ctx.channel.id, { content: "That is too far in the future." });
+                    return;
+                }
+                await DataStore.update<Reminder[]>(KEY, list => [...(list ?? []), reminder]);
                 schedule(reminder);
                 sendBotMessage(ctx.channel.id, { content: `⏰ Okay! I'll remind you about **${text}** <t:${Math.floor(reminder.time / 1000)}:R>.` });
             }

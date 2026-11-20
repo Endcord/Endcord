@@ -51,6 +51,11 @@ function checkRendererFile(name) {
     check("the script itself never mentions the chunk data", !script.includes("EndcordChunks.c0=function"));
     check("the script is plain Latin-1, so V8 keeps it at one byte a character", !/[^\0-\xff]/.test(script));
 
+    // Plain CSS that only plugin chunks import (src/components) is moved into the stylesheet by the build
+    const css = readFileSync(join(ROOT, "dist", name.replace(/\.js$/, ".css")), "utf-8");
+    const missingStyles = [".vc-notice-container", ".vc-badge-base", ".vc-expandable-card"].filter(selector => !css.includes(selector));
+    check(`${name.replace(/\.js$/, ".css")} has the styles that only plugin chunks import`, !missingStyles.length, missingStyles);
+
     // Each chunk parses, defines itself under its own id, and only imports chunks that exist
     const context = { EndcordChunks: {} };
     const broken = [];

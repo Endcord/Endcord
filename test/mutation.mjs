@@ -74,11 +74,17 @@ if (args.includes("--check")) {
     process.exit(stale.length ? 1 : 0);
 }
 
+// The check name of each FAIL line, without its details
+const failedChecksOf = (/** @type {string} */ output) => output.split("\n").filter(line => line.startsWith("FAIL")).map(line => line.replace(/\s+-> .*$/, "").trim());
+
 function run([name, file, from, to]) {
+    const env = { ...process.env };
+    if (file) env.ENDCORD_MUTATION = JSON.stringify({ file, from, to });
+    else delete env.ENDCORD_MUTATION;
     return new Promise(resolve => {
         const child = spawn(process.execPath, [join(ROOT, "test", "security.mjs")], {
             cwd: ROOT,
-            env: { ...process.env, ENDCORD_MUTATION: JSON.stringify({ file, from, to }) },
+            env,
             stdio: ["ignore", "pipe", "pipe"]
         });
 
@@ -86,24 +92,35 @@ function run([name, file, from, to]) {
         child.stdout.on("data", d => output += d);
         child.stderr.on("data", d => output += d);
         child.on("close", code => {
-            const failedChecks = output.split("\n").filter(line => line.startsWith("FAIL")).length;
-            resolve({ name, invalid: output.includes("MUTATION_NOT_APPLIED"), killed: code !== 0, failedChecks });
+            resolve({ name, invalid: output.includes("MUTATION_NOT_APPLIED"), code, failed: failedChecksOf(output), output });
         });
     });
+}
+
+// Without a clean run first, a security.mjs broken for another reason (no network, a changed host) would make every
+// mutant look caught
+const baseline = await run(["baseline"]);
+if (baseline.code !== 0 || baseline.failed.length) {
+    console.log(baseline.output.trimEnd());
+    console.log("\nbaseline failed: test/security.mjs doesn't pass without a mutation, so no mutant can be judged");
+    process.exit(1);
 }
 
 const results = [];
 let next = 0;
 await Promise.all(Array.from({ length: Math.min(4, Math.max(1, cpus().length - 1)) }, async () => {
     while (next < queue.length) {
-        const result = await run(queue[next++]);
+        const { name, invalid, code, failed } = await run(queue[next++]);
+        // Caught only by a check that fails: an exit code without one is a crash, which says nothing about the checks
+        const result = { name, invalid, killed: code !== 0 && failed.length > 0, crashed: code !== 0 && !failed.length };
         results.push(result);
-        console.log(`${result.invalid ? "STALE   " : result.killed ? "CAUGHT  " : "SURVIVED"}  ${result.name}${result.failedChecks ? ` (${result.failedChecks} checks failed)` : ""}`);
+        console.log(`${result.invalid ? "STALE   " : result.killed ? "CAUGHT  " : result.crashed ? "CRASHED " : "SURVIVED"}  ${result.name}${failed.length ? ` (${failed.length} checks failed)` : ""}`);
     }
 }));
 
-const survivors = results.filter(r => !r.killed);
 const stale = results.filter(r => r.invalid);
+// A stale mutant exits before any check runs, so it isn't "killed": count it once, as stale
+const survivors = results.filter(r => !r.killed && !r.invalid);
 console.log(`\n${results.length - survivors.length - stale.length} of ${results.length} caught`);
 if (stale.length) console.log(`${stale.length} no longer match the source: update them`);
 process.exit(survivors.length || stale.length ? 1 : 0);

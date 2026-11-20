@@ -6,6 +6,7 @@
 
 import { forgetFailedStarts } from "@main/bootGuard";
 import { readJsonDurably, writeFileDurably } from "@main/utils/durableFile";
+import { isMainPage, isSignedOutPage } from "@shared/bootGuard";
 import { isDiscordOrigin } from "@shared/trustedOrigins";
 import { createHash } from "crypto";
 import { app } from "electron";
@@ -33,6 +34,8 @@ interface UpdateState {
     loads: number;
     /** SHA-256 of each kept file. Missing in a state written by an older Endcord */
     previous?: Record<string, string>;
+    /** SHA-256 of each file of the release being installed. Missing in a state written by an older Endcord */
+    next?: Record<string, string>;
 }
 
 interface Rejection {
@@ -45,9 +48,26 @@ const readState = () => readJsonDurably<UpdateState>(STATE_FILE);
 const writeState = (state: UpdateState) => writeFileDurably(STATE_FILE, JSON.stringify(state));
 const readRejection = () => readJsonDurably<Rejection>(REJECTED_FILE);
 const sha256 = (path: string) => createHash("sha256").update(readFileSync(path)).digest("hex");
+const installedHash = (name: string) => existsSync(join(__dirname, name)) ? sha256(join(__dirname, name)) : undefined;
+
+/** Whether each installed file is the kept one or the update's. Anything else was put there since, by an installer or by hand */
+function installedByUpdate({ previous, next }: UpdateState) {
+    if (!previous || !next) return true;
+
+    return ENDCORD_FILES.every(name => {
+        const installed = installedHash(name);
+        return installed === previous[name] || installed === next[name];
+    });
+}
 
 /** Returns whether the kept files were put back. A kept copy that changed on disk since it was saved stays out */
 function restorePreviousVersion(state: UpdateState) {
+    if (!installedByUpdate(state)) {
+        console.error(`[Endcord] Update ${state.hash} was replaced by another install, so nothing was put back`);
+        rmSync(STATE_FILE, { force: true });
+        return false;
+    }
+
     const kept = ENDCORD_FILES.filter(name => existsSync(join(PREVIOUS_DIR, name)));
     const changed = state.previous ? kept.filter(name => sha256(join(PREVIOUS_DIR, name)) !== state.previous![name]) : [];
 
@@ -70,8 +90,18 @@ export function isRejectedUpdate(hash: string) {
     return rejection?.hash === hash && Date.now() - (rejection.at ?? 0) < REJECTION_TTL;
 }
 
-/** Call before the installed files are replaced */
-export function keepPreviousVersion(hash: string) {
+/** Call before the installed files are replaced. `next` holds the SHA-256 of each file about to be installed */
+export function keepPreviousVersion(hash: string, next?: Record<string, string>) {
+    const state = readState();
+    if (state?.swapping) {
+        // The files on disk are from two releases. A retry of the same one keeps what was kept before it
+        if (state.hash === hash && state.previous && Object.keys(state.previous).every(name => existsSync(join(PREVIOUS_DIR, name)))) {
+            writeState({ ...state, loads: 0, next });
+            return;
+        }
+        recoverInterruptedUpdate();
+    }
+
     mkdirSync(PREVIOUS_DIR, { recursive: true });
     const previous: Record<string, string> = {};
     for (const name of ENDCORD_FILES) {
@@ -82,7 +112,7 @@ export function keepPreviousVersion(hash: string) {
         previous[name] = sha256(current);
     }
 
-    writeState({ hash, swapping: true, loads: 0, previous });
+    writeState({ hash, swapping: true, loads: 0, previous, next });
 }
 
 /** Call once every file is in place */
@@ -123,6 +153,12 @@ export function recoverInterruptedUpdate() {
     const state = readState();
     if (!state?.swapping) return false;
 
+    // Every file made it, only the note saying so didn't, or an installer put the same release in place since
+    if (state.next && ENDCORD_FILES.every(name => installedHash(name) === state.next![name])) {
+        finishSwap(state.hash);
+        return false;
+    }
+
     return restorePreviousVersion(state);
 }
 
@@ -137,17 +173,6 @@ export function recordUnconfirmedLoad() {
     }
 
     return restorePreviousVersion(state);
-}
-
-// Signed out, Discord waits on its login page and Endcord never reports in, but nothing is wrong
-export const SIGNED_OUT_PAGE = /^\/(?:login|register|reset|verify|authorize|oauth2|invite)/;
-
-function isSignedOutPage(url: string) {
-    try {
-        return SIGNED_OUT_PAGE.test(new URL(url).pathname);
-    } catch {
-        return false;
-    }
 }
 
 /** Takes a load back out of the count: its page turned out to be the login screen, where no update can be confirmed */
@@ -166,9 +191,14 @@ export function initUpdateRollback() {
     app.on("browser-window-created", (_, win) => {
         // Whether the page showing now is in the count
         let counted = false;
+        // Offline, the main frame ends on Chromium's error page under Discord's URL, and Endcord Desktop retries the
+        // load on its own: those loads say nothing about the update
+        let failed = false;
+        win.webContents.on("did-fail-load", (_, code, __, ___, isMainFrame) => { if (isMainFrame && code !== -3) failed = true; });
 
         win.webContents.on("did-finish-load", () => {
             counted = false;
+            if (failed) return void (failed = false);
             const url = win.webContents.getURL();
             let origin: string;
             try {
@@ -177,7 +207,7 @@ export function initUpdateRollback() {
                 return;
             }
 
-            if (!isDiscordOrigin(origin) || isSignedOutPage(url)) return;
+            if (!isDiscordOrigin(origin) || !isMainPage(url) || isSignedOutPage(url)) return;
             counted = true;
             if (recordUnconfirmedLoad()) win.webContents.reload();
         });

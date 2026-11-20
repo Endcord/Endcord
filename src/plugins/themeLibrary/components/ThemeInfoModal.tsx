@@ -26,7 +26,9 @@ const UserSummaryItem = findComponentByCodeLazy("defaultRenderUser", "showDefaul
 
 async function downloadTheme(theme: Theme) {
     try {
-        await Native.downloadTheme(theme);
+        // The browser has no native side or theme folder: the stub keeps uploaded themes in DataStore
+        if (IS_WEB) await EndcordNative.themes.uploadTheme(`${theme.name}.theme.css`, new TextDecoder().decode(Uint8Array.from(window.atob(theme.content), c => c.charCodeAt(0))));
+        else await Native.downloadTheme(theme);
         showToast(`Downloaded ${theme.name}!`, Toasts.Type.SUCCESS);
     } catch (err: unknown) {
         logger.error(err);
@@ -65,7 +67,7 @@ export const ThemeInfoModal: React.FC<ThemeInfoModalProps> = ({ author, theme, .
                     onClick: async () => {
                         const fileName = `${theme?.name}.theme.css`;
 
-                        const exists = await Native.themeExists(theme);
+                        const exists = !IS_WEB && await Native.themeExists(theme);
                         if (exists) {
                             openModal(modalProps => (
                                 <EndcordModal

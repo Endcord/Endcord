@@ -8,19 +8,20 @@ import { RendererSettings } from "@main/settings";
 import { openExternally } from "@main/utils/externalLinks";
 import { fetchBuffer, fetchJson } from "@main/utils/http";
 import { handleIpc } from "@main/utils/ipc";
+import { SIGNED_OUT_PAGE } from "@shared/bootGuard";
 import { ENDCORD_USER_AGENT } from "@shared/endcordUserAgent";
 import { IpcEvents } from "@shared/IpcEvents";
 import { isDiscordOrigin } from "@shared/trustedOrigins";
 import { createHash, verify } from "crypto";
 import { app, BrowserWindow, Notification } from "electron";
 import updateKey from "file://updateKey.pem";
-import { readFile, rename, writeFile } from "fs/promises";
+import { readFile, rename, rm, writeFile } from "fs/promises";
 import { join } from "path";
 
 import gitHash from "~git-hash";
 
 import { ENDCORD_FILES, MANIFEST_URL, serializeErrors, UpdateTrust } from "./common";
-import { confirmUpdate, finishSwap, getRollbackStatus, initUpdateRollback, isRejectedUpdate, keepPreviousVersion, SIGNED_OUT_PAGE, takeRollbackNotice } from "./rollback";
+import { confirmUpdate, finishSwap, getRollbackStatus, initUpdateRollback, isRejectedUpdate, keepPreviousVersion, takeRollbackNotice } from "./rollback";
 
 const API_BASE = "https://api.github.com/repos/Endcord/Endcord";
 const ASSET_HOSTS = ["raw.githubusercontent.com"];
@@ -180,7 +181,29 @@ async function fetchUpdates() {
     return false;
 }
 
-async function applyUpdates() {
+// Antivirus can hold a freshly written file for a moment on Windows
+async function renameRetrying(from: string, to: string) {
+    for (let attempt = 1; ; attempt++) {
+        try {
+            return await rename(from, to);
+        } catch (err: any) {
+            if (attempt === 5 || !["EPERM", "EBUSY", "EACCES"].includes(err?.code)) throw err;
+            await new Promise(resolve => setTimeout(resolve, 200 * attempt));
+        }
+    }
+}
+
+let applying: Promise<boolean> | undefined;
+
+// The update button and a stuck start can both get here, and two swaps at once would mix their files
+function applyUpdates() {
+    applying ??= swapInUpdates().finally(() => { applying = undefined; });
+    return applying;
+}
+
+async function swapInUpdates() {
+    // A check while this downloads may replace the pending release
+    const assets = PendingUpdates, hash = pendingHash;
     // Stable and Canary share these files, so the other one may have installed this release already.
     // Swapping again would replace the version kept for going back with this one
     if (await installedFilesMatch(PendingUpdates)) {
@@ -189,7 +212,7 @@ async function applyUpdates() {
     }
 
     // Download and verify everything before touching the installed files.
-    const files = await Promise.all(PendingUpdates.map(async ({ name, url, sha256 }) => {
+    const files = await Promise.all(assets.map(async ({ name, url, sha256 }) => {
         const contents = await fetchBuffer(url);
         const actual = createHash("sha256").update(contents).digest("hex");
         if (actual !== sha256)
@@ -198,14 +221,20 @@ async function applyUpdates() {
     }));
 
     // Stage next to the real files, then swap them in, so a failed write never leaves a half-written Endcord.
-    await Promise.all(files.map(f => writeFile(`${f.target}.update`, f.contents)));
+    // The process id keeps Stable's and Canary's staged files apart
+    const staged = (f: typeof files[number]) => `${f.target}.${process.pid}.update`;
+    try {
+        await Promise.all(files.map(f => writeFile(staged(f), f.contents)));
 
-    keepPreviousVersion(pendingHash);
-    for (const f of files)
-        await rename(`${f.target}.update`, f.target);
-    finishSwap(pendingHash);
+        keepPreviousVersion(hash, Object.fromEntries(assets.map(a => [a.name, a.sha256])));
+        for (const f of files)
+            await renameRetrying(staged(f), f.target);
+        finishSwap(hash);
+    } finally {
+        await Promise.all(files.map(f => rm(staged(f), { force: true }).catch(() => { })));
+    }
 
-    PendingUpdates = [];
+    if (PendingUpdates === assets) PendingUpdates = [];
     return true;
 }
 

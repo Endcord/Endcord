@@ -97,12 +97,41 @@ function loadPersistLogs() {
     } catch { }
 }
 
+// The persisted copy is one synchronous localStorage value rewritten whole, so it is capped and written lazily
+// As many as the session keeps, so the first save after an update doesn't drop older history
+const PERSIST_MAX = MAX_LOGS;
+const PERSIST_TEXT_MAX = 4000;
+const PERSIST_DELAY = 5000;
+let persistTimer: ReturnType<typeof setTimeout> | null = null;
+let persistDirty = false;
+
 function savePersistLogs() {
+    if (persistTimer !== null) { clearTimeout(persistTimer); persistTimer = null; }
+    persistDirty = false;
     try {
-        const toSave = logs.filter(l => PERSISTENT_TYPES.has(l.type));
-        localStorage.setItem(LOGS_KEY, JSON.stringify(toSave));
+        const toSave: LogEntry[] = [];
+        for (const l of logs) {
+            if (!PERSISTENT_TYPES.has(l.type)) continue;
+            const long = (l.content?.length ?? 0) > PERSIST_TEXT_MAX || (l.extra?.length ?? 0) > PERSIST_TEXT_MAX;
+            toSave.push(long ? { ...l, content: l.content?.slice(0, PERSIST_TEXT_MAX), extra: l.extra?.slice(0, PERSIST_TEXT_MAX) } : l);
+            if (toSave.length >= PERSIST_MAX) break;
+        }
+        try {
+            localStorage.setItem(LOGS_KEY, JSON.stringify(toSave));
+        } catch {
+            // Over quota: keep the newest quarter rather than nothing
+            localStorage.setItem(LOGS_KEY, JSON.stringify(toSave.slice(0, toSave.length >> 2)));
+        }
         localStorage.removeItem("nightcord_logs");
     } catch { }
+}
+
+const flushPersist = () => { if (persistDirty) savePersistLogs(); };
+
+function schedulePersist() {
+    persistDirty = true;
+    if (persistTimer !== null) return;
+    persistTimer = setTimeout(savePersistLogs, PERSIST_DELAY);
 }
 
 // Only a version counter: no snapshot, no copy
@@ -120,7 +149,6 @@ function scheduleFlush() {
         for (const fn of updateListeners) {
             try { fn(); } catch { }
         }
-        savePersistLogs();
     }, 500);
 }
 
@@ -140,6 +168,7 @@ function pushLog(entry: Omit<LogEntry, "id" | "timestamp" | "timeStr">) {
     if (NOTIF_TYPES.has(newLog.type)) {
         unreadLogEntries.add(newLog);
     }
+    if (PERSISTENT_TYPES.has(newLog.type)) schedulePersist();
     scheduleFlush();
 }
 
@@ -362,7 +391,7 @@ function LogRow({ e }: { e: LogEntry; }) {
                     </div>
                 )}
                 {e.type !== "message_delete" && e.type !== "message_edit" && e.content && (
-                    <div className="el-content-text">{renderContent(t(e.content))}</div>
+                    <div className="el-content-text">{renderContent(e.type === "ping" ? e.content : t(e.content))}</div>
                 )}
             </div>
         </div>
@@ -680,7 +709,7 @@ function subscribeToEvents() {
         if (oldC === newC) return;
         const a = authorFrom(m);
         pushLog({
-            type: "message_edit", content: newC, extra: oldC || "(inconnu)", realId: m.id,
+            type: "message_edit", content: newC, extra: oldC || "?", realId: m.id,
             authorId: a.authorId ?? cached?.authorId, authorName: a.authorName !== "?" ? a.authorName : (cached?.authorName ?? "?"),
             authorAvatar: a.authorAvatar ?? cached?.authorAvatar ?? null, ...chInfo(m.channel_id)
         });
@@ -805,6 +834,7 @@ export default definePlugin({
             if (vcId) myVoiceChannelId = vcId;
         } catch { }
         loadPersistLogs();
+        window.addEventListener("beforeunload", flushPersist);
         addHeaderBarButton("endcord-event-logs", () => <LogsButton />, 7);
         subscribeToEvents();
     },
@@ -812,6 +842,8 @@ export default definePlugin({
         removeHeaderBarButton("endcord-event-logs");
         unsubs.forEach(fn => fn()); unsubs = [];
         if (flushTimer !== null) { clearTimeout(flushTimer); flushTimer = null; }
+        window.removeEventListener("beforeunload", flushPersist);
+        flushPersist();
         logs = []; msgCache.clear(); prevVS.clear(); updateListeners.clear();
         isLoadingMessages = false;
         myVoiceChannelId = null;

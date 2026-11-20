@@ -13,39 +13,54 @@ import { t } from "@utils/i18n";
 import definePlugin, { makeRange, OptionType } from "@utils/types";
 import { GuildChannelStore, Menu, React, RestAPI, UserStore, VoiceStateStore } from "@webpack/common";
 
-async function runSequential<T>(promises: Promise<T>[]): Promise<T[]> {
-    const results: T[] = [];
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-    for (let i = 0; i < promises.length; i++) {
-        const promise = promises[i];
-        const result = await promise;
-        results.push(result);
+async function runSequential<T>(tasks: (() => Promise<T>)[]): Promise<void> {
+    for (let i = 0; i < tasks.length; i++) {
+        for (let attempt = 0; ; attempt++) {
+            try {
+                await tasks[i]();
+                break;
+            } catch (error: any) {
+                if (error?.status === 429 && attempt < 3) {
+                    const retryAfter = Number(error.body?.retry_after);
+                    await sleep((retryAfter > 0 ? retryAfter : 5) * 1000);
+                    continue;
+                }
+                if (error?.status === 401 || error?.status === 403) throw error;
+                console.error("VoiceChatUtilities request failed", error);
+                break;
+            }
+        }
 
-        if (i % settings.store.waitAfter === 0) {
-            await new Promise(resolve => setTimeout(resolve, settings.store.waitSeconds * 1000));
+        if ((i + 1) % settings.store.waitAfter === 0 && i + 1 < tasks.length) {
+            await sleep(settings.store.waitSeconds * 1000);
         }
     }
-
-    return results;
 }
 
 function sendPatch(channel: Channel, body: Record<string, any>, bypass = false) {
     const usersVoice = VoiceStateStore.getVoiceStatesForChannel(channel.id);
     const myId = UserStore.getCurrentUser().id;
 
-    const promises: Promise<any>[] = [];
-    Object.keys(usersVoice).forEach((key, index) => {
-        const userVoice = usersVoice[key];
+    const tasks: (() => Promise<any>)[] = [];
+    Object.keys(usersVoice).forEach(key => {
+        const { userId } = usersVoice[key];
 
-        if (bypass || userVoice.userId !== myId) {
-            promises.push(RestAPI.patch({
-                url: `/guilds/${channel.guild_id}/members/${userVoice.userId}`,
-                body
-            }));
+        if (bypass || userId !== myId) {
+            tasks.push(async () => {
+                // The batch can take a while; skip members who left the channel meanwhile.
+                const stillHere = Object.values(VoiceStateStore.getVoiceStatesForChannel(channel.id)).some(s => s.userId === userId);
+                if (!stillHere) return;
+                return RestAPI.patch({
+                    url: `/guilds/${channel.guild_id}/members/${userId}`,
+                    body
+                });
+            });
         }
     });
 
-    runSequential(promises).catch(error => {
+    runSequential(tasks).catch(error => {
         console.error("VoiceChatUtilities failed to run", error);
     });
 }

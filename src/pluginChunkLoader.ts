@@ -105,7 +105,10 @@ function define(chunks: [id: number, code: string][]) {
         defined.add(n);
         if (Date.now() < captureUntil) startup?.chunks.set(n, text);
     }
-    webFrame.executeJavaScript(`${code}void 0;\n//# sourceURL=file:///EndcordPlugins`).catch(() => { });
+    // If they didn't run, loadPluginChunks may read them again
+    webFrame.executeJavaScript(`${code}void 0;\n//# sourceURL=file:///EndcordPlugins`).catch(() => {
+        for (const [n] of chunks) defined.delete(n);
+    });
 }
 
 /** These chunks' code from renderer.js, with one read covering all of them */
@@ -149,6 +152,8 @@ function readStartupFile(path: string, key: string, settings: Settings | null) {
         const header = STARTUP_HEADER.exec(file.toString("latin1", 0, 160));
         if (!header || header[5] !== key) return null;
         const [metaLength, scriptLength, chunksLength, tablesLength] = header.slice(1, 5).map(Number);
+        // A torn write (power cut, crash right after the write) leaves the file short or its end zero-filled
+        if (file.length !== header[0].length + metaLength + scriptLength + chunksLength + tablesLength || file.includes(0)) return null;
         let at = header[0].length;
         const meta: StartupMeta = JSON.parse(file.toString("utf-8", at, at += metaLength));
         if (meta.v !== STARTUP_VERSION || meta.key !== key) return null;
@@ -211,6 +216,7 @@ function scheduleStartupWrite(path: string) {
         const temp = `${target}.${process.pid}.tmp`;
         try {
             if (fileKey(path) !== parts.key) return;
+            // No fsync, on this thread it would hold up the page: a torn write is caught by readStartupFile's checks
             writeFileSync(temp, body);
             renameSync(temp, target);
         } catch {
@@ -219,6 +225,15 @@ function scheduleStartupWrite(path: string) {
             } catch { }
         }
     }, 15_000);
+}
+
+/** For a script that failed to run: the next start reads renderer.js again instead of a possibly damaged copy */
+export function discardStartupFile(path: string) {
+    // Or the scheduled write brings the same script back
+    startup = undefined;
+    try {
+        rmSync(startupFileOf(path), { force: true });
+    } catch { }
 }
 
 /**

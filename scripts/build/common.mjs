@@ -32,7 +32,9 @@ import { optimize as optimizeSvg } from "svgo";
 import { runInNewContext } from "vm";
 
 import { getPluginTarget } from "../utils.mjs";
-import { createLazyPluginAnalyzer } from "./lazyPlugins.mjs";
+import { compareNames, createLazyPluginAnalyzer } from "./lazyPlugins.mjs";
+
+export { compareNames };
 
 /** @type {import("../../package.json")} */
 const PackageJSON = JSON.parse(readFileSync("package.json", "utf-8"));
@@ -243,7 +245,7 @@ export const globPlugins = (kind, chunks) => ({
 
                 const fullDir = `./src/${dir}`;
                 if (!await exists(fullDir)) continue;
-                const files = await readdir(fullDir, { withFileTypes: true });
+                const files = (await readdir(fullDir, { withFileTypes: true })).sort((a, b) => compareNames(a.name, b.name));
                 for (const file of files) {
                     const fileName = file.name;
                     if (fileName.startsWith("_") || fileName.startsWith(".")) continue;
@@ -567,7 +569,7 @@ export const externalLocalesPlugin = {
             const { outfile } = build.initialOptions;
             if (!outfile) throw new Error("external-locales needs an outfile");
 
-            const lines = [...tables].sort(([a], [b]) => a.localeCompare(b)).map(([key, json]) => `${key} ${json}`);
+            const lines = [...tables].sort(([a], [b]) => compareNames(a, b)).map(([key, json]) => `${key} ${json}`);
             await appendFile(outfile, `${LOCALES_MARKER}${lines.join("\n")}\n*/\n`);
         });
     }

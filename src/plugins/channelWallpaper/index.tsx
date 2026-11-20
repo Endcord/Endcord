@@ -109,28 +109,31 @@ function saveWallpaper(channelId: string, url: string, skipSync = false) {
     settings.store.wallpapers = JSON.stringify(wp);
     applyWallpaper(channelId);
 
-    // Peer-to-peer sync
-    if (!skipSync) {
-        const channel = ChannelStore.getChannel(channelId);
-        if (channel?.type === 1) { // 1 = DM
-            // The sync server first, if one is set
-            if (settings.store.vpsUrl && vpsSocket?.readyState === WebSocket.OPEN) {
-                vpsSocket.send(JSON.stringify({
-                    type: "SET",
-                    channelId,
-                    url,
-                    password: settings.store.vpsPassword
-                }));
-            } else {
-                // Otherwise ghost message sync
-                const otherUserId = channel.recipients[0];
-                if (RelationshipStore.isFriend(otherUserId)) {
-                    const payload = url || "DELETE";
-                    sendMessage(channelId, { content: SYNC_PREFIX + payload });
-                }
-            }
-        }
+    // The other side drops addresses it wouldn't load, so those aren't sent
+    if (skipSync || (url && !isSyncableUrl(url))) return;
+    const target = syncTarget(channelId);
+    if (target === "server") {
+        vpsSocket!.send(JSON.stringify({
+            type: "SET",
+            channelId,
+            url,
+            password: settings.store.vpsPassword
+        }));
+    } else if (target === "message") {
+        sendMessage(channelId, { content: SYNC_PREFIX + (url || "DELETE") });
     }
+}
+
+/**
+ * How a change in this channel reaches the other side, or null when it stays on this PC: only DMs sync, only with
+ * syncWithFriends on, and a set sync server replaces the ghost messages even while it is disconnected
+ */
+function syncTarget(channelId: string): "server" | "message" | null {
+    if (!settings.store.syncWithFriends) return null;
+    const channel = ChannelStore.getChannel(channelId);
+    if (channel?.type !== 1) return null;
+    if (settings.store.vpsUrl) return vpsSocket?.readyState === WebSocket.OPEN ? "server" : null;
+    return RelationshipStore.isFriend(channel.recipients?.[0]) ? "message" : null;
 }
 
 function saveLocalWallpaperOnly(channelId: string, url: string) {
@@ -157,10 +160,12 @@ function takeSyncMessage(channelId: string, message: any) {
     if (channel?.type !== 1) return false;
     if (!isFromMe && !(channel.recipients?.[0] === authorId && RelationshipStore.isFriend(authorId))) return false;
 
+    // Only the sender can delete it; asking for a friend's message just earns a 403 each time.
+    // Own ones go even with sync off, so none stay behind in the DM
+    if (isFromMe) MessageActions?.deleteMessage?.(channelId, message.id);
+    if (!settings.store.syncWithFriends) return false;
     const payload = message.content.slice(SYNC_PREFIX.length);
     saveLocalWallpaperOnly(channelId, payload === "DELETE" ? "" : payload);
-    // Only the sender can delete it; asking for a friend's message just earns a 403 each time
-    if (isFromMe) MessageActions?.deleteMessage?.(channelId, message.id);
     return true;
 }
 
@@ -370,26 +375,38 @@ function applyWallpaper(channelId?: string) {
 
 // ---- Context menu actions ----
 
+const LOCAL_WALLPAPER_MAX = 2 * 1024 * 1024;
+
 async function setWallpaperFromFile(channelId: string) {
     const file = await pickFileRaw();
     if (!file) return;
 
-    showToast(t("Uploading the wallpaper to Imgur…"), Toasts.Type.MESSAGE);
-    const imgurUrl = await uploadToImgur(file);
-
-    if (imgurUrl) {
-        saveWallpaper(channelId, imgurUrl, false);
-        showToast(t("Wallpaper set"), Toasts.Type.SUCCESS);
-    } else {
-        // Local fallback if upload fails
-        const reader = new FileReader();
-        reader.onload = () => {
-            const dataUrl = reader.result as string;
-            saveWallpaper(channelId, dataUrl, true);
-            showToast(t("Imgur didn't take the file, so the wallpaper is only on this PC"), Toasts.Type.FAILURE);
-        };
-        reader.readAsDataURL(file);
+    // Imgur only carries the file to the friend; with nothing to sync it stays on this PC
+    const syncing = !!syncTarget(channelId);
+    if (syncing) {
+        showToast(t("Uploading the wallpaper to Imgur…"), Toasts.Type.MESSAGE);
+        const imgurUrl = await uploadToImgur(file);
+        if (imgurUrl) {
+            saveWallpaper(channelId, imgurUrl, false);
+            showToast(t("Wallpaper set"), Toasts.Type.SUCCESS);
+            return;
+        }
     }
+
+    // A local file is kept as a data URL inside the plugin's settings, which are rewritten and synced whole
+    if (file.size > LOCAL_WALLPAPER_MAX) {
+        showToast(t("This file is too big to keep on this PC (2 MB at most). Set it from a link instead."), Toasts.Type.FAILURE);
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+        const dataUrl = reader.result as string;
+        saveWallpaper(channelId, dataUrl, true);
+        if (syncing) showToast(t("Imgur didn't take the file, so the wallpaper is only on this PC"), Toasts.Type.FAILURE);
+        else showToast(t("Wallpaper set"), Toasts.Type.SUCCESS);
+    };
+    reader.readAsDataURL(file);
 }
 
 async function setWallpaperFromUrl(channelId: string) {
@@ -417,8 +434,7 @@ function WallpaperIcon() {
 
 function buildWallpaperMenu(channelId: string): React.ReactElement {
     const has = hasWallpaper(channelId);
-    const channel = ChannelStore.getChannel(channelId);
-    const isDM = channel?.type === 1;
+    const syncs = !!syncTarget(channelId);
 
     return (
         <Menu.MenuItem
@@ -441,7 +457,7 @@ function buildWallpaperMenu(channelId: string): React.ReactElement {
                     <Menu.MenuSeparator />
                     <Menu.MenuItem
                         id="wallpaper-remove"
-                        label={isDM ? t("Remove for both of you") : t("Remove wallpaper")}
+                        label={syncs ? t("Remove for both of you") : t("Remove wallpaper")}
                         color="danger"
                         action={() => removeWallpaper(channelId)}
                     />
@@ -527,7 +543,7 @@ export default definePlugin({
     name: "ChannelWallpaper",
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     tags: ["Appearance", "Utility"],
-    description: "Allows for custom backgrounds for every individual channel.",
+    description: "Allows for custom backgrounds for every individual channel. In a DM with sync on, a wallpaper picked from a file is uploaded to Imgur so your friend can see it; anyone with that link can open it.",
     settings,
 
     contextMenus: {
@@ -548,11 +564,9 @@ export default definePlugin({
             }
         },
         MESSAGE_CREATE(data: { channelId: string, message: any; }) {
-            if (!settings.store.syncWithFriends) return;
             takeSyncMessage(data.channelId, data.message);
         },
         LOAD_MESSAGES_SUCCESS(d: any) {
-            if (!settings.store.syncWithFriends) return;
             let changed = false;
             for (const msg of d.messages || []) {
                 if (takeSyncMessage(d.channelId, msg)) changed = true;

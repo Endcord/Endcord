@@ -60,10 +60,10 @@ export default definePlugin({
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     patches: [
         {
-            find: /\i\.\i\.APP_ICON_UPSELL/,
+            find: "\"--custom-in-app-icon-editor-content-width\"",
             replacement: [
                 {
-                    match: /\w+\.jsx\)\(\w+,{markAsDismissed:\w+,isCoachmark:\w+}\)/,
+                    match: /(?<=\w+\.jsx\)\(\w+,){markAsDismissed:\w+,isCoachmark:\w+}\)/,
                     replace(str) {
                         return `${str},$self.addButtons()`;
                     }

@@ -716,7 +716,7 @@ export function mapMangledModuleLazy<S extends string>(code: string | RegExp | C
 
 export const DefaultExtractAndLoadChunksRegex = /(?:(?:Promise\.all\(\[)?((?:\i\.e\("?[^)"]+"?\),?)+?)(?:\]\))?|Promise\.resolve\(\))\.then\(\i\.bind\(\i,"?([^)]+?)"?\)\)/;
 // Chunk ids are quoted in older Discord and plain numbers in newer Discord
-export const ChunkIdsRegex = /\("?([^")]+?)"?\)/g;
+export const ChunkIdsRegex = /\(("?)([^")]+?)\1\)/g;
 
 /**
  * Extract and load chunks using their entry point
@@ -727,9 +727,8 @@ export const ChunkIdsRegex = /\("?([^")]+?)"?\)/g;
 export async function extractAndLoadChunks(code: CodeFilter, matcher = DefaultExtractAndLoadChunksRegex) {
     if (IS_ANTI_CRASH_TEST) return false;
 
-    const module = findModuleFactory(...code);
-    if (!module) {
-        const err = new Error("extractAndLoadChunks: Couldn't find module factory");
+    const fail = (msg: string) => {
+        const err = new Error(`extractAndLoadChunks: ${msg}`);
         logger.warn(err, "Code:", code, "Matcher:", matcher);
 
         // Strict behaviour in DevBuilds to fail early and make sure the issue is found
@@ -737,41 +736,24 @@ export async function extractAndLoadChunks(code: CodeFilter, matcher = DefaultEx
             throw err;
 
         return false;
-    }
+    };
+
+    const module = findModuleFactory(...code);
+    if (!module) return fail("Couldn't find module factory");
 
     const match = String(module).match(canonicalizeMatch(matcher));
-    if (!match) {
-        const err = new Error("extractAndLoadChunks: Couldn't find chunk loading in module factory code");
-        logger.warn(err, "Code:", code, "Matcher:", matcher);
-
-        // Strict behaviour in DevBuilds to fail early and make sure the issue is found
-        if (IS_DEV && !devToolsOpen)
-            throw err;
-
-        return false;
-    }
+    if (!match) return fail("Couldn't find chunk loading in module factory code");
 
     const [, rawChunkIds, entryPointId] = match;
 
-    if (entryPointId == null) {
-        const err = new Error("extractAndLoadChunks: Matcher didn't return a capturing group with the chunk ids array or the entry point id");
-        logger.warn(err, "Code:", code, "Matcher:", matcher);
-
-        // Strict behaviour in DevBuilds to fail early and make sure the issue is found
-        if (IS_DEV && !devToolsOpen)
-            throw err;
-
-        return false;
-    }
+    if (entryPointId == null) return fail("Matcher didn't return a capturing group with the chunk ids array or the entry point id");
 
     const numEntryPoint = Number(entryPointId);
     const entryPoint = Number.isNaN(numEntryPoint) ? entryPointId : String(numEntryPoint);
 
     if (rawChunkIds) {
-        const chunkIds = Array.from(rawChunkIds.matchAll(ChunkIdsRegex)).map(m => {
-            const numChunkId = Number(m[1]);
-            return Number.isNaN(numChunkId) ? m[1] : String(numChunkId);
-        });
+        // rspack's chunk url functions compare unquoted ids with ===, so they have to stay numbers
+        const chunkIds = Array.from(rawChunkIds.matchAll(ChunkIdsRegex), m => m[1] ? m[2] : Number(m[2]));
 
         // One chunk that won't load, often a stylesheet, mustn't sink the rest: what counts is whether the entry
         // point's module came in, checked below
@@ -779,16 +761,7 @@ export async function extractAndLoadChunks(code: CodeFilter, matcher = DefaultEx
         if (failed.length) logger.warn(`extractAndLoadChunks: ${failed.length} of ${chunkIds.length} chunks didn't load`, (failed[0] as PromiseRejectedResult).reason);
     }
 
-    if (wreq.m[entryPoint] == null) {
-        const err = new Error("extractAndLoadChunks: Entry point is not loaded in the module factories, perhaps one of the chunks failed to load");
-        logger.warn(err, "Code:", code, "Matcher:", matcher);
-
-        // Strict behaviour in DevBuilds to fail early and make sure the issue is found
-        if (IS_DEV && !devToolsOpen)
-            throw err;
-
-        return false;
-    }
+    if (wreq.m[entryPoint] == null) return fail("Entry point is not loaded in the module factories, perhaps one of the chunks failed to load");
 
     wreq(entryPoint);
     return true;

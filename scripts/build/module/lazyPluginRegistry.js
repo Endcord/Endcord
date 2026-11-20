@@ -29,8 +29,10 @@ function $lazy(name, load) {
         configurable: true,
         get() {
             const plugin = load();
-            $define(name, plugin);
+            // Read before $define: a module that threw while loading gives undefined on the next read, which then
+            // throws here and keeps the getter instead of leaving undefined in the registry
             if (plugin.name !== name) console.error(`[Endcord] Lazy plugin ${name} resolved to a plugin named ${plugin.name}`);
+            $define(name, plugin);
             $onLoaded(plugin);
             return plugin;
         },

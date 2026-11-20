@@ -5,24 +5,32 @@
  */
 
 import { app } from "electron";
-import { mkdir, readFile, writeFile } from "fs/promises";
+import { mkdir, readFile, rm, writeFile } from "fs/promises";
 import { basename, isAbsolute, join, normalize } from "path";
 
-export async function readRecording(_: any, filePath: string) {
+// Only discord_voice's own recording in userData can be read or deleted through these
+function recordingPath(filePath: string) {
     filePath = normalize(filePath);
-    const filename = basename(filePath);
     const discordBaseDir = normalize(`${app.getPath("userData")}/`);
+    return /^\d*recording\.ogg$/.test(basename(filePath)) && filePath.startsWith(discordBaseDir) ? filePath : null;
+}
 
-    if (!/^\d*recording\.ogg$/.test(filename) || !filePath.startsWith(discordBaseDir)) {
-        return null;
-    }
+export async function readRecording(_: any, filePath: string) {
+    const path = recordingPath(filePath);
+    if (!path) return null;
 
     try {
-        const content = await readFile(filePath);
+        const content = await readFile(path);
         return new Uint8Array(content.buffer);
     } catch {
         return null;
     }
+}
+
+// discord_voice leaves the raw recording in userData. Removed only once the copy is saved, so a failed save loses nothing
+export async function discardRecording(_: any, filePath: string) {
+    const path = recordingPath(filePath);
+    if (path) await rm(path, { force: true }).catch(() => { });
 }
 
 // Windows opens these as devices whatever extension follows

@@ -17,6 +17,7 @@ export const REVIEWS_PER_PAGE = 50;
 
 export interface UserReviewsData {
     message: string;
+    failed?: boolean;
     reviews: Review[];
     updated: boolean;
     hasNextPage: boolean;
@@ -68,7 +69,7 @@ async function rdbRequest<T = unknown>(path: string, options: RequestInit = {}):
     return data as T;
 }
 
-export async function getReviews(id: string, { limit, offset = 0, fetchVotes = false }: { limit?: number; offset?: number; fetchVotes?: boolean } = {}): Promise<UserReviewsData> {
+export async function getReviews(id: string, { limit, offset = 0, fetchVotes = false, silent = false }: { limit?: number; offset?: number; fetchVotes?: boolean; silent?: boolean; } = {}): Promise<UserReviewsData> {
     let flags = 0;
     if (!settings.store.showWarning) flags |= WarningFlag;
 
@@ -92,9 +93,10 @@ export async function getReviews(id: string, { limit, offset = 0, fetchVotes = f
         };
 
     if (!req.ok) {
-        showToast(res.message, Toasts.Type.FAILURE);
+        if (!silent) showToast(res.message, Toasts.Type.FAILURE);
         return {
             ...res,
+            failed: true,
             reviews: [
                 {
                     id: 0,

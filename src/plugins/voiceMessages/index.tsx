@@ -161,7 +161,13 @@ function VoiceMessageModal({ modalProps }: { modalProps: RenderModalProps; }) {
         if (!blob) return EMPTY_META;
 
         const audioContext = new AudioContext();
-        const audioBuffer = await audioContext.decodeAudioData(await blob.arrayBuffer());
+        let audioBuffer: AudioBuffer;
+        try {
+            audioBuffer = await audioContext.decodeAudioData(await blob.arrayBuffer());
+        } finally {
+            // Each open context holds an audio output stream
+            audioContext.close().catch(() => { });
+        }
         const channelData = audioBuffer.getChannelData(0);
 
         // average the samples into much lower resolution bins, maximum of 256 total bins

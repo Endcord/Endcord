@@ -27,6 +27,8 @@ namespace EndcordInstaller.UI
         readonly DesktopEngine _engine;
         readonly Grid _body;
         bool _busy;
+        bool _closeWhenDone;
+        CancellationTokenSource _cts = new CancellationTokenSource();
         TextBlock _status;
         TextBlock _percent;
         PixelProgress _bar;
@@ -78,6 +80,15 @@ namespace EndcordInstaller.UI
 
             if (removing) ShowRemoveConfirm();
             else ShowWelcome();
+
+            // Alt+F4 and the taskbar's Close would otherwise end the process mid-swap: stop the work at a safe point, then close
+            Closing += (s, e) =>
+            {
+                if (!_busy) return;
+                e.Cancel = true;
+                _closeWhenDone = true;
+                try { _cts.Cancel(); } catch { }
+            };
         }
 
         // #region Screens
@@ -194,7 +205,8 @@ namespace EndcordInstaller.UI
         void RunRemove(bool removeData)
         {
             ShowWorking("desktop.btn.remove");
-            RunInBackground(ct => _engine.Uninstall(removeData, Report, ct), ShowRemoved, () => RunRemove(removeData));
+            // Removal is short and has no way back once started, so closing waits for it
+            RunInBackground(ct => _engine.Uninstall(removeData, Report, CancellationToken.None), ShowRemoved, () => RunRemove(removeData));
         }
 
         void Report(double ratio, string statusKey)
@@ -211,15 +223,18 @@ namespace EndcordInstaller.UI
         void RunInBackground(Action<CancellationToken> work, Action done, Action retry)
         {
             _busy = true;
+            _cts = new CancellationTokenSource();
+            var token = _cts.Token;
             var thread = new Thread(() =>
             {
                 Exception failure = null;
-                try { work(CancellationToken.None); }
+                try { work(token); }
                 catch (Exception e) { failure = e; }
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
                     _busy = false;
-                    if (failure == null) done();
+                    if (_closeWhenDone) Close();
+                    else if (failure == null) done();
                     else ShowError(Describe(failure), retry);
                 }));
             });
@@ -282,8 +297,7 @@ namespace EndcordInstaller.UI
             var button = new Border { Width = 34, Height = 30, CornerRadius = new CornerRadius(6), Background = fill, Child = icon, Cursor = Cursors.Hand, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 12, 0) };
             button.MouseEnter += (s, e) => fill.Color = Ink.WithAlpha(Ink.Ember, 60);
             button.MouseLeave += (s, e) => fill.Color = Colors.Transparent;
-            // Closing mid-download would leave half a folder behind; the work finishes or fails first
-            button.MouseLeftButtonUp += (s, e) => { if (!_busy) Close(); };
+            button.MouseLeftButtonUp += (s, e) => Close();
             return button;
         }
 

@@ -16,7 +16,7 @@ import { Logger } from "@utils/Logger";
 import definePlugin from "@utils/types";
 import { findByPropsLazy, findCssClassesLazy } from "@webpack";
 import { Avatar, ChannelStore, Clickable, IconUtils, RelationshipStore, ScrollerThin, Text, useMemo, UserStore } from "@webpack/common";
-import { ComponentType, JSX } from "react";
+import { ComponentType } from "react";
 
 const SelectedChannelActionCreators = findByPropsLazy("selectPrivateChannel");
 const UserUtils = findByPropsLazy("getGlobalName");
@@ -24,8 +24,6 @@ const UserUtils = findByPropsLazy("getGlobalName");
 const ProfileListClasses = findCssClassesLazy("empty", "textContainer", "connectionIcon");
 const TabBarClasses = findCssClassesLazy("tabPanelScroller", "tabBarPanel");
 const MutualsListClasses = findCssClassesLazy("row", "icon", "name", "details");
-
-let ExpandableList: ComponentType<any> = () => null;
 
 function getGroupDMName(channel: Channel) {
     return channel.name ||
@@ -105,11 +103,13 @@ export default definePlugin({
             find: ".WIDGETS?",
             replacement: [
                 {
-                    match: /items:(\i),.+?(?=return\(0,\i\.jsxs?\)\("div)/,
-                    replace: "$&$self.pushSection($1,arguments[0].user);"
+                    // In the items builder, before the tabs' useState reads initialSection. GitHubRepos patches first
+                    // and adds its own push after MUTUAL_GUILDS, hence the gap
+                    match: /(\{user:(\i),currentUser:\i\}=\i,\{mutualFriendsCount:.+?section:\i\.\i\.MUTUAL_GUILDS\}\)\).{0,120}?,)(\i)\}/,
+                    replace: "$1$self.pushSection($3,$2),$3}"
                 },
                 {
-                    match: /children:(?=.{0,100}?component:.+?section:(\i))/,
+                    match: /children:(?=.{0,100}?component:.+?section:(\i(?:\.section)?))/,
                     replace: "$&$1==='MUTUAL_GDMS'?$self.renderMutualGDMs(arguments[0]):"
                 },
                 // Make the gap between each item smaller so our tab can fit.
@@ -119,38 +119,31 @@ export default definePlugin({
                 },
             ]
         },
+        // Mutual friends / servers summary of the DM sidebar and profile popouts
         {
-            find: 'section:"MUTUAL_FRIENDS"',
+            find: "hideOverflowCount:!0,disableGuildNameTooltip:!0",
+            group: true,
             replacement: [
                 {
-                    match: /\i\|\|\i(?=\?\(0,\i\.jsxs?\)\(\i\.\i\.Overlay,)/,
-                    replace: "$&||$self.getMutualGroupDms(arguments[0].user.id).length>0"
+                    match: /(\i)=(\i)&&(\i)(\?"body-xs\/normal":"body-sm\/normal";return )\2\|\|\3\?/,
+                    replace: "vcMutualGDMs=$self.getMutualGDMCount(arguments[0].user),$1=[$2,$3,vcMutualGDMs>0].filter(Boolean).length>1$4$2||$3||vcMutualGDMs>0?"
                 },
                 {
-                    match: /\.openUserProfileModal.+?\)}\)}\)(?<=,(\i)&&(\i)&&(\(0,\i\.jsxs?\)\(\i\.\i,{className:(\i)\.\i}\)).{0,50}?"MUTUAL_FRIENDS".+?)/,
-                    replace: (m, hasMutualGuilds, hasMutualFriends, Divider, classes) => "" +
-                        `${m},$self.renderDMPageList({user:arguments[0].user,hasDivider:${hasMutualGuilds}||${hasMutualFriends},Divider:${Divider},listStyle:${classes}.list})`
-                },
-                {
-                    match: /(?=function (\i)\(\i\){let{section:\i,header:\i[^}]+?onExpand:)/,
-                    replace: "$self.ExpandableList=$1;"
+                    match: /,(\i)&&(\i)\?\(0,\i\.jsx\)\("div",\{"aria-hidden":"true",className:(\i\.\i)\}\):null,\i\?\(0,\i\.jsxs\)\((\i\.\i),\{className:(\i\.\i),onClick:\(\)=>(\i)\?\.\(\i\.\i\.MUTUAL_GUILDS\),children:\[.+?\(0,\i\.jsx\)\((\i\.\i),\{className:(\i\.\i),variant:(\i),.+?\]\}\):null/,
+                    replace: "$&,vcMutualGDMs>0&&$self.renderMutualGDMsSummary({user:arguments[0].user,hasDivider:$1||$2,spacerClass:$3,Section:$4,sectionClass:$5,onOpenProfile:$6,Text:$7,textClass:$8,variant:$9})"
                 }
             ]
         }
     ],
 
-    set ExpandableList(value: any) {
-        ExpandableList = value;
-    },
-
-    getMutualGroupDms(userId: string) {
+    getMutualGDMCount(user: User) {
         try {
-            return getMutualGroupDms(userId);
+            return isBotOrSelf(user) ? 0 : getMutualGroupDms(user.id).length;
         } catch (e) {
             new Logger("MutualGroupDMs").error("Failed to get mutual group dms:", e);
         }
 
-        return [];
+        return 0;
     },
 
     pushSection(sections: any[], user: User) {
@@ -191,20 +184,18 @@ export default definePlugin({
         );
     }),
 
-    renderDMPageList: ErrorBoundary.wrap(({ user, hasDivider, Divider, listStyle }: { user: User, hasDivider: boolean, Divider: JSX.Element, listStyle: string; }) => {
-        const mutualGDms = getMutualGroupDms(user.id);
-        if (mutualGDms.length === 0) return null;
-
-        return (
-            <>
-                {hasDivider && Divider}
-                <ExpandableList
-                    listClassName={listStyle}
-                    header={t("Mutual Groups")}
-                    isLoading={false}
-                    items={renderClickableGDMs(mutualGDms, () => { })}
-                />
-            </>
-        );
-    }, { noop: true })
+    // Section, Text and the classes are the summary module's own, so the entry looks like its neighbours
+    renderMutualGDMsSummary: ErrorBoundary.wrap(({ user, hasDivider, spacerClass, Section, sectionClass, onOpenProfile, Text: SummaryText, textClass, variant }: {
+        user: User, hasDivider: boolean, spacerClass: string, Section: ComponentType<any>, sectionClass: string,
+        onOpenProfile?: (section: string) => void, Text: ComponentType<any>, textClass: string, variant: string;
+    }) => (
+        <>
+            {hasDivider && <div aria-hidden="true" className={spacerClass} />}
+            <Section className={sectionClass} onClick={() => onOpenProfile?.("MUTUAL_GDMS")}>
+                <SummaryText className={textClass} variant={variant} color="interactive-text-default">
+                    {getMutualGDMCountText(user)}
+                </SummaryText>
+            </Section>
+        </>
+    ), { noop: true })
 });

@@ -233,13 +233,16 @@ export default definePlugin({
                 {
                     match: /this\.renderGIF\(\)/,
                     replace: "$self.renderOptimizedGif(this,()=>this.renderGIF())"
-                },
-                {
-                    match: /(,suggestions:)(\i)(,favorites:)(\i),/,
-                    replace: "$1$self.preloadGifList($2)$3$self.preloadGifList($4),",
-                    noWarn: true
                 }
             ]
+        },
+        {
+            // GIF picker store hook that passes the lists to the picker
+            find: "hideFavoritesTile:",
+            replacement: {
+                match: /(,suggestions:)(\i)(,favorites:)(\i),/,
+                replace: "$1$self.preloadGifList($2)$3$self.preloadGifList($4),"
+            }
         }
     ],
 

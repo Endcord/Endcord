@@ -51,7 +51,7 @@ function triggerReRender(message: MessageWithContent) {
 
 export default definePlugin({
     name: "MessageTranslate",
-    description: "Auto translate messages to your language with caching, per-channel toggles, and more options.",
+    description: "Auto translate messages to your language with caching, per-channel toggles, and more options. The text of the messages you see is sent to Google Translate.",
     tags: ["Chat", "Utility"],
     authors: [Devs.rootpoi, Devs.kraethis, Devs.ewlle],
     settings,

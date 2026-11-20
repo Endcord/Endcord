@@ -7,7 +7,7 @@
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
-import { Constants, PermissionsBits, PermissionStore, React, RestAPI, useCallback, useEffect, useState } from "@webpack/common";
+import { Constants, PermissionsBits, PermissionStore, React, RestAPI, showToast, Toasts, useCallback, useEffect, useState } from "@webpack/common";
 
 const validKeycodes = [
     "Backspace", "Tab", "Enter", "ShiftLeft", "ShiftRight", "ControlLeft", "ControlRight", "AltLeft", "AltRight", "Pause", "CapsLock",
@@ -96,34 +96,49 @@ export default definePlugin({
             }
         }
     ],
-    TrashIcon: channel => {
-        const show = showIcon();
-
-        if (!show || !PermissionStore.can(PermissionsBits.MANAGE_CHANNELS, channel)) return null;
-
-        return (
-            <span
-                onClick={() => RestAPI.del({ url: Constants.Endpoints.CHANNEL(channel.id) })}
-            >
-                <svg
-                    width="16"
-                    height="16"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    color="#ed4245"
-                >
-                    <path
-                        fill="currentColor"
-                        d="M14.25 1c.41 0 .75.34.75.75V3h5.25c.41 0 .75.34.75.75v.5c0 .41-.34.75-.75.75H3.75A.75.75 0 0 1 3 4.25v-.5c0-.41.34-.75.75-.75H9V1.75c0-.41.34-.75.75-.75h4.5Z"
-                    />
-                    <path
-                        fill="currentColor"
-                        fillRule="evenodd"
-                        clipRule="evenodd"
-                        d="M5.06 7a1 1 0 0 0-1 1.06l.76 12.13a3 3 0 0 0 3 2.81h8.36a3 3 0 0 0 3-2.81l.75-12.13a1 1 0 0 0-1-1.06H5.07ZM11 12a1 1 0 1 0-2 0v6a1 1 0 1 0 2 0v-6Zm3-1a1 1 0 1 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1Z"
-                    />
-                </svg>
-            </span>
-        );
-    }
+    // Called inline from Discord's channel row render: keep the hooks in a component of their own.
+    TrashIcon: channel => <TrashIcon channel={channel} />
 });
+
+const deletingChannels = new Set<string>();
+
+function deleteChannel(channel) {
+    if (deletingChannels.has(channel.id)) return;
+    deletingChannels.add(channel.id);
+    RestAPI.del({ url: Constants.Endpoints.CHANNEL(channel.id) })
+        .catch(e => {
+            showToast(e?.body?.message ? `Failed to delete channel: ${e.body.message}` : "Failed to delete channel.", Toasts.Type.FAILURE);
+        })
+        .finally(() => deletingChannels.delete(channel.id));
+}
+
+function TrashIcon({ channel }) {
+    const show = showIcon();
+
+    if (!show || !PermissionStore.can(PermissionsBits.MANAGE_CHANNELS, channel)) return null;
+
+    return (
+        <span
+            onClick={() => deleteChannel(channel)}
+        >
+            <svg
+                width="16"
+                height="16"
+                fill="none"
+                viewBox="0 0 24 24"
+                color="#ed4245"
+            >
+                <path
+                    fill="currentColor"
+                    d="M14.25 1c.41 0 .75.34.75.75V3h5.25c.41 0 .75.34.75.75v.5c0 .41-.34.75-.75.75H3.75A.75.75 0 0 1 3 4.25v-.5c0-.41.34-.75.75-.75H9V1.75c0-.41.34-.75.75-.75h4.5Z"
+                />
+                <path
+                    fill="currentColor"
+                    fillRule="evenodd"
+                    clipRule="evenodd"
+                    d="M5.06 7a1 1 0 0 0-1 1.06l.76 12.13a3 3 0 0 0 3 2.81h8.36a3 3 0 0 0 3-2.81l.75-12.13a1 1 0 0 0-1-1.06H5.07ZM11 12a1 1 0 1 0-2 0v6a1 1 0 1 0 2 0v-6Zm3-1a1 1 0 1 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1Z"
+                />
+            </svg>
+        </span>
+    );
+}

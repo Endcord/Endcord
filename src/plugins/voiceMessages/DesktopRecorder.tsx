@@ -5,7 +5,7 @@
  */
 
 import { PluginNative } from "@utils/types";
-import { Button, MediaEngineStore, showToast, Toasts, useState } from "@webpack/common";
+import { Button, MediaEngineStore, showToast, Toasts, useEffect, useRef, useState } from "@webpack/common";
 
 import type { VoiceRecorder } from ".";
 import { settings } from "./settings";
@@ -14,8 +14,19 @@ const Native = EndcordNative.pluginHelpers.VoiceMessages as PluginNative<typeof 
 
 export const VoiceRecorderDesktop: VoiceRecorder = ({ setAudioBlob, onRecordingChange }) => {
     const [recording, setRecording] = useState(false);
+    const recordingRef = useRef(false);
+
+    // Closing the modal mid-recording would otherwise keep recording the microphone into Discord's folder
+    useEffect(() => () => {
+        if (!recordingRef.current) return;
+        recordingRef.current = false;
+        DiscordNative.nativeModules.requireModule("discord_voice").stopLocalAudioRecording((filePath: string) => {
+            if (filePath) Native.discardRecording(filePath);
+        });
+    }, []);
 
     const changeRecording = (recording: boolean) => {
+        recordingRef.current = recording;
         setRecording(recording);
         onRecordingChange?.(recording);
     };
@@ -39,6 +50,7 @@ export const VoiceRecorderDesktop: VoiceRecorder = ({ setAudioBlob, onRecordingC
                 }
             );
         } else {
+            recordingRef.current = false;
             discordVoice.stopLocalAudioRecording(async (filePath: string) => {
                 if (filePath) {
                     const buf = await Native.readRecording(filePath);

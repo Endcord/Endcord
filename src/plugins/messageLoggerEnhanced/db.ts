@@ -67,9 +67,26 @@ async function cacheRecord(record?: DBMessageRecord | null) {
     return record;
 }
 
-export async function initIDB() {
+let opening: Promise<void> | undefined;
+
+// One open at a time: clearMessagesIDB waits for it, or a connection that lands after the close keeps deleteDatabase
+// blocked for good
+export function initIDB() {
+    return opening ??= openIDB().catch(err => {
+        opening = undefined;
+        throw err;
+    });
+}
+
+async function openIDB() {
     if (db) return;
     db = await openDB<MLIDB>(DB_NAME, DB_VERSION, {
+        // Another window's delete or upgrade waits on this connection: let it go, the next use opens a new one
+        blocking() {
+            db?.close();
+            db = undefined as any;
+            opening = undefined;
+        },
         upgrade(db) {
             const messageStore = db.createObjectStore("messages", { keyPath: "message_id" });
             messageStore.createIndex("by_channel_id", "channel_id");
@@ -238,9 +255,13 @@ export async function deleteMessagesBulkIDB(message_ids: string[]) {
 
 export async function clearMessagesIDB(showToast = true) {
     cachedMessages.clear();
+    await opening?.catch(() => { });
 
     const deleted = await new Promise<boolean>(resolve => {
-        db.close();
+        // clearLogsOnRestart gets here while the first open may still be running; initIDB only opens when db is unset
+        db?.close();
+        db = undefined as any;
+        opening = undefined;
         const req = indexedDB.deleteDatabase(DB_NAME);
         req.onsuccess = () => resolve(true);
         req.onerror = () => resolve(false);

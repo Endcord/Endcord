@@ -16,7 +16,8 @@ export async function getLyrics(track: Track | null, retries = 3): Promise<Enhan
     try {
         const res = await fetch(fetchUrl);
         if (!res.ok) {
-            if (retries > 1) return getLyrics(track, retries - 1);
+            // 404 means LRCLIB has no lyrics for the track
+            if (retries > 1 && (res.status === 429 || res.status >= 500)) return getLyrics(track, retries - 1);
             console.error("Failed to fetch lyrics:", res.status, res.statusText);
             return null;
         }

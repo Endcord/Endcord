@@ -9,12 +9,13 @@ import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
+import { Unwrap, wrapMethod } from "@utils/wrapMethod";
 import { FluxDispatcher, React, UserStore } from "@webpack/common";
 
 const DS_BADGE_KEY = "FakeTag_badgeDataUrl";
 
-let originalGetCurrentUser: (() => ReturnType<typeof UserStore.getCurrentUser>) | null = null;
-let originalGetUser: ((id: string) => ReturnType<typeof UserStore.getUser>) | null = null;
+let unwrapGetCurrentUser: Unwrap<() => any> | null = null;
+let unwrapGetUser: Unwrap<(id: string) => any> | null = null;
 let cachedBadgeUrl: string = "";
 
 async function loadBadge() {
@@ -65,41 +66,39 @@ function wrapUser(user: any) {
 }
 
 function getMyId() {
-    return originalGetCurrentUser?.()?.id ?? UserStore.getCurrentUser()?.id;
+    return unwrapGetCurrentUser?.original()?.id ?? UserStore.getCurrentUser()?.id;
 }
 
 function applyPatch() {
-    if (originalGetCurrentUser) return;
-    originalGetCurrentUser = UserStore.getCurrentUser.bind(UserStore);
-    originalGetUser = (UserStore as any).getUser.bind(UserStore);
-
-    (UserStore as any).getCurrentUser = function () {
-        const user = originalGetCurrentUser!();
+    if (unwrapGetCurrentUser) return;
+    // wrapMethod, not assignment: FakeNitroAge and CustomProfile wrap the same methods and may stop in any order
+    unwrapGetCurrentUser = wrapMethod(UserStore, "getCurrentUser", function (original) {
+        const user = original.call(this);
         if (!user) return user;
         return wrapUser(user);
-    };
+    });
 
-    (UserStore as any).getUser = function (id: string) {
-        const user = originalGetUser!(id);
+    unwrapGetUser = wrapMethod(UserStore, "getUser", function (original, id: string) {
+        const user = original.call(this, id);
         if (!user || id !== getMyId()) return user;
         return wrapUser(user);
-    };
+    });
 
     notifyUpdate();
 }
 
 function removePatch() {
-    if (!originalGetCurrentUser) return;
-    (UserStore as any).getCurrentUser = originalGetCurrentUser;
-    (UserStore as any).getUser = originalGetUser;
-    originalGetCurrentUser = null;
-    originalGetUser = null;
+    if (!unwrapGetCurrentUser) return;
+    unwrapGetCurrentUser();
+    unwrapGetUser?.();
+    unwrapGetCurrentUser = null;
+    unwrapGetUser = null;
     notifyUpdate();
 }
 
 function notifyUpdate() {
     try {
-        const me = originalGetCurrentUser?.() ?? UserStore.getCurrentUser();
+        const me = unwrapGetCurrentUser?.original() ?? UserStore.getCurrentUser();
         if (me) FluxDispatcher.dispatch({ type: "USER_UPDATE", user: me });
     } catch { }
 }

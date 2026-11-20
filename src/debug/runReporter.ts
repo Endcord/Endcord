@@ -6,16 +6,64 @@
 
 import { addPatch } from "@api/PluginManager";
 import { Logger } from "@utils/Logger";
+import type { Patch, PatchReplacement } from "@utils/types";
 import * as Webpack from "@webpack";
 import { getBuildNumber, patches, patchTimings } from "@webpack/patcher";
 
 import { loadLazyChunks } from "./loadLazyChunks";
+
+const testMatch = (match: string | RegExp, code: string) => typeof match === "string" ? code.includes(match) : (match.lastIndex = 0, match.test(code));
+
+/**
+ * Replacements marked noWarn that changed nothing in any module their patch's find matches. noWarn keeps them out of
+ * the "had no effect" warnings, so a dead one would never show. Tested on Discord's original module sources (String()
+ * of a factory), each replacement after the earlier ones of its patch
+ */
+function deadSilencedReplacements(silenced: Patch[]) {
+    const buildNumber = getBuildNumber();
+    const outOfBuild = (r: PatchReplacement) => buildNumber !== -1 && (r.fromBuild != null && buildNumber < r.fromBuild || r.toBuild != null && buildNumber > r.toBuild);
+    const sources = Object.values(Webpack.wreq.m).map(String);
+    const dead: string[] = [];
+
+    for (const patch of silenced) {
+        const matching = sources.filter(code => testMatch(patch.find, code));
+        // A find that matches nothing is reported as "found no module" already
+        if (!matching.length) continue;
+
+        const replacements = patch.replacement as PatchReplacement[];
+        const worked = replacements.map(() => false);
+        for (let code of matching) {
+            replacements.forEach((r, i) => {
+                if (outOfBuild(r)) return;
+                if (typeof r.match !== "string") r.match.lastIndex = 0;
+                // A throwing replacement must not end the whole run: it just didn't work
+                let next = code;
+                try {
+                    next = code.replace(r.match, r.replace as string);
+                } catch { }
+                if (next !== code) {
+                    worked[i] = true;
+                    code = next;
+                }
+            });
+        }
+
+        replacements.forEach((r, i) => {
+            if ((patch.noWarn || r.noWarn) && !outOfBuild(r) && !worked[i]) dead.push(`${patch.plugin}: ${String(r.match)} (find ${String(patch.find)}, ${matching.length} modules)`);
+        });
+    }
+
+    return dead;
+}
 
 async function runReporter() {
     const ReporterLogger = new Logger("Reporter");
 
     try {
         ReporterLogger.log("Starting test...");
+
+        // Taken before Discord's modules load: a patch that matched is gone from the list afterwards
+        const silenced = patches.filter(p => p.noWarn || (p.replacement as PatchReplacement[]).some(r => r.noWarn));
 
         const { promise: loadLazyChunksDone, resolve: loadLazyChunksResolve } = Promise.withResolvers<void>();
 
@@ -62,6 +110,10 @@ async function runReporter() {
                 new Logger("WebpackPatcher").warn(`Patch by ${plugin} took ${Math.round(totalTime * 100) / 100}ms (Module id is ${String(moduleId)}): ${match}`);
             }
         }
+
+        // Its own section, not a failure: some noWarn replacements only apply to some builds or modules on purpose
+        const deadSilenced = deadSilencedReplacements(silenced);
+        if (deadSilenced.length) ReporterLogger.log(`noWarn replacements with no effect (${deadSilenced.length}):\n${deadSilenced.join("\n")}`);
 
         for (const [searchType, args] of Webpack.lazyWebpackSearchHistory) {
             let method = searchType;

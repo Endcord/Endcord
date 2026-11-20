@@ -135,8 +135,8 @@ export default definePlugin({
         {
             find: '="custom-status-input";',
             replacement: {
-                match: /(?<=\[(\i).{0,6}\.useState\(\i\?\.state\?\?""\),\[(\i).{0,25}\?\?null\),\[(\i).*?)\{text:\i\.\i\.\i\(\i\.\i#{intl::SAVE}\)/,
-                replace: "$self.renderRememberButton({text:$1,emojiInfo:$2,clearAfter:$3}),$&"
+                match: /(\[(\i).{0,6}\.useState\(\i\?\.state\?\?""\),\[(\i).{0,25}\?\?null\),\[(\i).*?)(?=\{text:\i\.\i\.\i\(\i\.\i#{intl::SAVE}\))/,
+                replace: "$1$self.renderRememberButton({text:$2,emojiInfo:$3,clearAfter:$4}),"
             }
         },
         {

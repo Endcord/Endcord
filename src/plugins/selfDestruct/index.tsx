@@ -5,6 +5,7 @@
  */
 
 import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
+import * as DataStore from "@api/DataStore";
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import { t } from "@utils/i18n";
@@ -54,20 +55,29 @@ function notifyListeners() {
     }
 }
 
-function scheduleDelete(channelId: string, messageId: string, delaySec: number) {
-    const expiresAt = Date.now() + delaySec * 1000;
+// Pending deletions are kept so they still happen after a restart
+const PENDING_KEY = "SelfDestruct_pending";
+type Pending = Pick<TimerEntry, "channelId" | "messageId" | "expiresAt">;
 
-    const timerId = setTimeout(() => {
+function updatePending(fn: (list: Pending[]) => Pending[]) {
+    DataStore.update<Pending[]>(PENDING_KEY, list => fn(Array.isArray(list) ? list : []))
+        .catch(e => console.error("[SelfDestruct] Failed to save pending deletions:", e));
+}
+
+function scheduleDelete(channelId: string, messageId: string, delaySec: number, expiresAt = Date.now() + delaySec * 1000, persist = true) {
+    const timerId = setTimeout(async () => {
+        activeTimers.delete(messageId);
+        notifyListeners();
         try {
-            MessageActions?.deleteMessage(channelId, messageId);
+            await MessageActions?.deleteMessage(channelId, messageId);
         } catch (e) {
             console.error("[SelfDestruct] Delete failed:", e);
         }
-        activeTimers.delete(messageId);
-        notifyListeners();
-    }, delaySec * 1000);
+        updatePending(list => list.filter(p => p.messageId !== messageId));
+    }, Math.max(0, expiresAt - Date.now()));
 
     activeTimers.set(messageId, { channelId, messageId, expiresAt, timerId });
+    if (persist) updatePending(list => [...list.filter(p => p.messageId !== messageId), { channelId, messageId, expiresAt }]);
     notifyListeners();
 }
 
@@ -234,11 +244,22 @@ export default definePlugin({
         },
     },
 
-    start() {
-        // Timers don't survive a restart
+    async start() {
+        const pending = await DataStore.get<Pending[]>(PENDING_KEY).catch(() => undefined);
+        if (!Array.isArray(pending)) return;
+        // Overdue ones a second apart, not all at once into the rate limit
+        let overdue = 0;
+        const now = Date.now();
+        for (const p of pending) {
+            if (!p?.messageId || !p.channelId || activeTimers.has(p.messageId)) continue;
+            const expiresAt = p.expiresAt > now ? p.expiresAt : now + 1000 * overdue++;
+            scheduleDelete(p.channelId, p.messageId, 0, expiresAt, false);
+        }
     },
 
     stop() {
         cleanup();
+        // Turning the plugin off cancels what was still waiting
+        DataStore.del(PENDING_KEY).catch(() => { });
     },
 });

@@ -225,9 +225,13 @@ export default tseslint.config(
     },
     {
         // These run outside the renderer's sandbox and CSP, so what they call has to be picked with care
-        files: ["src/main/**/*.ts", "src/plugins/**/native.ts", "src/plugins/**/native/*.ts"],
-        // These two only exist in source builds, where git and pnpm are whatever the developer has on their PATH
-        ignores: ["src/plugins/userpluginInstaller.dev/native.ts", "src/main/updater/git.ts"],
+        files: ["src/main/**/*.ts", "src/plugins/**/native.ts", "src/plugins/**/native/*.ts", "desktop/src/*.ts"],
+        ignores: [
+            // These two only exist in source builds, where git and pnpm are whatever the developer has on their PATH
+            "src/plugins/userpluginInstaller.dev/native.ts", "src/main/updater/git.ts",
+            // Endcord Desktop's preload side, which runs in the page
+            "desktop/src/preload.ts", "desktop/src/sharePicker.ts"
+        ],
         rules: {
             "endcord/absolute-program": "error",
             "no-restricted-imports": ["error", {
@@ -245,6 +249,23 @@ export default tseslint.config(
                 {
                     "selector": "CallExpression[callee.object.name='ipcMain'][callee.property.name='handle']",
                     "message": "Use handleIpc: it refuses pages that aren't Discord."
+                }
+            ]
+        }
+    },
+    {
+        // Endcord Desktop's main process has no handleIpc: each handler checks the sender itself
+        files: ["desktop/src/*.ts"],
+        ignores: ["desktop/src/preload.ts", "desktop/src/sharePicker.ts"],
+        rules: {
+            "no-restricted-syntax": ["error",
+                {
+                    "selector": "CallExpression[callee.object.name='shell'][callee.property.name='openExternal']",
+                    "message": "Check the URL with isSafeExternalUrl first, then disable this rule on that line."
+                },
+                {
+                    "selector": "CallExpression[callee.object.name='ipcMain'][callee.property.name='handle']:not(:has(CallExpression[callee.name='fromDiscord']))",
+                    "message": "Call fromDiscord(event) in the handler: it refuses pages that aren't Discord."
                 }
             ]
         }

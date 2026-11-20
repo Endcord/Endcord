@@ -32,8 +32,15 @@ function matches(e: KeyboardEvent): boolean {
     return false;
 }
 
+let deleting = false;
+
 async function onKeyDown(e: KeyboardEvent) {
     if (!matches(e)) return;
+    // Key repeat or a press before the last DELETE returned would hit the same or an older message.
+    if (e.repeat || deleting) {
+        e.preventDefault();
+        return;
+    }
 
     const channelId = SelectedChannelStore.getChannelId();
     if (!channelId) return;
@@ -49,12 +56,15 @@ async function onKeyDown(e: KeyboardEvent) {
     if (!lastMine) return;
 
     e.preventDefault();
+    deleting = true;
     try {
         await RestAPI.del({ url: `/channels/${channelId}/messages/${lastMine.id}` });
         if (settings.store.showConfirmToast)
             showToast("Last message deleted.", Toasts.Type.SUCCESS);
     } catch {
         showToast("Failed to delete message.", Toasts.Type.FAILURE);
+    } finally {
+        deleting = false;
     }
 }
 

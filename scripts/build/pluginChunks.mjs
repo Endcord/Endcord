@@ -20,6 +20,8 @@ import esbuild from "esbuild";
 import { readFile, writeFile } from "fs/promises";
 import { relative, resolve } from "path";
 
+import { compareNames } from "./lazyPlugins.mjs";
+
 // Must match CHUNKS_MARKER in src/shared/pluginChunks.ts
 const CHUNKS_MARKER = "\n/*endcord-chunks ";
 // Must match LOCALES_MARKER in src/shared/externalLocales.ts
@@ -211,7 +213,7 @@ export async function buildChunkedRenderer(cfg, pluginsFor, chunkPlugins) {
     // 2. The lazy plugins as chunks
     /** @type {Map<string, { key: string, spec: string, resolveDir: string }>} */
     const exposes = new Map();
-    const lazy = [...state.lazy].sort((a, b) => a.name.localeCompare(b.name));
+    const lazy = [...state.lazy].sort((a, b) => compareNames(a.name, b.name));
     const outdir = resolve(outfile, "..", ".plugin-chunks");
     const split = await esbuild.build({
         bundle: true,
@@ -235,7 +237,7 @@ export async function buildChunkedRenderer(cfg, pluginsFor, chunkPlugins) {
     });
 
     // Chunk ids, in a stable order
-    const outputs = Object.entries(split.metafile.outputs).filter(([path]) => path.endsWith(".js")).sort(([a], [b]) => a.localeCompare(b));
+    const outputs = Object.entries(split.metafile.outputs).filter(([path]) => path.endsWith(".js")).sort(([a], [b]) => compareNames(a, b));
     const idOf = new Map(outputs.map(([path], n) => [resolve(path), n]));
     const entryOf = new Map(outputs.filter(([, out]) => out.entryPoint).map(([path, out]) => [resolve(/** @type {string} */ (out.entryPoint)), /** @type {number} */ (idOf.get(resolve(path)))]));
 
@@ -249,7 +251,7 @@ export async function buildChunkedRenderer(cfg, pluginsFor, chunkPlugins) {
     const names = importedCoreNames(split.outputFiles.filter(f => f.path.endsWith(".js")).map(f => f.text));
     // Sorted, so the ids the chunks call core modules by don't depend on the order esbuild resolved them in, and the same
     // source always builds the same renderer.js
-    const exposeList = [...exposes.values()].sort((a, b) => a.key.localeCompare(b.key)).map(e => ({ ...e, names: names.get(e.key) ?? "*" }));
+    const exposeList = [...exposes.values()].sort((a, b) => compareNames(a.key, b.key)).map(e => ({ ...e, names: names.get(e.key) ?? "*" }));
     const coreIdOf = new Map(exposeList.map((e, n) => [e.key, n]));
     state.exposes = exposeList;
     state.entryIds = Object.fromEntries(lazy.map(p => {
@@ -322,7 +324,7 @@ export async function buildChunkedRenderer(cfg, pluginsFor, chunkPlugins) {
     texts[manifestId] = escapeChunk(`EndcordChunks.c${manifestId}=function(require,module){module.exports=JSON.parse(${manifest})};\n`);
     deps[manifestId] = [];
 
-    const screenCss = Object.fromEntries(Object.entries(state.screenCss ?? {}).sort(([a], [b]) => a.localeCompare(b)));
+    const screenCss = Object.fromEntries(Object.entries(state.screenCss ?? {}).sort(([a], [b]) => compareNames(a, b)));
     const screens = JSON.stringify(JSON.stringify(screenCss)).replace(/[^\0-\xff]/g, c => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`);
     texts[screenId] = escapeChunk(`EndcordChunks.c${screenId}=function(require,module){module.exports=JSON.parse(${screens})};\n`);
     deps[screenId] = [];
@@ -363,6 +365,29 @@ export async function buildChunkedRenderer(cfg, pluginsFor, chunkPlugins) {
     const dataAt = chunksAt + Buffer.byteLength(head);
     const tablesAt = tables ? chunksAt + Buffer.byteLength(section) : -1;
     await writeFile(outfile, `${script}${section}${tables}/*endcord-layout ${chunksAt} ${dataAt} ${tablesAt}*/\n`);
+
+    // Plain CSS imports outside a plugin folder (src/components) or of settings styles stay global (see stylePlugin);
+    // esbuild gives each entry that imports one its own p<N>.css, which the chunks can't carry. Their files are
+    // bundled once each and join the core's stylesheet
+    const cssInputs = [...new Set(Object.entries(split.metafile.outputs)
+        .filter(([path]) => path.endsWith(".css"))
+        .sort(([a], [b]) => compareNames(a, b))
+        .flatMap(([, out]) => Object.keys(out.inputs)))];
+    if (cssInputs.length) {
+        const css = await esbuild.build({
+            stdin: { contents: cssInputs.map(file => `@import ${JSON.stringify(resolve(file).replaceAll("\\", "/"))};`).join("\n"), loader: "css", resolveDir: process.cwd() },
+            bundle: true,
+            minify: cfg.minify,
+            target: cfg.target,
+            external: cfg.external,
+            write: false,
+            logLevel: "warning"
+        });
+        const cssFile = outfile.replace(/\.js$/, ".css");
+        // Only what this build wrote: a stylesheet left from an older build would grow with every build
+        const existing = Object.keys(final.metafile.outputs).some(p => resolve(p) === resolve(cssFile)) ? await readFile(cssFile, "utf-8") : "";
+        await writeFile(cssFile, `${existing.trimEnd()}\n${css.outputFiles[0].text.trim()}\n`.trimStart());
+    }
 
     // Licenses of what only the chunks bundle
     const legal = split.outputFiles.filter(f => f.path.endsWith(".LEGAL.txt")).map(f => f.text.trim()).filter(Boolean);

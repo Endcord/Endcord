@@ -110,7 +110,7 @@ const LAYERS = [
 const layerBoundaries = {
     meta: {
         type: "problem",
-        docs: { description: "Each layer of the client may only depend on the layers below it" },
+        docs: { description: "Shared, main-process and core code must not reach what can't run there or may be turned off (imports, re-exports, import() and require)" },
         messages: { forbidden: "\"{{source}}\" can't be imported here: {{why}}." }
     },
     create(context) {
@@ -118,12 +118,28 @@ const layerBoundaries = {
         const layers = LAYERS.filter(layer => layer.files.test(file));
         if (!layers.length) return {};
 
+        const check = source => {
+            if (source?.type !== "Literal" || typeof source.value !== "string") return;
+            const layer = layers.find(l => l.forbidden.test(source.value));
+            if (layer) context.report({ node: source, messageId: "forbidden", data: { source: source.value, why: layer.why } });
+        };
+        const typeOnly = (node, kind, specifiers) => node[kind] === "type" || (specifiers.length > 0 && specifiers.every(s => s[kind] === "type"));
+
         return {
             ImportDeclaration(node) {
-                if (node.importKind === "type" || (node.specifiers.length && node.specifiers.every(s => s.importKind === "type"))) return;
-
-                const layer = layers.find(l => l.forbidden.test(node.source.value));
-                if (layer) context.report({ node: node.source, messageId: "forbidden", data: { source: node.source.value, why: layer.why } });
+                if (!typeOnly(node, "importKind", node.specifiers)) check(node.source);
+            },
+            ExportNamedDeclaration(node) {
+                if (node.source && !typeOnly(node, "exportKind", node.specifiers)) check(node.source);
+            },
+            ExportAllDeclaration(node) {
+                if (node.exportKind !== "type") check(node.source);
+            },
+            ImportExpression(node) {
+                check(node.source);
+            },
+            'CallExpression[callee.type="Identifier"][callee.name="require"]': function(node) {
+                check(node.arguments[0]);
             }
         };
     }
