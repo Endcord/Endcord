@@ -86,7 +86,7 @@ Plugin ideas and fixes go through pull requests. Read [CONTRIBUTING.md](CONTRIBU
 
 Endcord ships 500 plugins, nearly three times as many as Vencord, and runs in the same memory: within 2% of Vencord and below Equicord on every memory measure, with the lowest idle CPU of the three. Plugins are only loaded when you turn them on. [Endcord Desktop](#endcord-desktop), Endcord's own app, runs the same 500 plugins in at least 130 MB less memory than Discord's app with any of the three mods, and was usable about a second sooner in these runs (part of that gap is Endcord's own startup work since October, see below).
 
-| | Endcord Desktop | Endcord | Vencord | Equicord | Vanilla Discord |
+| | [Endcord Desktop](#endcord-desktop) | Endcord | Vencord | Equicord | Vanilla Discord |
 |---|---:|---:|---:|---:|---:|
 | Plugins | **500** | **500** | 178 | 381 | – |
 | Total RAM | **551 MB** | 698 MB | 687 MB | 727 MB | 672 MB |
