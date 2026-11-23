@@ -1,6 +1,6 @@
 # Contributing to Endcord
 
-First off, thank you for considering contributing to **Endcord**! 🚀
+First off, thank you for considering contributing to **Endcord**!
 
 Endcord is an open-source, high-performance, and feature-rich Discord client modification built for speed, clean UX, and deep customization. Whether you are fixing bugs, optimizing existing modules, translating to new languages, writing innovative plugins, or enhancing documentation, your contributions make Endcord better for everyone.
 
