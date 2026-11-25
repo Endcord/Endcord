@@ -1,5 +1,5 @@
-// Endcord 92e0403
-// Version: 4.1.2
+// Endcord 3a44fe1
+// Version: 4.1.3
 // Standalone: true
 // Platform: Universal
 // Updater Disabled: false
