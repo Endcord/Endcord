@@ -19,7 +19,7 @@ import type { CustomProfileData } from "./data";
 
 export const PROFILES_GUILD_ID = "1543323763695820942";
 /** The profiles channel in the Endcord server. Without it, nothing is published or read */
-export const PROFILES_CHANNEL_ID = "1568188531480993842";
+export const PROFILES_CHANNEL_ID = "1575191153672986694";
 export const PROFILES_INVITE = "endcord";
 
 /** Starts every profile message, with the format's version, so a later format can sit next to this one */
@@ -445,8 +445,8 @@ function fingerprint(data: CustomProfileData | null) {
     return `${(hash >>> 0).toString(36)}.${text.length}`;
 }
 
-/** Per account: what it last shared from here (f), and the message that holds it (m) */
-type Published = Record<string, { f: string; m?: string; }>;
+/** Per account: what it last shared from here (f), the message that holds it (m), and the channel it went to (c) */
+type Published = Record<string, { f: string; m?: string; c?: string; }>;
 
 async function readPublished(): Promise<Published> {
     const saved = await DataStore.get(PUBLISHED_KEY) as Published | undefined;
@@ -455,7 +455,7 @@ async function readPublished(): Promise<Published> {
 
 async function rememberPublished(myId: string, data: CustomProfileData | null, messageId: string | undefined) {
     const published = await readPublished();
-    published[myId] = { f: fingerprint(data), m: messageId };
+    published[myId] = { f: fingerprint(data), m: messageId, c: PROFILES_CHANNEL_ID };
     await DataStore.set(PUBLISHED_KEY, published);
 }
 
@@ -471,7 +471,9 @@ async function sharePending() {
     const published = await readPublished();
     // Nothing was ever shared and there's nothing to share: nothing to do
     if (!mine.data && published[mine.id] === undefined) return;
-    if (published[mine.id]?.f === fingerprint(mine.data)) return;
+    // Shared already, to this channel. After the channel changed, every profile goes to the new one once
+    const last = published[mine.id];
+    if (last?.f === fingerprint(mine.data) && last.c === PROFILES_CHANNEL_ID) return;
     await publishProfile(mine.id, mine.data);
 }
 

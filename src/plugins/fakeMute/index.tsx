@@ -49,6 +49,15 @@ function patchConnection(conn: any) {
 function hookEngine(engine: any) {
     if (!engine || engine.__fakeMuteEngineHooked) return;
     engine.__fakeMuteEngineHooked = true;
+    // connect() emits Connection before it returns, and MediaEngineStore's listener mutes the new connection right
+    // there: patch it as the event goes out, before any listener runs
+    if (typeof engine.emit === "function") {
+        const origEmit = engine.emit;
+        engine.emit = function (event: unknown, ...args: any[]) {
+            if (typeof args[0]?.setSelfMute === "function") patchConnection(args[0]);
+            return origEmit.call(this, event, ...args);
+        };
+    }
     if (typeof engine.connect === "function") {
         const origConnect = engine.connect.bind(engine);
         engine.connect = function (...args: any[]) {

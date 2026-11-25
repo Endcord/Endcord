@@ -355,6 +355,20 @@ const PNG = `data:image/png;base64,${Buffer.from("not really a png").toString("b
     __dispatch("CONNECTION_OPEN", {});
     await new Promise(resolve => realSetTimeout(resolve, 100));
     check("an account that never shared anything sends nothing", __rest.posts.length === 0 && __rest.deletes.length === 0);
+
+    // The profiles channel was replaced: a profile shared to the old one goes to the new one, though it hasn't changed
+    mine = { id: "3", data: { username: "moved" } };
+    __rest.posts = [];
+    await m.startSharing(() => { }, { read: false, mine: () => mine });
+    await new Promise(resolve => realSetTimeout(resolve, 100));
+    const sharedOnce = __rest.posts.length === 1;
+    m.stopSharing();
+    const published = __store.get("CustomProfile_published_v1");
+    __store.set("CustomProfile_published_v1", { ...published, "3": { ...published["3"], c: "900000000000000000" } });
+    __rest.posts = [];
+    await m.startSharing(() => { }, { read: false, mine: () => mine });
+    await new Promise(resolve => realSetTimeout(resolve, 100));
+    check("a profile is shared again once the profiles channel has changed", sharedOnce && __rest.posts.length === 1 && __rest.posts[0].body.content.includes("moved"));
     globalThis.setTimeout = realSetTimeout;
     m.stopSharing();
 }

@@ -2,6 +2,13 @@
 
 What changed in each Endcord release. Every release is signed, and the updater checks the signature before it installs anything; [SECURITY.md](SECURITY.md) explains how to check a release yourself.
 
+## 4.1.3 (2026-11-25)
+
+### Fixed
+
+- CustomProfile shares profiles through the Endcord server's new profiles channel; the old one was deleted. Your profile goes to the new channel by itself the next time Discord connects after this update, and others see it once their Endcord is updated too.
+- FakeDeafen and FakeMute no longer really deafen or mute you when they're on before you join a voice channel. Discord set deaf or mute on the new connection before Endcord got to it.
+
 ## 4.1.2 (2026-11-20)
 
 ### Security
